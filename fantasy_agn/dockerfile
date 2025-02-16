@@ -1,10 +1,10 @@
 # Use official Python 3.12.3 slim image as the base
-FROM python:3.12.3-slim
+FROM python:3.11
 
 # Install system dependencies for building Python packages
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
-    gcc \
+    gcc g++ make flex bison git gfortran\
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 # Set working directory inside the container
@@ -25,13 +25,13 @@ RUN pip install astropy
 RUN pip install sfdmap2
 RUN pip install pyastronomy
 RUN pip install spectres
+RUN pip install setuptools==65
 RUN pip install sherpa
-
-RUN git clone https://github.com/yukawa1/fantasy.git 
-
+RUN pip install fantasy_agn
+RUN ls -ahl
 # Copy the rest of your code
-COPY . .
+COPY ./*.fit* ./main.py .
 
 # Define the command to run your application
 # CMD ["sh", "-c", "python main.py"]
-CMD ["sh", "-c", "python main.py > /app/output/fit.log"]
+CMD ["sh", "-c", "ls -hl && python main.py > /app/output/fit.log" ]
