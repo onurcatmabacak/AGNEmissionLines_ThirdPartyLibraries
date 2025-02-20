@@ -17,21 +17,11 @@ WORKDIR /app
 # RUN pip install --no-cache-dir -r requirements.txt
 
 RUN pip install --upgrade pip
-# RUN pip install matplotlib 
-# RUN pip install numpy
-# RUN pip install pandas 
-# RUN pip install scipy 
-# RUN pip install astropy
-# RUN pip install sfdmap2
-# RUN pip install pyastronomy
-# RUN pip install spectres
-# RUN pip install setuptools==65
-# RUN pip install sherpa
 RUN pip install fantasy_agn
-RUN ls -ahl
+
 # Copy the rest of your code
-COPY ./*.fit* ./spec.txt ./test/my_sdss.fits ./main.py .
+COPY ./test/my_sdss.fits ./main.py .
 
 # Define the command to run your application
-# CMD ["sh", "-c", "python main.py"]
+# CMD ["sh", "-c", "ls -hl && python main.py"]
 CMD ["sh", "-c", "ls -hl && python main.py > /app/output/fit.log" ]

@@ -2,11 +2,13 @@
 import matplotlib.pyplot as plt
 import matplotlib as mpl
 from matplotlib.ticker import (MultipleLocator, FormatStrFormatter, AutoMinorLocator)
-
+from natsort import natsorted
 import numpy as np
 import pandas as pd
 import os
 import glob
+import json
+from multiprocessing import Pool, cpu_count
 
 os.makedirs("./output", exist_ok=True)  # Creates folder, doesn't raise error if it already exists
 
@@ -14,55 +16,140 @@ os.makedirs("./output", exist_ok=True)  # Creates folder, doesn't raise error if
 from fantasy_agn.tools import read_sdss, read_text, read_gama_fits
 
 # Below command import the necessary commands, which will be described later
-from fantasy_agn.models import create_input_folder
+from fantasy_agn.models import create_input_folder, automatic_path
 
 from fantasy_agn.models import create_feii_model, create_model, create_tied_model, continuum, create_line, create_fixed_model
 
-# This command reads the spectrum with the listed name, from the folder of this notebook or
-# from the given path e.g.,'/path/to/files/spec*.txt'
+unit = "my_sdss.fits"
+print(unit)
 
-s=read_sdss('my_sdss.fits')
-
-# We use for input models selected line lists, for which we provide air wavelengths; if your spectrum is in vacuum
-# wavelengths, this command transform them to air wavelengths: s.vac_to_air()
-# NOTE that read_sdss() transform to air wavelengths by default.
-
-# DeRedden() command corrects for the Galactic extinction, based on coordinates of the object provided in the fits,
-# which will be automatically derived from dust map data from Schlegel, Finkbeiner, Davis (1998).
-# If coordinates are not available you could manually insert them using simple commands s.ra=xxx.xxx, s.dec=xxx.xxx
-
-# s.ra=29.519807539582 #example input of arbitrary rightascension
-# s.dec=-0.872742349310271 #example input of arbitrary declination
-
+#  reads an AGN spectrum, corrects for Galactic extinction, redshift, and host galaxy
+s=read_sdss(unit)
+s.err=np.abs(s.err) #make sure that all errors are positive
+s.flux = s.flux * 1e17
 # s.DeRedden()
-
-# CorRed() corrects for the cosmological redshift, based on redshift of the object provided in the fits.
-# If coordinates are not available you could manually insert them using simple command s.z=x.xxx
-
-# s.z=0.0804 #example input of arbitrary redshift
-
-# s.CorRed()
-
-# Useful tip is to avoid using very small flux units.
-# e.g., SDSS spectra are given in 1e-17 erg/s/cm2/A and these are already scaled within read_sdss()
-# s.crop(2900,10000)
-s.flux=s.flux * (10**17)
-print(s.wave)
-#s.restore() #command which restor to the original spectrum, before host-galaxy removal;
+s.CorRed()
 # s.fit_host_sdss()
-# s.host_no_mask = s.host
-# s.restore() #command to restore the spectrum before host galaxy fitting and substraction
-# s.fit_host_sdss(mask_host=True, custom=False)
+# plt.title(s.name.split('/')[-1].split('.')[0])
+# plt.savefig("./output/" + s.name + '_host.pdf')
+print(s.err)
+# crops a spectrum, and creates automatic path of the input line lists
+s.crop(2900,8000)
+automatic_path(s)
+create_input_folder(xmin=3000,xmax=7500, path_to_folder='output/')
 
-#Let's plot the spectrum for visual inspection.
+ampl = 5
+min_ampl = 0
+max_ampl = 500
+fwhm_br = 1000
+fwhm_na = 500
+min_fwhm_br = 1200
+min_fwhm_na = 0
+max_fwhm_br = 10000
+max_fwhm_na = 1200
+offset = 0
+min_offset = 0
+max_offset = 0
+# defines fitting model
+# cont = continuum(s,min_refer=5350, refer=5550, max_refer=5650,min_index1=-3.7, max_index1=1,max_index2=3)
+cont = continuum(s)
+broad = create_model(['hydrogen.csv', 'helium.csv'], prefix='br', amplitude=ampl, min_amplitude=min_ampl, max_amplitude=max_ampl, fwhm=fwhm_br, min_fwhm=min_fwhm_br, max_fwhm=max_fwhm_br, offset=offset, min_offset=min_offset, max_offset=max_offset)
+narrow = create_tied_model(name='OIII5007',files=['narrow_basic.csv','hydrogen.csv', 'helium.csv'],prefix='nr',amplitude=ampl, min_amplitude=min_ampl, max_amplitude=max_ampl, fwhm=fwhm_na, min_fwhm=min_fwhm_na, max_fwhm=max_fwhm_na, offset=offset, min_offset=min_offset, max_offset=max_offset)
 
-# plt.style.context(['nature', 'notebook'])
-# plt.figure(figsize=(12,6))
-plt.plot(s.wave, s.flux, color="grey", label='Obs', lw=1)
-# plt.plot(s.wave, s.host_no_mask, color="red", label='Host no mask', lw=0.5)
-# plt.plot(s.wave, s.host, color="blue", label='Host masked', lw=0.5)
-plt.legend(loc='upper left',  prop={'size': 12}, frameon=False, ncol=2)
-plt.xlim(2900, 10100)
-plt.savefig("output/result.pdf", format="pdf")
+hbeta_br = create_line(name="HBeta4834_br",pos=4834, ampl=ampl, min_ampl=min_ampl, max_ampl=max_ampl, fwhm=fwhm_br, min_fwhm=min_fwhm_br, max_fwhm=max_fwhm_br, offset=offset, min_offset=min_offset, max_offset=max_offset)
+OIIIa_br = create_line(name="OIIIa4958_br",pos=4958, ampl=ampl, min_ampl=min_ampl, max_ampl=max_ampl, fwhm=fwhm_br, min_fwhm=min_fwhm_br, max_fwhm=max_fwhm_br, offset=offset, min_offset=min_offset, max_offset=max_offset)
+OIIIb_br = create_line(name="OIIIb5007_br",pos=5007, ampl=ampl, min_ampl=min_ampl, max_ampl=max_ampl, fwhm=fwhm_br, min_fwhm=min_fwhm_br, max_fwhm=max_fwhm_br, offset=offset, min_offset=min_offset, max_offset=max_offset)
+halpha_br = create_line(name="HAlpha6551_br",pos=6551, ampl=ampl, min_ampl=min_ampl, max_ampl=max_ampl, fwhm=fwhm_br, min_fwhm=min_fwhm_br, max_fwhm=max_fwhm_br, offset=offset, min_offset=min_offset, max_offset=max_offset)
+hbeta_na = create_line(name="HBeta4834_na",pos=4834, ampl=ampl, min_ampl=min_ampl, max_ampl=max_ampl, fwhm=fwhm_na, min_fwhm=min_fwhm_na, max_fwhm=max_fwhm_na, offset=offset, min_offset=min_offset, max_offset=max_offset)
+OIIIa_na = create_line(name="OIIIa4958_na",pos=4958, ampl=ampl, min_ampl=min_ampl, max_ampl=max_ampl, fwhm=fwhm_na, min_fwhm=min_fwhm_na, max_fwhm=max_fwhm_na, offset=offset, min_offset=min_offset, max_offset=max_offset)
+OIIIb_na = create_line(name="OIIIb5007_na",pos=5007, ampl=ampl, min_ampl=min_ampl, max_ampl=max_ampl, fwhm=fwhm_na, min_fwhm=min_fwhm_na, max_fwhm=max_fwhm_na, offset=offset, min_offset=min_offset, max_offset=max_offset)
+halpha_na = create_line(name="HAlpha6551_na",pos=6551, ampl=ampl, min_ampl=min_ampl, max_ampl=max_ampl, fwhm=fwhm_na, min_fwhm=min_fwhm_na, max_fwhm=max_fwhm_na, offset=offset, min_offset=min_offset, max_offset=max_offset)
+
+# fe=create_feii_model(max_fwhm=6000)
+# model = cont + broad + narrow + OIIIa_br + OIIIb_br + OIIIa_na + OIIIb_na + hbeta_br + halpha_br + hbeta_na + halpha_na
+# model = cont + OIIIa_br + OIIIb_br + OIIIa_na + OIIIb_na + hbeta_br + halpha_br + hbeta_na + halpha_na
+model = cont + OIIIb_br + OIIIb_na + hbeta_br + halpha_br + hbeta_na + halpha_na
+
+# fits a spectrum with the above model, iterate 2 times
+s.fit(model, ntrial=10)
+print("fit ok")
+
+# creates a file to save the fitting results of the original spectra
+# d={'wave':s.wave,'flux':s.flux,'error':s.err,'model':model(s.wave),'cont':cont(s.wave), 'narrow':narrow(s.wave), 'broad':broad(s.wave), 'OIIIa_br':OIIIa_br(s.wave), 'OIIIa_na':OIIIa_na(s.wave), 'OIIIb_br':OIIIb_br(s.wave), 'OIIIb_na':OIIIb_na(s.wave), 'hbeta_br':hbeta_br(s.wave), 'hbeta_na':hbeta_na(s.wave), 'halpha_br':halpha_br(s.wave), 'halpha_na':halpha_na(s.wave)}
+d={'wave':s.wave,'flux':s.flux,'error':s.err,'model':model(s.wave),'cont':cont(s.wave), 'OIIIb_br':OIIIb_br(s.wave), 'OIIIb_na':OIIIb_na(s.wave), 'hbeta_br':hbeta_br(s.wave), 'hbeta_na':hbeta_na(s.wave), 'halpha_br':halpha_br(s.wave), 'halpha_na':halpha_na(s.wave)}
+
+df=pd.DataFrame(d)
+df.to_csv("./output/" + s.name+'_model.csv')
+dicte=zip(s.gres.parnames, s.gres.parvals)
+res=dict(dicte)
+res['redshift']= float(s.z)
+res['RA']=float(s.ra)
+res['dec']=float(s.dec)
+res['fiber']=str(s.fiber)
+res['mjd']=float(s.mjd)
+res['plate']=str(s.plate)
+
+# creates a file to save the fitting results of the original spectra
+with open("./output/" + s.name + '_pars.json', 'w') as fp:
+    json.dump(res, fp)
+
+# creates N=500 mock spectra, fits the same model, and write the fitting results.
+s.monte_carlo(nsample=50)
+print("mcmc ok")
+
+i=0
+x_tics=np.linspace(3000,7500, 10)
+
+for file in natsorted(glob.glob('./output/my*model.csv')):
+
+    print(file)
+
+    df=pd.read_csv(file)
+    fluxnorm = 1
+    # plt.style.use(['nature', 'science'])
+
+    fig, ax =plt.subplots(figsize=(12,8))
+
+    plt.plot(df.wave, df.flux * fluxnorm, '-', color="grey", label='Obs', lw=2)
+    plt.plot(df.wave, df.model * fluxnorm, '-', color="black", label='Model', lw=2)
+
+    plt.plot(df.wave, df.cont * fluxnorm, '-', color="red", label='Cont.', lw=2)
+    # plt.plot(df.wave, df.narrow * fluxnorm, '-', color='lightblue', label='Narrow',lw=2)
+    # plt.plot(df.wave, df.broad * fluxnorm, '-', color="magenta",label='Broad H', lw=2)
+    # plt.plot(df.wave, df.fe * fluxnorm, '-', color='brown', label='Fe II', lw=2) 
+    # plt.plot(df.wave, df.OIIIa_br * fluxnorm, '-', color='g', label='OIIIa BR', lw=1) 
+    # plt.plot(df.wave, df.OIIIa_na * fluxnorm, '--', color='g', label='OIIIa NA', lw=1) 
+    plt.plot(df.wave, df.OIIIb_br * fluxnorm, '-', color='r', label='OIIIb BR', lw=1) 
+    plt.plot(df.wave, df.OIIIb_na * fluxnorm, '--', color='r', label='OIIIb NA', lw=1) 
+    plt.plot(df.wave, df.hbeta_br * fluxnorm, '-', color='b', label='HBeta BR', lw=1) 
+    plt.plot(df.wave, df.hbeta_na * fluxnorm, '--', color='b', label='HBeta NA', lw=1) 
+    plt.plot(df.wave, df.halpha_br * fluxnorm, '-', color='k', label='HAlpha BR', lw=1) 
+    plt.plot(df.wave, df.halpha_na * fluxnorm, '--', color='k', label='HAlpha NA', lw=1) 
 
 
+    try:
+        plt.plot(df.wave, df.fe_forb * fluxnorm, '-', color='xkcd:black', label='[Fe II]', lw=4)
+    except:
+        pass
+
+    plt.xticks(x_tics, fontsize=24)
+    plt.yticks(fontsize=24)
+    plt.tick_params(which='both', direction="in")
+
+    plt.ylim(-0.5, df.model.max() * fluxnorm * 1.1)
+    plt.xlim(4500,7000)
+    ax.xaxis.set_minor_locator(AutoMinorLocator())
+    ax.yaxis.set_minor_locator(AutoMinorLocator())
+
+    plt.legend(loc='upper left',  prop={'size': 16}, frameon=False, ncol=4)
+    plt.xlabel(r'Rest wavelength ($\rm{\AA}$)', fontsize=24)
+    plt.ylabel(r'$F_{\lambda}$ ($10^{-17}$ $\rm{erg s}^{-1}\rm{cm}^{-2}\rm{\AA}^{-1}$)', fontsize=24)
+
+    plt.tight_layout()
+    plt.savefig("./output/my_sdss.pdf", dpi=1200, bbox_inches='tight', format="pdf")
+    i+=1
+    # plt.show()
+    # plt.close()
+    # plt.clf()
+
+print(model)
