@@ -13,17 +13,18 @@ WORKDIR /app
 RUN git clone https://github.com/remingtonsexton/BADASS3.git
 # Copy requirements.txt first (if you have one) to leverage Docker cache
 # COPY 
-COPY my_sdss_onur.fits requirements.txt .
+COPY my_sdss_onur.fits main.py requirements.txt .
 RUN mkdir -p BADASS3/example_spectra/2-onur && cp my_sdss_onur.fits BADASS3/example_spectra/2-onur/my_sdss.fits
 # Install dependencies
 RUN pip install -r requirements.txt
 RUN pip install --upgrade pip && pip install jupyter
 
-WORKDIR /
+# WORKDIR /
 
 # Expose port 8888 for Jupyter Notebook
 EXPOSE 8888
 
 # Define the command to run your application
 # Command to run Jupyter Notebook when the container starts
-CMD ["jupyter", "notebook", "--ip=0.0.0.0", "--allow-root", "--no-browser", "--NotebookApp.token=''"]
+# CMD ["jupyter", "notebook", "--ip=0.0.0.0", "--allow-root", "--no-browser", "--NotebookApp.token=''"]
+CMD ["sh", "-c", "ls -hl && python main.py > /app/output/fit.log && cp -r /app/BADASS3/example_spectra/2-onur /app/otput" ]
