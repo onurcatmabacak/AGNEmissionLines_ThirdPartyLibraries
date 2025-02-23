@@ -25,11 +25,11 @@ fit_options={
 "fit_reg"    : (2900,8000),# Fitting region; Note: Indo-US Library=(3460,9464)
 "good_thresh": 0.0, # percentage of "good" pixels required in fig_reg for fit.
 "mask_bad_pix": False, # mask pixels SDSS flagged as 'bad' (careful!)
-"mask_emline" : True, # automatically mask lines for continuum fitting.
+"mask_emline" : False, # automatically mask lines for continuum fitting.
 "mask_metal": False, # interpolate over metal absorption lines for high-z spectra
 "fit_stat": "ML", # fit statistic; ML = Max. Like. , OLS = Ordinary Least Squares
 "n_basinhop": 25, # Number of consecutive basinhopping thresholds before solution achieved
-"test_lines": True, # Perform line/configuration testing for multiple components
+"test_lines": False, # Perform line/configuration testing for multiple components
 "max_like_niter": 50, # number of maximum likelihood iterations
 "output_pars": False, # only output free parameters of fit and stop code (diagnostic)
 "cosmology": {"H0":70.0, "Om0": 0.30}, # Flat Lam-CDM Cosmology
@@ -55,9 +55,9 @@ mcmc_options={
 
 ############################ Fit component op dtions #############################
 comp_options={
-"fit_opt_feii"     : True, # optical FeII
-"fit_uv_iron"      : True, # UV Iron 
-"fit_balmer"       : True, # Balmer continuum (<4000 A)
+"fit_opt_feii"     : False, # optical FeII
+"fit_uv_iron"      : False, # UV Iron 
+"fit_balmer"       : False, # Balmer continuum (<4000 A)
 "fit_losvd"        : False, # stellar LOSVD
 "fit_host"         : False, # host template
 "fit_power"        : True, # AGN power-law
@@ -105,21 +105,37 @@ absorp_options = {
 user_lines = {
     "NA_H_BETA"      :{"center":4834,
                        "amp":"free",
-                       "disp":"free",
+                       "disp":"NA_OIII_5007_DISP",
                        "voff":"free",
                        "line_type":"na",
                        "label":r"H$\beta$",
                        "ncomp":1,},
 
-    "NA_OIII_a"      :{"center":4931,
+    "NA_H_BETA_2"    :{"center":4834,
                        "amp":"free",
-                       "disp":"free",
-                       "voff":"free",
+                       "disp":"NA_OIII_5007_2_DISP",
+                       "voff":"NA_OIII_5007_2_VOFF",
+                       "line_type":"na",
+                       "ncomp":2,
+                       "parent":"NA_H_BETA"},
+
+    "NA_OIII_4960"   :{"center":4984,
+                       "amp":"free",
+                       "disp":"NA_OIII_5007_DISP",
+                       "voff":"NA_OIII_5007_VOFF",
                        "line_type":"na",
                        "label":r"[OIIIa]",
                        "ncomp":1,},
 
-    "NA_OIII_b"      :{"center":5008.240,
+    "NA_OIII_4960_2" :{"center":4984,
+                       "amp":"free",
+                       "disp":"NA_OIII_5007_2_DISP",
+                       "voff":"NA_OIII_5007_2_VOFF",
+                       "line_type":"na",
+                       "ncomp":2,
+                       "parent":"NA_OIII_4960"},
+
+    "NA_OIII_5007"   :{"center":5008.240,
                        "amp":"free",
                        "disp":"free",
                        "voff":"free",
@@ -127,13 +143,29 @@ user_lines = {
                        "label":r"[OIIIb]",
                        "ncomp":1,},
 
-    "NA_H_ALPHA"     :{"center":6555,
+    "NA_OIII_5007_2" :{"center":5008.240,
+                       "amp":"free",
+                       "disp":"free",
+                       "voff":"free",
+                       "line_type":"na",
+                       "ncomp":2,
+                       "parent":"NA_OIII_5007"},
+
+    "NA_H_ALPHA"     :{"center":6551,
                        "amp":"free",
                        "disp":"free",
                        "voff":"free",
                        "line_type":"na",
                        "label":r"[H$\alpha$]",
                        "ncomp":1,},
+
+    "NA_H_ALPHA_2"   :{"center":6551,
+                       "amp":"free",
+                       "disp":"free",
+                       "voff":"free",
+                       "line_type":"na",
+                       "ncomp":2,
+                       "parent":"NA_H_ALPHA"},
 
     "BR_H_BETA"      :{"center":4834,
                        "amp":"free",
@@ -142,21 +174,21 @@ user_lines = {
                        "line_type":"br",
                        "ncomp":1,},
 
-    "BR_OIII_a"      :{"center":4931,
+    "BR_OIII_4960"   :{"center":4984,
                        "amp":"free",
                        "disp":"free",
                        "voff":"free",
                        "line_type":"br",
                        "ncomp":1,},
 
-    "BR_OIII_b"      :{"center":5008.240,
+    "BR_OIII_5007"   :{"center":5008.240,
                        "amp":"free",
                        "disp":"free",
                        "voff":"free",
                        "line_type":"br",
                        "ncomp":1,},
 
-    "BR_H_ALPHA"     :{"center":6555,
+    "BR_H_ALPHA"     :{"center":6551,
                        "amp":"free",
                        "disp":"free",
                        "voff":"free",
@@ -166,16 +198,16 @@ user_lines = {
 }
 
 # configs = [
-#     ["NA_H_BETA","NA_OIII_a","NA_OIII_b"], # Type 2 Case, single component
-#     ["NA_H_BETA","NA_OIII_a","NA_OIII_b","BR_H_BETA"], # Type 1 case, single component
-#     ["NA_H_BETA","NA_OIII_a","NA_OIII_b","NA_H_BETA_2","NA_OIII_a_2","NA_OIII_b_2","BR_H_BETA"], # Type 1 Case, double component,
-#     ["NA_H_BETA","NA_OIII_a","NA_OIII_b","NA_H_BETA_2","NA_OIII_a_2","NA_OIII_b_2","NA_H_BETA_3","NA_OIII_a_3","NA_OIII_b_3","BR_H_BETA"], # Type 1 Case, triple component,
-#     ["NA_H_BETA","NA_OIII_a","NA_OIII_b","NA_H_BETA_2","NA_OIII_a_2","NA_OIII_b_2","NA_H_BETA_3","NA_OIII_a_3","NA_OIII_b_3","BR_H_BETA","BR_H_BETA_2"], # Type 1 Case, triple component,
+#     ["NA_H_BETA","NA_OIII_4960","NA_OIII_5007"], # Type 2 Case, single component
+#     ["NA_H_BETA","NA_OIII_4960","NA_OIII_5007","BR_H_BETA"], # Type 1 case, single component
+#     ["NA_H_BETA","NA_OIII_4960","NA_OIII_5007","NA_H_BETA_2","NA_OIII_4960_2","NA_OIII_5007_2","BR_H_BETA"], # Type 1 Case, double component,
+#     ["NA_H_BETA","NA_OIII_4960","NA_OIII_5007","NA_H_BETA_2","NA_OIII_4960_2","NA_OIII_5007_2","NA_H_BETA_3","NA_OIII_4960_3","NA_OIII_5007_3","BR_H_BETA"], # Type 1 Case, triple component,
+#     ["NA_H_BETA","NA_OIII_4960","NA_OIII_5007","NA_H_BETA_2","NA_OIII_4960_2","NA_OIII_5007_2","NA_H_BETA_3","NA_OIII_4960_3","NA_OIII_5007_3","BR_H_BETA","BR_H_BETA_2"], # Type 1 Case, triple component,
 # ]
 
 test_options = {
     "test_mode":"line", # line or config (in the future)
-    "lines": [["NA_OIII_b","NA_OIII_a","NA_H_BETA","NA_H_ALPHA"]], 
+    "lines": [["NA_OIII_5007","NA_OIII_4960","NA_H_BETA","NA_H_ALPHA"]], 
     "metrics": ["BADASS", "ANOVA", "CHI2_RATIO", "AON"],
     "thresholds": [0.95, 0.95, 0.10, 3.0],
     "conv_mode": "all", 
@@ -187,8 +219,8 @@ test_options = {
 }
 
 user_constraints = [
-    # ("NA_OIII_b_AMP","NA_OIII_b_2_AMP"),
-    # ("NA_OIII_b_2_DISP","NA_OIII_b_DISP"),
+    # ("NA_OIII_5007_AMP","NA_OIII_5007_2_AMP"),
+    # ("NA_OIII_5007_2_DISP","NA_OIII_5007_DISP"),
 ]
 
 # User defined masked regions (list of tuples)
@@ -202,10 +234,7 @@ user_mask = [
 # its combined parameters.  These are automatically
 # generated for lines with multiple components (parent+child lines)
 combined_lines = {
-    "H_BETA_COMP"   :["NA_H_BETA","BR_H_BETA"],
-    "H_OIII_a_COMP" :["NA_OIII_a","BR_OIII_a"],
-    "H_OIII_b_COMP" :["NA_OIII_b","BR_OIII_b"],
-    "H_ALPHA_COMP"  :["NA_H_ALPHA","BR_H_ALPHA"],
+    # "H_BETA_COMP"   :["NA_H_BETA","BR_H_BETA"],
 }
 ########################## LOSVD Fitting & Options #############################
 # For direct fitting of the stellar kinematics (stellar LOSVD), one can 
@@ -226,9 +255,9 @@ losvd_options = {
 ################################################################################
 
 host_options = {
-# "age"       : [1.0,5.0,10.0], # Gyr; [0.09 Gyr - 14 Gyr] 
-# "vel_const" : {"bool":False, "val":0.0},
-# "disp_const": {"bool":False, "val":150.0}
+"age"       : [1.0,5.0,10.0], # Gyr; [0.09 Gyr - 14 Gyr] 
+"vel_const" : {"bool":False, "val":0.0},
+"disp_const": {"bool":False, "val":150.0}
 }
 
 ########################### AGN power-law continuum & Options ##################

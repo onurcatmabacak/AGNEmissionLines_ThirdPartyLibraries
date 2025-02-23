@@ -5,7 +5,7 @@ import numpy as np
 with fits.open('my_sdss.fits') as hdul:
     # Assume the binary table is in extension 1
     table_hdu = hdul[1]
-    
+
     # Verify that extension 1 is a binary table
     if not isinstance(table_hdu, fits.BinTableHDU):
         raise ValueError("Extension 1 is not a binary table.")
