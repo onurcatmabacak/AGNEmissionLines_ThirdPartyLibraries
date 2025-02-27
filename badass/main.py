@@ -18,7 +18,6 @@ from IPython.display import display, HTML
 display(HTML("<style>.container { width:85% !important; }</style>"))
 
 
-
 ################################## Fit Options #################################
 # Fitting Parameters
 fit_options={
@@ -27,7 +26,7 @@ fit_options={
 "mask_bad_pix": False, # mask pixels SDSS flagged as 'bad' (careful!)
 "mask_emline" : True, # automatically mask lines for continuum fitting.
 "mask_metal": False, # interpolate over metal absorption lines for high-z spectra
-"fit_stat": "ML", # fit statistic; ML = Max. Like. , OLS = Ordinary Least Squares
+"fit_stat": "OLS", # fit statistic; ML = Max. Like. , OLS = Ordinary Least Squares
 "n_basinhop": 25, # Number of consecutive basinhopping thresholds before solution achieved
 "test_lines": True, # Perform line/configuration testing for multiple components
 "max_like_niter": 50, # number of maximum likelihood iterations
@@ -56,8 +55,8 @@ mcmc_options={
 ############################ Fit component op dtions #############################
 comp_options={
 "fit_opt_feii"     : True, # optical FeII
-"fit_uv_iron"      : True, # UV Iron 
-"fit_balmer"       : True, # Balmer continuum (<4000 A)
+"fit_uv_iron"      : False, # UV Iron 
+"fit_balmer"       : False, # Balmer continuum (<4000 A)
 "fit_losvd"        : False, # stellar LOSVD
 "fit_host"         : False, # host template
 "fit_power"        : True, # AGN power-law
@@ -72,7 +71,7 @@ comp_options={
 # Line options for each narrow, broad, and absorption.
 narrow_options = {
     "amp_plim": (0,1000), # line amplitude parameter limits; default (0,)
-    "disp_plim": (0,20), # FWHM, line dispersion parameter limits; default (0,)
+    "disp_plim": (0,100), # FWHM, line dispersion parameter limits; default (0,)
     "voff_plim": (-1200,1200), # line velocity offset parameter limits; default (0,)
     "line_profile": "gaussian", # line profile shape*
     "n_moments": 4, # number of higher order Gauss-Hermite moments (if line profile is gauss-hermite, laplace, or uniform)
@@ -127,7 +126,7 @@ user_lines = {
                        "label":r"[OIIIb]",
                        "ncomp":1,},
 
-    "NA_H_ALPHA"     :{"center":6555,
+    "NA_H_ALPHA"     :{"center":6551,
                        "amp":"free",
                        "disp":"free",
                        "voff":"free",
@@ -156,7 +155,7 @@ user_lines = {
                        "line_type":"br",
                        "ncomp":1,},
 
-    "BR_H_ALPHA"     :{"center":6555,
+    "BR_H_ALPHA"     :{"center":6551,
                        "amp":"free",
                        "disp":"free",
                        "voff":"free",
@@ -187,15 +186,15 @@ test_options = {
 }
 
 user_constraints = [
-    # ("NA_OIII_b_AMP","NA_OIII_b_2_AMP"),
-    # ("NA_OIII_b_2_DISP","NA_OIII_b_DISP"),
+    ("NA_OIII_b_AMP","NA_OIII_b_2_AMP"),
+    ("NA_OIII_b_2_DISP","NA_OIII_b_DISP"),
 ]
 
 # User defined masked regions (list of tuples)
 user_mask = [
-     # (4800,5015),
-     # (6552,6580),
-     # (6674,6685),
+     (4800,5015),
+     (6552,6580),
+     (6674,6685),
 ]
 
 # Combined lines; define a composite line and calculate
@@ -215,9 +214,9 @@ combined_lines = {
 ################################################################################
 
 losvd_options = {
-"library"   : "IndoUS", # Options: IndoUS, Vazdekis2010
-"vel_const" :  {"bool":False, "val":0.0},
-"disp_const":  {"bool":False, "val":250.0},
+# "library"   : "IndoUS", # Options: IndoUS, Vazdekis2010
+# "vel_const" :  {"bool":False, "val":0.0},
+# "disp_const":  {"bool":False, "val":250.0},
 }
 
 ########################## SSP Host Galaxy Template & Options ##################

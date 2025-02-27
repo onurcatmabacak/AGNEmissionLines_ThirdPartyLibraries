@@ -46,6 +46,7 @@ def load_spectrum(fits_file):
     # print(fits_file, len(hdulist))
 
     err = hdulist[2].data if len(hdulist) > 2 else None  # Normalized error spectrum, might not exist
+    err = 0.02 * flux
     # print('onuronuronur: \n\n', hdulist[0].data, hdulist[1].data, hdulist[2].data)
     # print(hdulist, err)
 
@@ -255,7 +256,7 @@ path_out = "./"
 
 # Requried
 wavelength, flux, error, z = load_spectrum('spectrum.fits')
-error = 0.1 * flux
+error = 0.02 * flux
 z = 0.348
 print(wavelength, flux, error, z)
 
@@ -279,7 +280,7 @@ narrow_line_velocity_limit = 1200
 start = timeit.default_timer()
 # Do the fitting
 
-q_mle.Fit(name=None,  # customize the name of given targets. Default: plate-mjd-fiber
+q_mle.Fit(name='result',  # customize the name of given targets. Default: plate-mjd-fiber
           # prepocessing parameters
           nsmooth=1,  # do n-pixel smoothing to the raw input flux and err spectra
           and_mask=False,  # delete the and masked pixels
@@ -306,13 +307,12 @@ q_mle.Fit(name=None,  # customize the name of given targets. Default: plate-mjd-
           poly=True,  # If True, fit continuum with the polynomial component to account for the dust reddening
           BC=False,  # If True, fit continuum with Balmer continua from 1000 to 3646A
           initial_guess=None,  # Initial parameters for continuum model, read the annotation of this function for detail
-          rej_abs_conti=False,  # If True, it will iterately reject 3 sigma outlier absorption pixels in the continuum
+          rej_abs_conti=True,  # If True, it will iterately reject 3 sigma outlier absorption pixels in the continuum
           n_pix_min_conti=100,  # Minimum number of negative pixels for host continuuum fit to be rejected.
 
           # emission line fit parameters
           linefit=True,  # If True, the emission line will be fitted
-          rej_abs_line=False,
-          # If True, it will iterately reject 3 sigma outlier absorption pixels in the emission lines
+          rej_abs_line=False, # If True, it will iterately reject 3 sigma outlier absorption pixels in the emission lines
 
           # fitting method selection
           MC=False,
@@ -389,12 +389,12 @@ for p in range(int(len(gauss_result) / 3)):
     ax.plot(q_mle.wave, q_mle.Onegauss(np.log(q_mle.wave), gauss_result[p * 3:(p + 1) * 3]), color=color)
 
 # Plot total line model
-ax.plot(q_mle.wave, q_mle.Manygauss(np.log(q_mle.wave), gauss_result), 'b', lw=2)
-ax.plot(q_mle.wave, q_mle.line_flux, 'k')
-ax.set_xlim(4640, 5100)
-ax.set_xlabel(r'$\rm Rest \, Wavelength$ ($\rm \AA$)', fontsize=20)
-ax.set_ylabel(r'$\rm f_{\lambda}$ ($\rm 10^{-17} erg\;s^{-1}\;cm^{-2}\;\AA^{-1}$)', fontsize=20)
-plt.savefig("result.pdf", format="pdf")
+# ax.plot(q_mle.wave, q_mle.Manygauss(np.log(q_mle.wave), gauss_result), 'b', lw=2)
+# ax.plot(q_mle.wave, q_mle.line_flux, 'k')
+# ax.set_xlim(4640, 5100)
+# ax.set_xlabel(r'$\rm Rest \, Wavelength$ ($\rm \AA$)', fontsize=20)
+# ax.set_ylabel(r'$\rm f_{\lambda}$ ($\rm 10^{-17} erg\;s^{-1}\;cm^{-2}\;\AA^{-1}$)', fontsize=20)
+# plt.savefig("result.pdf", format="pdf")
 """
 Line properties
 """

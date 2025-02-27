@@ -66,8 +66,6 @@ OIIIb_na = create_line(name="OIIIb5007_na",pos=5007, ampl=ampl, min_ampl=min_amp
 halpha_na = create_line(name="HAlpha6551_na",pos=6551, ampl=ampl, min_ampl=min_ampl, max_ampl=max_ampl, fwhm=fwhm_na, min_fwhm=min_fwhm_na, max_fwhm=max_fwhm_na, offset=offset, min_offset=min_offset, max_offset=max_offset)
 
 # fe=create_feii_model(max_fwhm=6000)
-# model = cont + broad + narrow + OIIIa_br + OIIIb_br + OIIIa_na + OIIIb_na + hbeta_br + halpha_br + hbeta_na + halpha_na
-# model = cont + OIIIa_br + OIIIb_br + OIIIa_na + OIIIb_na + hbeta_br + halpha_br + hbeta_na + halpha_na
 model = cont + OIIIb_br + OIIIb_na + hbeta_br + halpha_br + hbeta_na + halpha_na
 
 # fits a spectrum with the above model, iterate 2 times
@@ -75,7 +73,6 @@ s.fit(model, ntrial=10)
 print("fit ok")
 
 # creates a file to save the fitting results of the original spectra
-# d={'wave':s.wave,'flux':s.flux,'error':s.err,'model':model(s.wave),'cont':cont(s.wave), 'narrow':narrow(s.wave), 'broad':broad(s.wave), 'OIIIa_br':OIIIa_br(s.wave), 'OIIIa_na':OIIIa_na(s.wave), 'OIIIb_br':OIIIb_br(s.wave), 'OIIIb_na':OIIIb_na(s.wave), 'hbeta_br':hbeta_br(s.wave), 'hbeta_na':hbeta_na(s.wave), 'halpha_br':halpha_br(s.wave), 'halpha_na':halpha_na(s.wave)}
 d={'wave':s.wave,'flux':s.flux,'error':s.err,'model':model(s.wave),'cont':cont(s.wave), 'OIIIb_br':OIIIb_br(s.wave), 'OIIIb_na':OIIIb_na(s.wave), 'hbeta_br':hbeta_br(s.wave), 'hbeta_na':hbeta_na(s.wave), 'halpha_br':halpha_br(s.wave), 'halpha_na':halpha_na(s.wave)}
 
 df=pd.DataFrame(d)
