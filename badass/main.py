@@ -30,7 +30,7 @@ fit_options = {
     "mask_metal": False,  # interpolate over metal absorption lines for high-z spectra
     "fit_stat": "ML",  # fit statistic; ML = Max. Like. , OLS = Ordinary Least Squares
     "n_basinhop": 25,  # Number of consecutive basinhopping thresholds before solution achieved
-    "test_lines": False,  # Perform line/configuration testing for multiple components
+    "test_lines": True,  # Perform line/configuration testing for multiple components
     "max_like_niter": 50,  # number of maximum likelihood iterations
     "output_pars": False,  # only output free parameters of fit and stop code (diagnostic)
     "cosmology": {"H0": 70.0, "Om0": 0.30},  # Flat Lam-CDM Cosmology
@@ -61,7 +61,7 @@ comp_options = {
     "fit_balmer": True,  # Balmer continuum (<4000 A)
     "fit_losvd": False,  # stellar LOSVD
     "fit_host": False,  # host template
-    "fit_power": True,  # AGN power-law
+    "fit_power": False,  # AGN power-law
     "fit_poly": True,  # Add polynomial continuum component
     "fit_narrow": True,  # narrow lines
     "fit_broad": True,  # broad lines
@@ -73,7 +73,7 @@ comp_options = {
 # Line options for each narrow, broad, and absorption.
 narrow_options = {
     # "amp_plim": (0, 1000),  # line amplitude parameter limits; default (0,)
-    "disp_plim": (0, 1200),  # FWHM, line dispersion parameter limits; default (0,)
+    "disp_plim": (0, 500),  # 0-1200 km/s, FWHM/2.355, line dispersion parameter limits; default (0,)
     "voff_plim": (-1200, 1200),  # line velocity offset parameter limits; default (0,)
     "line_profile": "gaussian",  # line profile shape*
     "n_moments": 4,  # number of higher order Gauss-Hermite moments (if line profile is gauss-hermite, laplace, or uniform)
@@ -81,7 +81,7 @@ narrow_options = {
 
 broad_options = {
     # "amp_plim": (0, 1000),  # line amplitude parameter limits; default (0,)
-    "disp_plim": (1200, 10000),  # FWHM, line dispersion parameter limits; default (0,)
+    "disp_plim": (500, 4250),  # 1200-10000 km/s, FWHM/2.355, line dispersion parameter limits; default (0,)
     "voff_plim": (-10000, 10000),  # line velocity offset parameter limits; default (0,)
     "line_profile": "gaussian",  # line profile shape*
     "n_moments": 4,  # number of higher order Gauss-Hermite moments (if line profile is gauss-hermite, laplace, or uniform)
@@ -244,9 +244,7 @@ host_options = {
 # The default is a simple power law.
 ################################################################################
 
-power_options = {
-    "type": "simple"  # alternatively, "broken" for smoothly-broken power-law
-}
+power_options = {"type": "simple"}  # alternatively, "broken" for smoothly-broken power-law
 
 ########################### Polynomial Continuum Options #######################
 # Options for an additive legendre polynomial or multiplicative polynomial to be
@@ -364,9 +362,7 @@ spec_loc = natsort.natsorted(glob.glob(str(spec_dir.joinpath("2-o*"))))[0]
 ################################################################################
 print(spec_loc)
 
-file = glob.glob(str(pathlib.Path(spec_loc).joinpath("*.fits")))[
-    0
-]  # Get name of FITS spectra file
+file = glob.glob(str(pathlib.Path(spec_loc).joinpath("*.fits")))[0]  # Get name of FITS spectra file
 print(file)
 
 # For non-SDSS spectra, you must explicitly pass vectors for the spectrum (spec),
