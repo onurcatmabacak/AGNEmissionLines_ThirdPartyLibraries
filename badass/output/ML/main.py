@@ -28,7 +28,7 @@ fit_options = {
     "mask_bad_pix": False,  # mask pixels SDSS flagged as 'bad' (careful!)
     "mask_emline": False,  # automatically mask lines for continuum fitting.
     "mask_metal": False,  # interpolate over metal absorption lines for high-z spectra
-    "fit_stat": "OLS",  # fit statistic; RCHI2=Red. Chi Square 1, ML = Max. Like. , OLS = Ordinary Least Squares
+    "fit_stat": "ML",  # fit statistic; RCHI2=Red. Chi Square 1, ML = Max. Like. , OLS = Ordinary Least Squares
     "n_basinhop": 50,  # Number of consecutive basinhopping thresholds before solution achieved
     "reweighting": False,  # If true, BADASS will reweight the noise vector to achieve a reduced chi-squared ~ 1. This is done after the initial basinhopping fit, and applied to any bootstrapped uncertainties and MCMC fitting performed afterward. This does not affect the chi-squared ratio metric used in line and configuration testing, but does effect the amplitude-over-noise and SNR calculations in BADASS.
     "test_lines": False,  # Perform line/configuration testing for multiple components
