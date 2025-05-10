@@ -1,0 +1,31 @@
+# Use official Python 3.8.12 image as the base
+FROM python:3.8.12
+
+# Install system dependencies for building Python packages
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    gcc g++ make flex bison git gfortran git texlive dvipng ghostscript cm-super texlive-latex-extra texlive-fonts-recommended\
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+# Set working directory inside the container
+WORKDIR /app
+
+RUN git clone https://github.com/remingtonsexton/BADASS3.git
+# Copy requirements.txt first (if you have one) to leverage Docker cache
+# COPY 
+COPY my_sdss.fits requirements.txt .
+RUN mkdir -p BADASS3/example_spectra/2-onur && cp my_sdss.fits BADASS3/example_spectra/2-onur/my_sdss.fits
+COPY main.py /app/BADASS3/example_notebooks/
+# Install dependencies
+RUN pip install -r requirements.txt
+RUN pip install --upgrade pip && pip install jupyter
+WORKDIR /app/BADASS3/example_notebooks/
+# WORKDIR /
+
+# Expose port 8888 for Jupyter Notebook
+EXPOSE 8888
+
+# Define the command to run your application
+# Command to run Jupyter Notebook when the container starts
+# CMD ["jupyter", "notebook", "--ip=0.0.0.0", "--allow-root", "--no-browser", "--NotebookApp.token=''"]
+CMD ["sh", "-c", "ls -hl && python main.py > /app/output/fit.log && cp -r /app/BADASS3/example_notebooks/main.py /app/BADASS3/example_spectra/2-onur /app/output" ]
