@@ -1,31 +1,46 @@
-# Use official Python 3.8.12 image as the base
-FROM python:3.8.12
+# Use a specific, stable miniconda tag based on Python 3.8.5
+FROM continuumio/miniconda3:4.9.2
 
-# Install system dependencies for building Python packages
+# Fix Buster apt repositories
+RUN sed -i 's|http://deb.debian.org/debian|http://archive.debian.org/debian|g' /etc/apt/sources.list \
+    && sed -i 's|http://security.debian.org/debian-security|http://archive.debian.org/debian-security|g' /etc/apt/sources.list \
+    && echo 'Acquire::Check-Valid-Until "false";' > /etc/apt/apt.conf.d/99disable-check-valid-until
+
+# 1. Install system dependencies including LaTeX
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    build-essential \
-    gcc g++ make flex bison git gfortran git texlive dvipng ghostscript cm-super texlive-latex-extra texlive-fonts-recommended\
-    && apt-get clean \
-    && rm -rf /var/lib/apt/lists/*
-# Set working directory inside the container
+    build-essential gcc g++ make flex bison git gfortran \
+    texlive texlive-latex-extra cm-super dvipng ghostscript \
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
+
+# 1. Install git (Conda package)
+RUN conda install -y git
+
+# Set a base working directory
 WORKDIR /app
 
-RUN git clone https://github.com/remingtonsexton/BADASS3.git
-# Copy requirements.txt first (if you have one) to leverage Docker cache
-# COPY 
-COPY my_sdss.fits requirements.txt .
-RUN mkdir -p BADASS3/example_spectra/2-onur && cp my_sdss.fits BADASS3/example_spectra/2-onur/my_sdss.fits
-COPY main.py /app/BADASS3/example_notebooks/
-# Install dependencies
-RUN pip install -r requirements.txt
-RUN pip install --upgrade pip && pip install jupyter
-WORKDIR /app/BADASS3/example_notebooks/
-# WORKDIR /
+# Clone the GELATO repository from GitHub
+RUN git clone https://github.com/TheSkyentist/GELATO.git
 
-# Expose port 8888 for Jupyter Notebook
-EXPOSE 8888
+# Set the working directory to the cloned repo
+WORKDIR /app/GELATO
 
-# Define the command to run your application
-# Command to run Jupyter Notebook when the container starts
-# CMD ["jupyter", "notebook", "--ip=0.0.0.0", "--allow-root", "--no-browser", "--NotebookApp.token=''"]
-CMD ["sh", "-c", "ls -hl && python main.py > /app/output/fit.log && cp -r /app/BADASS3/example_notebooks/main.py /app/BADASS3/example_spectra/2-onur /app/output" ]
+# Pin numpy to 1.26.4 to avoid the np.float_ error
+RUN sed -i 's/- numpy/- numpy=1.26.4/' environment.yml
+
+# Create the Conda environment from the .yml file
+RUN conda env create -f environment.yml
+
+# Install the GELATO package itself (pip install .)
+RUN conda run -n gelato pip install .
+
+# Set the environment path to use the 'gelato' env by default
+ENV PATH=/opt/conda/envs/gelato/bin:$PATH
+
+# Ensure Matplotlib uses a non-interactive backend for plots in the container
+ENV MPLBACKEND=Agg
+
+# Set the final working directory to the Example folder
+WORKDIR /app/GELATO/Example
+
+# Run the example script as the default command
+CMD ["python", "../Convenience/runGELATO.py", "ExampleParameters.json", "ExampleObjList.csv"]
