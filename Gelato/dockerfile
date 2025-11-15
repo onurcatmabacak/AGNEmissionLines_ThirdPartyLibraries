@@ -40,7 +40,11 @@ ENV PATH=/opt/conda/envs/gelato/bin:$PATH
 ENV MPLBACKEND=Agg
 
 # Set the final working directory to the Example folder
-WORKDIR /app/GELATO/Example
+RUN mkdir -p /app/input
+COPY my_sdss.fits my_sdss.json /app/input/
+COPY gelato.sh /app/gelato.sh
+# Working directory only for output
+WORKDIR /app
 
 # Run the example script as the default command
-CMD ["python", "../Convenience/runGELATO.py", "ExampleParameters.json", "ExampleObjList.csv"]
+CMD ["sh", "-c", "pwd && ls -hl && bash gelato.sh"]
