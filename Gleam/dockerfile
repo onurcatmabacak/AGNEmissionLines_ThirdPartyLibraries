@@ -1,0 +1,42 @@
+FROM python:3.8-slim
+
+# System dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    tk-dev tcl-dev libagg-dev python3-tk \
+    build-essential gcc g++ make flex bison git gfortran \
+    texlive texlive-latex-base texlive-latex-extra texlive-science \
+    cm-super dvipng ghostscript \
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
+
+# Create app directory
+WORKDIR /app
+
+# Install gleam
+
+RUN pip install --no-cache-dir astro-gleam
+RUN pip install --no-cache-dir --upgrade astropy>=5.2
+# RUN pip install numpy>=1.19.5,<1.27
+RUN pip install --upgrade --force-reinstall matplotlib
+
+# Create a working directory for inputs/outputs
+RUN mkdir -p /app/input
+
+WORKDIR /app/input
+
+# Command to replace the hardcoded 'TkAgg' backend with 'Agg' in the gleam configuration file
+RUN sed -i 's/matplotlib.use("TkAgg")/matplotlib.use("Agg")/' \
+    /usr/local/lib/python3.8/site-packages/gleam/matplotlibparams.py
+
+# # Assuming the plot_gaussian.py file is still the one from the previous fix
+# RUN sed -i '/^\s*with overview as plot_line:$/a \ \ \ \ plt.savefig("/tmp/test_plot.png")' \
+#     /usr/local/lib/python3.8/site-packages/gleam/plot_gaussian.py
+
+# Set environment variable
+ENV MPLBACKEND=Agg
+
+COPY meta.dat *.fits gleam.sh gleamconfig.yaml /app/input
+RUN mkdir -p /app/output/
+RUN chmod 777 /app/output
+RUN mkdir -p /app/output/plots
+# Default command shows help
+CMD ["sh", "-c", "bash gleam.sh && ls -hl /app && ls -hl /app/*"]
