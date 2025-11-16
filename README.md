@@ -9,7 +9,11 @@ https://github.com/legolason/PyQSOFit
 
 https://github.com/jtschindler/sculptor
 
-There are 4 different codes to analyze the AGN spectrum of IeRASS J053448.4+212608.
+https://github.com/TheSkyentist/GELATO
+
+https://github.com/multiwavelength/gleam
+
+There are 6 different codes to analyze the AGN spectrum of IeRASS J053448.4+212608.
 
 SCULPTOR:
 
@@ -26,3 +30,11 @@ The analysis code (main.py) is run in a docker container. The container saves al
 BADASS3:
 
 Using the same logic to run Fantasy AGN code, we utilize a docker container that runs main.py and saves the output in output folder. To analyze please run bash run.sh. 
+
+GELATO
+
+Same logic, just run "bash run.sh"
+
+GLEAM
+
+Same logic, just run "bash run.sh"
