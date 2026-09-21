@@ -20,6 +20,14 @@ from IPython.display import display, HTML
 display(HTML("<style>.container { width:85% !important; }</style>"))
 
 
+def _env_int(name, default):
+    return int(os.environ.get(name, default))
+
+
+def _env_bool(name, default):
+    return os.environ.get(name, str(default)).strip().lower() in ("1", "true", "yes", "on")
+
+
 ################################## Fit Options #################################
 # Fitting Parameters
 fit_options = {
@@ -29,7 +37,7 @@ fit_options = {
     "mask_emline": False,  # automatically mask lines for continuum fitting.
     "mask_metal": False,  # interpolate over metal absorption lines for high-z spectra
     "fit_stat": "OLS",  # fit statistic; RCHI2=Red. Chi Square 1, ML = Max. Like. , OLS = Ordinary Least Squares
-    "n_basinhop": 50,  # Number of consecutive basinhopping thresholds before solution achieved
+    "n_basinhop": _env_int("BADASS_NBASINHOP", 50),  # Number of consecutive basinhopping thresholds before solution achieved
     "reweighting": False,  # If true, BADASS will reweight the noise vector to achieve a reduced chi-squared ~ 1. This is done after the initial basinhopping fit, and applied to any bootstrapped uncertainties and MCMC fitting performed afterward. This does not affect the chi-squared ratio metric used in line and configuration testing, but does effect the amplitude-over-noise and SNR calculations in BADASS.
     "test_lines": False,  # Perform line/configuration testing for multiple components
     "max_like_niter": 100,  # number of maximum likelihood iterations
@@ -40,18 +48,18 @@ fit_options = {
 
 ########################### MCMC algorithm parameters ##########################
 mcmc_options = {
-    "mcmc_fit": True,  # Perform robust fitting using emcee
-    "nwalkers": 1000,  # Number of emcee walkers; min = 2 x N_parameters
+    "mcmc_fit": _env_bool("BADASS_MCMC", True),  # Perform robust fitting using emcee
+    "nwalkers": _env_int("BADASS_NWALKERS", 1000),  # Number of emcee walkers; min = 2 x N_parameters
     "auto_stop": False,  # Automatic stop using autocorrelation analysis
     "conv_type": "all",  # "median", "mean", "all", or (tuple) of parameters
-    "min_samp": 1000,  # min number of iterations for sampling post-convergence
+    "min_samp": _env_int("BADASS_MIN_SAMP", 1000),  # min number of iterations for sampling post-convergence
     "ncor_times": 10.0,  # number of autocorrelation times for convergence
     "autocorr_tol": 10.0,  # percent tolerance between checking autocorr. times
     "write_iter": 100,  # write/check autocorrelation times interval
     "write_thresh": 100,  # iteration to start writing/checking parameters
-    "burn_in": 1500,  # burn-in if max_iter is reached
-    "min_iter": 1000,  # min number of iterations before stopping
-    "max_iter": 2500,  # max number of MCMC iterations
+    "burn_in": _env_int("BADASS_BURN_IN", 1500),  # burn-in if max_iter is reached
+    "min_iter": _env_int("BADASS_MIN_ITER", 1000),  # min number of iterations before stopping
+    "max_iter": _env_int("BADASS_MAX_ITER", 2500),  # max number of MCMC iterations
 }
 ################################################################################
 
@@ -74,17 +82,17 @@ comp_options = {
 # Line options for each narrow, broad, and absorption.
 # gaussian, lorentzian, voigt, gauss-hermite, laplace, or uniform
 narrow_options = {
-    "amp_plim": (0, 1000),  # line amplitude parameter limits; default (0,)
-    "disp_plim": (0, 500),  # 0-1200 km/s, FWHM, line dispersion parameter limits; default (0,)
-    "voff_plim": (-500, 500),  # line velocity offset parameter limits; default (0,)
+    "amp_plim": (0, 50),  # line amplitude (1e-17 units); was (0,1000) -> narrows were pinned at 0
+    "disp_plim": (100, 2500),  # km/s; was (0,500) which is BELOW the ~300-450 km/s instrument profile
+    "voff_plim": (-1000, 1000),  # line velocity offset parameter limits; default (0,)
     "line_profile": "gaussian",  # line profile shape*
     "n_moments": 4,  # number of higher order Gauss-Hermite moments (if line profile is gauss-hermite, laplace, or uniform)
 }
 
 broad_options = {
-    "amp_plim": (0, 1000),  # line amplitude parameter limits; default (0,)
-    "disp_plim": (500, 4000),  # 1200-10000 km/s, FWHM, line dispersion parameter limits; default (0,)
-    "voff_plim": (-1000, 1000),  # line velocity offset parameter limits; default (0,)
+    "amp_plim": (0, 50),  # line amplitude parameter limits
+    "disp_plim": (600, 6000),  # 600-6000 km/s -> wings of Halpha/Hbeta; was (500,4000)
+    "voff_plim": (-1500, 1500),  # allowed blueshifted wing components
     "line_profile": "gaussian",  # line profile shape*
     "n_moments": 4,  # number of higher order Gauss-Hermite moments (if line profile is gauss-hermite, laplace, or uniform)
 }
@@ -294,7 +302,7 @@ opt_feii_options = {
     "opt_amp_const": {"bool": False, "br_opt_feii_val": 1.0, "na_opt_feii_val": 1.0},
     "opt_disp_const": {
         "bool": False,
-        "br_opt_feii_val": 3000.0,
+        "br_opt_feii_val": 800.0,  # initial guess (was 3000) -> previous run hit amp/disp boundaries
         "na_opt_feii_val": 500.0,
     },
     "opt_voff_const": {"bool": False, "br_opt_feii_val": 0.0, "na_opt_feii_val": 0.0},
@@ -396,7 +404,7 @@ print(z)
 flux_norm = 1.0e-17
 spec = hdulist[1].data["flux"] / flux_norm
 wave = 10 ** hdulist[1].data["loglam"]
-err = 0.1 * spec
+err = 0.05 * spec  # empirical per-pixel noise (~5%; the spectrum is smoothed -> 10% is too large)
 # Plot
 fig = plt.figure(figsize=(22, 6))
 ax1 = fig.add_subplot(1, 1, 1)

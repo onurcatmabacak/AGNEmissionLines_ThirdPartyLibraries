@@ -254,10 +254,12 @@ Table(line_priors)
 
 path_out = "./"
 
-# Requried
+# Required
 wavelength, flux, error, z = load_spectrum('spectrum.fits')
 error = 0.02 * flux
-z = 0.348
+# Per-object redshift: take it from the FITS header (the original analysis had
+# this hardcoded to 0.348 for its single target). PYQSOFIT_Z overrides it.
+z = float(os.environ.get("PYQSOFIT_Z", z))
 print(wavelength, flux, error, z)
 
 # # Optional

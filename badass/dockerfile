@@ -1,6 +1,12 @@
 # Use official Python 3.8.12 image as the base
 FROM python:3.8.12
 
+# Debian bullseye is EOL: point apt at the archive (bullseye-security is not
+# archived, so it is dropped -- only build-time tooling comes from here).
+RUN printf 'deb http://archive.debian.org/debian bullseye main contrib non-free\ndeb http://archive.debian.org/debian bullseye-updates main contrib non-free\n' > /etc/apt/sources.list \
+    && rm -f /etc/apt/sources.list.d/*.list /etc/apt/sources.list.d/*.sources \
+    && echo 'Acquire::Check-Valid-Until "false";' > /etc/apt/apt.conf.d/99disable-check-valid-until
+
 # Install system dependencies for building Python packages
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \

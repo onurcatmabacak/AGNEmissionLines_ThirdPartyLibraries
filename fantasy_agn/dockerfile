@@ -1,5 +1,6 @@
-# Use official Python 3.12.3 slim image as the base
-FROM python:3.11
+# Use official Python 3.9 image (fantasy_agn 0.7.3 + pinned pandas 1.3.4 and
+# matplotlib 3.4.3 only ship manylinux wheels for CPython <= 3.9)
+FROM python:3.9
 
 # Install system dependencies for building Python packages
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -16,8 +17,12 @@ WORKDIR /app
 # Install dependencies
 # RUN pip install --no-cache-dir -r requirements.txt
 
-RUN pip install --upgrade pip
-RUN pip install fantasy_agn
+RUN pip install --upgrade pip wheel
+RUN pip install "fantasy_agn==0.7.3"
+# sherpa >=4.16 moved SherpaFloat from sherpa.utils to sherpa.data; keep
+# fantasy_agn importable (no-op on older sherpa where the pattern is absent).
+RUN sed -i 's/^from sherpa.utils import SherpaFloat, sao_fcmp$/from sherpa.utils import sao_fcmp\nfrom sherpa.data import SherpaFloat/' \
+    /usr/local/lib/python3.9/site-packages/fantasy_agn/models.py
 
 # Copy the rest of your code
 COPY ./test/my_sdss.fits ./main.py .

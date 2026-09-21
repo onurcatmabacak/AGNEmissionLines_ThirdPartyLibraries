@@ -38,18 +38,18 @@ s.crop(2900,8000)
 automatic_path(s)
 create_input_folder(xmin=3000,xmax=7500, path_to_folder='output/')
 
-ampl = 5
+ampl = 3
 min_ampl = 0
-max_ampl = 500
-fwhm_br = 1000
+max_ampl = 50
+fwhm_br = 1500
 fwhm_na = 500
-min_fwhm_br = 1200
-min_fwhm_na = 0
-max_fwhm_br = 10000
-max_fwhm_na = 1200
+min_fwhm_br = 700       # was 1200 -> broad Ha wing (observed FWHM ~1400) was being pushed to bounds
+min_fwhm_na = 100
+max_fwhm_br = 6000
+max_fwhm_na = 1500
 offset = 0
-min_offset = 0
-max_offset = 0
+min_offset = -1500      # allow blue-shifted wing components
+max_offset = 500
 # defines fitting model
 # cont = continuum(s,min_refer=5350, refer=5550, max_refer=5650,min_index1=-3.7, max_index1=1,max_index2=3)
 cont = continuum(s)
@@ -66,7 +66,7 @@ OIIIb_na = create_line(name="OIIIb5007_na",pos=5007, ampl=ampl, min_ampl=min_amp
 halpha_na = create_line(name="HAlpha6551_na",pos=6551, ampl=ampl, min_ampl=min_ampl, max_ampl=max_ampl, fwhm=fwhm_na, min_fwhm=min_fwhm_na, max_fwhm=max_fwhm_na, offset=offset, min_offset=min_offset, max_offset=max_offset)
 
 # fe=create_feii_model(max_fwhm=6000)
-model = cont + OIIIb_br + OIIIb_na + hbeta_br + halpha_br + hbeta_na + halpha_na
+model = cont + OIIIb_br + OIIIb_na + hbeta_br + halpha_br + hbeta_na + halpha_na + create_feii_model(fwhm=1000, min_fwhm=300, max_fwhm=6000, offset=0, min_offset=-800, max_offset=800)
 
 # fits a spectrum with the above model, iterate 2 times
 s.fit(model, ntrial=10)

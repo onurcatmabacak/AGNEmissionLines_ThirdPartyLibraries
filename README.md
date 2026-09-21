@@ -38,3 +38,23 @@ Same logic, just run "bash run.sh"
 GLEAM
 
 Same logic, just run "bash run.sh"
+---
+
+## Unified pipeline
+
+A single pipeline now drives all six tools over many spectra:
+
+```bash
+cp ~/agn_data/efeds/*.fits input/   # or: bash run_pipeline.sh --fetch 10
+bash run_pipeline.sh                # adapts, runs everything, collects results
+```
+
+It adapts each raw FITS to every tool's native layout (`pipeline/prepare_inputs.py`),
+runs the tools in parallel (Docker + local), and collects comparable outputs.
+Tidy layout: `input/` (raw) → `runs/<object>/{inputs,outputs}/<tool>` →
+`results/<tool>/<object>/` with `results/index.csv`.  See **`pipeline/README.md`**
+for the dataset, input-format matrix, Docker notes and configuration.  The test
+dataset lives in the global folder `~/agn_data/` (SDSS DR18 eFEDS).
+
+One-time setup: install Docker, add yourself to the `docker` group, and build the
+images (`bash pipeline/build_images.sh`); `run_pipeline.sh` handles the rest.
