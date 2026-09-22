@@ -3,9 +3,10 @@
 Fit AGN emission lines with **six independent codes** on the same spectra, then
 compare their results in one report.
 
-Originally written to confirm the results of the `EmissionLineAnalysis` repo on
-the AGN spectrum of **IeRASS J053448.4+212608**; it now runs a whole dataset end
-to end.
+Started from an `EmissionLineAnalysis` cross-check on a single AGN spectrum and
+now runs a whole dataset end to end. No proprietary/single-object data is
+included: the pipeline works from the public SDSS DR18 eFEDS dataset (or any
+FITS you provide).
 
 Codes used:
 
@@ -89,7 +90,7 @@ stay inside the observed window):
 The tools disagree about how a spectrum is stored. `pipeline/prepare_inputs.py`
 reads the raw eFEDS (`COADD` HDU, redshift in `SPALL`) or classic SDSS layout and
 writes each tool's expected file. Flux conventions were reverse-engineered from
-the reference FITS the original single-object analysis produced.
+the FITS layout each tool expects (matching its reference/example products).
 
 | tool | prepared file | flux unit | wavelength | notes |
 |------|---------------|-----------|------------|-------|
@@ -113,11 +114,11 @@ the reference FITS the original single-object analysis produced.
 | GELATO | Docker image `gelato` |
 | GLEAM | Docker image `gleam` |
 
-Docker images bake in each tool's code + dependencies plus a placeholder spectrum;
-the prepared per-object input is **mounted over** the placeholder at run time, so
-an image is built once and reused across the whole dataset. Docker tools run
-**detached** (`docker run -d --name …`) and are awaited under a timeout, then
-killed and removed if they hang.
+Docker images bake in each tool's code + dependencies plus a **synthetic
+placeholder spectrum** (no real data is shipped); the prepared per-object input is
+**mounted over** the placeholder at run time, so an image is built once and reused
+across the whole dataset. Docker tools run **detached** (`docker run -d --name …`)
+and are awaited under a timeout, then killed and removed if they hang.
 
 ### Build fixes baked into the image definitions
 
@@ -125,13 +126,14 @@ killed and removed if they hang.
 - **fantasy_agn** — uses `python:3.9` + `fantasy_agn==0.7.3` (its pinned
   pandas 1.3.4 / matplotlib 3.4.3 only ship cp39 wheels) and patches the
   `SherpaFloat` import that sherpa ≥ 4.16 moved.
-- **PyQSOFit** — its `main.py` had `z = 0.348` hardcoded for the original target;
+- **PyQSOFit** — its `main.py` had a hardcoded redshift for its original target;
   it now reads the per-object redshift from the FITS header (`PYQSOFIT_Z`
   overrides). The venv must keep `numpy==1.26.4` / `scipy==1.15.1` (PyQSOFit
   2.1.6 is not numpy-2 clean), and it is imported from `pyqsofit/PyQSOFit/src`
   because the repo's `pyqsofit/` folder shadows the installed package.
 - **GLEAM** — the `wl`/`flux` columns must carry FITS `TUNIT` or GLEAM crashes
-  (`NoneType.to_string`); `wdisp`/`stdev` are constant, as in the reference file.
+  (`NoneType.to_string`); `wdisp`/`stdev` are constant, matching GLEAM's reference
+  file layout.
 
 Rebuild any missing image with `bash pipeline/build_images.sh [tool ...]`.
 

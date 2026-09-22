@@ -34,7 +34,10 @@ RUN sed -i 's/matplotlib.use("TkAgg")/matplotlib.use("Agg")/' \
 # Set environment variable
 ENV MPLBACKEND=Agg
 
-COPY meta.dat *.fits gleam.sh gleamconfig.yaml /app/input
+COPY meta.dat line_table.fits Sky_bands.fits gleam.sh gleamconfig.yaml /app/input
+# Synthetic placeholder spectrum only (the pipeline mounts the real per-object
+# spectrum, meta.dat and tables over these paths at run time).
+RUN python -c "import numpy as np; from astropy.io import fits; w=np.linspace(3600.0, 10400.0, 1000); c=[fits.Column(name='flux', format='E', unit='erg / (s cm2 Angstrom)', array=np.ones(1000, dtype='f4')), fits.Column(name='wl', format='E', unit='Angstrom', array=w.astype('f4')), fits.Column(name='stdev', format='E', array=np.ones(1000, dtype='f4')), fits.Column(name='wdisp', format='E', array=np.full(1000, 1e-4, dtype='f4'))]; fits.HDUList([fits.PrimaryHDU(), fits.BinTableHDU.from_columns(c), fits.BinTableHDU.from_columns([fits.Column(name='redshift', format='E', array=np.array([0.0], dtype='f4'))])]).writeto('/app/input/spec1d.sdss.sdss.fiber1.1.fits', overwrite=True)"
 RUN mkdir -p /app/output/
 RUN chmod 777 /app/output
 RUN mkdir -p /app/output/plots

@@ -43,8 +43,8 @@ stay inside the 3600–10400 Å window):
 
 ## Input format matrix (`pipeline/prepare_inputs.py`)
 
-Flux conventions were reverse-engineered from the reference FITS files the
-original single-object analysis produced, so each tool behaves exactly as before.
+Flux conventions were reverse-engineered from the FITS layout each tool expects
+(matching its reference/example products), so each tool behaves as intended.
 
 | tool | prepared file | flux unit | wavelength | notes |
 |------|---------------|-----------|------------|-------|
@@ -70,7 +70,8 @@ or a classic SDSS `spPlate`-style FITS — the reader sniffs both.
 | GLEAM | Docker | `gleam` image |
 
 Images are built once (bake in code + deps); the prepared per-object input is
-**mounted over** a placeholder at run time, so one image serves the whole dataset:
+**mounted over a synthetic placeholder** at run time, so one image serves the
+whole dataset and **no real/proprietary data is shipped in the images**:
 
 ```bash
 bash pipeline/build_images.sh            # builds any missing images
@@ -102,7 +103,7 @@ If your shell lacks the `docker` group, `run_pipeline.sh` re-execs itself throug
   `archive.debian.org`; `fantasy_agn` uses `python:3.9` + `fantasy_agn==0.7.3`
   (the pinned pandas 1.3.4 / matplotlib 3.4.3 only ship cp39 wheels) and patches
   the `SherpaFloat` import moved by sherpa ≥ 4.16.
-- **PyQSOFit redshift.** `main.py` had `z = 0.348` hardcoded for the original
+- **PyQSOFit redshift.** `main.py` had a redshift hardcoded for its original
   target; it now takes the per-object redshift from the FITS header
   (`PYQSOFIT_Z` overrides). The venv must keep `numpy==1.26.4` / `scipy==1.15.1`
   (PyQSOFit 2.1.6 is not numpy-2 clean) — matching `requirements.txt`.
@@ -113,7 +114,8 @@ If your shell lacks the `docker` group, `run_pipeline.sh` re-execs itself throug
   object. The pipeline defaults to OLS/basinhopping (`BADASS_MCMC=0`); the options
   are env-overridable in `badass/main.py` without changing its defaults.
 - **GLEAM units.** The `wl`/`flux` columns must carry TUNIT or GLEAM crashes
-  (`NoneType.to_string`); `wdisp`/`stdev` are constant as in the reference file.
+  (`NoneType.to_string`); `wdisp`/`stdev` are constant, matching GLEAM's reference
+  file layout.
 - **GLEAM tabular output.** GLEAM already builds a per-line results table; the
   image's `gleam.sh` moves `linefits*.fits` (flux, FWHM, EWrest, detected, …) into
   the mounted `/app/output`, and `score_fits.py` reads it for the line-flux matrix
@@ -130,7 +132,7 @@ scorer builds a unified line-flux table from all of them.
 ## Status
 
 - [x] global dataset + reproducible eFEDS fetcher
-- [x] adapters for all six tools (validated against reference FITS)
+- [x] adapters for all six tools (validated against each tool's expected FITS layout)
 - [x] single root `run_pipeline.sh` with docker auto-group + bounded parallelism
 - [x] four Docker images built; all five auto-run tools verified end-to-end
 - [x] unified cross-tool line-flux comparison table (`score_fits.py`)

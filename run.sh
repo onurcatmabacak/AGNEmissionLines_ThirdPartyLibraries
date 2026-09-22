@@ -1,7 +1,6 @@
-#!/bin/bash
-sudo docker build --network=host -t my-python-app .
-sudo docker run --rm -v "$(pwd)/output:/app/output" my-python-app
-# sudo docker-compose down
-# sudo docker-compose up --build -d
-python3 log_parser_ultra.py
-sed -i 's/_/-/g' table_output.tex
+#!/usr/bin/env bash
+# Deprecated wrapper. The original single-app docker build/run and the
+# log_parser/LaTeX post-processing were replaced by the unified pipeline.
+# Everything (adapt -> fit with 5 tools -> score -> report) is driven by
+# run_pipeline.sh, so this just forwards to it.
+exec bash "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/run_pipeline.sh" "$@"

@@ -25,7 +25,10 @@ RUN sed -i 's/^from sherpa.utils import SherpaFloat, sao_fcmp$/from sherpa.utils
     /usr/local/lib/python3.9/site-packages/fantasy_agn/models.py
 
 # Copy the rest of your code
-COPY ./test/my_sdss.fits ./main.py .
+COPY ./main.py .
+# Synthetic placeholder spectrum only. The pipeline mounts the real per-object
+# spectrum over this path at run time, so no proprietary data is shipped.
+RUN python -c "import numpy as np; from astropy.io import fits; w=np.logspace(np.log10(3600.0), np.log10(10400.0), 1000); c=[fits.Column(name='flux', format='E', array=np.ones(1000, dtype='f4')), fits.Column(name='loglam', format='E', array=np.log10(w).astype('f4')), fits.Column(name='ivar', format='E', array=np.ones(1000, dtype='f4')), fits.Column(name='wdisp', format='E', array=np.full(1000, 1e-4, dtype='f4'))]; fits.HDUList([fits.PrimaryHDU(), fits.BinTableHDU.from_columns(c), fits.BinTableHDU.from_columns([fits.Column(name='z', format='E', array=np.array([0.0], dtype='f4'))])]).writeto('my_sdss.fits', overwrite=True)"
 
 # Define the command to run your application
 # CMD ["sh", "-c", "ls -hl && python main.py"]
