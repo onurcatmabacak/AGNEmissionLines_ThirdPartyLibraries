@@ -40,7 +40,7 @@ fit_options = {
     "n_basinhop": _env_int("BADASS_NBASINHOP", 50),  # Number of consecutive basinhopping thresholds before solution achieved
     "reweighting": False,  # If true, BADASS will reweight the noise vector to achieve a reduced chi-squared ~ 1. This is done after the initial basinhopping fit, and applied to any bootstrapped uncertainties and MCMC fitting performed afterward. This does not affect the chi-squared ratio metric used in line and configuration testing, but does effect the amplitude-over-noise and SNR calculations in BADASS.
     "test_lines": False,  # Perform line/configuration testing for multiple components
-    "max_like_niter": _env_int("BADASS_MAX_LIKE_NITER", 100),  # number of maximum likelihood iterations
+    "max_like_niter": 100,  # number of maximum likelihood iterations
     "output_pars": False,  # only output free parameters of fit and stop code (diagnostic)
     "cosmology": {"H0": 70.0, "Om0": 0.30},  # Flat Lam-CDM Cosmology
 }

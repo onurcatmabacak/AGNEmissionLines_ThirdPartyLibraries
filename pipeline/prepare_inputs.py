@@ -83,6 +83,11 @@ def read_spectrum(path: Path) -> dict:
         if ivar is None:
             stdev = _col(data, "STDEV", "stdev")
             ivar = 1.0 / np.square(stdev) if stdev is not None else np.ones_like(flux)
+        # Sanitize: non-positive inverse variance makes some tools' noise arrays
+        # negative (BADASS3: "scale < 0"), so replace it with the median ivar.
+        ivar = np.asarray(ivar, dtype=np.float64)
+        good = np.isfinite(ivar) & (ivar > 0)
+        ivar = np.where(good, ivar, np.median(ivar[good]) if good.any() else 1.0)
         wdisp = _col(data, "WDISP", "wdisp")
         if wdisp is None:
             wdisp = np.full_like(flux, np.median(np.diff(wave)))
@@ -248,17 +253,20 @@ def gelato_json(template: Path, spec: dict) -> str:
 GLEAM_STATIC = ("line_table.fits", "Sky_bands.fits", "gleamconfig.yaml")
 
 
-def stage_gleam_static(obj_dir: Path, source_dir: Path) -> None:
+def stage_gleam_static(obj_dir: Path, source_dir: Path, config_override: Path | None = None) -> None:
     """Copy GLEAM's static config/line tables next to the prepared spectrum."""
     dest = obj_dir / "inputs" / "gleam"
     for name in GLEAM_STATIC:
         src = source_dir / name
         if src.exists():
             shutil.copy2(src, dest / name)
+    if config_override is not None and config_override.exists():
+        shutil.copy2(config_override, dest / "gleamconfig.yaml")
 
 
 def prepare_one(src: Path, runs: Path, *, fwhm: float = 2.5, ebv: float = 0.0,
-                templates: dict | None = None, gleam_static: Path | None = None) -> dict:
+                templates: dict | None = None, gleam_static: Path | None = None,
+                gleam_config: Path | None = None) -> dict:
     """Prepare all tool inputs for a single raw spectrum; return metadata.
 
     Layout created::
@@ -288,7 +296,7 @@ def prepare_one(src: Path, runs: Path, *, fwhm: float = 2.5, ebv: float = 0.0,
     # gleam needs the object redshift in meta.dat next to the spectrum
     (obj_dir / "inputs" / "gleam" / "meta.dat").write_text(gleam_meta(spec))
     if gleam_static is not None:
-        stage_gleam_static(obj_dir, gleam_static)
+        stage_gleam_static(obj_dir, gleam_static, config_override=gleam_config)
 
     # gelato needs its JSON template copied next to the FITS
     if templates and templates.get("gelato_json"):
@@ -332,6 +340,8 @@ def main(argv=None) -> int:
                    help="GELATO JSON template to copy per object")
     p.add_argument("--gleam-static", type=Path, default=Path("Gleam"),
                    help="directory holding GLEAM's line_table.fits/Sky_bands.fits/gleamconfig.yaml")
+    p.add_argument("--gleam-config", type=Path, default=None,
+                   help="override gleamconfig.yaml (for config variants)")
     args = p.parse_args(argv)
 
     files = discover(args.fits)
@@ -345,7 +355,7 @@ def main(argv=None) -> int:
     gleam_static = args.gleam_static if args.gleam_static.exists() else None
     for src in files:
         m = prepare_one(src, args.out, fwhm=args.fwhm, ebv=args.ebv, templates=templates,
-                        gleam_static=gleam_static)
+                        gleam_static=gleam_static, gleam_config=args.gleam_config)
         print(f"[prepared] {m['tag']}  z={m['z']:.4f}  npix={m['n_pix']}  -> {args.out / m['tag']}")
     print(f"Prepared {len(files)} object(s) under {args.out}")
     return 0

@@ -94,6 +94,7 @@ If your shell lacks the `docker` group, `run_pipeline.sh` re-execs itself throug
 | `BUILD` / `CLEAN` | `1` / `0` | build missing images / wipe `runs` |
 | `BADASS_MCMC` | `0` | `1` restores the full emcee uncertainty run |
 | `BADASS_NBASINHOP` | `5` | BADASS basinhopping threshold |
+| `BADASS_MAX_LIKE_NITER` | `100` | BADASS MC-bootstrap iterations (`0` = fastest; also avoids an object-specific `scale<0` crash) |
 
 ## Tool-specific notes (why it works)
 
@@ -113,22 +114,84 @@ If your shell lacks the `docker` group, `run_pipeline.sh` re-execs itself throug
   are env-overridable in `badass/main.py` without changing its defaults.
 - **GLEAM units.** The `wl`/`flux` columns must carry TUNIT or GLEAM crashes
   (`NoneType.to_string`); `wdisp`/`stdev` are constant as in the reference file.
+- **GLEAM tabular output.** GLEAM already builds a per-line results table; the
+  image's `gleam.sh` moves `linefits*.fits` (flux, FWHM, EWrest, detected, …) into
+  the mounted `/app/output`, and `score_fits.py` reads it for the line-flux matrix
+  (FWHM is converted from Angstrom to km/s).
 
 ## Results and limitations
 
 `results/` holds every product copied per tool. Machine-readable products exist
 for PyQSOFit (`qsopar.fits`, `output.fits`), fantasy_agn (`*_model.csv`,
-`*_pars.json`), GELATO (`my_sdss-results.fits`), and BADASS3 (`fit.log` parameter
-table + `spectrum.pdf`). **GLEAM currently emits only PNG plots**, so a unified
-line-flux table requires either enabling GLEAM's tabular output or parsing its
-plots — a pending step (see TODO).
+`*_pars.json`), GELATO (`my_sdss-results.fits`), BADASS3
+(`best_model_components.fits` + `fit.log`), and GLEAM (`linefits*.fits`), so the
+scorer builds a unified line-flux table from all of them.
 
 ## Status
 
 - [x] global dataset + reproducible eFEDS fetcher
 - [x] adapters for all six tools (validated against reference FITS)
 - [x] single root `run_pipeline.sh` with docker auto-group + bounded parallelism
-- [x] four Docker images built; all five auto-run tools verified end-to-end on one
-      eFEDS object (z = 0.175)
-- [ ] unified cross-tool line-flux comparison table
-- [ ] SCULPTOR automation (GUI) and GLEAM tabular output
+- [x] four Docker images built; all five auto-run tools verified end-to-end
+- [x] unified cross-tool line-flux comparison table (`score_fits.py`)
+- [x] GLEAM tabular output (`linefits*.fits`) used by the scorer
+- [x] 10-object eFEDS run + report (50 tool runs)
+- [ ] SCULPTOR automation (GUI)
+
+## Supertool: one command, five tools, one report
+
+`bash run_pipeline.sh` now runs the whole chain automatically:
+
+```
+input/*.fits
+   └─ adapt (prepare_inputs.py)
+        └─ fit with 5 tools (parallel, Docker + local)
+             └─ collect_results.py   → results/<tool>/<object>/ + index.csv
+                  └─ score_fits.py    → results/scores.csv + results/lines.csv
+                       └─ make_report.py → results/report.html + results/report.md
+```
+
+The report has, per input object: a reduced-χ² table for every tool (with the
+kind of statistic), a line-by-line flux matrix across tools, and links to every
+tool's products. `bash run_pipeline.sh --report-only` regenerates the report from
+existing runs without refitting.
+
+### Reduced χ² (the ranking metric)
+
+| tool | source | kind |
+|------|--------|------|
+| PyQSOFit | `output.fits` `1/2_line_red_chi2` | per-complex, reported |
+| BADASS3 | `best_model_components.fits` (DATA vs MODEL) | line-window, computed |
+| fantasy_agn | `my_sdss_model.csv` | line-window, computed |
+| GLEAM | `linefits*.fits` (fluxes/EW) + per-line `reduced chi-square` in the log | mean, reported |
+| GELATO | — | n/a (its saved model/chi² are numerically degenerate) |
+
+Because the statistic differs per tool, cross-tool χ² is a guide; the line-flux
+matrix is the like-for-like comparison. Fluxes are integrated per kinematic
+component (broad / narrow / outflow) and normalised to 1e-17 erg s⁻¹ cm⁻².
+
+## Tuning grid
+
+Per-tool config variants live in `configs/<tool>/<variant>/` (see
+`configs/README.md`). Run them side by side and rank by χ²:
+
+```bash
+bash run_pipeline.sh --tools pyqsofit --variant pyqsofit=err05 --label pq_err05
+bash run_pipeline.sh --tools pyqsofit --variant pyqsofit=err02 --label pq_err02
+.venv/bin/python pipeline/compare_variants.py --results results
+# -> results/variants.html / variants.md
+```
+
+Demonstrated on object `04592939295`: raising PyQSOFit's error floor from 2 % to
+5 % cut the reduced χ² from **5.07 to 0.85**.
+
+### Robustness notes
+
+- Docker tools run **detached** with a name, then `docker wait` under a timeout;
+  a hung container is killed and removed (a foreground `docker run` would linger,
+  and `docker wait` needs `timeout -k` because it ignores SIGTERM).
+- `FANTASY_TIMEOUT` (default 900 s) bounds fantasy_agn, which can hang after
+  writing its products; if its key product exists when the timeout fires, the run
+  is kept.
+- Container names include the run label and PID so variant sweeps can run in
+  parallel.

@@ -21,4 +21,10 @@ gleam --config /app/input/gleamconfig.yaml --path /app/input/ --spectra spec1d.s
 # --- Diagnostics: Check the installed NumPy version (Keep this for debugging) ---
 python3 -c "import matplotlib; print(f'Matplotlib Version: {matplotlib.__version__}')"
 # -------------------------------------------------------------------------------
-mv /*.png /app/output
+# GLEAM writes its per-line results table (linefits*.fits) and plots relative to
+# the current directory; move them into the mounted /app/output so they survive.
+mv /linefits*.fits /app/output/ 2>/dev/null || true
+mv /app/input/linefits*.fits /app/output/ 2>/dev/null || true
+mv /*.png /app/output/ 2>/dev/null || true
+mv /app/input/*.png /app/output/ 2>/dev/null || true
+ls -l /app/output
