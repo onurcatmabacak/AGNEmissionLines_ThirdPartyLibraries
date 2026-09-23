@@ -1,0 +1,465 @@
+import glob
+import time
+import natsort
+from IPython.display import clear_output
+import os
+import sys
+import psutil
+import pathlib
+import natsort
+
+# Import BADASS here
+BADASS_DIR = pathlib.Path(os.getcwd()).resolve().parent
+sys.path.insert(1, str(BADASS_DIR))
+import badass as badass
+import badass_check_input
+from astropy.io import fits
+import matplotlib.pyplot as plt
+from IPython.display import display, HTML
+
+display(HTML("<style>.container { width:85% !important; }</style>"))
+
+
+def _env_int(name, default):
+    return int(os.environ.get(name, default))
+
+
+def _env_bool(name, default):
+    return os.environ.get(name, str(default)).strip().lower() in ("1", "true", "yes", "on")
+
+
+################################## Fit Options #################################
+# Fitting Parameters
+fit_options = {
+    "fit_reg": (2900, 8000),  # Fitting region; Note: Indo-US Library=(3460,9464)
+    "good_thresh": 0.0,  # percentage of "good" pixels required in fig_reg for fit.
+    "mask_bad_pix": False,  # mask pixels SDSS flagged as 'bad' (careful!)
+    "mask_emline": False,  # automatically mask lines for continuum fitting.
+    "mask_metal": False,  # interpolate over metal absorption lines for high-z spectra
+    "fit_stat": "OLS",  # fit statistic; RCHI2=Red. Chi Square 1, ML = Max. Like. , OLS = Ordinary Least Squares
+    "n_basinhop": _env_int("BADASS_NBASINHOP", 50),  # Number of consecutive basinhopping thresholds before solution achieved
+    "reweighting": False,  # If true, BADASS will reweight the noise vector to achieve a reduced chi-squared ~ 1. This is done after the initial basinhopping fit, and applied to any bootstrapped uncertainties and MCMC fitting performed afterward. This does not affect the chi-squared ratio metric used in line and configuration testing, but does effect the amplitude-over-noise and SNR calculations in BADASS.
+    "test_lines": False,  # Perform line/configuration testing for multiple components
+    "max_like_niter": 100,  # number of maximum likelihood iterations
+    "output_pars": False,  # only output free parameters of fit and stop code (diagnostic)
+    "cosmology": {"H0": 70.0, "Om0": 0.30},  # Flat Lam-CDM Cosmology
+}
+################################################################################
+
+########################### MCMC algorithm parameters ##########################
+mcmc_options = {
+    "mcmc_fit": _env_bool("BADASS_MCMC", True),  # Perform robust fitting using emcee
+    "nwalkers": _env_int("BADASS_NWALKERS", 1000),  # Number of emcee walkers; min = 2 x N_parameters
+    "auto_stop": False,  # Automatic stop using autocorrelation analysis
+    "conv_type": "all",  # "median", "mean", "all", or (tuple) of parameters
+    "min_samp": _env_int("BADASS_MIN_SAMP", 1000),  # min number of iterations for sampling post-convergence
+    "ncor_times": 10.0,  # number of autocorrelation times for convergence
+    "autocorr_tol": 10.0,  # percent tolerance between checking autocorr. times
+    "write_iter": 100,  # write/check autocorrelation times interval
+    "write_thresh": 100,  # iteration to start writing/checking parameters
+    "burn_in": _env_int("BADASS_BURN_IN", 1500),  # burn-in if max_iter is reached
+    "min_iter": _env_int("BADASS_MIN_ITER", 1000),  # min number of iterations before stopping
+    "max_iter": _env_int("BADASS_MAX_ITER", 2500),  # max number of MCMC iterations
+}
+################################################################################
+
+############################ Fit component op dtions #############################
+comp_options = {
+    "fit_opt_feii": True,  # optical FeII
+    "fit_uv_iron": False,  # UV Iron
+    "fit_balmer": False,  # Balmer continuum (<4000 A)
+    "fit_losvd": False,  # stellar LOSVD
+    "fit_host": False,  # host template
+    "fit_power": True,  # AGN power-law
+    "fit_poly": True,  # Add polynomial continuum component
+    "fit_narrow": True,  # narrow lines
+    "fit_broad": True,  # broad lines
+    "fit_absorp": False,  # absorption lines
+    "tie_line_disp": False,  # tie line widths (dispersions)
+    "tie_line_voff": False,  # tie line velocity offsets
+}
+
+# Line options for each narrow, broad, and absorption.
+# gaussian, lorentzian, voigt, gauss-hermite, laplace, or uniform
+narrow_options = {
+    "amp_plim": (0, 50),  # line amplitude (1e-17 units); was (0,1000) -> narrows were pinned at 0
+    "disp_plim": (100, 2500),  # km/s; was (0,500) which is BELOW the ~300-450 km/s instrument profile
+    "voff_plim": (-1000, 1000),  # line velocity offset parameter limits; default (0,)
+    "line_profile": "gaussian",  # line profile shape*
+    "n_moments": 4,  # number of higher order Gauss-Hermite moments (if line profile is gauss-hermite, laplace, or uniform)
+}
+
+broad_options = {
+    "amp_plim": (0, 50),  # line amplitude parameter limits
+    "disp_plim": (600, 6000),  # 600-6000 km/s -> wings of Halpha/Hbeta; was (500,4000)
+    "voff_plim": (-1500, 1500),  # allowed blueshifted wing components
+    "line_profile": "gaussian",  # line profile shape*
+    "n_moments": 4,  # number of higher order Gauss-Hermite moments (if line profile is gauss-hermite, laplace, or uniform)
+}
+
+absorp_options = {
+    # "amp_plim": (-1,0), # line amplitude parameter limits; default (0,)
+    # "disp_plim": (0,10), # line dispersion parameter limits; default (0,)
+    # "voff_plim": (-2500,2500), # line velocity offset parameter limits; default (0,)
+    # "line_profile": "gaussian", # line profile shape*
+    # "n_moments": 4, # number of higher order Gauss-Hermite moments (if line profile is gauss-hermite, laplace, or uniform)
+}
+
+# Choices for line profile shape include 'gaussian', 'lorentzian', 'voigt',
+# 'gauss-hermite', 'laplace', and 'uniform'
+################################################################################
+
+########################### Emission Lines & Options ###########################
+# If not specified, defaults to SDSS-QSO Emission Lines (http://classic.sdss.org/dr6/algorithms/linestable.html)
+################################################################################
+# User lines overrides the default line list with a user-input line list!
+user_lines = {
+    "NA_OII": {
+        "center": 3784,
+        "amp": "free",
+        "disp": "free",
+        "voff": "free",
+        "line_type": "na",
+        "label": r"[OII]",
+        "ncomp": 1,
+    },
+    "NA_H_BETA": {
+        "center": 4834,
+        "amp": "free",
+        "disp": "free",
+        "voff": "free",
+        "line_type": "na",
+        "label": r"H$\beta$",
+        "ncomp": 1,
+    },
+    "NA_OIII_a": {
+        "center": 4931,
+        "amp": "free",
+        "disp": "free",
+        "voff": "free",
+        "line_type": "na",
+        "label": r"[OIIIa]",
+        "ncomp": 1,
+    },
+    "NA_OIII_b": {
+        "center": 5007,
+        "amp": "free",
+        "disp": "free",
+        "voff": "free",
+        "line_type": "na",
+        "label": r"[OIIIb]",
+        "ncomp": 1,
+    },
+    "NA_H_ALPHA": {
+        "center": 6551,
+        "amp": "free",
+        "disp": "free",
+        "voff": "free",
+        "line_type": "na",
+        "label": r"[H$\alpha$]",
+        "ncomp": 1,
+    },
+    "BR_H_BETA": {
+        "center": 4834,
+        "amp": "free",
+        "disp": "free",
+        "voff": "free",
+        "line_type": "br",
+        "ncomp": 1,
+    },
+    "BR_OII": {
+        "center": 3784,
+        "amp": "free",
+        "disp": "free",
+        "voff": "free",
+        "line_type": "br",
+        "ncomp": 1,
+    },
+    "BR_OIII_a": {
+        "center": 4931,
+        "amp": "free",
+        "disp": "free",
+        "voff": "free",
+        "line_type": "br",
+        "ncomp": 1,
+    },
+    "BR_OIII_b": {
+        "center": 5007,
+        "amp": "free",
+        "disp": "free",
+        "voff": "free",
+        "line_type": "br",
+        "ncomp": 1,
+    },
+    "BR_H_ALPHA": {
+        "center": 6551,
+        "amp": "free",
+        "disp": "free",
+        "voff": "free",
+        "line_type": "br",
+        "ncomp": 1,
+    },
+}
+
+
+# configs = [["NA_H_BETA", "NA_OIII_a", "NA_OIII_b", "NA_H_ALPHA"], ["BR_H_BETA", "BR_OIII_a", "BR_OIII_b", "BR_H_ALPHA"]]
+configs = []
+
+user_constraints = [
+    ("NA_OIII_b_AMP", "NA_OIII_a_AMP"),
+]
+
+# User defined masked regions (list of tuples)
+user_mask = [
+    # (3745, 3820),
+    # (4800, 5100),
+    # (6480, 6600),
+]
+
+test_options = {
+    "test_mode": "line",  # line or config (in the future)
+    "lines": configs,
+    "metrics": ["BADASS", "ANOVA", "CHI2_RATIO", "AON", "SSR_RATIO", "F_RATIO"],
+    "thresholds": [0.95, 0.95, 0.10, 3.0, 0.1, 0.1],
+    "conv_mode": "all",
+    "auto_stop": True,
+    "full_verbose": True,
+    "plot_tests": True,
+    "force_best": True,
+    "continue_fit": True,
+}
+
+# Combined lines; define a composite line and calculate
+# its combined parameters.  These are automatically
+# generated for lines with multiple components (parent+child lines)
+
+combined_lines = {
+    "OII_COMP": ["NA_OII", "BR_OII"],
+    "H_BETA_COMP": ["NA_H_BETA", "BR_H_BETA"],
+    "OIII_a_COMP": ["NA_OIII_a", "BR_OIII_a"],
+    "OIII_b_COMP": ["NA_OIII_b", "BR_OIII_b"],
+    "H_ALPHA_COMP": ["NA_H_ALPHA", "BR_H_ALPHA"],
+}
+
+########################## LOSVD Fitting & Options #############################
+# For direct fitting of the stellar kinematics (stellar LOSVD), one can
+# specify a stellar template library (Indo-US or Vazdekis 2010).
+# One can also hold velocity or dispersion constant to avoid template
+# convolution during the fitting process.
+################################################################################
+
+losvd_options = {
+    "library": "IndoUS",  # Options: IndoUS, Vazdekis2010
+    "vel_const": {"bool": False, "val": 0.0},
+    "disp_const": {"bool": False, "val": 250.0},
+}
+
+########################## SSP Host Galaxy Template & Options ##################
+# The default is zero velocity, 100 km/s dispersion 10 Gyr template from
+# the eMILES stellar library.
+################################################################################
+
+host_options = {
+    "age": [1.0, 5.0, 10.0],  # Gyr; [0.09 Gyr - 14 Gyr]
+    "vel_const": {"bool": False, "val": 0.0},
+    "disp_const": {"bool": False, "val": 150.0},
+}
+
+########################### AGN power-law continuum & Options ##################
+# The default is a simple power law.
+################################################################################
+
+power_options = {"type": "simple"}  # alternatively, "broken" for smoothly-broken power-law
+
+########################### Polynomial Continuum Options #######################
+# Options for an additive legendre polynomial or multiplicative polynomial to be
+# included in the fit.  NOTE: these polynomials do not include the zeroth-order
+# (constant) term to avoid degeneracies with other continuum components.
+################################################################################
+
+poly_options = {
+    "apoly": {"bool": True, "order": 7},  # Legendre additive polynomial
+    "mpoly": {"bool": False, "order": 3},  # Legendre multiplicative polynomial
+}
+
+############################### Optical FeII options ###############################
+# Below are options for fitting optical FeII.  For most objects, you don't need to
+# perform detailed fitting on FeII (only fit for amplitudes) use the
+# Veron-Cetty 2004 template ('VC04') (2-6 free parameters)
+# However in NLS1 objects, FeII is much stronger, and sometimes more detailed
+# fitting is necessary, use the Kovacevic 2010 template
+# ('K10'; 7 free parameters).
+
+# The options are:
+# template   : VC04 (Veron-Cetty 2004) or K10 (Kovacevic 2010)
+# amp_const  : constant amplitude (default False)
+# disp_const : constant dispersion (default True)
+# voff_const : constant velocity offset (default True)
+# temp_const : constant temp ('K10' only)
+
+opt_feii_options = {
+    "opt_template": {"type": "VC04"},
+    "opt_amp_const": {"bool": False, "br_opt_feii_val": 1.0, "na_opt_feii_val": 1.0},
+    "opt_disp_const": {
+        "bool": False,
+        "br_opt_feii_val": 800.0,  # initial guess (was 3000) -> previous run hit amp/disp boundaries
+        "na_opt_feii_val": 500.0,
+    },
+    "opt_voff_const": {"bool": False, "br_opt_feii_val": 0.0, "na_opt_feii_val": 0.0},
+}
+# or
+# opt_feii_options = {
+#     "opt_template": {"type": "K10"},
+#     "opt_amp_const": {
+#         "bool": False,
+#         "f_feii_val": 1.0,
+#         "s_feii_val": 1.0,
+#         "g_feii_val": 1.0,
+#         "z_feii_val": 1.0,
+#     },
+#     "opt_disp_const": {"bool": False, "opt_feii_val": 1500.0},
+#     "opt_voff_const": {"bool": False, "opt_feii_val": 0.0},
+#     "opt_temp_const": {"bool": True, "opt_feii_val": 10000.0},
+# }
+################################################################################
+
+############################### UV Iron options ################################
+uv_iron_options = {
+    "uv_amp_const": {"bool": False, "uv_iron_val": 1.0},
+    "uv_disp_const": {"bool": False, "uv_iron_val": 3000.0},
+    "uv_voff_const": {"bool": True, "uv_iron_val": 0.0},
+}
+################################################################################
+
+########################### Balmer Continuum options ###########################
+# For most purposes, only the ratio R, and the overall amplitude are free paramters
+# but if you want to go crazy, you can fit everything.
+balmer_options = {
+    "R_const": {
+        "bool": True,
+        "R_val": 1.0,
+    },  # ratio between balmer continuum and higher-order balmer lines
+    "balmer_amp_const": {
+        "bool": False,
+        "balmer_amp_val": 1.0,
+    },  # amplitude of overall balmer model (continuum + higher-order lines)
+    "balmer_disp_const": {
+        "bool": True,
+        "balmer_disp_val": 5000.0,
+    },  # broadening of higher-order Balmer lines
+    "balmer_voff_const": {
+        "bool": True,
+        "balmer_voff_val": 0.0,
+    },  # velocity offset of higher-order Balmer lines
+    "Teff_const": {"bool": True, "Teff_val": 15000.0},  # effective temperature
+    "tau_const": {"bool": True, "tau_val": 1.0},  # optical depth
+}
+
+################################################################################
+
+############################### Plotting options ###############################
+plot_options = {
+    "plot_param_hist": True,  # Plot MCMC histograms and chains for each parameter
+    "plot_HTML": True,  # make interactive plotly HTML best-fit plot
+}
+################################################################################
+
+################################ Output options ################################
+output_options = {
+    "write_chain": False,  # Write MCMC chains for all paramters, fluxes, and
+    # luminosities to a FITS table We set this to false
+    # because MCMC_chains.FITS file can become very large,
+    # especially  if you are running multiple objects.
+    # You only need this if you want to reconstruct full chains
+    # and histograms.
+    "write_options": False,  # output restart file
+    "verbose": True,  # print out all steps of fitting process
+}
+################################################################################
+
+
+########################## Directory Structure #################################
+spec_dir = BADASS_DIR.joinpath("example_spectra")  # folder with spectra in it
+# print(spec_dir)
+# Get full list of spectrum folders; these will be the working directories
+spec_loc = natsort.natsorted(glob.glob(str(spec_dir.joinpath("2-o*"))))[0]
+
+################################################################################
+print(spec_loc)
+
+file = glob.glob(str(pathlib.Path(spec_loc).joinpath("*.fits")))[0]  # Get name of FITS spectra file
+print(file)
+
+# For non-SDSS spectra, you must explicitly pass vectors for the spectrum (spec),
+# linearly-binned wavelength (wave), error spectrum (err), FWHM resolution in Å (fwhm_res),
+# redshift (z), and Galactic reddening E(B-V) (ebv).
+
+hdulist = fits.open(file)
+header = hdulist[0].header
+z = float(hdulist[2].data["z"][0])
+print(z)
+# fwhm_res = header['fwhm']
+# print(fwhm_res)
+# ebv = header['ebv']
+flux_norm = 1.0e-17
+spec = hdulist[1].data["flux"] / flux_norm
+wave = 10 ** hdulist[1].data["loglam"]
+err = 0.05 * spec  # empirical per-pixel noise (~5%; the spectrum is smoothed -> 10% is too large)
+# Plot
+fig = plt.figure(figsize=(22, 6))
+ax1 = fig.add_subplot(1, 1, 1)
+ax1.plot(wave, spec, linewidth=0.5, label=r"Spectrum")
+ax1.plot(wave, err, linewidth=0.5, label=r"$1\sigma$ Error")
+fontsize = 14
+ax1.set_title(
+    f"Keck/LRIS Un-normalized, Observed Spectrum Input, z={z:.3f} (Sexton et al. 2019)",
+    fontsize=fontsize,
+)
+ax1.set_xlabel(r"$\lambda_{\rm{observed}}$ ($\rm{\AA}$)", fontsize=fontsize)
+ax1.set_ylabel(
+    r"$f_\lambda$ ($10^{-17}$ erg cm$^{-2}$ s$^{-1}$ $\rm{\AA}^{-1}$)",
+    fontsize=fontsize,
+)
+ax1.legend(fontsize=fontsize)
+plt.tight_layout()
+plt.savefig("/app/output/spectrum.pdf", format="pdf")
+
+# Note: we set sdss_spec=False for non-SDSS spectrum.  This tells BADASS
+# to use the spec, wave, err, fwhm_res, z, and ebv keywords for the data input.
+
+# Call the main function in BADASS
+badass.run_BADASS(
+    pathlib.Path(file),
+    fit_options=fit_options,
+    mcmc_options=mcmc_options,
+    comp_options=comp_options,
+    # New line options
+    narrow_options=narrow_options,
+    broad_options=broad_options,
+    absorp_options=absorp_options,
+    test_options=test_options,
+    #
+    user_lines=user_lines,  # User-lines
+    user_constraints=user_constraints,  # User-constraints
+    user_mask=user_mask,  # User-mask
+    combined_lines=combined_lines,
+    losvd_options=losvd_options,
+    host_options=host_options,
+    power_options=power_options,
+    poly_options=poly_options,
+    opt_feii_options=opt_feii_options,
+    uv_iron_options=uv_iron_options,
+    balmer_options=balmer_options,
+    plot_options=plot_options,
+    output_options=output_options,
+    # Here is where we specify that we are fitting a non-SDSS user-input spectrum:
+    sdss_spec=False,
+    spec=spec,
+    wave=wave,  # observed wavelength
+    err=err,  # 1-sigma uncertainty
+    fwhm_res=6,  # linear FWHM resolution in Angstroms
+    z=z,  # BADASS assumes spectrum is NOT corrected for redshift.
+    ebv=0.0,  # for Galactic extinction correction.
+    flux_norm=1.0e-17,  # Don't forget the flux normalization!
+)
+#
