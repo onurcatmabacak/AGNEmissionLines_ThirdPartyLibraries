@@ -130,32 +130,42 @@ def main(argv=None) -> int:
     for tool, (knobs, variant, score) in best.items():
         print(f"[parallel] {tool}: best {variant} ({score:.3f})")
 
-    # ---- Stage 2: refinement rounds, pooled across all tools ----
-    for rnd in range(1, args.rounds + 1):
-        round_tasks = []
-        for tool in args.tools:
-            if tool not in best:
+    # ---- Stage 2: refinement with early stop, parallel across tools ----
+    # Each tool keeps a queue of untried neighbours of its current best; every
+    # round tries one neighbour per active tool.  A tool that improves refreshes
+    # its queue from the new best; one that does not advances to its next
+    # neighbour.  This keeps auto_tune's early-stopping efficiency (it does not
+    # evaluate every neighbour) while still running the tools concurrently.
+    def neighbour_queue(tool: str, knobs: dict):
+        queue = []
+        for nk in at.neighbours(tool, knobs):
+            variant, _, rendered = at._materialise(tool, nk)
+            if rendered in seen:
                 continue
-            for knobs in at.neighbours(tool, best[tool][0]):
-                variant, _, rendered = at._materialise(tool, knobs)
-                if rendered in seen:
-                    continue
-                seen.add(rendered)
-                round_tasks.append((tool, knobs, variant))
-        if not round_tasks:
+            seen.add(rendered)
+            queue.append((nk, variant))
+        return queue
+
+    queues = {t: neighbour_queue(t, best[t][0]) for t in args.tools if t in best}
+    for rnd in range(1, args.rounds + 1):
+        batch = []
+        for tool in args.tools:
+            if queues.get(tool):
+                nk, variant = queues[tool][0]
+                batch.append((tool, nk, variant))
+        if not batch:
             break
-        print(f"[parallel] round {rnd}: {len(round_tasks)} neighbour runs")
-        rres = pool_eval(round_tasks, args.pool, input_dir, args.runs, args.results, args.repo, tune_tags)
-        per: dict[str, list] = {}
-        for tool, knobs, variant, score in rres:
-            per.setdefault(tool, []).append((score, knobs, variant))
+        print(f"[parallel] round {rnd}: trying {len(batch)} neighbour(s) (one per tool)")
+        rres = pool_eval(batch, args.pool, input_dir, args.runs, args.results, args.repo, tune_tags)
         improved = False
-        for tool, cands in per.items():
-            score, knobs, variant = min(cands, key=lambda c: c[0])
+        for tool, knobs, variant, score in rres:
             if score < best[tool][2] - 1e-9:
                 best[tool] = (knobs, variant, score)
+                queues[tool] = neighbour_queue(tool, knobs)
                 improved = True
                 print(f"[parallel]   {tool}: improved -> {variant} ({score:.3f})")
+            else:
+                queues[tool].pop(0)
         if not improved:
             print("[parallel] no improvement; stopping refinement")
             break
