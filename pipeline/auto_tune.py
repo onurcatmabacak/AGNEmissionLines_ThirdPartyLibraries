@@ -283,7 +283,11 @@ def run_pipeline(tools: list[str], variants: dict[str, str], input_dir: Path, la
     env = {"INPUT_DIR": str(input_dir), "RUNS_DIR": str(runs_dir),
            "RESULTS_DIR": str(results_dir)}
     print(f"[auto_tune] run {label}: {' '.join(cmd)}")
-    subprocess.run(cmd, cwd=repo, env={**os.environ, **env}, check=True)
+    rc = subprocess.run(cmd, cwd=repo, env={**os.environ, **env}).returncode
+    if rc != 0:
+        # Do not abort the whole search for one failing candidate; the caller
+        # scores it from whatever it produced (usually -> inf, so it loses).
+        print(f"[auto_tune] WARNING: {label} exited with rc={rc}")
 
 
 def read_scores(results: Path, label: str) -> dict:
@@ -381,10 +385,18 @@ def scoped_input(tags: list[str], runs_or_manifest_root: Path, dest: Path) -> Pa
         src = None
         if man.exists():
             src = json.loads(man.read_text()).get("source")
-        if src and Path(src).exists():
-            link = dest / "input" / Path(src).name
+        if not src:
+            continue
+        # Resolve to an absolute path: the manifest may store a relative path
+        # (e.g. "input/spec.fits"), and a relative symlink target is resolved
+        # against the *link's* directory, which would be broken.
+        sp = Path(src)
+        if not sp.is_absolute():
+            sp = Path.cwd() / sp
+        if sp.exists():
+            link = dest / "input" / sp.name
             if not link.exists():
-                link.symlink_to(src)
+                link.symlink_to(sp.resolve())
     return dest / "input"
 
 
@@ -407,6 +419,8 @@ def main(argv=None) -> int:
     p.add_argument("--workdir", type=Path, default=ROOT / "work" / "auto_tune")
     p.add_argument("--dry-run", action="store_true")
     p.add_argument("--stage1-only", action="store_true")
+    p.add_argument("--no-prepare", action="store_true",
+                   help="skip prepare_inputs (use when several searches run in parallel)")
     args = p.parse_args(argv)
 
     args.workdir.mkdir(parents=True, exist_ok=True)
@@ -419,13 +433,16 @@ def main(argv=None) -> int:
                 print("  ", merged)
         return 0
 
-    # Always prepare: this picks up spectra newly dropped into input/ and writes
-    # runs/<tag>/manifest.json (cheap; the per-candidate runs re-prepare anyway).
-    print("[auto_tune] preparing inputs")
-    subprocess.run([sys.executable, str(ROOT / "pipeline" / "prepare_inputs.py"),
-                    "--fits", str(args.input), "--out", str(args.runs),
-                    "--gelato-json", str(ROOT / "Gelato" / "my_sdss.json"),
-                    "--gleam-static", str(ROOT / "Gleam")], cwd=args.repo, check=True)
+    # Prepare (unless several searches already share one preparation).  This
+    # picks up spectra newly dropped into input/ and writes runs/<tag>/manifest.json.
+    if args.no_prepare:
+        print("[auto_tune] skipping prepare (--no-prepare)")
+    else:
+        print("[auto_tune] preparing inputs")
+        subprocess.run([sys.executable, str(ROOT / "pipeline" / "prepare_inputs.py"),
+                        "--fits", str(args.input), "--out", str(args.runs),
+                        "--gelato-json", str(ROOT / "Gelato" / "my_sdss.json"),
+                        "--gleam-static", str(ROOT / "Gleam")], cwd=args.repo, check=True)
 
     tags = discover_tags(args.runs)
     if not tags:
