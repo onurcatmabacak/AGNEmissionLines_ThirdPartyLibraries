@@ -182,6 +182,9 @@ def render_gelato(text: str, k: dict) -> str:
     cfg["NBoot"] = int(k["NBoot"])          # 0 skips the expensive bootstrap
     cfg["FThresh"] = float(k["FThresh"])
     cfg["LineRegion"] = int(k["LineRegion"])
+    # One process per spectrum: the search runs several fits concurrently and
+    # GELATO's internal multiprocessing would otherwise oversubscribe the CPU.
+    cfg["NProcess"] = 1
     for g in cfg.get("EmissionGroups", []):
         if g.get("Name") == "AGN":
             g["TieDispersion"] = bool(k["TieDispersion"])

@@ -220,6 +220,16 @@ descent and re-runs it on all objects. Generated variants live in
 `work/auto_tune/best_configs.json`. Fast modes are used during the search
 (GELATO `NBoot=0`, BADASS3 `BADASS_MAX_LIKE_NITER=0`, fantasy_agn `FANTASY_MC=0`).
 
+`pipeline/parallel_search.py` is the same search driven by one global CPU pool
+across all tools (the serial per-tool chain otherwise leaves cores idle):
+
+```bash
+python pipeline/parallel_search.py --pool 8 --limit 3 --rounds 1
+```
+
+The fits are CPU-only: none of the five tools has a GPU/CUDA path, so a GPU
+cannot speed them up. See `pipeline/README.md` for details.
+
 ### Example: 10-object eFEDS run
 
 `bash run_pipeline.sh` on ten low-z eFEDS QSOs produced 50 tool runs

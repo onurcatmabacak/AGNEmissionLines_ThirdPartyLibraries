@@ -214,6 +214,31 @@ probe width / `SN_limit`. Generated variants are written under
 > GELATO `NBoot=0`, BADASS3 `BADASS_MAX_LIKE_NITER=0`, and fantasy_agn
 > `FANTASY_MC=0` (the model CSV is written before its Monte-Carlo block).
 
+### Parallel search (CPU)
+
+`auto_tune.py` evaluates one tool at a time, so the slowest tool's *serial*
+candidate chain sets the wall-clock while cores freed by faster tools sit idle.
+`pipeline/parallel_search.py` flattens every tool's candidate grid into one
+global pool sized to the machine, refines all tools' winners in parallel rounds,
+then does the final combined run:
+
+```bash
+python pipeline/parallel_search.py                       # all tools, pool = nproc
+python pipeline/parallel_search.py --pool 8 --limit 3 --rounds 1
+python pipeline/parallel_search.py --tools gelato gleam --limit 1 --rounds 0 --stage1-only
+```
+
+Each pool task calls `run_pipeline.sh ... --jobs 1`, so the pool (not the nested
+run) owns total concurrency.  On the 8-core test host, GELATO+GLEAM on one object
+went from ~28 min (serial candidates) to ~10 min with `--pool 8`.
+
+> **GPU note.** There is no GPU execution path.  The hardware has an NVIDIA
+> GTX 960M, but none of the five fitters (PyQSOFit, BADASS3, fantasy_agn,
+> GELATO, GLEAM) use CUDA/cupy/torch/jax — they are NumPy/SciPy/lmfit/emcee/
+> sherpa CPU codes fitting ~4600-pixel 1-D spectra, where GPU transfer overhead
+> would dominate.  Docker also has no NVIDIA runtime here.  The speedup comes
+> from CPU scheduling, not the GPU.
+
 ### Known fixes that made the tools comparable
 
 - **GELATO** used to fit *every* object at a hardcoded `z=0.3482135`
