@@ -24,6 +24,7 @@ from __future__ import annotations
 
 import argparse
 import csv
+import json
 import math
 import re
 from pathlib import Path
@@ -81,6 +82,125 @@ def _line_chi2(wave, flux, model, err):
 def _rec(tag, tool, line, component, flux=np.nan, fwhm=np.nan, ew=np.nan, center=np.nan):
     return {"tag": tag, "tool": tool, "line": line, "component": component,
             "flux_1e17": flux, "fwhm_kms": fwhm, "ew_a": ew, "center_a": center, "flux_unit": "1e-17"}
+
+
+# ---------------------------------------------------------------------------
+# Common, tool-agnostic reduced chi-square.
+#
+# Every tool reports a different statistic (and PyQSOFit's shrinks when its
+# internal error floor is raised).  To rank fits fairly we rebuild each tool's
+# total model on the *same* prepared spectrum and the *same* calibrated errors:
+# the prepared ``inputs/badass/my_sdss.fits`` (ivar is calibrated for 1e-17
+# units) provides the common data vector.  Models are put on the rest-frame
+# grid and compared over the main optical line windows.
+# ---------------------------------------------------------------------------
+def _load_common_data(obj_dir: Path, z: float):
+    from astropy.io import fits
+    d = fits.open(obj_dir / "inputs" / "badass" / "my_sdss.fits")[1].data
+    obs = 10.0 ** np.asarray(d["loglam"], float)
+    flux = np.asarray(d["flux"], float) * 1e17          # cgs -> 1e-17
+    ivar = np.asarray(d["ivar"], float)
+    return obs / (1.0 + z), flux, ivar
+
+
+def _tool_model_rest(obj_dir: Path, tool: str, out: Path, wave_rest: np.ndarray, z: float = 0.0):
+    """Return this tool's total model sampled on ``wave_rest`` (1e-17 units)."""
+    if tool == "pyqsofit":
+        p = out / "pyqsofit_model.csv"
+        if not p.exists():
+            return None
+        arr = np.genfromtxt(p, delimiter=",", names=True)
+        if arr.size == 0:
+            return None
+        return np.interp(wave_rest, np.atleast_1d(arr["wave"]), np.atleast_1d(arr["model"]))
+    if tool == "badass":
+        f = next(out.rglob("best_model_components.fits"), None)
+        if f is None:
+            return None
+        from astropy.io import fits
+        d = fits.open(f)[1].data
+        return np.interp(wave_rest, np.asarray(d["WAVE"], float), np.asarray(d["MODEL"], float))
+    if tool == "fantasy_agn":
+        p = out / "my_sdss_model.csv"
+        if not p.exists():
+            return None
+        arr = np.genfromtxt(p, delimiter=",", skip_header=1)
+        if arr.ndim != 2 or arr.shape[1] < 5:
+            return None
+        return np.interp(wave_rest, arr[:, 1], arr[:, 4])
+    if tool == "gelato":
+        from astropy.io import fits
+        f = out / "my_sdss-results.fits"
+        if not f.exists():
+            return None
+        d = fits.open(f)["SUMMARY"].data
+        # GELATO stores its model in the observed frame; the common grid is rest.
+        w = 10.0 ** np.asarray(d["loglam"], float) / (1.0 + z)
+        return np.interp(wave_rest, w, np.asarray(d["MODEL"], float))
+    if tool == "gleam":
+        from astropy.table import Table
+        tables = sorted(out.glob("linefits*.fits"))
+        if not tables:
+            return None
+        model = np.zeros_like(wave_rest)
+        # GLEAM's per-line constant continuum is local to each line; take the
+        # nearest line's value (overwrite, never sum) so overlapping windows from
+        # duplicate lines do not double-count the continuum.
+        cont_model = np.full_like(wave_rest, np.nan)
+        for f in tables:
+            try:
+                t = Table.read(f)
+            except Exception:
+                continue
+            names = {c.lower(): c for c in t.colnames}
+            for r in t:
+                def gv(n):
+                    try:
+                        return float(r[names[n]])
+                    except Exception:
+                        return np.nan
+                wl, sig, amp = gv("wl"), gv("sigma"), gv("height")
+                if np.isfinite(wl) and np.isfinite(sig) and sig > 0 and np.isfinite(amp):
+                    model += amp * np.exp(-0.5 * ((wave_rest - wl) / sig) ** 2)
+                cont = gv("cont")
+                if np.isfinite(wl) and np.isfinite(cont):
+                    cont_model[np.abs(wave_rest - wl) < CHI2_HALF] = cont
+        model[np.isfinite(cont_model)] += cont_model[np.isfinite(cont_model)]
+        return model
+    return None
+
+
+COMMON_ERR_FLOOR = 0.02   # relative flux error floor, shared by every tool
+
+
+def common_chi2(obj_dir: Path, tool: str, out: Path, z: float):
+    """Reduced chi-square of the tool model against the common data vector.
+
+    The raw inverse variance is combined in quadrature with a *fixed, common*
+    relative flux floor (``COMMON_ERR_FLOOR``).  No tool controls this floor, so
+    it cannot be gamed, while it keeps the metric from being dominated by the
+    continuum S/N off the line cores.
+    """
+    try:
+        wave_rest, flux, ivar = _load_common_data(obj_dir, z)
+    except Exception:
+        return np.nan
+    try:
+        model = _tool_model_rest(obj_dir, tool, out, wave_rest, z)
+    except Exception:
+        return np.nan
+    if model is None:
+        return np.nan
+    sig = 1.0 / np.sqrt(np.clip(ivar, 1e-30, None))
+    sig = np.sqrt(sig ** 2 + (COMMON_ERR_FLOOR * np.abs(flux)) ** 2)
+    good = np.isfinite(flux) & np.isfinite(model) & (ivar > 0)
+    win = np.zeros_like(good)
+    for w0 in REST.values():
+        win |= np.abs(wave_rest - w0) < CHI2_HALF
+    m = good & win
+    if m.sum() < 3:
+        return np.nan
+    return float(np.sum(((flux[m] - model[m]) / sig[m]) ** 2) / max(m.sum() - 1, 1))
 
 
 # --------------------------- PyQSOFit ----------------------------------------
@@ -217,10 +337,15 @@ def parse_gelato(out: Path, tag: str):
     for col, line, comp in pairs:
         if col in p.columns.names:
             disp = col.replace("_Flux", "_Dispersion")
-            rows.append(_rec(tag, "gelato", line, comp, flux=_f(p[col][0]) * 1e17,
-                             fwhm=_f(p[disp][0]) if disp in p.columns.names else np.nan))
-    score = {"tag": tag, "tool": "gelato", "chi2_red": np.nan,
-             "chi2_kind": "n/a (degenerate summary)"}
+            # GELATO now receives 1e-17 flux, so its fluxes are already in 1e-17
+            # units.  With NBoot>1 every row is a bootstrap sample: use the
+            # median (matching GELATO's own saved SUMMARY model).
+            flux = _f(np.nanmedian(np.asarray(p[col], float)))
+            fwhm = _f(np.nanmedian(np.asarray(p[disp], float))) if disp in p.columns.names else np.nan
+            rows.append(_rec(tag, "gelato", line, comp, flux=flux, fwhm=fwhm))
+    rchi = _f(np.nanmedian(np.asarray(p["rChi2"], float))) if "rChi2" in p.columns.names else np.nan
+    score = {"tag": tag, "tool": "gelato", "chi2_red": rchi,
+             "chi2_kind": "global_reduced (reported)"}
     return score, rows
 
 
@@ -263,7 +388,11 @@ def parse_gleam(out: Path, tag: str):
                 fwhm_a = _f(r[names["fwhm"]]) if "fwhm" in names else np.nan
                 # GLEAM reports FWHM in Angstrom (rest frame); convert to km/s
                 fwhm_kms = fwhm_a / wl * 299792.458 if (wl and math.isfinite(fwhm_a)) else np.nan
-                rows.append(_rec(tag, "gleam", line, "total",
+                # A line named '*_broad' in the GLEAM line table is the broad
+                # counterpart added by prepare_inputs/Gleam line_table.fits.
+                raw_name = str(r[names["line"]]) if "line" in names else ""
+                component = "broad" if raw_name.endswith("_broad") else "narrow"
+                rows.append(_rec(tag, "gleam", line, component,
                                  flux=_f(r[names["flux"]]) if "flux" in names else np.nan,
                                  fwhm=fwhm_kms,
                                  ew=_f(r[names["ewrest"]]) if "ewrest" in names else np.nan,
@@ -304,9 +433,20 @@ def main(argv=None) -> int:
         outroot = obj / "outputs"
         if not outroot.is_dir():
             continue
+        z = 0.0
+        man = obj / "manifest.json"
+        if man.exists():
+            try:
+                z = float(json.loads(man.read_text()).get("z", 0.0))
+            except Exception:
+                z = 0.0
         for tool in TOOLS:
             out = outroot / tool
             if not out.is_dir():
+                continue
+            # Skip tools that were never run (prepare_inputs creates empty
+            # output dirs for every tool, which would otherwise score as n/a).
+            if not any(f.is_file() for f in out.rglob("*")):
                 continue
             try:
                 sc, lrows = PARSERS[tool](out, obj.name)
@@ -314,11 +454,16 @@ def main(argv=None) -> int:
                 print(f"[warn] {tool} {obj.name}: {exc}")
                 continue
             if sc:
+                sc["chi2_common"] = common_chi2(obj, tool, out, z)
+                comps = {r["component"] for r in lrows}
+                sc["has_broad"] = int("broad" in comps)
+                sc["has_narrow"] = int("narrow" in comps)
                 scores.append(sc)
                 lines.extend(lrows)
 
     with (args.results / "scores.csv").open("w", newline="") as fh:
-        w = csv.DictWriter(fh, fieldnames=["tag", "tool", "chi2_red", "chi2_kind"])
+        w = csv.DictWriter(fh, fieldnames=["tag", "tool", "chi2_red", "chi2_kind",
+                                           "chi2_common", "has_broad", "has_narrow"])
         w.writeheader(); w.writerows(scores)
     with (args.results / "lines.csv").open("w", newline="") as fh:
         w = csv.DictWriter(fh, fieldnames=["tag", "tool", "line", "component",

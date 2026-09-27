@@ -160,17 +160,75 @@ existing runs without refitting.
 
 ### Reduced χ² (the ranking metric)
 
-| tool | source | kind |
+Two numbers are reported per tool. `chi2_red` is the tool's own statistic;
+`chi2_common` is a **fair, tool-agnostic** reduced χ² computed by
+`score_fits.py`: it rebuilds each tool's total model on the *same* prepared
+spectrum and the *same* calibrated errors (the raw ivar combined in quadrature
+with a fixed 2 % flux floor), so it cannot be gamed by a tool inflating its
+internal error floor. `chi2_common` is the primary tuning objective; `chi2_red`
+is kept for reference.
+
+| tool | own `chi2_red` source | kind |
 |------|--------|------|
 | PyQSOFit | `output.fits` `1/2_line_red_chi2` | per-complex, reported |
 | BADASS3 | `best_model_components.fits` (DATA vs MODEL) | line-window, computed |
 | fantasy_agn | `my_sdss_model.csv` | line-window, computed |
 | GLEAM | `linefits*.fits` (fluxes/EW) + per-line `reduced chi-square` in the log | mean, reported |
-| GELATO | — | n/a (its saved model/chi² are numerically degenerate) |
+| GELATO | `PARAMS` `rChi2` | global, reported |
 
-Because the statistic differs per tool, cross-tool χ² is a guide; the line-flux
-matrix is the like-for-like comparison. Fluxes are integrated per kinematic
+The common model reconstruction needs a total-model grid: PyQSOFit now writes
+`pyqsofit_model.csv`, BADASS3/fantasy_agn/GELATO save theirs, and GLEAM's total
+model is rebuilt from its per-line Gaussians. Fluxes are integrated per kinematic
 component (broad / narrow / outflow) and normalised to 1e-17 erg s⁻¹ cm⁻².
+
+### Automatic tuning (iterative search)
+
+`pipeline/auto_tune.py` (wrapper: `bash analyze.sh`) turns the pipeline into a
+self-optimising fitter:
+
+```
+input/*.fits
+   └─ prepare
+        └─ stage 1: run every candidate config on a few tuning objects
+             └─ rank by mean chi2_common
+                  └─ stage 2: coordinate descent around the winner
+                       └─ final run with the winner on all objects + report
+```
+
+```bash
+cp new_spectrum.fits input/
+bash analyze.sh                     # full automatic run
+bash analyze.sh --dry-run           # print the candidate grid
+bash analyze.sh --tools gelato --limit 1 --rounds 1   # a focused search
+```
+
+Per-tool knobs currently searched: PyQSOFit error floor / Fe templates /
+bad-pixel rejection; BADASS3 `fit_stat` / broad dispersion floor / `n_basinhop` /
+width ties; fantasy_agn broad-FWHM bounds / Fe II / `ntrial`; GELATO `FThresh` /
+`LineRegion` / `TieDispersion`; GLEAM resolution / continuum width / tolerance /
+probe width / `SN_limit`. Generated variants are written under
+`configs/<tool>/auto_<tool>_<key>/` and the winner is recorded in
+`work/auto_tune/best_configs.json`.
+
+> **Runtime.** The search runs each tool many times, so it uses fast modes:
+> GELATO `NBoot=0`, BADASS3 `BADASS_MAX_LIKE_NITER=0`, and fantasy_agn
+> `FANTASY_MC=0` (the model CSV is written before its Monte-Carlo block).
+
+### Known fixes that made the tools comparable
+
+- **GELATO** used to fit *every* object at a hardcoded `z=0.3482135`
+  (`Gelato/gelato.sh`), and its prepared FITS had a cgs flux with an ivar
+  calibrated for 1e-17 units, so its errors were ~1e16× too large and it fit
+  nothing. `gelato.sh` now reads the per-object redshift from HDU2, and
+  `prepare_inputs.py` writes GELATO's flux in 1e-17 units.
+- **PyQSOFit** now dumps `pyqsofit_model.csv` (total/continuum/line model) for the
+  common score.
+- **fantasy_agn** `FANTASY_MC=0` skips the Monte-Carlo block for fast sweeps.
+- **GLEAM** fits one Gaussian per line in a group, so the shipped
+  `Gleam/line_table.fits` now carries `Hb_broad`/`Ha_broad` duplicates next to
+  `Hb`/`Ha`. GLEAM then fits two Gaussians at H-alpha/H-beta and can represent a
+  broad+narrow profile; `score_fits.py` labels these as the broad/narrow
+  components and includes GLEAM's per-line continuum when rebuilding its model.
 
 ## Tuning grid
 
@@ -189,6 +247,7 @@ Demonstrated on object `04592939295`: raising PyQSOFit's error floor from 2 % to
 
 ### Robustness notes
 
+- `run_pipeline.sh --no-report` skips the HTML/MD step during sweeps.
 - Docker tools run **detached** with a name, then `docker wait` under a timeout;
   a hung container is killed and removed (a foreground `docker run` would linger,
   and `docker wait` needs `timeout -k` because it ignores SIGTERM).

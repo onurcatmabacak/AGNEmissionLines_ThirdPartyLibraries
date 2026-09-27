@@ -63,6 +63,7 @@ FANTASY_TIMEOUT="${FANTASY_TIMEOUT:-900}"  # fantasy_agn can hang after writing 
 VARIANTS="${VARIANTS:-}"           # per-tool config variants, e.g. "pyqsofit=err05,badass=fast"
 RUN_LABEL="${RUN_LABEL:-}"         # namespaces runs/ and results/ for variant grids
 REPORT_ONLY=0
+NO_REPORT=0                      # skip the HTML/MD report (used during parameter sweeps)
 # BADASS3 is slow with full MCMC; the pipeline defaults to a fast OLS/basinhopping
 # fit. Set BADASS_MCMC=1 to restore the full uncertainty run.
 BADASS_MCMC="${BADASS_MCMC:-0}"
@@ -86,6 +87,7 @@ while [[ $# -gt 0 ]]; do
     --variant)  VARIANTS="${VARIANTS:+$VARIANTS,}$2"; shift 2 ;;
     --label)    RUN_LABEL="$2"; shift 2 ;;
     --report-only) REPORT_ONLY=1; shift ;;
+    --no-report) NO_REPORT=1; shift ;;
     -h|--help)  sed -n '2,34p' "$SCRIPT" | sed 's/^# \{0,1\}//'; exit 0 ;;
     *) die "unknown argument: $1 (try --help)" ;;
   esac
@@ -184,7 +186,7 @@ run_pyqsofit() {   # $1 = object tag
   cp "$base/inputs/pyqsofit/spectrum.fits" "$tmp/spectrum.fits"
   ( cd "$tmp" && PYTHONPATH="$ROOT/pyqsofit/PyQSOFit/src" MPLBACKEND=Agg "${tmo[@]}" "$PYTHON" main.py ) >"$out/fit.log" 2>&1 \
     || { warn "pyqsofit failed for $tag (see $out/fit.log)"; return 1; }
-  cp "$tmp"/*.fits "$tmp"/*.pdf "$out"/ 2>/dev/null || true
+  cp "$tmp"/*.fits "$tmp"/*.pdf "$tmp"/*.csv "$out"/ 2>/dev/null || true
   rm -rf "$tmp"
 }
 
@@ -208,9 +210,14 @@ run_docker_tool() {  # $1 = tool, $2 = object tag
       ) ;;
     fantasy_agn)
       mounts=(-v "$in/my_sdss.fits:/app/my_sdss.fits:ro"
-              -v "$FANTASY_MAIN:/app/main.py:ro") ;;
+              -v "$FANTASY_MAIN:/app/main.py:ro"
+              -e "FANTASY_MC=${FANTASY_MC:-1}"
+              -e "FANTASY_MC_N=${FANTASY_MC_N:-50}") ;;
     gelato)
-      mounts=(-v "$in:/app/input:ro") ;;
+      # Mount the repo's gelato.sh: the image bakes in a hardcoded z and we now
+      # read the per-object redshift from the prepared FITS (HDU2 'z').
+      mounts=(-v "$in:/app/input:ro"
+              -v "$ROOT/Gelato/gelato.sh:/app/gelato.sh:ro") ;;
     gleam)
       # mount files individually: the image's gleam.sh lives in /app/input
       mounts=(
@@ -302,6 +309,10 @@ fi   # end REPORT_ONLY==0
 # --------------------------- SCORE + REPORT ----------------------------------
 "$PYTHON" pipeline/score_fits.py --runs "$RUNS_DIR" --results "$RESULTS_DIR" \
   || warn "scorer reported an error"
-"$PYTHON" pipeline/make_report.py --runs "$RUNS_DIR" --results "$RESULTS_DIR" \
-  || warn "report step reported an error"
+if [[ $NO_REPORT -eq 1 ]]; then
+  log "skipping report (--no-report)"
+else
+  "$PYTHON" pipeline/make_report.py --runs "$RUNS_DIR" --results "$RESULTS_DIR" \
+    || warn "report step reported an error"
+fi
 log "done.  raw runs: $RUNS_DIR   collected: $RESULTS_DIR   report: $RESULTS_DIR/report.html"

@@ -54,25 +54,37 @@ def build(runs: Path, results: Path) -> tuple[str, str]:
 
     for tag in tags:
         st = {r["tool"]: r for r in scores if r["tag"] == tag}
-        # rank tools by chi2 where available
-        ranked = sorted(((_num(r["chi2_red"]), r["tool"]) for r in scores if r["tag"] == tag
-                         and _num(r["chi2_red"]) is not None))
+
+        def _common(r):
+            c = _num(r.get("chi2_common"))
+            return c if c is not None else _num(r.get("chi2_red"))
+
+        # Rank by the common, tool-agnostic chi-square when available; it is the
+        # only fair cross-tool comparison (the per-tool chi2_red differs and can
+        # be shrunk by inflating a tool's internal error floor).
+        ranked = sorted(((_common(r), r["tool"]) for r in scores if r["tag"] == tag
+                         and _common(r) is not None))
         best_tool = ranked[0][1] if ranked else None
 
-        md += [f"## Object `{tag}`", "", "| tool | reduced chi^2 | statistic |", "|---|---:|---|"]
+        md += [f"## Object `{tag}`", "",
+               "| tool | common reduced chi^2 | own reduced chi^2 | statistic |",
+               "|---|---:|---:|---|"]
         h += [f"<h2>Object <code>{html.escape(tag)}</code></h2>",
-              "<table><tr><th>tool</th><th>reduced &chi;&sup2;</th><th>statistic</th></tr>"]
+              "<table><tr><th>tool</th><th>common &chi;&sup2;</th><th>own &chi;&sup2;</th><th>statistic</th></tr>"]
         for tool in TOOLS:
             r = st.get(tool)
             if not r:
                 continue
+            cc = _common(r)
             c = r["chi2_red"]
             cls = " class='best'" if tool == best_tool else ""
-            md.append(f"| {tool} | {c} | {r['chi2_kind']} |")
-            h.append(f"<tr{cls}><td class='tool'>{tool}</td><td class='num'>{html.escape(str(c))}</td>"
+            md.append(f"| {tool} | {cc if cc is not None else ''} | {c} | {r['chi2_kind']} |")
+            h.append(f"<tr{cls}><td class='tool'>{tool}</td>"
+                     f"<td class='num'>{cc if cc is not None else ''}</td>"
+                     f"<td class='num'>{html.escape(str(c))}</td>"
                      f"<td><small>{html.escape(r['chi2_kind'])}</small></td></tr>")
-        md += ["", f"_lowest &chi;&sup2;: **{best_tool or 'n/a'}**_", ""]
-        h += ["</table>", f"<p><small>lowest &chi;&sup2;: <b>{best_tool or 'n/a'}</b></small></p>"]
+        md += ["", f"_lowest common &chi;&sup2;: **{best_tool or 'n/a'}**_", ""]
+        h += ["</table>", f"<p><small>lowest common &chi;&sup2;: <b>{best_tool or 'n/a'}</b></small></p>"]
 
         # line flux matrix: rows = line/component, cols = tools
         cells: dict[tuple[str, str], dict[str, float]] = {}

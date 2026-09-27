@@ -200,6 +200,26 @@ every tool's products.
 > Cross-tool χ² is a guide (the statistics differ); the **line-flux matrix** is
 > the like-for-like comparison.
 
+### Automatic tuning — one command, best fit
+
+`pipeline/auto_tune.py` (wrapper `analyze.sh`) searches each tool's parameter
+space automatically instead of running every tool once with a fixed config:
+
+```bash
+cp new_spectrum.fits input/
+bash analyze.sh                 # adapt -> search -> refine -> final report
+bash analyze.sh --dry-run       # show the candidate grid without running
+bash analyze.sh --limit 1       # tune on a single object
+```
+
+For each tool it runs a candidate grid on a few tuning objects, ranks the runs by
+a **common reduced χ²** (`chi2_common` in `results/scores.csv`) that uses the same
+model/data/error definition for every tool, then refines the winner by coordinate
+descent and re-runs it on all objects. Generated variants live in
+`configs/<tool>/auto_<tool>_<key>/`; the winners are in
+`work/auto_tune/best_configs.json`. Fast modes are used during the search
+(GELATO `NBoot=0`, BADASS3 `BADASS_MAX_LIKE_NITER=0`, fantasy_agn `FANTASY_MC=0`).
+
 ### Example: 10-object eFEDS run
 
 `bash run_pipeline.sh` on ten low-z eFEDS QSOs produced 50 tool runs
@@ -273,11 +293,18 @@ Included example variants:
 
 - **SCULPTOR** ships as a GUI; it is prepared (`inputs/sculptor/spectrum.fits`)
   but not automated.
-- **GELATO** exposes no usable χ² in this setup (its `SUMMARY` model and `rChi2`
-  are numerically degenerate); only its line fluxes enter the comparison.
+- **GELATO** had two bugs that made it fit nothing: `gelato.sh` hardcoded
+  `z=0.3482135` for every object, and its prepared FITS paired a cgs flux with an
+  ivar calibrated for 1e-17 units (errors ~1e16× too large). Both are fixed, so
+  GELATO now reports a usable `rChi2` and line fluxes. Its Balmer group still
+  behaves as a single component in this configuration, so treat its broad/narrow
+  split with care.
 - **GLEAM** writes a per-line results table (`linefits*.fits` with flux, FWHM, EWrest,
   χ²-adjacent diagnostics) that the scorer reads, plus plot PNGs; its reduced χ² is
-  parsed from the per-line LMFIT blocks in the log.
+  parsed from the per-line LMFIT blocks in the log. It fits one Gaussian per line,
+  so `Gleam/line_table.fits` includes `Hb_broad`/`Ha_broad` duplicates to let it
+  represent broad+narrow Hα/Hβ; the corrected common-score fix further includes
+  GLEAM's per-line continuum.
 - **BADASS3** with full MCMC is hours per object; the pipeline defaults to a fast
   OLS/basinhopping fit (`BADASS_MCMC=0`). Set `BADASS_MCMC=1` for uncertainties.
 - **fantasy_agn** can hang after writing its products; `FANTASY_TIMEOUT` bounds it

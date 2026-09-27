@@ -91,8 +91,13 @@ with open("./output/" + s.name + '_pars.json', 'w') as fp:
     json.dump(res, fp)
 
 # creates N=500 mock spectra, fits the same model, and write the fitting results.
-s.monte_carlo(nsample=50)
-print("mcmc ok")
+# The production model CSV is already written above, so the Monte-Carlo block is
+# only for uncertainties.  FANTASY_MC=0 skips it for fast parameter sweeps.
+if os.environ.get("FANTASY_MC", "1") != "0":
+    s.monte_carlo(nsample=int(os.environ.get("FANTASY_MC_N", "50")))
+    print("mcmc ok")
+else:
+    print("skipping monte_carlo (FANTASY_MC=0)")
 
 i=0
 x_tics=np.linspace(3000,7500, 10)

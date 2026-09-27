@@ -187,12 +187,19 @@ def write_pyqsofit(spec: dict, out: Path, fwhm: float = 2.5, ebv: float = 0.0) -
     return out
 
 
-def write_sdss_like(spec: dict, out: Path) -> Path:
-    """BADASS3 / fantasy_agn / GELATO: flux/loglam/ivar/wdisp table + z table."""
-    hdr = _base_header(spec, "erg s-1 cm-2 Ang-1")
-    flux_cgs = spec["flux_1e17"] * EFEDS_FLUX_UNIT_CGS
+def write_sdss_like(spec: dict, out: Path, flux_cgs: bool = True) -> Path:
+    """BADASS3 / fantasy_agn / GELATO: flux/loglam/ivar/wdisp table + z table.
+
+    ``flux_cgs=True`` writes the flux in absolute cgs (what BADASS3 expects and
+    fantasy_agn compensates for by multiplying by 1e17).  ``flux_cgs=False``
+    keeps the native 1e-17 units, which is what GELATO needs: GELATO uses the
+    FITS ``flux`` and ``ivar`` directly, and the ivar is calibrated for 1e-17
+    units, so a cgs flux makes its errors ~1e16x too large and it fits nothing.
+    """
+    hdr = _base_header(spec, "erg s-1 cm-2 Ang-1" if flux_cgs else "1e-17 erg s-1 cm-2 Ang-1")
+    flux = spec["flux_1e17"] * EFEDS_FLUX_UNIT_CGS if flux_cgs else spec["flux_1e17"]
     cols = [
-        fits.Column(name="flux", format="E", array=flux_cgs.astype(np.float32)),
+        fits.Column(name="flux", format="E", array=flux.astype(np.float32)),
         fits.Column(name="loglam", format="E", array=np.log10(spec["wave"]).astype(np.float32)),
         fits.Column(name="ivar", format="E", array=spec["ivar"].astype(np.float32)),
         fits.Column(name="wdisp", format="E", array=spec["wdisp"].astype(np.float32)),
@@ -289,8 +296,10 @@ def prepare_one(src: Path, runs: Path, *, fwhm: float = 2.5, ebv: float = 0.0,
 
     inputs["sculptor"] = str(write_sculptor(spec, mk("sculptor") / "spectrum.fits"))
     inputs["pyqsofit"] = str(write_pyqsofit(spec, mk("pyqsofit") / "spectrum.fits", fwhm=fwhm, ebv=ebv))
-    for tool in ("badass", "fantasy_agn", "gelato"):
-        inputs[tool] = str(write_sdss_like(spec, mk(tool) / "my_sdss.fits"))
+    for tool in ("badass", "fantasy_agn"):
+        inputs[tool] = str(write_sdss_like(spec, mk(tool) / "my_sdss.fits", flux_cgs=True))
+    # GELATO reads flux and ivar as-is; keep the native 1e-17 units.
+    inputs["gelato"] = str(write_sdss_like(spec, mk("gelato") / "my_sdss.fits", flux_cgs=False))
     inputs["gleam"] = str(write_gleam(spec, mk("gleam") / "spec1d.sdss.sdss.fiber1.1.fits"))
 
     # gleam needs the object redshift in meta.dat next to the spectrum

@@ -354,6 +354,25 @@ end = timeit.default_timer()
 
 print(f'Fitting finished in {np.round(end - start, 1)}s')
 
+# Dump the total model and its continuum/line parts on the (rest-frame) fitting
+# grid.  The cross-tool scorer (pipeline/score_fits.py) reads this to compute a
+# common, error-inflation-proof chi-square that does not depend on PyQSOFit's
+# internal error floor.
+try:
+    from astropy.table import Table as _Table
+    _conti = q_mle.f_conti_model
+    _line = q_mle.f_line_model
+    _Table({
+        'wave': np.asarray(q_mle.wave),
+        'flux': np.asarray(q_mle.line_flux) + np.asarray(_conti),  # == input flux
+        'model': np.asarray(_conti) + np.asarray(_line),
+        'conti': np.asarray(_conti),
+        'line': np.asarray(_line),
+    }).write('pyqsofit_model.csv', format='ascii.csv', overwrite=True)
+    print('wrote pyqsofit_model.csv')
+except Exception as _e:
+    print('could not write pyqsofit_model.csv:', _e)
+
 # Continuum fitting results
 print(q_mle.conti_result_name)
 print('')

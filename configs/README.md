@@ -14,6 +14,11 @@ it up when you pass `--variant <tool>=<name>` (or set `VARIANTS="tool=name,..."`
 A variant only has to differ in the one block you are exploring; copy the current
 file and edit it.
 
+`pipeline/auto_tune.py` (wrapper `analyze.sh`) **generates** variants under
+`configs/<tool>/auto_<tool>_<knob values>/` automatically and then picks the best
+one by the common reduced χ². Those directories are search artifacts; the winner
+is written to `work/auto_tune/best_configs.json` and used for the final run.
+
 ## Included examples
 
 | variant | change | purpose |
