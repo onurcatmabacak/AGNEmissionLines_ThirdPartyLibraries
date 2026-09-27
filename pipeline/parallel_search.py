@@ -68,8 +68,9 @@ def main(argv=None) -> int:
     p.add_argument("--limit", type=int, default=3)
     p.add_argument("--objects", nargs="*", default=None)
     p.add_argument("--rounds", type=int, default=1)
-    p.add_argument("--pool", type=int, default=os.cpu_count() or 4,
-                   help="max concurrent fits (default: number of CPUs)")
+    p.add_argument("--pool", type=int, default=(os.cpu_count() or 4) + 4,
+                   help="max concurrent fits (default: CPUs + 4; the containerized "
+                        "fits are partly I/O-bound, so slight oversubscription helps)")
     p.add_argument("--final-jobs", type=int, default=os.cpu_count() or 4)
     p.add_argument("--runs", type=Path, default=ROOT / "runs")
     p.add_argument("--results", type=Path, default=ROOT / "results")
