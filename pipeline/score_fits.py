@@ -33,12 +33,13 @@ import numpy as np
 
 REST = {
     "OII3727": 3727.0, "Hb4861": 4861.0, "OIII4959": 4959.0, "OIII5007": 5007.0,
-    "Ha6563": 6563.0, "NII6585": 6585.0, "SII6718": 6718.0, "SII6732": 6732.0,
+    "Ha6563": 6563.0, "NII6548": 6549.0, "NII6585": 6585.0,
+    "SII6718": 6718.0, "SII6732": 6732.0,
 }
 # half-width (Angstrom, rest frame) for integrating a narrow component; keeps
 # close doublets ([NII]/Ha, [SII] pair) from overlapping.
 NARROW_HALF = {"OII3727": 20, "Hb4861": 20, "OIII4959": 20, "OIII5007": 20,
-               "Ha6563": 10, "NII6585": 10, "SII6718": 6, "SII6732": 6}
+               "Ha6563": 10, "NII6548": 6, "NII6585": 10, "SII6718": 6, "SII6732": 6}
 BROAD_HALF = 150.0
 CHI2_HALF = 30.0
 TOOLS = ("pyqsofit", "badass", "fantasy_agn", "gelato", "gleam")
@@ -332,22 +333,38 @@ def parse_fantasy(out: Path, tag: str):
     if not csvp.exists():
         return None, []
     try:
-        arr = np.genfromtxt(csvp, delimiter=",", skip_header=1)
+        with csvp.open() as fh:
+            header = [h.strip() for h in fh.readline().rstrip("\n").split(",")]
+            arr = np.genfromtxt(fh, delimiter=",", comments=None)
     except Exception:
         return None, []
-    if arr.ndim != 2 or arr.shape[1] < 12:
+    if arr.ndim != 2 or arr.shape[1] < 5:
         return None, []
-    wave, flux, err, model = arr[:, 1], arr[:, 2], arr[:, 3], arr[:, 4]
+    col = {name: i for i, name in enumerate(header)}
+
+    def get(name):
+        return arr[:, col[name]] if name in col else None
+
+    wave, flux, err, model = get("wave"), get("flux"), get("error"), get("model")
+    if wave is None or flux is None or err is None or model is None:
+        return None, []
     chi2 = _line_chi2(wave, flux, model, np.abs(err))
     score = {"tag": tag, "tool": "fantasy_agn", "chi2_red": chi2, "chi2_kind": "line_window_computed"}
+    # Read components by column name (the model now includes the [OIII] doublet
+    # and [NII], so positional indices are no longer stable).
+    cmap = {
+        "OIIIb_br": ("OIII5007", "broad"), "OIIIb_na": ("OIII5007", "narrow"),
+        "OIIIa_br": ("OIII4959", "broad"), "OIIIa_na": ("OIII4959", "narrow"),
+        "hbeta_br": ("Hb4861", "broad"), "hbeta_na": ("Hb4861", "narrow"),
+        "halpha_br": ("Ha6563", "broad"), "halpha_na": ("Ha6563", "narrow"),
+        "NII6583_na": ("NII6585", "narrow"), "NII6548_na": ("NII6548", "narrow"),
+    }
     rows = []
-    for idx, (line, comp) in {
-        6: ("OIII5007", "broad"), 7: ("OIII5007", "narrow"),
-        8: ("Hb4861", "broad"), 9: ("Hb4861", "narrow"),
-        10: ("Ha6563", "broad"), 11: ("Ha6563", "narrow"),
-    }.items():
-        rows.append(_rec(tag, "fantasy_agn", line, comp,
-                         flux=_integrate(wave, arr[:, idx], line, comp)))
+    for name, (line, comp) in cmap.items():
+        a = get(name)
+        if a is not None:
+            rows.append(_rec(tag, "fantasy_agn", line, comp,
+                             flux=_integrate(wave, np.asarray(a, float), line, comp)))
     return score, rows
 
 

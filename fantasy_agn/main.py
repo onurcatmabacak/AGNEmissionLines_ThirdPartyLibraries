@@ -56,24 +56,32 @@ cont = continuum(s)
 broad = create_model(['hydrogen.csv', 'helium.csv'], prefix='br', amplitude=ampl, min_amplitude=min_ampl, max_amplitude=max_ampl, fwhm=fwhm_br, min_fwhm=min_fwhm_br, max_fwhm=max_fwhm_br, offset=offset, min_offset=min_offset, max_offset=max_offset)
 narrow = create_tied_model(name='OIII5007',files=['narrow_basic.csv','hydrogen.csv', 'helium.csv'],prefix='nr',amplitude=ampl, min_amplitude=min_ampl, max_amplitude=max_ampl, fwhm=fwhm_na, min_fwhm=min_fwhm_na, max_fwhm=max_fwhm_na, offset=offset, min_offset=min_offset, max_offset=max_offset)
 
-hbeta_br = create_line(name="HBeta4834_br",pos=4834, ampl=ampl, min_ampl=min_ampl, max_ampl=max_ampl, fwhm=fwhm_br, min_fwhm=min_fwhm_br, max_fwhm=max_fwhm_br, offset=offset, min_offset=min_offset, max_offset=max_offset)
-OIIIa_br = create_line(name="OIIIa4958_br",pos=4958, ampl=ampl, min_ampl=min_ampl, max_ampl=max_ampl, fwhm=fwhm_br, min_fwhm=min_fwhm_br, max_fwhm=max_fwhm_br, offset=offset, min_offset=min_offset, max_offset=max_offset)
-OIIIb_br = create_line(name="OIIIb5007_br",pos=5007, ampl=ampl, min_ampl=min_ampl, max_ampl=max_ampl, fwhm=fwhm_br, min_fwhm=min_fwhm_br, max_fwhm=max_fwhm_br, offset=offset, min_offset=min_offset, max_offset=max_offset)
-halpha_br = create_line(name="HAlpha6551_br",pos=6551, ampl=ampl, min_ampl=min_ampl, max_ampl=max_ampl, fwhm=fwhm_br, min_fwhm=min_fwhm_br, max_fwhm=max_fwhm_br, offset=offset, min_offset=min_offset, max_offset=max_offset)
-hbeta_na = create_line(name="HBeta4834_na",pos=4834, ampl=ampl, min_ampl=min_ampl, max_ampl=max_ampl, fwhm=fwhm_na, min_fwhm=min_fwhm_na, max_fwhm=max_fwhm_na, offset=offset, min_offset=min_offset, max_offset=max_offset)
-OIIIa_na = create_line(name="OIIIa4958_na",pos=4958, ampl=ampl, min_ampl=min_ampl, max_ampl=max_ampl, fwhm=fwhm_na, min_fwhm=min_fwhm_na, max_fwhm=max_fwhm_na, offset=offset, min_offset=min_offset, max_offset=max_offset)
-OIIIb_na = create_line(name="OIIIb5007_na",pos=5007, ampl=ampl, min_ampl=min_ampl, max_ampl=max_ampl, fwhm=fwhm_na, min_fwhm=min_fwhm_na, max_fwhm=max_fwhm_na, offset=offset, min_offset=min_offset, max_offset=max_offset)
-halpha_na = create_line(name="HAlpha6551_na",pos=6551, ampl=ampl, min_ampl=min_ampl, max_ampl=max_ampl, fwhm=fwhm_na, min_fwhm=min_fwhm_na, max_fwhm=max_fwhm_na, offset=offset, min_offset=min_offset, max_offset=max_offset)
+# Standard rest wavelengths (the previous 4834/6551 were wrong by ~30/12 A,
+# which put the model lines outside the scoring windows).
+WB_HB, WB_HA, WB_O3A, WB_O3B, WB_N2A, WB_N2B = 4862.68, 6564.6, 4958.90, 5006.80, 6548.05, 6583.46
+
+hbeta_br = create_line(name="HBeta4863_br",pos=WB_HB, ampl=ampl, min_ampl=min_ampl, max_ampl=max_ampl, fwhm=fwhm_br, min_fwhm=min_fwhm_br, max_fwhm=max_fwhm_br, offset=offset, min_offset=min_offset, max_offset=max_offset)
+OIIIb_br = create_line(name="OIIIb5007_br",pos=WB_O3B, ampl=ampl, min_ampl=min_ampl, max_ampl=max_ampl, fwhm=fwhm_br, min_fwhm=min_fwhm_br, max_fwhm=max_fwhm_br, offset=offset, min_offset=min_offset, max_offset=max_offset)
+# [OIII] 4959 is tied to 5007: 1/3 flux, same width and velocity.
+OIIIa_br = create_line(name="OIIIa4959_br",pos=WB_O3A, ampl=OIIIb_br.ampl/3.0, fwhm=OIIIb_br.fwhm, offset=OIIIb_br.offs_kms)
+halpha_br = create_line(name="HAlpha6565_br",pos=WB_HA, ampl=ampl, min_ampl=min_ampl, max_ampl=max_ampl, fwhm=fwhm_br, min_fwhm=min_fwhm_br, max_fwhm=max_fwhm_br, offset=offset, min_offset=min_offset, max_offset=max_offset)
+hbeta_na = create_line(name="HBeta4863_na",pos=WB_HB, ampl=ampl, min_ampl=min_ampl, max_ampl=max_ampl, fwhm=fwhm_na, min_fwhm=min_fwhm_na, max_fwhm=max_fwhm_na, offset=offset, min_offset=min_offset, max_offset=max_offset)
+OIIIb_na = create_line(name="OIIIb5007_na",pos=WB_O3B, ampl=ampl, min_ampl=min_ampl, max_ampl=max_ampl, fwhm=fwhm_na, min_fwhm=min_fwhm_na, max_fwhm=max_fwhm_na, offset=offset, min_offset=min_offset, max_offset=max_offset)
+OIIIa_na = create_line(name="OIIIa4959_na",pos=WB_O3A, ampl=OIIIb_na.ampl/3.0, fwhm=OIIIb_na.fwhm, offset=OIIIb_na.offs_kms)
+halpha_na = create_line(name="HAlpha6565_na",pos=WB_HA, ampl=ampl, min_ampl=min_ampl, max_ampl=max_ampl, fwhm=fwhm_na, min_fwhm=min_fwhm_na, max_fwhm=max_fwhm_na, offset=offset, min_offset=min_offset, max_offset=max_offset)
+# [NII] doublet, tied to the narrow width/velocity, ratio 6583/6548 = 3.
+NII6583_na = create_line(name="NII6583_na",pos=WB_N2B, ampl=ampl, min_ampl=min_ampl, max_ampl=max_ampl, fwhm=OIIIb_na.fwhm, offset=OIIIb_na.offs_kms)
+NII6548_na = create_line(name="NII6548_na",pos=WB_N2A, ampl=NII6583_na.ampl/3.0, fwhm=OIIIb_na.fwhm, offset=OIIIb_na.offs_kms)
 
 # fe=create_feii_model(max_fwhm=6000)
-model = cont + OIIIb_br + OIIIb_na + hbeta_br + halpha_br + hbeta_na + halpha_na + create_feii_model(fwhm=1000, min_fwhm=300, max_fwhm=6000, offset=0, min_offset=-800, max_offset=800)
+model = cont + OIIIb_br + OIIIa_br + OIIIb_na + OIIIa_na + NII6583_na + NII6548_na + hbeta_br + halpha_br + hbeta_na + halpha_na + create_feii_model(fwhm=1000, min_fwhm=300, max_fwhm=6000, offset=0, min_offset=-800, max_offset=800)
 
 # fits a spectrum with the above model, iterate 2 times
 s.fit(model, ntrial=10)
 print("fit ok")
 
 # creates a file to save the fitting results of the original spectra
-d={'wave':s.wave,'flux':s.flux,'error':s.err,'model':model(s.wave),'cont':cont(s.wave), 'OIIIb_br':OIIIb_br(s.wave), 'OIIIb_na':OIIIb_na(s.wave), 'hbeta_br':hbeta_br(s.wave), 'hbeta_na':hbeta_na(s.wave), 'halpha_br':halpha_br(s.wave), 'halpha_na':halpha_na(s.wave)}
+d={'wave':s.wave,'flux':s.flux,'error':s.err,'model':model(s.wave),'cont':cont(s.wave), 'OIIIb_br':OIIIb_br(s.wave), 'OIIIa_br':OIIIa_br(s.wave), 'OIIIb_na':OIIIb_na(s.wave), 'OIIIa_na':OIIIa_na(s.wave), 'NII6583_na':NII6583_na(s.wave), 'NII6548_na':NII6548_na(s.wave), 'hbeta_br':hbeta_br(s.wave), 'hbeta_na':hbeta_na(s.wave), 'halpha_br':halpha_br(s.wave), 'halpha_na':halpha_na(s.wave)}
 
 df=pd.DataFrame(d)
 df.to_csv("./output/" + s.name+'_model.csv')
