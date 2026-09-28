@@ -37,7 +37,7 @@ fit_options = {
     "mask_emline": False,  # automatically mask lines for continuum fitting.
     "mask_metal": False,  # interpolate over metal absorption lines for high-z spectra
     "fit_stat": "OLS",  # fit statistic; RCHI2=Red. Chi Square 1, ML = Max. Like. , OLS = Ordinary Least Squares
-    "n_basinhop": _env_int("BADASS_NBASINHOP", 5),  # Number of consecutive basinhopping thresholds before solution achieved
+    "n_basinhop": _env_int("BADASS_NBASINHOP", 20),  # Number of consecutive basinhopping thresholds before solution achieved
     "reweighting": False,  # If true, BADASS will reweight the noise vector to achieve a reduced chi-squared ~ 1. This is done after the initial basinhopping fit, and applied to any bootstrapped uncertainties and MCMC fitting performed afterward. This does not affect the chi-squared ratio metric used in line and configuration testing, but does effect the amplitude-over-noise and SNR calculations in BADASS.
     "test_lines": False,  # Perform line/configuration testing for multiple components
     "max_like_niter": _env_int("BADASS_MAX_LIKE_NITER", 100),  # number of maximum likelihood iterations
@@ -115,7 +115,7 @@ absorp_options = {
 # User lines overrides the default line list with a user-input line list!
 user_lines = {
     "NA_OII": {
-        "center": 3784,
+        "center": 3727.09,
         "amp": "free",
         "disp": "free",
         "voff": "free",
@@ -124,7 +124,7 @@ user_lines = {
         "ncomp": 1,
     },
     "NA_H_BETA": {
-        "center": 4834,
+        "center": 4862.691,
         "amp": "free",
         "disp": "free",
         "voff": "free",
@@ -132,17 +132,19 @@ user_lines = {
         "label": r"H$\beta$",
         "ncomp": 1,
     },
+    # [OIII] 4959 is tied to [OIII] 5007 (amp, width, velocity), ratio 1/2.98.
+    # Free amplitudes let the narrow 4959 line collapse to ~0.
     "NA_OIII_a": {
-        "center": 4931,
-        "amp": "free",
-        "disp": "free",
-        "voff": "free",
+        "center": 4960.295,
+        "amp": "(NA_OIII_b_AMP/2.98)",
+        "disp": "NA_OIII_b_DISP",
+        "voff": "NA_OIII_b_VOFF",
         "line_type": "na",
         "label": r"[OIIIa]",
         "ncomp": 1,
     },
     "NA_OIII_b": {
-        "center": 5007,
+        "center": 5008.240,
         "amp": "free",
         "disp": "free",
         "voff": "free",
@@ -151,7 +153,7 @@ user_lines = {
         "ncomp": 1,
     },
     "NA_H_ALPHA": {
-        "center": 6551,
+        "center": 6564.6,
         "amp": "free",
         "disp": "free",
         "voff": "free",
@@ -160,7 +162,7 @@ user_lines = {
         "ncomp": 1,
     },
     "BR_H_BETA": {
-        "center": 4834,
+        "center": 4862.691,
         "amp": "free",
         "disp": "free",
         "voff": "free",
@@ -168,7 +170,7 @@ user_lines = {
         "ncomp": 1,
     },
     "BR_OII": {
-        "center": 3784,
+        "center": 3727.09,
         "amp": "free",
         "disp": "free",
         "voff": "free",
@@ -176,15 +178,15 @@ user_lines = {
         "ncomp": 1,
     },
     "BR_OIII_a": {
-        "center": 4931,
-        "amp": "free",
-        "disp": "free",
-        "voff": "free",
+        "center": 4960.295,
+        "amp": "(BR_OIII_b_AMP/2.98)",
+        "disp": "BR_OIII_b_DISP",
+        "voff": "BR_OIII_b_VOFF",
         "line_type": "br",
         "ncomp": 1,
     },
     "BR_OIII_b": {
-        "center": 5007,
+        "center": 5008.240,
         "amp": "free",
         "disp": "free",
         "voff": "free",
@@ -192,7 +194,7 @@ user_lines = {
         "ncomp": 1,
     },
     "BR_H_ALPHA": {
-        "center": 6551,
+        "center": 6564.6,
         "amp": "free",
         "disp": "free",
         "voff": "free",
@@ -205,9 +207,9 @@ user_lines = {
 # configs = [["NA_H_BETA", "NA_OIII_a", "NA_OIII_b", "NA_H_ALPHA"], ["BR_H_BETA", "BR_OIII_a", "BR_OIII_b", "BR_H_ALPHA"]]
 configs = []
 
-user_constraints = [
-    ("NA_OIII_b_AMP", "NA_OIII_a_AMP"),
-]
+# The [OIII] doublet ratio is now enforced in user_lines; the soft
+# inequality is redundant and would conflict with the fixed ratio.
+user_constraints = []
 
 # User defined masked regions (list of tuples)
 user_mask = [

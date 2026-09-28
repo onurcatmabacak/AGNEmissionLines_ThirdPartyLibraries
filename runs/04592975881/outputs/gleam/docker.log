@@ -5,7 +5,7 @@ Warning: non-constant dispersion
     (Model(constant) + Model(gaussian, prefix='g0_'))
 [[Fit Statistics]]
     # fitting method   = leastsq
-    # function evals   = 36
+    # function evals   = 31
     # data points      = 93
     # variables        = 4
     chi-square         = 67.0947730
@@ -14,12 +14,12 @@ Warning: non-constant dispersion
     Bayesian info crit = -12.2334837
     R-squared          = 0.92596853
 [[Variables]]
-    c:             490.707383 +/- 1.29370818 (0.26%) (init = 493.2707)
-    g0_amplitude:  1222.45302 +/- 46.7587193 (3.82%) (init = 335.8709)
-    g0_center:     3729.60941 +/- 0.12115129 (0.00%) (init = 3728.48)
-    g0_sigma:      3.07617587 +/- 0.12625997 (4.10%) (init = 0.8181143)
-    g0_fwhm:       7.24384047 +/- 0.29731951 (4.10%) == '2.3548200*g0_sigma'
-    g0_height:     158.537171 +/- 5.48481406 (3.46%) == '0.3989423*g0_amplitude/max(1e-15, g0_sigma)'
+    c:             490.707402 +/- 1.29370880 (0.26%) (init = 493.2707)
+    g0_amplitude:  1222.45147 +/- 46.7588300 (3.83%) (init = 403.045)
+    g0_center:     3729.60941 +/- 0.12115340 (0.00%) (init = 3728.48)
+    g0_sigma:      3.07616912 +/- 0.12626038 (4.10%) (init = 0.9817372)
+    g0_fwhm:       7.24382457 +/- 0.29732047 (4.10%) == '2.3548200*g0_sigma'
+    g0_height:     158.537317 +/- 5.48484391 (3.46%) == '0.3989423*g0_amplitude/max(1e-15, g0_sigma)'
 [[Correlations]] (unreported correlations are < 0.100)
     C(g0_amplitude, g0_sigma) = +0.6213
     C(c, g0_amplitude)        = -0.4526
@@ -30,41 +30,55 @@ Warning: non-constant dispersion
     ((Model(constant) + Model(gaussian, prefix='g0_')) + Model(gaussian, prefix='g1_'))
 [[Fit Statistics]]
     # fitting method   = leastsq
-    # function evals   = 213
+    # function evals   = 13365
     # data points      = 72
     # variables        = 7
-    chi-square         = 63.9253522
-    reduced chi-square = 0.98346696
-    Akaike info crit   = 5.43559368
-    Bayesian info crit = 21.3722565
-    R-squared          = 0.94366598
+    chi-square         = 111.159709
+    reduced chi-square = 1.71014937
+    Akaike info crit   = 45.2697343
+    Bayesian info crit = 61.2063972
+    R-squared          = 0.90204085
+##  Warning: uncertainties could not be estimated:
+    g0_center:     at boundary
+    g1_center:     at boundary
 [[Variables]]
-    c:             361.956971 +/- 5.73727601 (1.59%) (init = 408.433)
-    g0_amplitude:  4083.73517 +/- 469.837627 (11.51%) (init = 211.377)
-    g0_center:     4860.48764 +/- 0.50065191 (0.01%) (init = 4862.68)
-    g0_sigma:      16.8737919 +/- 1.45495913 (8.62%) (init = 0.8181143)
-    g1_amplitude:  356.680397 +/- 77.5226645 (21.73%) (init = 211.377)
-    g1_center:     4862.83255 +/- 0.39389912 (0.01%) (init = 4862.68)
-    g1_sigma:      2.87173731 +/- 0.49624062 (17.28%) (init = 0.8181143)
-    g0_fwhm:       39.7347426 +/- 3.42616683 (8.62%) == '2.3548200*g0_sigma'
-    g0_height:     96.5505983 +/- 5.16983966 (5.35%) == '0.3989423*g0_amplitude/max(1e-15, g0_sigma)'
-    g1_fwhm:       6.76242446 +/- 1.16855733 (17.28%) == '2.3548200*g1_sigma'
-    g1_height:     49.5501093 +/- 6.84034141 (13.80%) == '0.3989423*g1_amplitude/max(1e-15, g1_sigma)'
+    c:             372.756239 (init = 408.433)
+    g0_amplitude:  153032.148 (init = 253.6524)
+    g0_center:     4859.70463 (init = 4862.68)
+    g0_sigma:      13.6629299 (init = 0.9817372)
+    g1_amplitude: -149530.220 (init = 253.6524)
+    g1_center:     4859.68000 (init = 4862.68)
+    g1_sigma:      13.6799964 (init = 0.9817372)
+    g0_fwhm:       32.1737405 == '2.3548200*g0_sigma'
+    g0_height:     4468.36791 == '0.3989423*g0_amplitude/max(1e-15, g0_sigma)'
+    g1_fwhm:       32.2139291 == '2.3548200*g1_sigma'
+    g1_height:    -4360.66853 == '0.3989423*g1_amplitude/max(1e-15, g1_sigma)'
+NonDetection when fitting set of lines [4862.68 4862.68] Angstrom, try a simpler model
+[[Model]]
+    (Model(constant) + Model(gaussian, prefix='g0_'))
+[[Fit Statistics]]
+    # fitting method   = leastsq
+    # function evals   = 66
+    # data points      = 72
+    # variables        = 4
+    chi-square         = 111.424897
+    reduced chi-square = 1.63860142
+    Akaike info crit   = 39.4412964
+    Bayesian info crit = 48.5479608
+    R-squared          = 0.90180716
+[[Variables]]
+    c:             372.745062 +/- 3.65071676 (0.98%) (init = 408.433)
+    g0_amplitude:  3504.69961 +/- 271.814604 (7.76%) (init = 253.6524)
+    g0_center:     4860.62413 +/- 0.48187865 (0.01%) (init = 4862.68)
+    g0_sigma:      12.9262223 +/- 0.76325926 (5.90%) (init = 0.9817372)
+    g0_fwhm:       30.4389268 +/- 1.79733818 (5.90%) == '2.3548200*g0_sigma'
+    g0_height:     108.165625 +/- 4.40136843 (4.07%) == '0.3989423*g0_amplitude/max(1e-15, g0_sigma)'
 [[Correlations]] (unreported correlations are < 0.100)
-    C(c, g0_amplitude)            = -0.9698
-    C(c, g0_sigma)                = -0.9084
-    C(g0_amplitude, g0_sigma)     = +0.8974
-    C(g1_amplitude, g1_sigma)     = +0.7727
-    C(g0_sigma, g1_amplitude)     = +0.5927
-    C(g0_sigma, g1_sigma)         = +0.4143
-    C(c, g1_amplitude)            = -0.4088
-    C(g0_amplitude, g1_amplitude) = +0.2935
-    C(c, g1_sigma)                = -0.2781
-    C(g0_center, g1_amplitude)    = -0.2048
-    C(g0_amplitude, g1_sigma)     = +0.1852
-    C(g0_center, g1_center)       = -0.1720
-    C(g0_center, g1_sigma)        = -0.1540
-    C(g0_sigma, g1_center)        = -0.1177
+    C(c, g0_amplitude)        = -0.9092
+    C(g0_amplitude, g0_sigma) = +0.8566
+    C(c, g0_sigma)            = -0.7748
+Warning: non-constant dispersion
+Warning: non-constant dispersion
 Warning: non-constant dispersion
 Warning: non-constant dispersion
 [[Model]]
@@ -80,12 +94,12 @@ Warning: non-constant dispersion
     Bayesian info crit = 127.500104
     R-squared          = 0.85807598
 [[Variables]]
-    c:             198.920317 +/- 2.11752594 (1.06%) (init = 203.4854)
-    g0_amplitude:  1156.98733 +/- 75.1398946 (6.49%) (init = 317.6264)
-    g0_center:     4960.64252 +/- 0.20336943 (0.00%) (init = 4960.3)
-    g0_sigma:      3.04864665 +/- 0.21211288 (6.96%) (init = 0.8181143)
-    g0_fwhm:       7.17901410 +/- 0.49948765 (6.96%) == '2.3548200*g0_sigma'
-    g0_height:     151.401996 +/- 8.87275627 (5.86%) == '0.3989423*g0_amplitude/max(1e-15, g0_sigma)'
+    c:             198.920319 +/- 2.11752751 (1.06%) (init = 203.4854)
+    g0_amplitude:  1156.98716 +/- 75.1401604 (6.49%) (init = 381.1516)
+    g0_center:     4960.64251 +/- 0.20337053 (0.00%) (init = 4960.3)
+    g0_sigma:      3.04864586 +/- 0.21211396 (6.96%) (init = 0.9817372)
+    g0_fwhm:       7.17901224 +/- 0.49949019 (6.96%) == '2.3548200*g0_sigma'
+    g0_height:     151.402012 +/- 8.87279583 (5.86%) == '0.3989423*g0_amplitude/max(1e-15, g0_sigma)'
 [[Correlations]] (unreported correlations are < 0.100)
     C(g0_amplitude, g0_sigma) = +0.6223
     C(c, g0_amplitude)        = -0.4568
@@ -96,7 +110,7 @@ Warning: non-constant dispersion
     (Model(constant) + Model(gaussian, prefix='g0_'))
 [[Fit Statistics]]
     # fitting method   = leastsq
-    # function evals   = 46
+    # function evals   = 61
     # data points      = 68
     # variables        = 4
     chi-square         = 1156.94191
@@ -105,12 +119,12 @@ Warning: non-constant dispersion
     Bayesian info crit = 209.591922
     R-squared          = 0.95025853
 [[Variables]]
-    c:             59.8111545 +/- 1.27292197 (2.13%) (init = 58.81953)
-    g0_amplitude:  1309.75969 +/- 48.1407662 (3.68%) (init = 336.6109)
-    g0_center:     5008.65524 +/- 0.12751581 (0.00%) (init = 5008.24)
-    g0_sigma:      3.42955279 +/- 0.13379664 (3.90%) (init = 0.8181143)
-    g0_fwhm:       8.07597951 +/- 0.31506701 (3.90%) == '2.3548200*g0_sigma'
-    g0_height:     152.357632 +/- 4.98727726 (3.27%) == '0.3989423*g0_amplitude/max(1e-15, g0_sigma)'
+    c:             59.8113462 +/- 1.27291197 (2.13%) (init = 58.81953)
+    g0_amplitude:  1309.74466 +/- 48.1391410 (3.68%) (init = 403.9331)
+    g0_center:     5008.65529 +/- 0.12750997 (0.00%) (init = 5008.24)
+    g0_sigma:      3.42948632 +/- 0.13379013 (3.90%) (init = 0.9817372)
+    g0_fwhm:       8.07582297 +/- 0.31505168 (3.90%) == '2.3548200*g0_sigma'
+    g0_height:     152.358838 +/- 4.98720546 (3.27%) == '0.3989423*g0_amplitude/max(1e-15, g0_sigma)'
 [[Correlations]] (unreported correlations are < 0.100)
     C(g0_amplitude, g0_sigma) = +0.6281
     C(c, g0_amplitude)        = -0.4822
@@ -121,164 +135,95 @@ Warning: non-constant dispersion
     (((Model(constant) + Model(gaussian, prefix='g0_')) + Model(gaussian, prefix='g1_')) + Model(gaussian, prefix='g2_'))
 [[Fit Statistics]]
     # fitting method   = leastsq
-    # function evals   = 686
+    # function evals   = 599
     # data points      = 66
     # variables        = 10
-    chi-square         = 503.990903
-    reduced chi-square = 8.99983755
-    Akaike info crit   = 154.171629
-    Bayesian info crit = 176.068177
-    R-squared          = 0.97583703
+    chi-square         = 170.843229
+    reduced chi-square = 3.05077195
+    Akaike info crit   = 82.7720459
+    Bayesian info crit = 104.668593
+    R-squared          = 0.99180922
 [[Variables]]
-    c:             98.2716933 +/- 4.96434759 (5.05%) (init = 162.0012)
-    g0_amplitude:  22105.0035 +/- 6.9835e+11 (3159220739.64%) (init = 142.4384)
-    g0_center:     6561.64494 +/- 648758.393 (9887.13%) (init = 6564.6)
-    g0_sigma:      20.3494043 +/- 12640.1288 (62115.47%) (init = 0.8181143)
-    g1_amplitude: -16227.3685 +/- 6.9835e+11 (4303506483.15%) (init = 142.4384)
-    g1_center:     6561.60000 +/- 1306530.63 (19911.77%) (init = 6564.6)
-    g1_sigma:      20.3497101 +/- 11699.5611 (57492.52%) (init = 0.8181143)
-    g2_amplitude:  196.769640 +/- 59.8657082 (30.42%) (init = 142.4384)
-    g2_center:     6587.89743 +/- 0.63078008 (0.01%) (init = 6585.27)
-    g2_sigma:      3.05657533 +/- 0.76274067 (24.95%) (init = 0.8181143)
-    g0_fwhm:       47.9191842 +/- 29765.2281 (62115.47%) == '2.3548200*g0_sigma'
-    g0_height:     433.360151 +/- 1.3691e+10 (3159162443.55%) == '0.3989423*g0_amplitude/max(1e-15, g0_sigma)'
-    g1_fwhm:       47.9199044 +/- 27550.3603 (57492.52%) == '2.3548200*g1_sigma'
-    g1_height:    -318.126580 +/- 1.3691e+10 (4303552465.14%) == '0.3989423*g1_amplitude/max(1e-15, g1_sigma)'
-    g2_fwhm:       7.19768472 +/- 1.79611698 (24.95%) == '2.3548200*g2_sigma'
-    g2_height:     25.6822503 +/- 5.06397051 (19.72%) == '0.3989423*g2_amplitude/max(1e-15, g2_sigma)'
+    c:             94.0628240 +/- 1.96030024 (2.08%) (init = 162.0012)
+    g0_amplitude:  230.145989 +/- 33.7080719 (14.65%) (init = 170.926)
+    g0_center:     6565.70805 +/- 0.33340832 (0.01%) (init = 6564.6)
+    g0_sigma:      3.22166581 +/- 0.40104822 (12.45%) (init = 0.9817372)
+    g1_amplitude:  6208.01071 +/- 242.656274 (3.91%) (init = 170.926)
+    g1_center:     6561.60000 +/- 0.08203846 (0.00%) (init = 6564.6)
+    g1_sigma:      22.6151720 +/- 0.62120199 (2.75%) (init = 0.9817372)
+    g2_amplitude:  186.761718 +/- 31.3863173 (16.81%) (init = 170.926)
+    g2_center:     6587.55006 +/- 0.36198041 (0.01%) (init = 6585.27)
+    g2_sigma:      2.98516831 +/- 0.43509786 (14.58%) (init = 0.9817372)
+    g0_fwhm:       7.58644307 +/- 0.94439637 (12.45%) == '2.3548200*g0_sigma'
+    g0_height:     28.4992223 +/- 2.78271307 (9.76%) == '0.3989423*g0_amplitude/max(1e-15, g0_sigma)'
+    g1_fwhm:       53.2546592 +/- 1.46281887 (2.75%) == '2.3548200*g1_sigma'
+    g1_height:     109.512237 +/- 2.17224985 (1.98%) == '0.3989423*g1_amplitude/max(1e-15, g1_sigma)'
+    g2_fwhm:       7.02953403 +/- 1.02457715 (14.58%) == '2.3548200*g2_sigma'
+    g2_height:     24.9591117 +/- 2.85315332 (11.43%) == '0.3989423*g2_amplitude/max(1e-15, g2_sigma)'
 [[Correlations]] (unreported correlations are < 0.100)
-    C(g0_amplitude, g1_amplitude) = -1.0000
-    C(g0_sigma, g1_center)        = +0.9995
-    C(g0_center, g1_sigma)        = +0.9977
-    C(g0_sigma, g1_amplitude)     = -0.9383
-    C(g0_amplitude, g0_sigma)     = +0.9383
-    C(g1_amplitude, g1_center)    = -0.9275
-    C(g0_amplitude, g1_center)    = +0.9275
-    C(g0_amplitude, g0_center)    = -0.8391
-    C(g0_center, g1_amplitude)    = +0.8391
-    C(g0_amplitude, g1_sigma)     = -0.8000
-    C(g1_amplitude, g1_sigma)     = +0.8000
-    C(g2_amplitude, g2_sigma)     = +0.7637
-    C(c, g1_sigma)                = +0.6369
-    C(c, g0_center)               = +0.6062
-    C(g0_center, g0_sigma)        = -0.5991
-    C(g0_center, g1_center)       = -0.5750
-    C(g0_sigma, g1_sigma)         = -0.5431
-    C(g1_center, g1_sigma)        = -0.5178
-    C(g1_sigma, g2_amplitude)     = -0.3506
-    C(g0_center, g2_amplitude)    = -0.3412
-    C(g1_sigma, g2_sigma)         = -0.2540
-    C(g0_center, g2_sigma)        = -0.2491
-    C(c, g0_amplitude)            = -0.2372
-    C(c, g1_amplitude)            = +0.2372
-    C(g1_amplitude, g2_amplitude) = -0.2156
-    C(g0_amplitude, g2_amplitude) = +0.2156
-    C(c, g2_center)               = +0.1892
-    C(g1_amplitude, g2_sigma)     = -0.1723
-    C(g0_amplitude, g2_sigma)     = +0.1723
-    C(g1_sigma, g2_center)        = +0.1655
-    C(g0_center, g2_center)       = +0.1584
-NonDetection when fitting set of lines [6564.6  6564.6  6585.27] Angstrom, try a simpler model
-[[Model]]
-    ((Model(constant) + Model(gaussian, prefix='g0_')) + Model(gaussian, prefix='g1_'))
-[[Fit Statistics]]
-    # fitting method   = leastsq
-    # function evals   = 9304
-    # data points      = 66
-    # variables        = 7
-    chi-square         = 751.303386
-    reduced chi-square = 12.7339557
-    Akaike info crit   = 174.522217
-    Bayesian info crit = 189.849800
-    R-squared          = 0.96398007
-##  Warning: uncertainties could not be estimated:
-    g1_center:     at boundary
-[[Variables]]
-    c:             92.1222117 (init = 162.0012)
-    g0_amplitude:  59210.7723 (init = 142.4384)
-    g0_center:     6561.75740 (init = 6564.6)
-    g0_sigma:      23.0225523 (init = 0.8181143)
-    g1_amplitude: -52399.3617 (init = 142.4384)
-    g1_center:     6561.60000 (init = 6564.6)
-    g1_sigma:      23.0729048 (init = 0.8181143)
-    g0_fwhm:       54.2139667 == '2.3548200*g0_sigma'
-    g0_height:     1026.02359 == '0.3989423*g0_amplitude/max(1e-15, g0_sigma)'
-    g1_fwhm:       54.3325376 == '2.3548200*g1_sigma'
-    g1_height:    -906.011710 == '0.3989423*g1_amplitude/max(1e-15, g1_sigma)'
-NonDetection when fitting set of lines [6564.6 6564.6] Angstrom, try a simpler model
-[[Model]]
-    ((Model(constant) + Model(gaussian, prefix='g0_')) + Model(gaussian, prefix='g1_'))
-[[Fit Statistics]]
-    # fitting method   = leastsq
-    # function evals   = 113
-    # data points      = 66
-    # variables        = 7
-    chi-square         = 503.990918
-    reduced chi-square = 8.54221894
-    Akaike info crit   = 148.171631
-    Bayesian info crit = 163.499215
-    R-squared          = 0.97583703
-[[Variables]]
-    c:             98.2720693 +/- 2.56977215 (2.61%) (init = 162.0012)
-    g0_amplitude:  5877.58707 +/- 305.628828 (5.20%) (init = 142.4384)
-    g0_center:     6561.76896 +/- 0.44971288 (0.01%) (init = 6564.6)
-    g0_sigma:      20.3479157 +/- 0.76200712 (3.74%) (init = 0.8181143)
-    g1_amplitude:  196.774014 +/- 52.7694127 (26.82%) (init = 142.4384)
-    g1_center:     6587.89747 +/- 0.59071638 (0.01%) (init = 6585.27)
-    g1_sigma:      3.05660036 +/- 0.70860295 (23.18%) (init = 0.8181143)
-    g0_fwhm:       47.9156789 +/- 1.79438960 (3.74%) == '2.3548200*g0_sigma'
-    g0_height:     115.236280 +/- 2.67048035 (2.32%) == '0.3989423*g0_amplitude/max(1e-15, g0_sigma)'
-    g1_fwhm:       7.19774366 +/- 1.66863240 (23.18%) == '2.3548200*g1_sigma'
-    g1_height:     25.6826109 +/- 4.73698898 (18.44%) == '0.3989423*g1_amplitude/max(1e-15, g1_sigma)'
-[[Correlations]] (unreported correlations are < 0.100)
-    C(c, g0_amplitude)            = -0.9321
-    C(g0_amplitude, g0_sigma)     = +0.9165
-    C(c, g0_sigma)                = -0.8149
-    C(g1_amplitude, g1_sigma)     = +0.7370
-    C(g0_center, g1_amplitude)    = -0.6336
-    C(g0_sigma, g1_amplitude)     = -0.5966
-    C(g0_amplitude, g1_amplitude) = -0.5462
-    C(g0_center, g1_sigma)        = -0.4582
-    C(g0_sigma, g1_sigma)         = -0.4119
-    C(g0_amplitude, g0_center)    = +0.4014
-    C(g0_center, g0_sigma)        = +0.4009
-    C(g0_amplitude, g1_sigma)     = -0.3785
-    C(c, g1_amplitude)            = +0.3679
-    C(c, g0_center)               = -0.3156
-    C(c, g1_sigma)                = +0.2467
-Warning: non-constant dispersion
-Warning: non-constant dispersion
+    C(c, g1_amplitude)            = -0.9501
+    C(g1_amplitude, g1_sigma)     = +0.8796
+    C(c, g1_sigma)                = -0.8555
+    C(g0_amplitude, g0_sigma)     = +0.7518
+    C(g2_amplitude, g2_sigma)     = +0.7434
+    C(g1_center, g2_amplitude)    = -0.6562
+    C(g1_amplitude, g2_amplitude) = -0.5486
+    C(g1_center, g2_sigma)        = -0.4828
+    C(g1_sigma, g2_amplitude)     = -0.4504
+    C(g1_amplitude, g1_center)    = +0.4001
+    C(c, g2_amplitude)            = +0.3954
+    C(g1_amplitude, g2_sigma)     = -0.3848
+    C(g0_amplitude, g1_center)    = -0.3566
+    C(g0_amplitude, g1_sigma)     = +0.3395
+    C(c, g1_center)               = -0.3087
+    C(g1_sigma, g2_sigma)         = -0.3061
+    C(g0_sigma, g1_center)        = -0.2728
+    C(c, g2_sigma)                = +0.2691
+    C(g0_amplitude, g2_amplitude) = +0.2307
+    C(g1_center, g1_sigma)        = +0.2270
+    C(g0_sigma, g1_sigma)         = +0.2208
+    C(g0_center, g1_center)       = -0.2088
+    C(g0_sigma, g2_amplitude)     = +0.1896
+    C(g0_amplitude, g2_sigma)     = +0.1861
+    C(g0_center, g2_amplitude)    = +0.1703
+    C(g0_center, g1_sigma)        = -0.1640
+    C(g0_center, g1_amplitude)    = -0.1618
+    C(g0_sigma, g2_sigma)         = +0.1506
+    C(c, g0_center)               = +0.1434
+    C(g0_amplitude, g2_center)    = -0.1354
+    C(c, g0_amplitude)            = -0.1288
+    C(g0_center, g2_sigma)        = +0.1218
 Warning: non-constant dispersion
 Warning: non-constant dispersion
 [[Model]]
     ((Model(constant) + Model(gaussian, prefix='g0_')) + Model(gaussian, prefix='g1_'))
 [[Fit Statistics]]
     # fitting method   = leastsq
-    # function evals   = 114
+    # function evals   = 122
     # data points      = 61
     # variables        = 7
     chi-square         = 139.248204
     reduced chi-square = 2.57867044
-    Akaike info crit   = 64.3484310
+    Akaike info crit   = 64.3484311
     Bayesian info crit = 79.1245481
     R-squared          = 0.43611048
 [[Variables]]
-    c:             397.396273 +/- 5.18224045 (1.30%) (init = 420.6564)
-    g0_amplitude:  1119.27701 +/- 280.626037 (25.07%) (init = 129.3315)
-    g0_center:     6719.94510 +/- 1.36044761 (0.02%) (init = 6718.29)
-    g0_sigma:      5.58980729 +/- 1.54695710 (27.67%) (init = 0.8181143)
-    g1_amplitude:  493.551456 +/- 184.512292 (37.38%) (init = 129.3315)
-    g1_center:     6734.59146 +/- 1.02235188 (0.02%) (init = 6732.67)
-    g1_sigma:      2.65269145 +/- 1.03757626 (39.11%) (init = 0.8181143)
-    g0_fwhm:       13.1629900 +/- 3.64280553 (27.67%) == '2.3548200*g0_sigma'
-    g0_height:     79.8823502 +/- 16.4700067 (20.62%) == '0.3989423*g0_amplitude/max(1e-15, g0_sigma)'
-    g1_fwhm:       6.24661089 +/- 2.44330532 (39.11%) == '2.3548200*g1_sigma'
-    g1_height:     74.2259537 +/- 22.8301072 (30.76%) == '0.3989423*g1_amplitude/max(1e-15, g1_sigma)'
+    c:             397.395568 +/- 5.18234340 (1.30%) (init = 420.6564)
+    g0_amplitude:  1119.33488 +/- 280.673125 (25.07%) (init = 155.1978)
+    g0_center:     6719.94492 +/- 1.36079392 (0.02%) (init = 6718.29)
+    g0_sigma:      5.59025625 +/- 1.54732003 (27.68%) (init = 0.9817372)
+    g1_amplitude:  493.560169 +/- 184.507235 (37.38%) (init = 155.1978)
+    g1_center:     6734.59156 +/- 1.02227004 (0.02%) (init = 6732.67)
+    g1_sigma:      2.65284099 +/- 1.03748428 (39.11%) (init = 0.9817372)
+    g0_fwhm:       13.1640472 +/- 3.64366013 (27.68%) == '2.3548200*g0_sigma'
+    g0_height:     79.8800647 +/- 16.4712030 (20.62%) == '0.3989423*g0_amplitude/max(1e-15, g0_sigma)'
+    g1_fwhm:       6.24696301 +/- 2.44308873 (39.11%) == '2.3548200*g1_sigma'
+    g1_height:     74.2230801 +/- 22.8264841 (30.75%) == '0.3989423*g1_amplitude/max(1e-15, g1_sigma)'
 [[Correlations]] (unreported correlations are < 0.100)
     C(g0_amplitude, g0_sigma)     = +0.6986
-    C(g1_amplitude, g1_sigma)     = +0.6775
+    C(g1_amplitude, g1_sigma)     = +0.6776
     C(c, g0_amplitude)            = -0.4926
-    C(g0_sigma, g1_amplitude)     = -0.3920
+    C(g0_sigma, g1_amplitude)     = -0.3921
     C(g0_sigma, g1_center)        = +0.3724
     C(g0_center, g1_amplitude)    = -0.3372
     C(g0_amplitude, g1_center)    = +0.3160
@@ -286,54 +231,54 @@ Warning: non-constant dispersion
     C(g0_center, g1_sigma)        = -0.2957
     C(g0_center, g1_center)       = +0.2534
     C(c, g0_sigma)                = -0.2531
-    C(c, g1_amplitude)            = -0.2530
-    C(g0_amplitude, g1_amplitude) = -0.2154
+    C(c, g1_amplitude)            = -0.2529
+    C(g0_amplitude, g1_amplitude) = -0.2155
     C(g0_amplitude, g1_sigma)     = -0.2136
     C(g0_center, g0_sigma)        = +0.1959
-    C(g1_amplitude, g1_center)    = -0.1884
+    C(g1_amplitude, g1_center)    = -0.1885
     C(g1_center, g1_sigma)        = -0.1606
-    C(g0_amplitude, g0_center)    = +0.1340
-    C(c, g1_sigma)                = -0.1327
+    C(g0_amplitude, g0_center)    = +0.1341
+    C(c, g1_sigma)                = -0.1326
     C(c, g1_center)               = -0.1102
 Warning: non-constant dispersion
 Matplotlib Version: 3.7.5
-total 4352
--rw-rw-r-- 1 1000  984  14578 Sep 22 05:44 docker.log
--rw-r--r-- 1 root root 489294 Sep 27 17:35 linefits.sdss.sdss.fiber1.001.Ha.Ha_broad.NII1.png
--rw-r--r-- 1 1000  984 485333 Sep 22 05:42 linefits.sdss.sdss.fiber1.001.Ha.NII1.png
--rw-r--r-- 1 root root 499109 Sep 27 17:34 linefits.sdss.sdss.fiber1.001.Hb.Hb_broad.png
--rw-r--r-- 1 1000  984 482277 Sep 22 05:39 linefits.sdss.sdss.fiber1.001.Hb.png
--rw-r--r-- 1 root root 475571 Sep 27 17:34 linefits.sdss.sdss.fiber1.001.OII.png
--rw-r--r-- 1 root root 470744 Sep 27 17:34 linefits.sdss.sdss.fiber1.001.OIII4.png
--rw-r--r-- 1 root root 464622 Sep 27 17:35 linefits.sdss.sdss.fiber1.001.OIII5.png
--rw-r--r-- 1 root root 485499 Sep 27 17:36 linefits.sdss.sdss.fiber1.001.SII1.SII2.png
--rw-r--r-- 1 root root  20160 Sep 27 17:36 linefits.sdss.sdss.fiber1.001.fits
--rw-r--r-- 1 root root 549623 Sep 27 17:36 linefits.sdss.sdss.fiber1.001.png
+total 4344
+-rw-rw-r-- 1 1000 1000  15863 Sep 28 16:36 docker.log
+-rw-r--r-- 1 root root 488191 Sep 28 18:03 linefits.sdss.sdss.fiber1.001.Ha.Ha_broad.NII1.png
+-rw-rw-r-- 1 1000 1000 485333 Sep 27 23:39 linefits.sdss.sdss.fiber1.001.Ha.NII1.png
+-rw-r--r-- 1 root root 494229 Sep 28 18:03 linefits.sdss.sdss.fiber1.001.Hb.Hb_broad.png
+-rw-rw-r-- 1 1000 1000 482277 Sep 27 23:39 linefits.sdss.sdss.fiber1.001.Hb.png
+-rw-r--r-- 1 root root 475569 Sep 28 18:02 linefits.sdss.sdss.fiber1.001.OII.png
+-rw-r--r-- 1 root root 470747 Sep 28 18:03 linefits.sdss.sdss.fiber1.001.OIII4.png
+-rw-r--r-- 1 root root 464647 Sep 28 18:03 linefits.sdss.sdss.fiber1.001.OIII5.png
+-rw-r--r-- 1 root root 485473 Sep 28 18:04 linefits.sdss.sdss.fiber1.001.SII1.SII2.png
+-rw-r--r-- 1 root root  20160 Sep 28 18:04 linefits.sdss.sdss.fiber1.001.fits
+-rw-r--r-- 1 root root 547932 Sep 28 18:04 linefits.sdss.sdss.fiber1.001.png
 total 12K
 -rw-r--r-- 1 root root 1.2K Sep 21 02:20 =5.2
 drwxr-xr-x 1 root root 4.0K Sep 22 10:32 input
-drwxrwxr-x 2 1000  984 4.0K Sep 27 17:36 output
+drwxrwxr-x 2 1000 1000 4.0K Sep 28 18:04 output
 -rw-r--r-- 1 root root 1.2K Sep 21 02:20 /app/=5.2
 
 /app/input:
 total 124K
--rw-rw-r-- 1 1000  984  12K Aug 28 20:16 Sky_bands.fits
+-rw-rw-r-- 1 1000 1000  12K Aug 28 20:16 Sky_bands.fits
 -rw-rw-r-- 1 root root 1.6K Sep 22 04:00 gleam.sh
--rw-rw-r-- 1 1000  984 2.4K Sep 27 16:29 gleamconfig.yaml
--rw-rw-r-- 1 1000  984 8.5K Sep 27 12:39 line_table.fits
--rw-rw-r-- 1 1000  984  115 Sep 27 17:09 meta.dat
--rw-rw-r-- 1 1000 1000  85K Sep 27 17:09 spec1d.sdss.sdss.fiber1.1.fits
+-rw-rw-r-- 1 1000 1000 2.4K Sep 28 13:41 gleamconfig.yaml
+-rw-rw-r-- 1 1000 1000 8.5K Sep 27 12:39 line_table.fits
+-rw-rw-r-- 1 1000 1000  115 Sep 28 18:01 meta.dat
+-rw-rw-r-- 1 1000 1000  85K Sep 28 18:01 spec1d.sdss.sdss.fiber1.1.fits
 
 /app/output:
 total 4.3M
--rw-rw-r-- 1 1000  984  15K Sep 22 05:44 docker.log
--rw-r--r-- 1 root root 478K Sep 27 17:35 linefits.sdss.sdss.fiber1.001.Ha.Ha_broad.NII1.png
--rw-r--r-- 1 1000  984 474K Sep 22 05:42 linefits.sdss.sdss.fiber1.001.Ha.NII1.png
--rw-r--r-- 1 root root 488K Sep 27 17:34 linefits.sdss.sdss.fiber1.001.Hb.Hb_broad.png
--rw-r--r-- 1 1000  984 471K Sep 22 05:39 linefits.sdss.sdss.fiber1.001.Hb.png
--rw-r--r-- 1 root root 465K Sep 27 17:34 linefits.sdss.sdss.fiber1.001.OII.png
--rw-r--r-- 1 root root 460K Sep 27 17:34 linefits.sdss.sdss.fiber1.001.OIII4.png
--rw-r--r-- 1 root root 454K Sep 27 17:35 linefits.sdss.sdss.fiber1.001.OIII5.png
--rw-r--r-- 1 root root 475K Sep 27 17:36 linefits.sdss.sdss.fiber1.001.SII1.SII2.png
--rw-r--r-- 1 root root  20K Sep 27 17:36 linefits.sdss.sdss.fiber1.001.fits
--rw-r--r-- 1 root root 537K Sep 27 17:36 linefits.sdss.sdss.fiber1.001.png
+-rw-rw-r-- 1 1000 1000  16K Sep 28 16:36 docker.log
+-rw-r--r-- 1 root root 477K Sep 28 18:03 linefits.sdss.sdss.fiber1.001.Ha.Ha_broad.NII1.png
+-rw-rw-r-- 1 1000 1000 474K Sep 27 23:39 linefits.sdss.sdss.fiber1.001.Ha.NII1.png
+-rw-r--r-- 1 root root 483K Sep 28 18:03 linefits.sdss.sdss.fiber1.001.Hb.Hb_broad.png
+-rw-rw-r-- 1 1000 1000 471K Sep 27 23:39 linefits.sdss.sdss.fiber1.001.Hb.png
+-rw-r--r-- 1 root root 465K Sep 28 18:02 linefits.sdss.sdss.fiber1.001.OII.png
+-rw-r--r-- 1 root root 460K Sep 28 18:03 linefits.sdss.sdss.fiber1.001.OIII4.png
+-rw-r--r-- 1 root root 454K Sep 28 18:03 linefits.sdss.sdss.fiber1.001.OIII5.png
+-rw-r--r-- 1 root root 475K Sep 28 18:04 linefits.sdss.sdss.fiber1.001.SII1.SII2.png
+-rw-r--r-- 1 root root  20K Sep 28 18:04 linefits.sdss.sdss.fiber1.001.fits
+-rw-r--r-- 1 root root 536K Sep 28 18:04 linefits.sdss.sdss.fiber1.001.png

@@ -283,11 +283,31 @@ run_one() {        # $1 = tool, $2 = tag
 }
 
 # ------------------------------ SCHEDULE -------------------------------------
+# Run only the objects prepared from *this* INPUT_DIR.  RUNS_DIR may already
+# hold other objects; re-running them here would apply this run's variant to the
+# wrong spectra (e.g. a per-object search applying one object's config to all).
 log "tools: $TOOLS | jobs: $JOBS"
+mapfile -t RUN_TAGS < <("$PYTHON" - "$RUNS_DIR" "$INPUT_DIR" <<'PY'
+import json, os, sys
+runs, inp = sys.argv[1], sys.argv[2]
+want = {os.path.basename(f) for f in os.listdir(inp) if f.endswith('.fits')}
+for d in sorted(os.listdir(runs)):
+    m = os.path.join(runs, d, 'manifest.json')
+    if not os.path.isfile(m):
+        continue
+    try:
+        src = json.load(open(m)).get('source', '')
+    except Exception:
+        continue
+    if os.path.basename(src) in want:
+        print(d)
+PY
+)
+log "objects to run: ${#RUN_TAGS[@]}"
 started=0
-for objdir in "$RUNS_DIR"/*/; do
+for tag in "${RUN_TAGS[@]}"; do
+  objdir="$RUNS_DIR/$tag"
   [[ -f "$objdir/manifest.json" ]] || continue
-  tag="$(basename "$objdir")"
   for tool in $TOOLS; do
     while [[ $(jobs -rp | wc -l) -ge $JOBS ]]; do wait -n || true; done
     log "  -> $tool : $tag"
