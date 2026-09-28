@@ -173,6 +173,44 @@ def _tool_model_rest(obj_dir: Path, tool: str, out: Path, wave_rest: np.ndarray,
 COMMON_ERR_FLOOR = 0.02   # relative flux error floor, shared by every tool
 
 
+def line_penalty(lrows):
+    """Physical-plausibility penalty for an extracted line decomposition.
+
+    Lower is better; 0 is a physically clean decomposition.  It penalises a
+    missing or wrong [OIII] 4959/5007 ratio (should be ~1/3) and a broad Balmer
+    Halpha/Hbeta ratio outside the case-B range.  This is the metric that stops
+    the optimiser from accepting a low chi-square fit that has thrown a line
+    away.
+    """
+    def g(line, comp):
+        for r in lrows:
+            if r["line"] == line and r["component"] == comp:
+                v = r["flux_1e17"]
+                try:
+                    v = float(v)
+                except (TypeError, ValueError):
+                    return None
+                return v if math.isfinite(v) else None
+        return None
+
+    pen = 0.0
+    # [OIII] doublet: wherever 5007 is detected, 4959 must be present ~0.33x.
+    for comp in ("narrow", "outflow", "broad"):
+        f7 = g("OIII5007", comp)
+        if f7 is None or f7 <= 0:
+            continue
+        f9 = g("OIII4959", comp)
+        if f9 is None or f9 <= 0:
+            pen += 1.0
+        elif not (0.22 <= f9 / f7 <= 0.45):
+            pen += 1.0
+    # Broad Balmer decrement (case B gives Halpha/Hbeta ~ 2.8-3.3).
+    ha, hb = g("Ha6563", "broad"), g("Hb4861", "broad")
+    if ha and hb and hb > 0 and not (2.0 <= ha / hb <= 6.0):
+        pen += 1.0
+    return pen
+
+
 def common_chi2(obj_dir: Path, tool: str, out: Path, z: float):
     """Reduced chi-square of the tool model against the common data vector.
 
@@ -455,6 +493,7 @@ def main(argv=None) -> int:
                 continue
             if sc:
                 sc["chi2_common"] = common_chi2(obj, tool, out, z)
+                sc["line_penalty"] = line_penalty(lrows)
                 comps = {r["component"] for r in lrows}
                 sc["has_broad"] = int("broad" in comps)
                 sc["has_narrow"] = int("narrow" in comps)
@@ -463,7 +502,8 @@ def main(argv=None) -> int:
 
     with (args.results / "scores.csv").open("w", newline="") as fh:
         w = csv.DictWriter(fh, fieldnames=["tag", "tool", "chi2_red", "chi2_kind",
-                                           "chi2_common", "has_broad", "has_narrow"])
+                                           "chi2_common", "line_penalty",
+                                           "has_broad", "has_narrow"])
         w.writeheader(); w.writerows(scores)
     with (args.results / "lines.csv").open("w", newline="") as fh:
         w = csv.DictWriter(fh, fieldnames=["tag", "tool", "line", "component",

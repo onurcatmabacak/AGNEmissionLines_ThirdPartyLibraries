@@ -57,19 +57,25 @@ CONFIGS = ROOT / "configs"
 PYQ = {
     "file": "main.py",
     "base": ROOT / "pyqsofit" / "main.py",
-    "defaults": {"error_floor": "0.02", "fe_op": "True", "reject_badpix": "True"},
+    "defaults": {"error_floor": "0.02", "fe_op": "True", "reject_badpix": "True",
+                 "bc": "False", "poly": "True"},
     "candidates": [
-        {},                                                   # base
+        {},                                                   # base (doublet tied)
         {"error_floor": "0.03"},
         {"error_floor": "0.05"},
         {"fe_op": "False"},
-        {"error_floor": "0.03", "fe_op": "False"},
+        {"bc": "True"},
+        {"poly": "False"},
+        {"fe_op": "False", "bc": "True"},
+        {"fe_op": "False", "poly": "False"},
         {"error_floor": "0.02", "reject_badpix": "False"},
     ],
     "knob_values": {
         "error_floor": ["0.02", "0.03", "0.05"],
         "fe_op": ["True", "False"],
         "reject_badpix": ["True", "False"],
+        "bc": ["False", "True"],
+        "poly": ["True", "False"],
     },
 }
 
@@ -82,6 +88,10 @@ def render_pyqsofit(text: str, k: dict) -> str:
     assert n == 1, "pyqsofit: Fe_uv_op not found"
     text, n = re.subn(r"reject_badpix\s*=\s*(True|False)", f"reject_badpix={k['reject_badpix']}", text)
     assert n == 1, "pyqsofit: reject_badpix not found"
+    text, n = re.subn(r"\bBC\s*=\s*(True|False)", f"BC={k['bc']}", text)
+    assert n == 1, "pyqsofit: BC not found"
+    text, n = re.subn(r"(?<![A-Za-z_])poly\s*=\s*(True|False)", f"poly={k['poly']}", text)
+    assert n == 1, "pyqsofit: poly not found"
     return text
 
 
@@ -305,15 +315,32 @@ def read_scores(results: Path, label: str) -> dict:
     return out
 
 
+PENALTY_WEIGHT = 150.0   # penalty points added per physical-plausibility error
+
+
 def objective(row: dict) -> float:
+    """Combined score: fit quality plus a hard weight on line-decomposition errors.
+
+    A single missing/wrong [OIII] doublet ratio or an unphysical Balmer decrement
+    costs ``PENALTY_WEIGHT`` reduced-chi-square units, so a fit that throws a line
+    away can never outrank one that dissects the lines properly.
+    """
+    base = float("inf")
     for key in ("chi2_common", "chi2_red"):
         try:
             v = float(row.get(key, "nan"))
         except (TypeError, ValueError):
             continue
         if math.isfinite(v) and v > 0:
-            return v
-    return float("inf")
+            base = v
+            break
+    try:
+        pen = float(row.get("line_penalty", 0) or 0)
+    except (TypeError, ValueError):
+        pen = 0.0
+    if not math.isfinite(pen):
+        pen = 0.0
+    return base + PENALTY_WEIGHT * pen
 
 
 def mean_objective(rows: dict, tool: str, tags: list[str]) -> float:
