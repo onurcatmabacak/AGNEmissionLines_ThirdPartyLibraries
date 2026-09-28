@@ -25,12 +25,24 @@ from pathlib import Path
 TOOLS = ("pyqsofit", "badass", "fantasy_agn", "gelato", "gleam")
 EXTS = (".pdf", ".png", ".jpg", ".jpeg", ".svg", ".gif", ".html")
 
+# The single most informative best-fit figure per tool (used by --select).
+SELECTED = {
+    "pyqsofit": {"result"},
+    "badass": {"max_likelihood_fit"},
+    "fantasy_agn": {"my_sdss"},
+    "gelato": {"my_sdss-spec"},
+    "gleam": {"linefits.sdss.sdss.fiber1.001"},
+}
+
 
 def main(argv=None) -> int:
     p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     p.add_argument("--results", type=Path, default=Path("results"))
     p.add_argument("--out", type=Path, default=Path("figures"))
     p.add_argument("--clean", action="store_true", help="wipe the output folder first")
+    p.add_argument("--select", action="store_true",
+                   help="copy only the main best-fit figure per tool (badass max_likelihood_fit, "
+                        "fantasy my_sdss, gelato my_sdss-spec, gleam linefits...001, pyqsofit result)")
     args = p.parse_args(argv)
 
     if args.clean and args.out.exists():
@@ -45,6 +57,8 @@ def main(argv=None) -> int:
             obj = obj_dir.name
             for f in sorted(obj_dir.rglob("*")):
                 if not f.is_file() or f.suffix.lower() not in EXTS:
+                    continue
+                if args.select and f.stem not in SELECTED.get(tool, set()):
                     continue
                 target = args.out / f"{tool}_{f.stem}_{obj}{f.suffix.lower()}"
                 k = 1

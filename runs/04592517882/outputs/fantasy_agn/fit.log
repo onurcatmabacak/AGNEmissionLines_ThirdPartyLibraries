@@ -3,48 +3,64 @@ my_sdss.fits
 Directory  my_sdss  Created 
 global my_sdss/
 Directory  output/  already exists
-stati 293169.95501966454
-1 iter stat:  176.07623826165946
-2 iter stat:  74.51391835297545
-3 iter stat:  48.63253582674224
-4 iter stat:  37.41816267240938
-5 iter stat:  30.238672512983612
-6 iter stat:  24.38961356474465
-7 iter stat:  18.096056920214323
-8 iter stat:  14.458196483683423
-9 iter stat:  4.2792258757399395
-10 iter stat:  2.7457177062970004
+stati 292707.59908854216
+1 iter stat:  0.6744590546149993
+2 iter stat:  0.3784316349410801
+3 iter stat:  0.2785834221576806
+4 iter stat:  0.22889210935682058
+5 iter stat:  0.19653768446369213
+6 iter stat:  0.17326526992837898
+7 iter stat:  0.1498025129949383
+8 iter stat:  0.136801718177594
+9 iter stat:  0.12040072695162962
+10 iter stat:  0.11169807559781475
 fit ok
 ./output/my_sdss_model.csv
-brokenpowerlaw + OIIIb5007_br + OIIIb5007_na + HBeta4834_br + HAlpha6551_br + HBeta4834_na + HAlpha6551_na
+brokenpowerlaw + OIIIb5007_br + OIIIa4959_br + OIIIb5007_na + OIIIa4959_na + NII6583_na + NII6548_na + HBeta4863_br + HAlpha6565_br + HBeta4863_na + HAlpha6565_na
    Param        Type          Value          Min          Max      Units
    -----        ----          -----          ---          ---      -----
-   brokenpowerlaw.refer thawed      6371.02         5400         7000  angstroms
+   brokenpowerlaw.refer thawed      6341.72         5400         7000  angstroms
    brokenpowerlaw.ampl thawed      15.3291      15.3291      16.9427  angstroms
-   brokenpowerlaw.index1 thawed     -1.68542           -3            0           
+   brokenpowerlaw.index1 thawed      -1.6981           -3            0           
    brokenpowerlaw.index2 thawed           -1           -1            1           
-   OIIIb5007_br.ampl thawed      9.68031            0           50           
-   OIIIb5007_br.pos frozen         5007            0  3.40282e+38  angstroms
-   OIIIb5007_br.offs_kms thawed     -675.602        -1500          500       km/s
-   OIIIb5007_br.fwhm thawed      1302.99          700         3000       km/s
+   OIIIb5007_br.ampl thawed       9.1628            0           50           
+   OIIIb5007_br.pos frozen       5006.8            0  3.40282e+38  angstroms
+   OIIIb5007_br.offs_kms thawed     -677.462        -1500          500       km/s
+   OIIIb5007_br.fwhm thawed      1352.25         1200         6000       km/s
+   OIIIa4959_br.ampl linked      3.05427 expr: OIIIb5007_br.ampl / 3.0           
+   OIIIa4959_br.pos frozen       4958.9            0  3.40282e+38  angstroms
+   OIIIa4959_br.offs_kms linked     -677.462 expr: OIIIb5007_br.offs_kms       km/s
+   OIIIa4959_br.fwhm linked      1352.25  expr: OIIIb5007_br.fwhm       km/s
    OIIIb5007_na.ampl thawed            0            0           50           
-   OIIIb5007_na.pos frozen         5007            0  3.40282e+38  angstroms
-   OIIIb5007_na.offs_kms thawed      156.076        -1500          500       km/s
+   OIIIb5007_na.pos frozen       5006.8            0  3.40282e+38  angstroms
+   OIIIb5007_na.offs_kms thawed      103.342        -1500          500       km/s
    OIIIb5007_na.fwhm thawed          100          100         1500       km/s
-   HBeta4834_br.ampl thawed      11.2508            0           50           
-   HBeta4834_br.pos frozen         4834            0  3.40282e+38  angstroms
-   HBeta4834_br.offs_kms thawed          500        -1500          500       km/s
-   HBeta4834_br.fwhm thawed         3000          700         3000       km/s
-   HAlpha6551_br.ampl thawed       21.078            0           50           
-   HAlpha6551_br.pos frozen         6551            0  3.40282e+38  angstroms
-   HAlpha6551_br.offs_kms thawed     -121.442        -1500          500       km/s
-   HAlpha6551_br.fwhm thawed         3000          700         3000       km/s
-   HBeta4834_na.ampl thawed            0            0           50           
-   HBeta4834_na.pos frozen         4834            0  3.40282e+38  angstroms
-   HBeta4834_na.offs_kms thawed     -597.003        -1500          500       km/s
-   HBeta4834_na.fwhm thawed      959.515          100         1500       km/s
-   HAlpha6551_na.ampl thawed       24.272            0           50           
-   HAlpha6551_na.pos frozen         6551            0  3.40282e+38  angstroms
-   HAlpha6551_na.offs_kms thawed      253.526        -1500          500       km/s
-   HAlpha6551_na.fwhm thawed      1115.29          100         1500       km/s
+   OIIIa4959_na.ampl linked            0 expr: OIIIb5007_na.ampl / 3.0           
+   OIIIa4959_na.pos frozen       4958.9            0  3.40282e+38  angstroms
+   OIIIa4959_na.offs_kms linked      103.342 expr: OIIIb5007_na.offs_kms       km/s
+   OIIIa4959_na.fwhm linked          100  expr: OIIIb5007_na.fwhm       km/s
+   NII6583_na.ampl thawed      1.00835            0           50           
+   NII6583_na.pos frozen      6583.46            0  3.40282e+38  angstroms
+   NII6583_na.offs_kms linked      103.342 expr: OIIIb5007_na.offs_kms       km/s
+   NII6583_na.fwhm linked          100  expr: OIIIb5007_na.fwhm       km/s
+   NII6548_na.ampl linked     0.336116 expr: NII6583_na.ampl / 3.0           
+   NII6548_na.pos frozen      6548.05            0  3.40282e+38  angstroms
+   NII6548_na.offs_kms linked      103.342 expr: OIIIb5007_na.offs_kms       km/s
+   NII6548_na.fwhm linked          100  expr: OIIIb5007_na.fwhm       km/s
+   HBeta4863_br.ampl thawed      5.85085            0           50           
+   HBeta4863_br.pos frozen      4862.68            0  3.40282e+38  angstroms
+   HBeta4863_br.offs_kms thawed     -682.664        -1500          500       km/s
+   HBeta4863_br.fwhm thawed      4414.47         1200         6000       km/s
+   HAlpha6565_br.ampl thawed      11.8121            0           50           
+   HAlpha6565_br.pos frozen       6564.6            0  3.40282e+38  angstroms
+   HAlpha6565_br.offs_kms thawed     -994.327        -1500          500       km/s
+   HAlpha6565_br.fwhm thawed      4555.68         1200         6000       km/s
+   HBeta4863_na.ampl thawed      10.7918            0           50           
+   HBeta4863_na.pos frozen      4862.68            0  3.40282e+38  angstroms
+   HBeta4863_na.offs_kms thawed      -516.08        -1500          500       km/s
+   HBeta4863_na.fwhm thawed      1209.31          100         1500       km/s
+   HAlpha6565_na.ampl thawed      32.0642            0           50           
+   HAlpha6565_na.pos frozen       6564.6            0  3.40282e+38  angstroms
+   HAlpha6565_na.offs_kms thawed      -422.88        -1500          500       km/s
+   HAlpha6565_na.fwhm thawed      1413.51          100         1500       km/s
 skipping monte_carlo (FANTASY_MC=0)
