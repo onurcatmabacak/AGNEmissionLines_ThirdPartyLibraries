@@ -81,14 +81,16 @@ halpha_na.fwhm = hbeta_na.fwhm
 halpha_na.offs_kms = hbeta_na.offs_kms
 
 # fe=create_feii_model(max_fwhm=6000)
-model = cont + OIIIb_br + OIIIa_br + OIIIb_na + OIIIa_na + NII6583_na + NII6548_na + hbeta_br + halpha_br + hbeta_na + halpha_na + create_feii_model(fwhm=1000, min_fwhm=300, max_fwhm=6000, offset=0, min_offset=-800, max_offset=800)
+# Forbidden [OIII]/[NII] lines are narrow: do not include the broad counterparts
+# (with both free, the fit puts all [OIII] flux into the broad component).
+model = cont + OIIIb_na + OIIIa_na + NII6583_na + NII6548_na + hbeta_br + halpha_br + hbeta_na + halpha_na + create_feii_model(fwhm=1000, min_fwhm=300, max_fwhm=6000, offset=0, min_offset=-800, max_offset=800)
 
 # fits a spectrum with the above model, iterate 2 times
 s.fit(model, ntrial=10)
 print("fit ok")
 
 # creates a file to save the fitting results of the original spectra
-d={'wave':s.wave,'flux':s.flux,'error':s.err,'model':model(s.wave),'cont':cont(s.wave), 'OIIIb_br':OIIIb_br(s.wave), 'OIIIa_br':OIIIa_br(s.wave), 'OIIIb_na':OIIIb_na(s.wave), 'OIIIa_na':OIIIa_na(s.wave), 'NII6583_na':NII6583_na(s.wave), 'NII6548_na':NII6548_na(s.wave), 'hbeta_br':hbeta_br(s.wave), 'hbeta_na':hbeta_na(s.wave), 'halpha_br':halpha_br(s.wave), 'halpha_na':halpha_na(s.wave)}
+d={'wave':s.wave,'flux':s.flux,'error':s.err,'model':model(s.wave),'cont':cont(s.wave), 'OIIIb_na':OIIIb_na(s.wave), 'OIIIa_na':OIIIa_na(s.wave), 'NII6583_na':NII6583_na(s.wave), 'NII6548_na':NII6548_na(s.wave), 'hbeta_br':hbeta_br(s.wave), 'hbeta_na':hbeta_na(s.wave), 'halpha_br':halpha_br(s.wave), 'halpha_na':halpha_na(s.wave)}
 
 df=pd.DataFrame(d)
 df.to_csv("./output/" + s.name+'_model.csv')

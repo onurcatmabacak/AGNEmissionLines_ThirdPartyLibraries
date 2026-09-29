@@ -58,7 +58,7 @@ PYQ = {
     "file": "main.py",
     "base": ROOT / "pyqsofit" / "main.py",
     "defaults": {"error_floor": "0.02", "fe_op": "True", "reject_badpix": "True",
-                 "bc": "False", "poly": "True"},
+                 "bc": "False", "poly": "True", "hb_br_ngauss": "2", "ha_br_ngauss": "2"},
     "candidates": [
         {},                                                   # base (doublet tied)
         {"error_floor": "0.03"},
@@ -69,6 +69,10 @@ PYQ = {
         {"fe_op": "False", "bc": "True"},
         {"fe_op": "False", "poly": "False"},
         {"error_floor": "0.02", "reject_badpix": "False"},
+        {"hb_br_ngauss": "1"},
+        {"ha_br_ngauss": "1"},
+        {"hb_br_ngauss": "1", "ha_br_ngauss": "1"},
+        {"hb_br_ngauss": "1", "ha_br_ngauss": "1", "fe_op": "False"},
     ],
     "knob_values": {
         "error_floor": ["0.02", "0.03", "0.05"],
@@ -76,6 +80,8 @@ PYQ = {
         "reject_badpix": ["True", "False"],
         "bc": ["False", "True"],
         "poly": ["True", "False"],
+        "hb_br_ngauss": ["1", "2"],
+        "ha_br_ngauss": ["1", "2"],
     },
 }
 
@@ -92,6 +98,12 @@ def render_pyqsofit(text: str, k: dict) -> str:
     assert n == 1, "pyqsofit: BC not found"
     text, n = re.subn(r"(?<![A-Za-z_])poly\s*=\s*(True|False)", f"poly={k['poly']}", text)
     assert n == 1, "pyqsofit: poly not found"
+    # Broad Balmer Gaussian multiplicity (1 avoids degenerate duplicate
+    # components that inflate broad Hbeta).
+    text, n = re.subn(r"'Hb_br',\s*\d+,", f"'Hb_br', {k['hb_br_ngauss']},", text)
+    assert n == 1, "pyqsofit: Hb_br ngauss not found"
+    text, n = re.subn(r"'Ha_br',\s*\d+,", f"'Ha_br', {k['ha_br_ngauss']},", text)
+    assert n == 1, "pyqsofit: Ha_br ngauss not found"
     return text
 
 
