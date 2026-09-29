@@ -321,19 +321,22 @@ def parse_badass(out: Path, tag: str):
             "OIII_a_COMP": ("OIII4959", "outflow"),
             "BR_OII": ("OII3727", "broad"), "NA_OII": ("OII3727", "narrow"),
         }
-        # Parameter-table errors (fit.log): PARAM  VALUE  ERROR  ...; the log
-        # keeps the line name's case, so match case-insensitively.
-        perr = {}
+        # Parameter-table errors (fit.log): PARAM  VALUE  ERROR  ...  BADASS logs
+        # *_FLUX as log10(flux), so the third column is a dex error; convert it to
+        # a relative error via ln(10).  The log keeps the line name's case, so
+        # match case-insensitively.
+        perr_dex = {}
         log = out / "fit.log"
         if log.exists():
             for m in re.finditer(r"^(\S+_FLUX)\s+([-\d.eE+]+)\s+([-\d.eE+]+)",
                                  log.read_text(errors="ignore"), re.M):
-                perr[m.group(1).upper()] = _f(m.group(3))
+                perr_dex[m.group(1).upper()] = _f(m.group(3))
         for col, (line, comp) in cmap.items():
             if col in d.columns.names:
-                rows.append(_rec(tag, "badass", line, comp,
-                                 flux=_integrate(wave, np.asarray(d[col], float), line, comp),
-                                 flux_err=perr.get(f"{col}_FLUX".upper(), np.nan)))
+                flux = _integrate(wave, np.asarray(d[col], float), line, comp)
+                dex = perr_dex.get(f"{col}_FLUX".upper(), np.nan)
+                flux_err = abs(flux) * dex * math.log(10.0) if math.isfinite(dex) else np.nan
+                rows.append(_rec(tag, "badass", line, comp, flux=flux, flux_err=flux_err))
         score = {"tag": tag, "tool": "badass", "chi2_red": chi2, "chi2_kind": "line_window_computed"}
         return score, rows
 
