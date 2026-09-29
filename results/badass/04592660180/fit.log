@@ -2,7 +2,7 @@
 /app/BADASS3/example_spectra/2-onur
 /app/BADASS3/example_spectra/2-onur/my_sdss.fits
 0.34872591495513916
-Start process memory: 0.22352691                    
+Start process memory: 0.22315827                    
  Folder has not been created.  Creating MCMC_output folder...
 
  > Starting fit for 2-onur
@@ -28,6 +28,7 @@ Start process memory: 0.22352691
 
  Initializing parameters...
 ----------------------------------------------------------------------------------------------------
+	- Fitting a SSP host-galaxy template.
 	- Fitting additive legendre polynomial component.
 	- Fitting Simple AGN power-law continuum.
 	- Fitting broad and narrow optical FeII using Veron-Cetty et al. (2004) optical FeII templates
@@ -125,6 +126,30 @@ NA_H_BETA
                               line_type                     na                            
                               ncomp                         1                             
                               voff                          free                          
+NA_NII_6549                                                                               
+                              amp                           (NA_NII_6585_AMP/3.0)         
+                              center                        6549.86                       
+                              center_pix                    3538.779464852784             
+                              disp                          NA_H_ALPHA_DISP               
+                              disp_res_ang                  1.8891807905118316            
+                              disp_res_kms                  86.46935244324689             
+                              label                         [NII]                         
+                              line_profile                  gaussian                      
+                              line_type                     na                            
+                              ncomp                         1                             
+                              voff                          NA_H_ALPHA_VOFF               
+NA_NII_6585                                                                               
+                              amp                           free                          
+                              center                        6585.27                       
+                              center_pix                    3562.1941258801958            
+                              disp                          NA_H_ALPHA_DISP               
+                              disp_res_ang                  1.8891807905118316            
+                              disp_res_kms                  86.0043935622875              
+                              label                         [NII]                         
+                              line_profile                  gaussian                      
+                              line_type                     na                            
+                              ncomp                         1                             
+                              voff                          NA_H_ALPHA_VOFF               
 NA_OII                                                                                    
                               amp                           free                          
                               center                        3727.09                       
@@ -161,10 +186,34 @@ NA_OIII_b
                               line_type                     na                            
                               ncomp                         1                             
                               voff                          free                          
+NA_SII_6716                                                                               
+                              amp                           free                          
+                              center                        6718.29                       
+                              center_pix                    3649.041931576699             
+                              disp                          NA_H_ALPHA_DISP               
+                              disp_res_ang                  1.8891807905118316            
+                              disp_res_kms                  84.3015339906323              
+                              label                         [SII]                         
+                              line_profile                  gaussian                      
+                              line_type                     na                            
+                              ncomp                         1                             
+                              voff                          NA_H_ALPHA_VOFF               
+NA_SII_6731                                                                               
+                              amp                           free                          
+                              center                        6732.67                       
+                              center_pix                    3658.327319224228             
+                              disp                          NA_H_ALPHA_DISP               
+                              disp_res_ang                  1.8891807905118316            
+                              disp_res_kms                  84.12147822393271             
+                              label                         [SII]                         
+                              line_profile                  gaussian                      
+                              line_type                     na                            
+                              ncomp                         1                             
+                              voff                          NA_H_ALPHA_VOFF               
 
 ----------------------------------------------------------------------------------------------------------------------------------------
 
- Number of Free Line Parameters: 24
+ Number of Free Line Parameters: 27
 
 ----------------------------------------------------------------------------------------------------------------------------------------
 
@@ -196,8 +245,8 @@ BR_H_ALPHA_AMP
                               init                          0.9917872749381111            
                               plim                          (0, 50)                       
 BR_H_ALPHA_DISP                                                                           
-                              init                          3750.0                        
-                              plim                          (1500, 6000)                  
+                              init                          3300.0                        
+                              plim                          (600, 6000)                   
 BR_H_ALPHA_VOFF                                                                           
                               init                          0.0                           
                               plim                          (-1500, 1500)                 
@@ -206,8 +255,8 @@ BR_H_BETA_AMP
                               init                          0.4695823788660961            
                               plim                          (0, 50)                       
 BR_H_BETA_DISP                                                                            
-                              init                          3750.0                        
-                              plim                          (1500, 6000)                  
+                              init                          3300.0                        
+                              plim                          (600, 6000)                   
 BR_H_BETA_VOFF                                                                            
                               init                          0.0                           
                               plim                          (-1500, 1500)                 
@@ -216,8 +265,8 @@ BR_OIII_b_AMP
                               init                          0.4666799439411946            
                               plim                          (0, 50)                       
 BR_OIII_b_DISP                                                                            
-                              init                          3750.0                        
-                              plim                          (1500, 6000)                  
+                              init                          3300.0                        
+                              plim                          (600, 6000)                   
 BR_OIII_b_VOFF                                                                            
                               init                          0.0                           
                               plim                          (-1500, 1500)                 
@@ -226,8 +275,8 @@ BR_OII_AMP
                               init                          0.38542321874283453           
                               plim                          (0, 50)                       
 BR_OII_DISP                                                                               
-                              init                          3750.0                        
-                              plim                          (1500, 6000)                  
+                              init                          3300.0                        
+                              plim                          (600, 6000)                   
 BR_OII_VOFF                                                                               
                               init                          0.0                           
                               plim                          (-1500, 1500)                 
@@ -241,6 +290,12 @@ BR_OPT_FEII_DISP
 BR_OPT_FEII_VOFF                                                                          
                               init                          0.0                           
                               plim                          (-500.0, 500.0)               
+HOST_TEMP_DISP                                                                            
+                              init                          100.0                         
+                              plim                          (0.001, 500.0)                
+HOST_TEMP_VEL                                                                             
+                              init                          0.0                           
+                              plim                          (-500.0, 500)                 
 NA_H_ALPHA_AMP                                                                            
                               init                          0.9917872749381111            
                               plim                          (0, 50)                       
@@ -261,6 +316,9 @@ NA_H_BETA_VOFF
                               init                          0.0                           
                               plim                          (-1000, 1000)                 
                               prior                         {'type': 'gaussian'}          
+NA_NII_6585_AMP                                                                           
+                              init                          0.6075582218507171            
+                              plim                          (0, 50)                       
 NA_OIII_b_AMP                                                                             
                               init                          0.4666799439411946            
                               plim                          (0, 50)                       
@@ -290,6 +348,12 @@ NA_OPT_FEII_DISP
 NA_OPT_FEII_VOFF                                                                          
                               init                          0.0                           
                               plim                          (-500.0, 500.0)               
+NA_SII_6716_AMP                                                                           
+                              init                          0.19859333528496195           
+                              plim                          (0, 50)                       
+NA_SII_6731_AMP                                                                           
+                              init                          0.18460378379045925           
+                              plim                          (0, 50)                       
 POWER_AMP                                                                                 
                               init                          0.1331418401540555            
                               plim                          (0, 1.5000000427715077)       
@@ -299,7 +363,7 @@ POWER_SLOPE
 
 ----------------------------------------------------------------------------------------------------------------------------------------
 
- Total number of free parameters: 39
+ Total number of free parameters: 44
 
 ----------------------------------------------------------------------------------------------------------------------------------------
 
@@ -316,135 +380,62 @@ POWER_SLOPE
  Performing max. likelihood fitting.
 
  Using Basin-hopping algorithm to estimate parameters. niter_success = 5
-basinhopping step 0: f 1.99337
+basinhopping step 0: f 1.98435
  Fit Status: False
  Force threshold: 0.4694
- Lowest RMSE: 0.0813
- Current RMSE: 0.0813
+ Lowest RMSE: 0.0812
+ Current RMSE: 0.0812
  Accepted count: 1
  Basinhop count: 0
 
 
 adaptive stepsize: acceptance rate 0.000000 target 0.500000 new stepsize 0.9 old stepsize 1
-basinhopping step 1: f 2.11771 trial_f 2.11771 accepted 1  lowest_f 1.99337
+basinhopping step 1: f 1.98435 trial_f 14.8425 accepted 0  lowest_f 1.98435
  Fit Status: False
  Force threshold: 0.4694
- Lowest RMSE: 0.0813
- Current RMSE: 0.0838
+ Lowest RMSE: 0.0812
+ Current RMSE: 0.2220
+ Accepted count: 1
+ Basinhop count: 1
+
+
+adaptive stepsize: acceptance rate 0.000000 target 0.500000 new stepsize 0.81 old stepsize 0.9
+basinhopping step 2: f 1.98435 trial_f 3.71771 accepted 0  lowest_f 1.98435
+ Fit Status: False
+ Force threshold: 0.4694
+ Lowest RMSE: 0.0812
+ Current RMSE: 0.1111
+ Accepted count: 1
+ Basinhop count: 2
+
+
+adaptive stepsize: acceptance rate 0.000000 target 0.500000 new stepsize 0.729 old stepsize 0.81
+basinhopping step 3: f 2.00185 trial_f 2.00185 accepted 1  lowest_f 1.98435
+ Fit Status: False
+ Force threshold: 0.4694
+ Lowest RMSE: 0.0812
+ Current RMSE: 0.0815
  Accepted count: 2
- Basinhop count: 1
-
-
-adaptive stepsize: acceptance rate 0.500000 target 0.500000 new stepsize 0.81 old stepsize 0.9
-basinhopping step 2: f 2.11771 trial_f 3.34288 accepted 0  lowest_f 1.99337
- Fit Status: False
- Force threshold: 0.4694
- Lowest RMSE: 0.0813
- Current RMSE: 0.1053
- Accepted count: 2
- Basinhop count: 2
-
-
-adaptive stepsize: acceptance rate 0.333333 target 0.500000 new stepsize 0.729 old stepsize 0.81
-basinhopping step 3: f 1.96681 trial_f 1.96681 accepted 1  lowest_f 1.96681
-found new global minimum on step 3 with function value 1.96681
- Fit Status: False
- Force threshold: 0.4694
- Lowest RMSE: 0.0808
- Current RMSE: 0.0808
- Accepted count: 3
- Basinhop count: 0
-
-
-adaptive stepsize: acceptance rate 0.500000 target 0.500000 new stepsize 0.6561 old stepsize 0.729
-basinhopping step 4: f 1.8466 trial_f 1.8466 accepted 1  lowest_f 1.8466
-found new global minimum on step 4 with function value 1.8466
- Fit Status: False
- Force threshold: 0.4694
- Lowest RMSE: 0.0783
- Current RMSE: 0.0783
- Accepted count: 4
- Basinhop count: 0
-
-
-adaptive stepsize: acceptance rate 0.600000 target 0.500000 new stepsize 0.729 old stepsize 0.6561
-basinhopping step 5: f 1.87125 trial_f 1.87125 accepted 1  lowest_f 1.8466
- Fit Status: False
- Force threshold: 0.4694
- Lowest RMSE: 0.0783
- Current RMSE: 0.0788
- Accepted count: 5
- Basinhop count: 1
-
-
-adaptive stepsize: acceptance rate 0.666667 target 0.500000 new stepsize 0.81 old stepsize 0.729
-basinhopping step 6: f 3.15686 trial_f 3.15686 accepted 1  lowest_f 1.8466
- Fit Status: False
- Force threshold: 0.4694
- Lowest RMSE: 0.0783
- Current RMSE: 0.1024
- Accepted count: 6
- Basinhop count: 2
-
-
-adaptive stepsize: acceptance rate 0.714286 target 0.500000 new stepsize 0.9 old stepsize 0.81
-basinhopping step 7: f 1.75413 trial_f 1.75413 accepted 1  lowest_f 1.75413
-found new global minimum on step 7 with function value 1.75413
- Fit Status: False
- Force threshold: 0.4694
- Lowest RMSE: 0.0763
- Current RMSE: 0.0763
- Accepted count: 7
- Basinhop count: 0
-
-
-adaptive stepsize: acceptance rate 0.750000 target 0.500000 new stepsize 1 old stepsize 0.9
-basinhopping step 8: f 1.94557 trial_f 1.94557 accepted 1  lowest_f 1.75413
- Fit Status: False
- Force threshold: 0.4694
- Lowest RMSE: 0.0763
- Current RMSE: 0.0804
- Accepted count: 8
- Basinhop count: 1
-
-
-adaptive stepsize: acceptance rate 0.777778 target 0.500000 new stepsize 1.11111 old stepsize 1
-basinhopping step 9: f 1.94557 trial_f 6.17782 accepted 0  lowest_f 1.75413
- Fit Status: False
- Force threshold: 0.4694
- Lowest RMSE: 0.0763
- Current RMSE: 0.1432
- Accepted count: 8
- Basinhop count: 2
-
-
-adaptive stepsize: acceptance rate 0.700000 target 0.500000 new stepsize 1.23457 old stepsize 1.11111
-basinhopping step 10: f 1.85297 trial_f 1.85297 accepted 1  lowest_f 1.75413
- Fit Status: False
- Force threshold: 0.4694
- Lowest RMSE: 0.0763
- Current RMSE: 0.0784
- Accepted count: 9
  Basinhop count: 3
 
 
-adaptive stepsize: acceptance rate 0.727273 target 0.500000 new stepsize 1.37174 old stepsize 1.23457
-basinhopping step 11: f 1.85297 trial_f 1.96772 accepted 0  lowest_f 1.75413
+adaptive stepsize: acceptance rate 0.250000 target 0.500000 new stepsize 0.6561 old stepsize 0.729
+basinhopping step 4: f 2.00185 trial_f 2.4928 accepted 0  lowest_f 1.98435
  Fit Status: False
  Force threshold: 0.4694
- Lowest RMSE: 0.0763
- Current RMSE: 0.0808
- Accepted count: 9
+ Lowest RMSE: 0.0812
+ Current RMSE: 0.0910
+ Accepted count: 2
  Basinhop count: 4
 
 
-adaptive stepsize: acceptance rate 0.666667 target 0.500000 new stepsize 1.52416 old stepsize 1.37174
-basinhopping step 12: f 1.85297 trial_f 3.15362 accepted 0  lowest_f 1.75413
+adaptive stepsize: acceptance rate 0.200000 target 0.500000 new stepsize 0.59049 old stepsize 0.6561
+basinhopping step 5: f 2.13225 trial_f 2.13225 accepted 1  lowest_f 1.98435
  Fit Status: True
  Force threshold: 0.4694
- Lowest RMSE: 0.0763
- Current RMSE: 0.1023
- Accepted count: 9
+ Lowest RMSE: 0.0812
+ Current RMSE: 0.0841
+ Accepted count: 3
  Basinhop count: 5
 
 
@@ -454,248 +445,306 @@ basinhopping step 12: f 1.85297 trial_f 3.15362 accepted 0  lowest_f 1.75413
 
 Parameter                     Best-fit Value                +/- 1-sigma                   Flag                          
 --------------------------------------------------------------------------------------
-AGN_FRAC_4000                 1.000000                      0.000000                      1.0                           
-AGN_FRAC_7000                 1.000000                      0.000000                      1.0                           
-APOLY_COEFF_1                 -0.355749                     0.000000                      1.0                           
-APOLY_COEFF_2                 0.032550                      0.000000                      1.0                           
-APOLY_COEFF_3                 -0.005231                     0.000000                      1.0                           
-APOLY_COEFF_4                 -0.016277                     0.000000                      1.0                           
-APOLY_COEFF_5                 0.013046                      0.000000                      1.0                           
-APOLY_COEFF_6                 -0.009160                     0.000000                      1.0                           
-APOLY_COEFF_7                 -0.005736                     0.000000                      1.0                           
-BR_H_ALPHA_AMP                11.197751                     0.000000                      1.0                           
-BR_H_ALPHA_DISP               3762.848394                   0.000000                      1.0                           
-BR_H_ALPHA_DISP_CORR          3761.859198                   0.000000                      1.0                           
+AGN_FRAC_4000                 0.931850                      0.000000                      1.0                           
+AGN_FRAC_7000                 0.758808                      0.000000                      1.0                           
+APOLY_COEFF_1                 -0.152486                     0.000000                      1.0                           
+APOLY_COEFF_2                 0.071435                      0.000000                      1.0                           
+APOLY_COEFF_3                 0.004049                      0.000000                      1.0                           
+APOLY_COEFF_4                 -0.025625                     0.000000                      1.0                           
+APOLY_COEFF_5                 0.009455                      0.000000                      1.0                           
+APOLY_COEFF_6                 -0.004486                     0.000000                      1.0                           
+APOLY_COEFF_7                 -0.001666                     0.000000                      1.0                           
+BR_H_ALPHA_AMP                5.321227                      0.000000                      1.0                           
+BR_H_ALPHA_DISP               3299.996784                   0.000000                      1.0                           
+BR_H_ALPHA_DISP_CORR          3298.868801                   0.000000                      1.0                           
 BR_H_ALPHA_DISP_RES           86.275196                     nan                           nan                           
-BR_H_ALPHA_EW                 225.801956                    0.000000                      0.0                           
-BR_H_ALPHA_FLUX               -13.505923                    0.000000                      0.0                           
-BR_H_ALPHA_FWHM               8861.179399                   0.000000                      0.0                           
-BR_H_ALPHA_FWHM_CORR          8858.850152                   0.000000                      0.0                           
-BR_H_ALPHA_LUM                43.105979                     0.000000                      0.0                           
-BR_H_ALPHA_NPIX               261.000000                    0.000000                      0.0                           
-BR_H_ALPHA_SNR                11.089279                     0.000000                      0.0                           
-BR_H_ALPHA_VOFF               -3.489569                     0.000000                      1.0                           
-BR_H_ALPHA_W80                9870.193100                   0.000000                      0.0                           
-BR_H_ALPHA_W80_CORR           9867.708121                   0.000000                      0.0                           
-BR_H_BETA_AMP                 0.000000                      0.000000                      2.0                           
-BR_H_BETA_DISP                3751.786508                   0.000000                      1.0                           
-BR_H_BETA_DISP_CORR           3749.978203                   0.000000                      1.0                           
+BR_H_ALPHA_EW                 90.953640                     0.000000                      0.0                           
+BR_H_ALPHA_FLUX               -13.886048                    0.000000                      0.0                           
+BR_H_ALPHA_FWHM               7771.233629                   0.000000                      0.0                           
+BR_H_ALPHA_FWHM_CORR          7768.577591                   0.000000                      0.0                           
+BR_H_ALPHA_LUM                42.725853                     0.000000                      0.0                           
+BR_H_ALPHA_NPIX               192.000000                    0.000000                      0.0                           
+BR_H_ALPHA_SNR                5.269652                      0.000000                      0.0                           
+BR_H_ALPHA_VOFF               -0.002127                     0.000000                      1.0                           
+BR_H_ALPHA_W80                8655.795698                   0.000000                      0.0                           
+BR_H_ALPHA_W80_CORR           8652.961972                   0.000000                      0.0                           
+BR_H_BETA_AMP                 3.214311                      0.000000                      1.0                           
+BR_H_BETA_DISP                3299.997025                   0.000000                      1.0                           
+BR_H_BETA_DISP_CORR           3297.941008                   0.000000                      1.0                           
 BR_H_BETA_DISP_RES            116.470932                    nan                           nan                           
-BR_H_BETA_EW                  0.000000                      0.000000                      1.0                           
-BR_H_BETA_FLUX                0.000000                      0.000000                      0.0                           
-BR_H_BETA_FWHM                0.000000                      0.000000                      0.0                           
-BR_H_BETA_FWHM_CORR           0.000000                      0.000000                      0.0                           
-BR_H_BETA_LUM                 0.000000                      0.000000                      1.0                           
-BR_H_BETA_NPIX                0.000000                      0.000000                      0.0                           
-BR_H_BETA_SNR                 0.000000                      0.000000                      0.0                           
-BR_H_BETA_VOFF                0.302390                      0.000000                      1.0                           
-BR_H_BETA_W80                 0.000000                      0.000000                      0.0                           
-BR_H_BETA_W80_CORR            0.000000                      0.000000                      0.0                           
-BR_OIII_a_AMP                 0.939870                      0.000000                      1.0                           
-BR_OIII_a_DISP                3749.690191                   0.000000                      1.0                           
-BR_OIII_a_DISP_CORR           3747.951394                   0.000000                      1.0                           
+BR_H_BETA_EW                  29.105030                     0.000000                      0.0                           
+BR_H_BETA_FLUX                -14.235305                    0.000000                      0.0                           
+BR_H_BETA_FWHM                7771.055573                   0.000000                      0.0                           
+BR_H_BETA_FWHM_CORR           7766.214201                   0.000000                      0.0                           
+BR_H_BETA_LUM                 42.376597                     0.000000                      0.0                           
+BR_H_BETA_NPIX                158.000000                    0.000000                      0.0                           
+BR_H_BETA_SNR                 3.183248                      0.000000                      0.0                           
+BR_H_BETA_VOFF                -0.001457                     0.000000                      1.0                           
+BR_H_BETA_W80                 8655.831165                   0.000000                      0.0                           
+BR_H_BETA_W80_CORR            8650.666078                   0.000000                      0.0                           
+BR_OIII_a_AMP                 0.022331                      0.000000                      1.0                           
+BR_OIII_a_DISP                3299.995822                   0.000000                      1.0                           
+BR_OIII_a_DISP_CORR           3298.019944                   0.000000                      1.0                           
 BR_OIII_a_DISP_RES            114.179127                    nan                           nan                           
-BR_OIII_a_EW                  9.988676                      0.000000                      0.0                           
-BR_OIII_a_FLUX                -14.705216                    0.000000                      0.0                           
-BR_OIII_a_FWHM                8830.192712                   0.000000                      0.0                           
-BR_OIII_a_FWHM_CORR           8826.098390                   0.000000                      0.0                           
-BR_OIII_a_LUM                 41.906686                     0.000000                      0.0                           
-BR_OIII_a_NPIX                23.000000                     0.000000                      0.0                           
-BR_OIII_a_SNR                 0.930768                      0.000000                      0.0                           
-BR_OIII_a_VOFF                -4.308465                     0.000000                      1.0                           
-BR_OIII_a_W80                 9835.514149                   0.000000                      0.0                           
-BR_OIII_a_W80_CORR            9831.146029                   0.000000                      0.0                           
-BR_OIII_b_AMP                 2.800812                      0.000000                      1.0                           
-BR_OIII_b_DISP                3749.690191                   0.000000                      1.0                           
-BR_OIII_b_DISP_CORR           3747.984534                   0.000000                      1.0                           
+BR_OIII_a_EW                  0.212740                      0.000000                      0.0                           
+BR_OIII_a_FLUX                -16.385242                    0.000000                      0.0                           
+BR_OIII_a_FWHM                7771.179853                   0.000000                      0.0                           
+BR_OIII_a_FWHM_CORR           7766.527266                   0.000000                      0.0                           
+BR_OIII_a_LUM                 40.226660                     0.000000                      0.0                           
+BR_OIII_a_NPIX                0.000000                      0.000000                      0.0                           
+BR_OIII_a_SNR                 0.022114                      0.000000                      0.0                           
+BR_OIII_a_VOFF                0.000978                      0.000000                      1.0                           
+BR_OIII_a_W80                 8641.740953                   0.000000                      0.0                           
+BR_OIII_a_W80_CORR            8636.769093                   0.000000                      0.0                           
+BR_OIII_b_AMP                 0.066545                      0.000000                      1.0                           
+BR_OIII_b_DISP                3299.995822                   0.000000                      1.0                           
+BR_OIII_b_DISP_CORR           3298.057605                   0.000000                      1.0                           
 BR_OIII_b_DISP_RES            113.086065                    nan                           nan                           
-BR_OIII_b_EW                  30.437312                     0.000000                      0.0                           
-BR_OIII_b_FLUX                -14.226817                    0.000000                      0.0                           
-BR_OIII_b_FWHM                8830.029127                   0.000000                      0.0                           
-BR_OIII_b_FWHM_CORR           8826.012765                   0.000000                      0.0                           
-BR_OIII_b_LUM                 42.385084                     0.000000                      0.0                           
-BR_OIII_b_NPIX                167.000000                    0.000000                      0.0                           
-BR_OIII_b_SNR                 2.773751                      0.000000                      0.0                           
-BR_OIII_b_VOFF                -4.308465                     0.000000                      1.0                           
-BR_OIII_b_W80                 9835.735070                   0.000000                      0.0                           
-BR_OIII_b_W80_CORR            9831.450298                   0.000000                      0.0                           
-BR_OII_AMP                    0.000000                      0.000000                      2.0                           
-BR_OII_DISP                   3749.182121                   0.000000                      1.0                           
-BR_OII_DISP_CORR              3746.101341                   0.000000                      1.0                           
+BR_OIII_b_EW                  0.651504                      0.000000                      0.0                           
+BR_OIII_b_FLUX                -15.906584                    0.000000                      0.0                           
+BR_OIII_b_FWHM                7771.126569                   0.000000                      0.0                           
+BR_OIII_b_FWHM_CORR           7766.562630                   0.000000                      0.0                           
+BR_OIII_b_LUM                 40.705318                     0.000000                      0.0                           
+BR_OIII_b_NPIX                0.000000                      0.000000                      0.0                           
+BR_OIII_b_SNR                 0.065901                      0.000000                      0.0                           
+BR_OIII_b_VOFF                0.000978                      0.000000                      1.0                           
+BR_OIII_b_W80                 8651.527622                   0.000000                      0.0                           
+BR_OIII_b_W80_CORR            8646.656047                   0.000000                      0.0                           
+BR_OII_AMP                    0.000102                      0.000000                      1.0                           
+BR_OII_DISP                   3299.998697                   0.000000                      1.0                           
+BR_OII_DISP_CORR              3296.498155                   0.000000                      1.0                           
 BR_OII_DISP_RES               151.958271                    nan                           nan                           
-BR_OII_EW                     0.000000                      0.000000                      1.0                           
-BR_OII_FLUX                   0.000000                      0.000000                      0.0                           
-BR_OII_FWHM                   0.000000                      0.000000                      0.0                           
-BR_OII_FWHM_CORR              0.000000                      0.000000                      0.0                           
-BR_OII_LUM                    0.000000                      0.000000                      1.0                           
+BR_OII_EW                     0.000179                      0.000000                      0.0                           
+BR_OII_FLUX                   -19.246494                    0.000000                      1.0                           
+BR_OII_FWHM                   3441.950936                   0.000000                      0.0                           
+BR_OII_FWHM_CORR              3423.300013                   0.000000                      0.0                           
+BR_OII_LUM                    37.365407                     0.000000                      0.0                           
 BR_OII_NPIX                   0.000000                      0.000000                      0.0                           
-BR_OII_SNR                    0.000000                      0.000000                      0.0                           
-BR_OII_VOFF                   -0.918009                     0.000000                      1.0                           
-BR_OII_W80                    0.000000                      0.000000                      0.0                           
-BR_OII_W80_CORR               0.000000                      0.000000                      0.0                           
-BR_OPT_FEII_AMP               43.429379                     0.000000                      1.0                           
-BR_OPT_FEII_DISP              527.349859                    0.000000                      1.0                           
-BR_OPT_FEII_TEMPLATE_EW       103.234377                    0.000000                      1.0                           
-BR_OPT_FEII_TEMPLATE_FLUX     -13.700257                    0.000000                      1.0                           
-BR_OPT_FEII_TEMPLATE_LUM      42.911645                     0.000000                      1.0                           
-BR_OPT_FEII_VOFF              -14.957126                    0.000000                      1.0                           
-HOST_FRAC_4000                0.330341                      0.000000                      1.0                           
-HOST_FRAC_7000                -1.787433                     0.000000                      1.0                           
-H_ALPHA_COMP_DISP             2626.751492                   0.000000                      0.0                           
-H_ALPHA_COMP_DISP_CORR        2625.334262                   0.000000                      0.0                           
+BR_OII_SNR                    0.000101                      0.000000                      0.0                           
+BR_OII_VOFF                   -0.000013                     0.000000                      1.0                           
+BR_OII_W80                    2751.292241                   0.000000                      0.0                           
+BR_OII_W80_CORR               2723.499408                   0.000000                      0.0                           
+BR_OPT_FEII_AMP               37.963942                     0.000000                      1.0                           
+BR_OPT_FEII_DISP              500.001304                    0.000000                      1.0                           
+BR_OPT_FEII_TEMPLATE_EW       90.173333                     0.000000                      1.0                           
+BR_OPT_FEII_TEMPLATE_FLUX     -13.758647                    0.000000                      1.0                           
+BR_OPT_FEII_TEMPLATE_LUM      42.853254                     0.000000                      1.0                           
+BR_OPT_FEII_VOFF              -0.000372                     0.000000                      1.0                           
+HOST_FRAC_4000                0.152880                      0.000000                      1.0                           
+HOST_FRAC_7000                -0.314459                     0.000000                      1.0                           
+HOST_TEMP_DISP                100.000282                    0.000000                      1.0                           
+HOST_TEMP_VEL                 0.000664                      0.000000                      1.0                           
+H_ALPHA_COMP_DISP             1893.395075                   0.000000                      0.0                           
+H_ALPHA_COMP_DISP_CORR        1891.428429                   0.000000                      0.0                           
 H_ALPHA_COMP_DISP_RES         86.275196                     nan                           nan                           
-H_ALPHA_COMP_EW               498.467852                    0.000000                      1.0                           
-H_ALPHA_COMP_FLUX             -13.162036                    0.000000                      1.0                           
-H_ALPHA_COMP_FWHM             2516.387548                   0.000000                      0.0                           
-H_ALPHA_COMP_FWHM_CORR        2508.173034                   0.000000                      0.0                           
-H_ALPHA_COMP_LUM              43.449865                     0.000000                      1.0                           
-H_ALPHA_COMP_NPIX             261.000000                    0.000000                      0.0                           
-H_ALPHA_COMP_SNR              56.275291                     0.000000                      0.0                           
-H_ALPHA_COMP_VOFF             -82.783065                    0.000000                      0.0                           
-H_ALPHA_COMP_W80              6108.792724                   0.000000                      0.0                           
-H_ALPHA_COMP_W80_CORR         6104.776841                   0.000000                      0.0                           
-H_BETA_COMP_DISP              1327.874726                   0.000000                      0.0                           
-H_BETA_COMP_DISP_CORR         1322.756897                   0.000000                      0.0                           
+H_ALPHA_COMP_EW               442.442185                    0.000000                      1.0                           
+H_ALPHA_COMP_FLUX             -13.199929                    0.000000                      1.0                           
+H_ALPHA_COMP_FWHM             3238.583699                   0.000000                      0.0                           
+H_ALPHA_COMP_FWHM_CORR        3232.205138                   0.000000                      0.0                           
+H_ALPHA_COMP_LUM              43.411973                     0.000000                      1.0                           
+H_ALPHA_COMP_NPIX             192.000000                    0.000000                      0.0                           
+H_ALPHA_COMP_SNR              42.884439                     0.000000                      0.0                           
+H_ALPHA_COMP_VOFF             -0.011968                     0.000000                      0.0                           
+H_ALPHA_COMP_W80              4232.309658                   0.000000                      0.0                           
+H_ALPHA_COMP_W80_CORR         4226.511183                   0.000000                      0.0                           
+H_BETA_COMP_DISP              2180.591199                   0.000000                      0.0                           
+H_BETA_COMP_DISP_CORR         2177.478473                   0.000000                      0.0                           
 H_BETA_COMP_DISP_RES          116.470932                    nan                           nan                           
-H_BETA_COMP_EW                69.759654                     0.000000                      1.0                           
-H_BETA_COMP_FLUX              -13.849612                    0.000000                      1.0                           
-H_BETA_COMP_FWHM              3127.219384                   0.000000                      0.0                           
-H_BETA_COMP_FWHM_CORR         3115.169237                   0.000000                      0.0                           
-H_BETA_COMP_LUM               42.762290                     0.000000                      1.0                           
-H_BETA_COMP_NPIX              95.000000                     0.000000                      0.0                           
-H_BETA_COMP_SNR               15.057691                     0.000000                      0.0                           
-H_BETA_COMP_VOFF              -27.307244                    0.000000                      0.0                           
-H_BETA_COMP_W80               3482.287065                   0.000000                      0.0                           
-H_BETA_COMP_W80_CORR          3469.428431                   0.000000                      0.0                           
-LOG_LIKE                      1.754128                      0.000000                      0.0                           
-L_CONT_AGN_3000               44.734162                     0.000000                      1.0                           
-L_CONT_AGN_5100               44.599006                     0.000000                      1.0                           
-L_CONT_HOST_3000              44.584329                     0.000000                      1.0                           
+H_BETA_COMP_EW                87.631230                     0.000000                      1.0                           
+H_BETA_COMP_FLUX              -13.758016                    0.000000                      1.0                           
+H_BETA_COMP_FWHM              3397.152584                   0.000000                      0.0                           
+H_BETA_COMP_FWHM_CORR         3386.063198                   0.000000                      0.0                           
+H_BETA_COMP_LUM               42.853885                     0.000000                      1.0                           
+H_BETA_COMP_NPIX              158.000000                    0.000000                      0.0                           
+H_BETA_COMP_SNR               17.494035                     0.000000                      0.0                           
+H_BETA_COMP_VOFF              -0.001861                     0.000000                      0.0                           
+H_BETA_COMP_W80               4940.519186                   0.000000                      0.0                           
+H_BETA_COMP_W80_CORR          4931.464312                   0.000000                      0.0                           
+LOG_LIKE                      1.984354                      0.000000                      0.0                           
+L_CONT_AGN_3000               44.730128                     0.000000                      1.0                           
+L_CONT_AGN_5100               44.508459                     0.000000                      1.0                           
+L_CONT_HOST_3000              44.311767                     0.000000                      1.0                           
 L_CONT_HOST_5100              0.000000                      0.000000                      1.0                           
-L_CONT_TOT_3000               44.734162                     0.000000                      1.0                           
-L_CONT_TOT_5100               44.599006                     0.000000                      1.0                           
-NA_H_ALPHA_AMP                54.204909                     0.000000                      1.0                           
-NA_H_ALPHA_DISP               939.099476                    0.000000                      1.0                           
-NA_H_ALPHA_DISP_CORR          935.128021                    0.000000                      1.0                           
+L_CONT_TOT_3000               44.732771                     0.000000                      1.0                           
+L_CONT_TOT_5100               44.584445                     0.000000                      1.0                           
+NA_H_ALPHA_AMP                52.065799                     0.000000                      1.0                           
+NA_H_ALPHA_DISP               1299.962078                   0.000000                      1.0                           
+NA_H_ALPHA_DISP_CORR          1297.095985                   0.000000                      1.0                           
 NA_H_ALPHA_DISP_RES           86.275196                     nan                           nan                           
-NA_H_ALPHA_EW                 272.665895                    0.000000                      0.0                           
-NA_H_ALPHA_FLUX               -13.424062                    0.000000                      0.0                           
-NA_H_ALPHA_FWHM               2212.465285                   0.000000                      0.0                           
-NA_H_ALPHA_FWHM_CORR          2203.117862                   0.000000                      0.0                           
-NA_H_ALPHA_LUM                43.187840                     0.000000                      0.0                           
-NA_H_ALPHA_NPIX               76.000000                     0.000000                      0.0                           
-NA_H_ALPHA_SNR                53.659771                     0.000000                      0.0                           
-NA_H_ALPHA_VOFF               -148.417975                   0.000000                      1.0                           
-NA_H_ALPHA_W80                2461.972851                   0.000000                      0.0                           
-NA_H_ALPHA_W80_CORR           2451.991447                   0.000000                      0.0                           
-NA_H_BETA_AMP                 19.417495                     0.000000                      1.0                           
-NA_H_BETA_DISP                1327.886385                   0.000000                      1.0                           
-NA_H_BETA_DISP_CORR           1322.768601                   0.000000                      1.0                           
+NA_H_ALPHA_EW                 351.488544                    0.000000                      0.0                           
+NA_H_ALPHA_FLUX               -13.300112                    0.000000                      0.0                           
+NA_H_ALPHA_FWHM               3062.084367                   0.000000                      0.0                           
+NA_H_ALPHA_FWHM_CORR          3055.337354                   0.000000                      0.0                           
+NA_H_ALPHA_LUM                43.311790                     0.000000                      0.0                           
+NA_H_ALPHA_NPIX               108.000000                    0.000000                      0.0                           
+NA_H_ALPHA_SNR                51.548238                     0.000000                      0.0                           
+NA_H_ALPHA_VOFF               -0.014453                     0.000000                      1.0                           
+NA_H_ALPHA_W80                3409.264489                   0.000000                      0.0                           
+NA_H_ALPHA_W80_CORR           3402.063505                   0.000000                      0.0                           
+NA_H_BETA_AMP                 16.329028                     0.000000                      1.0                           
+NA_H_BETA_DISP                1299.996931                   0.000000                      1.0                           
+NA_H_BETA_DISP_CORR           1294.768914                   0.000000                      1.0                           
 NA_H_BETA_DISP_RES            116.470932                    nan                           nan                           
-NA_H_BETA_EW                  69.759654                     0.000000                      0.0                           
-NA_H_BETA_FLUX                -13.849612                    0.000000                      0.0                           
-NA_H_BETA_FWHM                3127.219384                   0.000000                      0.0                           
-NA_H_BETA_FWHM_CORR           3115.169237                   0.000000                      0.0                           
-NA_H_BETA_LUM                 42.762290                     0.000000                      0.0                           
-NA_H_BETA_NPIX                95.000000                     0.000000                      0.0                           
-NA_H_BETA_SNR                 19.229848                     0.000000                      0.0                           
-NA_H_BETA_VOFF                -27.307380                    0.000000                      1.0                           
-NA_H_BETA_W80                 3482.287065                   0.000000                      0.0                           
-NA_H_BETA_W80_CORR            3469.428431                   0.000000                      0.0                           
-NA_OIII_a_AMP                 0.000000                      0.000000                      2.0                           
-NA_OIII_a_DISP                1262.040925                   0.000000                      1.0                           
-NA_OIII_a_DISP_CORR           1256.865316                   0.000000                      1.0                           
+NA_H_BETA_EW                  58.526200                     0.000000                      0.0                           
+NA_H_BETA_FLUX                -13.934024                    0.000000                      0.0                           
+NA_H_BETA_FWHM                3061.712071                   0.000000                      0.0                           
+NA_H_BETA_FWHM_CORR           3049.403073                   0.000000                      0.0                           
+NA_H_BETA_LUM                 42.677878                     0.000000                      0.0                           
+NA_H_BETA_NPIX                89.000000                     0.000000                      0.0                           
+NA_H_BETA_SNR                 16.169682                     0.000000                      0.0                           
+NA_H_BETA_VOFF                -0.002380                     0.000000                      1.0                           
+NA_H_BETA_W80                 3409.249688                   0.000000                      0.0                           
+NA_H_BETA_W80_CORR            3396.114525                   0.000000                      0.0                           
+NA_NII_6549_AMP               0.000000                      0.000000                      2.0                           
+NA_NII_6549_DISP              1299.962078                   0.000000                      1.0                           
+NA_NII_6549_DISP_CORR         1297.083056                   0.000000                      1.0                           
+NA_NII_6549_DISP_RES          86.469352                     nan                           nan                           
+NA_NII_6549_EW                0.000000                      0.000000                      1.0                           
+NA_NII_6549_FLUX              0.000000                      0.000000                      0.0                           
+NA_NII_6549_FWHM              0.000000                      0.000000                      0.0                           
+NA_NII_6549_FWHM_CORR         0.000000                      0.000000                      0.0                           
+NA_NII_6549_LUM               0.000000                      0.000000                      1.0                           
+NA_NII_6549_NPIX              0.000000                      0.000000                      0.0                           
+NA_NII_6549_SNR               0.000000                      0.000000                      0.0                           
+NA_NII_6549_VOFF              -0.014453                     0.000000                      1.0                           
+NA_NII_6549_W80               0.000000                      0.000000                      0.0                           
+NA_NII_6549_W80_CORR          0.000000                      0.000000                      0.0                           
+NA_NII_6585_AMP               0.000000                      0.000000                      2.0                           
+NA_NII_6585_DISP              1299.962078                   0.000000                      1.0                           
+NA_NII_6585_DISP_CORR         1297.113969                   0.000000                      1.0                           
+NA_NII_6585_DISP_RES          86.004394                     nan                           nan                           
+NA_NII_6585_EW                0.000000                      0.000000                      1.0                           
+NA_NII_6585_FLUX              0.000000                      0.000000                      0.0                           
+NA_NII_6585_FWHM              0.000000                      0.000000                      0.0                           
+NA_NII_6585_FWHM_CORR         0.000000                      0.000000                      0.0                           
+NA_NII_6585_LUM               0.000000                      0.000000                      1.0                           
+NA_NII_6585_NPIX              0.000000                      0.000000                      0.0                           
+NA_NII_6585_SNR               0.000000                      0.000000                      0.0                           
+NA_NII_6585_VOFF              -0.014453                     0.000000                      1.0                           
+NA_NII_6585_W80               0.000000                      0.000000                      0.0                           
+NA_NII_6585_W80_CORR          0.000000                      0.000000                      0.0                           
+NA_OIII_a_AMP                 2.470755                      0.000000                      1.0                           
+NA_OIII_a_DISP                1299.991184                   0.000000                      1.0                           
+NA_OIII_a_DISP_CORR           1294.967261                   0.000000                      1.0                           
 NA_OIII_a_DISP_RES            114.179127                    nan                           nan                           
-NA_OIII_a_EW                  0.000000                      0.000000                      1.0                           
-NA_OIII_a_FLUX                0.000000                      0.000000                      0.0                           
-NA_OIII_a_FWHM                0.000000                      0.000000                      0.0                           
-NA_OIII_a_FWHM_CORR           0.000000                      0.000000                      0.0                           
-NA_OIII_a_LUM                 0.000000                      0.000000                      1.0                           
-NA_OIII_a_NPIX                0.000000                      0.000000                      0.0                           
-NA_OIII_a_SNR                 0.000000                      0.000000                      0.0                           
-NA_OIII_a_VOFF                -15.107986                    0.000000                      1.0                           
-NA_OIII_a_W80                 0.000000                      0.000000                      0.0                           
-NA_OIII_a_W80_CORR            0.000000                      0.000000                      0.0                           
-NA_OIII_b_AMP                 0.000000                      0.000000                      2.0                           
-NA_OIII_b_DISP                1262.040925                   0.000000                      1.0                           
-NA_OIII_b_DISP_CORR           1256.964136                   0.000000                      1.0                           
+NA_OIII_a_EW                  9.245146                      0.000000                      0.0                           
+NA_OIII_a_FLUX                -14.745528                    0.000000                      0.0                           
+NA_OIII_a_FWHM                3062.021795                   0.000000                      0.0                           
+NA_OIII_a_FWHM_CORR           3050.194573                   0.000000                      0.0                           
+NA_OIII_a_LUM                 41.866374                     0.000000                      0.0                           
+NA_OIII_a_NPIX                53.000000                     0.000000                      0.0                           
+NA_OIII_a_SNR                 2.446333                      0.000000                      0.0                           
+NA_OIII_a_VOFF                -0.000100                     0.000000                      1.0                           
+NA_OIII_a_W80                 3409.251666                   0.000000                      0.0                           
+NA_OIII_a_W80_CORR            3396.629299                   0.000000                      0.0                           
+NA_OIII_b_AMP                 7.362850                      0.000000                      1.0                           
+NA_OIII_b_DISP                1299.991184                   0.000000                      1.0                           
+NA_OIII_b_DISP_CORR           1295.063173                   0.000000                      1.0                           
 NA_OIII_b_DISP_RES            113.086065                    nan                           nan                           
-NA_OIII_b_EW                  0.000000                      0.000000                      1.0                           
-NA_OIII_b_FLUX                0.000000                      0.000000                      0.0                           
-NA_OIII_b_FWHM                0.000000                      0.000000                      0.0                           
-NA_OIII_b_FWHM_CORR           0.000000                      0.000000                      0.0                           
-NA_OIII_b_LUM                 0.000000                      0.000000                      1.0                           
-NA_OIII_b_NPIX                0.000000                      0.000000                      0.0                           
-NA_OIII_b_SNR                 0.000000                      0.000000                      0.0                           
-NA_OIII_b_VOFF                -15.107986                    0.000000                      1.0                           
-NA_OIII_b_W80                 0.000000                      0.000000                      0.0                           
-NA_OIII_b_W80_CORR            0.000000                      0.000000                      0.0                           
-NA_OII_AMP                    1.259218                      0.000000                      1.0                           
-NA_OII_DISP                   1301.233631                   0.000000                      1.0                           
-NA_OII_DISP_CORR              1292.330316                   0.000000                      1.0                           
+NA_OIII_b_EW                  28.501430                     0.000000                      0.0                           
+NA_OIII_b_FLUX                -14.267132                    0.000000                      0.0                           
+NA_OIII_b_FWHM                3061.887068                   0.000000                      0.0                           
+NA_OIII_b_FWHM_CORR           3050.285127                   0.000000                      0.0                           
+NA_OIII_b_LUM                 42.344769                     0.000000                      0.0                           
+NA_OIII_b_NPIX                78.000000                     0.000000                      0.0                           
+NA_OIII_b_SNR                 7.290477                      0.000000                      0.0                           
+NA_OIII_b_VOFF                -0.000100                     0.000000                      1.0                           
+NA_OIII_b_W80                 3409.330454                   0.000000                      0.0                           
+NA_OIII_b_W80_CORR            3396.949328                   0.000000                      0.0                           
+NA_OII_AMP                    1.673935                      0.000000                      1.0                           
+NA_OII_DISP                   1299.996523                   0.000000                      1.0                           
+NA_OII_DISP_CORR              1291.084677                   0.000000                      1.0                           
 NA_OII_DISP_RES               151.958271                    nan                           nan                           
-NA_OII_EW                     2.164059                      0.000000                      0.0                           
-NA_OII_FLUX                   -15.161978                    0.000000                      0.0                           
-NA_OII_FWHM                   3064.661760                   0.000000                      0.0                           
-NA_OII_FWHM_CORR              3043.699794                   0.000000                      0.0                           
-NA_OII_LUM                    41.449923                     0.000000                      0.0                           
-NA_OII_NPIX                   3.000000                      0.000000                      0.0                           
-NA_OII_SNR                    1.246909                      0.000000                      0.0                           
-NA_OII_VOFF                   2.631298                      0.000000                      1.0                           
-NA_OII_W80                    3412.554899                   0.000000                      0.0                           
-NA_OII_W80_CORR               3390.187453                   0.000000                      0.0                           
-NA_OPT_FEII_AMP               4.249823                      0.000000                      1.0                           
-NA_OPT_FEII_DISP              12.376266                     0.000000                      1.0                           
-NA_OPT_FEII_TEMPLATE_EW       12.983900                     0.000000                      1.0                           
-NA_OPT_FEII_TEMPLATE_FLUX     -14.556893                    0.000000                      1.0                           
-NA_OPT_FEII_TEMPLATE_LUM      42.055009                     0.000000                      1.0                           
-NA_OPT_FEII_VOFF              -1.196910                     0.000000                      1.0                           
-OIII_a_COMP_DISP              3749.088853                   0.000000                      0.0                           
-OIII_a_COMP_DISP_CORR         3747.349778                   0.000000                      0.0                           
+NA_OII_EW                     2.881199                      0.000000                      0.0                           
+NA_OII_FLUX                   -15.038756                    0.000000                      0.0                           
+NA_OII_FWHM                   3061.673462                   0.000000                      0.0                           
+NA_OII_FWHM_CORR              3040.690896                   0.000000                      0.0                           
+NA_OII_LUM                    41.573145                     0.000000                      0.0                           
+NA_OII_NPIX                   29.000000                     0.000000                      0.0                           
+NA_OII_SNR                    1.657623                      0.000000                      0.0                           
+NA_OII_VOFF                   0.000120                      0.000000                      1.0                           
+NA_OII_W80                    3409.164269                   0.000000                      0.0                           
+NA_OII_W80_CORR               3386.774430                   0.000000                      0.0                           
+NA_OPT_FEII_AMP               5.757547                      0.000000                      1.0                           
+NA_OPT_FEII_DISP              10.000926                     0.000000                      1.0                           
+NA_OPT_FEII_TEMPLATE_EW       17.716888                     0.000000                      1.0                           
+NA_OPT_FEII_TEMPLATE_FLUX     -14.425025                    0.000000                      1.0                           
+NA_OPT_FEII_TEMPLATE_LUM      42.186877                     0.000000                      1.0                           
+NA_OPT_FEII_VOFF              -0.000357                     0.000000                      1.0                           
+NA_SII_6716_AMP               1.214279                      0.000000                      1.0                           
+NA_SII_6716_DISP              1299.962078                   0.000000                      1.0                           
+NA_SII_6716_DISP_CORR         1297.225753                   0.000000                      1.0                           
+NA_SII_6716_DISP_RES          84.301534                     nan                           nan                           
+NA_SII_6716_EW                8.567462                      0.000000                      0.0                           
+NA_SII_6716_FLUX              -14.922300                    0.000000                      0.0                           
+NA_SII_6716_FWHM              3061.361630                   0.000000                      0.0                           
+NA_SII_6716_FWHM_CORR         3054.918578                   0.000000                      0.0                           
+NA_SII_6716_LUM               41.689601                     0.000000                      0.0                           
+NA_SII_6716_NPIX              42.000000                     0.000000                      0.0                           
+NA_SII_6716_SNR               1.202562                      0.000000                      0.0                           
+NA_SII_6716_VOFF              -0.014453                     0.000000                      1.0                           
+NA_SII_6716_W80               3409.460600                   0.000000                      0.0                           
+NA_SII_6716_W80_CORR          3402.586038                   0.000000                      0.0                           
+NA_SII_6731_AMP               0.388075                      0.000000                      1.0                           
+NA_SII_6731_DISP              1299.962078                   0.000000                      1.0                           
+NA_SII_6731_DISP_CORR         1297.237442                   0.000000                      1.0                           
+NA_SII_6731_DISP_RES          84.121478                     nan                           nan                           
+NA_SII_6731_EW                2.749615                      0.000000                      0.0                           
+NA_SII_6731_FLUX              -15.416788                    0.000000                      0.0                           
+NA_SII_6731_FWHM              3061.732932                   0.000000                      0.0                           
+NA_SII_6731_FWHM_CORR         3055.318182                   0.000000                      0.0                           
+NA_SII_6731_LUM               41.195113                     0.000000                      0.0                           
+NA_SII_6731_NPIX              0.000000                      0.000000                      0.0                           
+NA_SII_6731_SNR               0.384273                      0.000000                      0.0                           
+NA_SII_6731_VOFF              -0.014453                     0.000000                      1.0                           
+NA_SII_6731_W80               3408.951869                   0.000000                      0.0                           
+NA_SII_6731_W80_CORR          3402.105646                   0.000000                      0.0                           
+OIII_a_COMP_DISP              1375.990259                   0.000000                      0.0                           
+OIII_a_COMP_DISP_CORR         1371.244806                   0.000000                      0.0                           
 OIII_a_COMP_DISP_RES          114.179127                    nan                           nan                           
-OIII_a_COMP_EW                9.988676                      0.000000                      1.0                           
-OIII_a_COMP_FLUX              -14.705216                    0.000000                      1.0                           
-OIII_a_COMP_FWHM              8830.192712                   0.000000                      0.0                           
-OIII_a_COMP_FWHM_CORR         8826.098390                   0.000000                      0.0                           
-OIII_a_COMP_LUM               41.906686                     0.000000                      1.0                           
-OIII_a_COMP_NPIX              23.000000                     0.000000                      0.0                           
-OIII_a_COMP_SNR               1.145941                      0.000000                      0.0                           
-OIII_a_COMP_VOFF              -4.309017                     0.000000                      0.0                           
-OIII_a_COMP_W80               9835.514149                   0.000000                      0.0                           
-OIII_a_COMP_W80_CORR          9831.146029                   0.000000                      0.0                           
-OIII_b_COMP_DISP              3749.470205                   0.000000                      0.0                           
-OIII_b_COMP_DISP_CORR         3747.764449                   0.000000                      0.0                           
+OIII_a_COMP_EW                9.457886                      0.000000                      1.0                           
+OIII_a_COMP_FLUX              -14.735685                    0.000000                      1.0                           
+OIII_a_COMP_FWHM              3077.823782                   0.000000                      0.0                           
+OIII_a_COMP_FWHM_CORR         3066.057515                   0.000000                      0.0                           
+OIII_a_COMP_LUM               41.876217                     0.000000                      1.0                           
+OIII_a_COMP_NPIX              53.000000                     0.000000                      0.0                           
+OIII_a_COMP_SNR               2.637651                      0.000000                      0.0                           
+OIII_a_COMP_VOFF              -0.002295                     0.000000                      0.0                           
+OIII_a_COMP_W80               3482.776750                   0.000000                      0.0                           
+OIII_a_COMP_W80_CORR          3470.421813                   0.000000                      0.0                           
+OIII_b_COMP_DISP              1376.677673                   0.000000                      0.0                           
+OIII_b_COMP_DISP_CORR         1372.025130                   0.000000                      0.0                           
 OIII_b_COMP_DISP_RES          113.086065                    nan                           nan                           
-OIII_b_COMP_EW                30.437312                     0.000000                      1.0                           
-OIII_b_COMP_FLUX              -14.226817                    0.000000                      1.0                           
-OIII_b_COMP_FWHM              8830.029127                   0.000000                      0.0                           
-OIII_b_COMP_FWHM_CORR         8826.012765                   0.000000                      0.0                           
-OIII_b_COMP_LUM               42.385084                     0.000000                      1.0                           
-OIII_b_COMP_NPIX              167.000000                    0.000000                      0.0                           
-OIII_b_COMP_SNR               3.088513                      0.000000                      0.0                           
-OIII_b_COMP_VOFF              -4.306840                     0.000000                      0.0                           
-OIII_b_COMP_W80               9835.735070                   0.000000                      0.0                           
-OIII_b_COMP_W80_CORR          9831.450298                   0.000000                      0.0                           
-OII_COMP_DISP                 1301.076293                   0.000000                      0.0                           
-OII_COMP_DISP_CORR            1292.171894                   0.000000                      0.0                           
+OIII_b_COMP_EW                29.152935                     0.000000                      1.0                           
+OIII_b_COMP_FLUX              -14.257283                    0.000000                      1.0                           
+OIII_b_COMP_FWHM              3077.689755                   0.000000                      0.0                           
+OIII_b_COMP_FWHM_CORR         3066.147610                   0.000000                      0.0                           
+OIII_b_COMP_LUM               42.354618                     0.000000                      1.0                           
+OIII_b_COMP_NPIX              79.000000                     0.000000                      0.0                           
+OIII_b_COMP_SNR               7.729099                      0.000000                      0.0                           
+OIII_b_COMP_VOFF              -0.000402                     0.000000                      0.0                           
+OIII_b_COMP_W80               3483.023087                   0.000000                      0.0                           
+OIII_b_COMP_W80_CORR          3470.904841                   0.000000                      0.0                           
+OII_COMP_DISP                 1299.855384                   0.000000                      0.0                           
+OII_COMP_DISP_CORR            1290.942564                   0.000000                      0.0                           
 OII_COMP_DISP_RES             151.958271                    nan                           nan                           
-OII_COMP_EW                   2.164059                      0.000000                      1.0                           
-OII_COMP_FLUX                 -15.161978                    0.000000                      1.0                           
-OII_COMP_FWHM                 3064.661760                   0.000000                      0.0                           
-OII_COMP_FWHM_CORR            3043.699794                   0.000000                      0.0                           
-OII_COMP_LUM                  41.449923                     0.000000                      1.0                           
-OII_COMP_NPIX                 3.000000                      0.000000                      0.0                           
-OII_COMP_SNR                  1.044491                      0.000000                      0.0                           
-OII_COMP_VOFF                 2.626235                      0.000000                      0.0                           
-OII_COMP_W80                  3412.554899                   0.000000                      0.0                           
-OII_COMP_W80_CORR             3390.187453                   0.000000                      0.0                           
-POWER_AMP                     26.305714                     0.000000                      1.0                           
-POWER_SLOPE                   1.251772                      0.000000                      1.0                           
-RCHI_SQUARED                  100.007231                    0.000000                      0.0                           
-R_SQUARED                     0.995791                      0.000000                      0.0                           
+OII_COMP_EW                   2.881378                      0.000000                      1.0                           
+OII_COMP_FLUX                 -15.038729                    0.000000                      1.0                           
+OII_COMP_FWHM                 3061.780731                   0.000000                      0.0                           
+OII_COMP_FWHM_CORR            3040.798905                   0.000000                      0.0                           
+OII_COMP_LUM                  41.573172                     0.000000                      1.0                           
+OII_COMP_NPIX                 29.000000                     0.000000                      0.0                           
+OII_COMP_SNR                  1.318880                      0.000000                      0.0                           
+OII_COMP_VOFF                 -0.002450                     0.000000                      0.0                           
+OII_COMP_W80                  3409.077014                   0.000000                      0.0                           
+OII_COMP_W80_CORR             3386.686598                   0.000000                      0.0                           
+POWER_AMP                     20.524897                     0.000000                      1.0                           
+POWER_SLOPE                   -0.502320                     0.000000                      1.0                           
+RCHI_SQUARED                  101.553032                    0.000000                      0.0                           
+R_SQUARED                     0.995238                      0.000000                      0.0                           
 NOISE_STD                     0.936060                                                                                  
-RESID_STD                     1.815331                                                                                  
+RESID_STD                     1.930774                                                                                  
 --------------------------------------------------------------------------------------
  - Done fitting 2-onur! 
 
-End process memory: 0.26033357                    
+End process memory: 0.26074317                    

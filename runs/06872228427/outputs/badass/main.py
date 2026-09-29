@@ -37,7 +37,7 @@ fit_options = {
     "mask_emline": False,  # automatically mask lines for continuum fitting.
     "mask_metal": False,  # interpolate over metal absorption lines for high-z spectra
     "fit_stat": "OLS",  # fit statistic; RCHI2=Red. Chi Square 1, ML = Max. Like. , OLS = Ordinary Least Squares
-    "n_basinhop": _env_int("BADASS_NBASINHOP", 20),  # Number of consecutive basinhopping thresholds before solution achieved
+    "n_basinhop": _env_int("BADASS_NBASINHOP", 50),  # Number of consecutive basinhopping thresholds before solution achieved
     "reweighting": False,  # If true, BADASS will reweight the noise vector to achieve a reduced chi-squared ~ 1. This is done after the initial basinhopping fit, and applied to any bootstrapped uncertainties and MCMC fitting performed afterward. This does not affect the chi-squared ratio metric used in line and configuration testing, but does effect the amplitude-over-noise and SNR calculations in BADASS.
     "test_lines": False,  # Perform line/configuration testing for multiple components
     "max_like_niter": _env_int("BADASS_MAX_LIKE_NITER", 100),  # number of maximum likelihood iterations
@@ -69,7 +69,7 @@ comp_options = {
     "fit_uv_iron": False,  # UV Iron
     "fit_balmer": False,  # Balmer continuum (<4000 A)
     "fit_losvd": False,  # stellar LOSVD
-    "fit_host": False,  # host template
+    "fit_host": True,  # eMILES host/stellarity term (fixes the Balmer decrement)
     "fit_power": True,  # AGN power-law
     "fit_poly": True,  # Add polynomial continuum component
     "fit_narrow": True,  # narrow lines
@@ -91,7 +91,7 @@ narrow_options = {
 
 broad_options = {
     "amp_plim": (0, 50),  # line amplitude parameter limits
-    "disp_plim": (1000, 6000),  # 600-6000 km/s -> wings of Halpha/Hbeta; was (500,4000)
+    "disp_plim": (600, 6000),  # 600-6000 km/s -> wings of Halpha/Hbeta; was (500,4000)
     "voff_plim": (-1500, 1500),  # allowed blueshifted wing components
     "line_profile": "gaussian",  # line profile shape*
     "n_moments": 4,  # number of higher order Gauss-Hermite moments (if line profile is gauss-hermite, laplace, or uniform)
@@ -159,6 +159,44 @@ user_lines = {
         "voff": "free",
         "line_type": "na",
         "label": r"[H$\alpha$]",
+        "ncomp": 1,
+    },
+    # [NII] and [SII] share the narrow Halpha width/velocity; NII has the fixed
+    # 1/3 doublet ratio.  Without these the narrow Halpha absorbs [NII].
+    "NA_NII_6549": {
+        "center": 6549.86,
+        "amp": "(NA_NII_6585_AMP/3.0)",
+        "disp": "NA_H_ALPHA_DISP",
+        "voff": "NA_H_ALPHA_VOFF",
+        "line_type": "na",
+        "label": r"[NII]",
+        "ncomp": 1,
+    },
+    "NA_NII_6585": {
+        "center": 6585.27,
+        "amp": "free",
+        "disp": "NA_H_ALPHA_DISP",
+        "voff": "NA_H_ALPHA_VOFF",
+        "line_type": "na",
+        "label": r"[NII]",
+        "ncomp": 1,
+    },
+    "NA_SII_6716": {
+        "center": 6718.29,
+        "amp": "free",
+        "disp": "NA_H_ALPHA_DISP",
+        "voff": "NA_H_ALPHA_VOFF",
+        "line_type": "na",
+        "label": r"[SII]",
+        "ncomp": 1,
+    },
+    "NA_SII_6731": {
+        "center": 6732.67,
+        "amp": "free",
+        "disp": "NA_H_ALPHA_DISP",
+        "voff": "NA_H_ALPHA_VOFF",
+        "line_type": "na",
+        "label": r"[SII]",
         "ncomp": 1,
     },
     "BR_H_BETA": {
