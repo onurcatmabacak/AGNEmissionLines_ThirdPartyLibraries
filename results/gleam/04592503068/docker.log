@@ -1,3 +1,4 @@
+patched GLEAM doublet ties
 WARNING: AstropyDeprecationWarning: The truth value of a Quantity is ambiguous. In the future this will raise a ValueError. [astropy.units.quantity]
 Now working in  on sdss in sdss + fiber1 on source 1 at z=0.197.
 Warning: non-constant dispersion
@@ -81,53 +82,35 @@ Warning: non-constant dispersion
 Warning: non-constant dispersion
 Warning: non-constant dispersion
 [[Model]]
-    (Model(constant) + Model(gaussian, prefix='g0_'))
+    ((Model(constant) + Model(gaussian, prefix='g0_')) + Model(gaussian, prefix='g1_'))
 [[Fit Statistics]]
     # fitting method   = leastsq
-    # function evals   = 51
-    # data points      = 105
-    # variables        = 4
-    chi-square         = 630.340118
-    reduced chi-square = 6.24099126
-    Akaike info crit   = 196.191415
-    Bayesian info crit = 206.807257
-    R-squared          = 0.75380572
+    # function evals   = 57
+    # data points      = 164
+    # variables        = 6
+    chi-square         = 997.065401
+    reduced chi-square = 6.31054051
+    Akaike info crit   = 308.011790
+    Bayesian info crit = 326.610988
+    R-squared          = 0.95787617
 [[Variables]]
-    c:             307.634862 +/- 3.70008542 (1.20%) (init = 305.5706)
-    g0_amplitude:  2221.02988 +/- 158.403100 (7.13%) (init = 2263.061)
-    g0_center:     4957.64370 +/- 0.22116321 (0.00%) (init = 4960.3)
-    g0_sigma:      2.87562942 +/- 0.22653361 (7.88%) (init = 2.838773)
-    g0_fwhm:       6.77158968 +/- 0.53344587 (7.88%) == '2.3548200*g0_sigma'
-    g0_height:     308.128287 +/- 20.6940293 (6.72%) == '0.3989423*g0_amplitude/max(1e-15, g0_sigma)'
+    c:             119.881685 +/- 1.23904334 (1.03%) (init = 120.9669)
+    g0_amplitude:  1072.84955 +/- 22.5512022 (2.10%) == 'g1_amplitude / 3.0'
+    g0_center:     4957.53653 +/- 0.22753483 (0.00%) (init = 4960.3)
+    g0_sigma:      3.25200920 +/- 0.19135926 (5.88%) (init = 2.838773)
+    g1_amplitude:  3218.54866 +/- 67.6536064 (2.10%) (init = 2876.136)
+    g1_center:     5005.46845 +/- 0.07808054 (0.00%) (init = 5008.24)
+    g1_sigma:      3.30456402 +/- 0.07880550 (2.38%) (init = 2.838773)
+    g0_fwhm:       7.65789629 +/- 0.45061661 (5.88%) == '2.3548200*g0_sigma'
+    g0_height:     131.612502 +/- 7.57805967 (5.76%) == '0.3989423*g0_amplitude/max(1e-15, g0_sigma)'
+    g1_fwhm:       7.78165345 +/- 0.18557276 (2.38%) == '2.3548200*g1_sigma'
+    g1_height:     388.558126 +/- 7.97672959 (2.05%) == '0.3989423*g1_amplitude/max(1e-15, g1_sigma)'
 [[Correlations]] (unreported correlations are < 0.100)
-    C(g0_amplitude, g0_sigma) = +0.6035
-    C(c, g0_amplitude)        = -0.3572
-    C(c, g0_sigma)            = -0.2156
-Warning: non-constant dispersion
-Warning: non-constant dispersion
-[[Model]]
-    (Model(constant) + Model(gaussian, prefix='g0_'))
-[[Fit Statistics]]
-    # fitting method   = leastsq
-    # function evals   = 41
-    # data points      = 105
-    # variables        = 4
-    chi-square         = 797.517111
-    reduced chi-square = 7.89620902
-    Akaike info crit   = 220.892009
-    Bayesian info crit = 231.507850
-    R-squared          = 0.96325872
-[[Variables]]
-    c:             97.9141142 +/- 1.44607402 (1.48%) (init = 95.81618)
-    g0_amplitude:  2746.65065 +/- 67.2299131 (2.45%) (init = 2440.606)
-    g0_center:     5005.45667 +/- 0.08764579 (0.00%) (init = 5008.24)
-    g0_sigma:      3.35904397 +/- 0.09015003 (2.68%) (init = 2.838773)
-    g0_fwhm:       7.90994393 +/- 0.21228709 (2.68%) == '2.3548200*g0_sigma'
-    g0_height:     326.210414 +/- 7.44296091 (2.28%) == '0.3989423*g0_amplitude/max(1e-15, g0_sigma)'
-[[Correlations]] (unreported correlations are < 0.100)
-    C(g0_amplitude, g0_sigma) = +0.6080
-    C(c, g0_amplitude)        = -0.3842
-    C(c, g0_sigma)            = -0.2336
+    C(g1_amplitude, g1_sigma) = +0.5876
+    C(c, g1_amplitude)        = -0.3861
+    C(g0_sigma, g1_amplitude) = +0.2381
+    C(c, g1_sigma)            = -0.2269
+    C(g0_sigma, g1_sigma)     = +0.1399
 Warning: non-constant dispersion
 Warning: non-constant dispersion
 [[Model]]
@@ -212,43 +195,46 @@ Warning: non-constant dispersion
     C(c, g1_sigma)            = -0.1605
 Warning: non-constant dispersion
 Matplotlib Version: 3.7.5
-total 4156
--rw-rw-r-- 1 1000 1000  12541 Sep 28 17:03 docker.log
--rw-r--r-- 1 root root 483560 Sep 28 17:40 linefits.sdss.sdss.fiber1.001.Ha.Ha_broad.NII1.png
+total 4580
+-rw-rw-r-- 1 1000 1000  12569 Sep 29 09:00 docker.log
+-rw-r--r-- 1 root root 483560 Sep 29 10:26 linefits.sdss.sdss.fiber1.001.Ha.Ha_broad.NII1.png
 -rw-rw-r-- 1 1000 1000 466331 Sep 27 23:39 linefits.sdss.sdss.fiber1.001.Ha.NII1.png
--rw-r--r-- 1 root root 456287 Sep 28 17:39 linefits.sdss.sdss.fiber1.001.Hb.Hb_broad.png
+-rw-r--r-- 1 root root 456287 Sep 29 10:26 linefits.sdss.sdss.fiber1.001.Hb.Hb_broad.png
 -rw-rw-r-- 1 1000 1000 447747 Sep 27 23:39 linefits.sdss.sdss.fiber1.001.Hb.png
--rw-r--r-- 1 root root 454899 Sep 28 17:38 linefits.sdss.sdss.fiber1.001.OII.png
--rw-r--r-- 1 root root 444449 Sep 28 17:39 linefits.sdss.sdss.fiber1.001.OIII4.png
--rw-r--r-- 1 root root 451590 Sep 28 17:39 linefits.sdss.sdss.fiber1.001.OIII5.png
--rw-r--r-- 1 root root 458881 Sep 28 17:40 linefits.sdss.sdss.fiber1.001.SII1.SII2.png
--rw-r--r-- 1 root root  20160 Sep 28 17:40 linefits.sdss.sdss.fiber1.001.fits
--rw-r--r-- 1 root root 530398 Sep 28 17:40 linefits.sdss.sdss.fiber1.001.png
+-rw-r--r-- 1 root root 454899 Sep 29 10:25 linefits.sdss.sdss.fiber1.001.OII.png
+-rw-r--r-- 1 root root 458221 Sep 29 10:26 linefits.sdss.sdss.fiber1.001.OIII4.OIII5.png
+-rw-r--r-- 1 1000 1000 444449 Sep 29 08:59 linefits.sdss.sdss.fiber1.001.OIII4.png
+-rw-r--r-- 1 1000 1000 451590 Sep 29 08:59 linefits.sdss.sdss.fiber1.001.OIII5.png
+-rw-r--r-- 1 root root 458881 Sep 29 10:26 linefits.sdss.sdss.fiber1.001.SII1.SII2.png
+-rw-r--r-- 1 root root  20160 Sep 29 10:27 linefits.sdss.sdss.fiber1.001.fits
+-rw-r--r-- 1 root root 507504 Sep 29 10:26 linefits.sdss.sdss.fiber1.001.png
 total 12K
 -rw-r--r-- 1 root root 1.2K Sep 21 02:20 =5.2
-drwxr-xr-x 1 root root 4.0K Sep 22 10:32 input
-drwxrwxr-x 2 1000 1000 4.0K Sep 28 17:40 output
+drwxr-xr-x 1 root root 4.0K Sep 29 10:24 input
+drwxrwxr-x 2 1000 1000 4.0K Sep 29 10:27 output
 -rw-r--r-- 1 root root 1.2K Sep 21 02:20 /app/=5.2
 
 /app/input:
-total 124K
+total 128K
 -rw-rw-r-- 1 1000 1000  12K Aug 28 20:16 Sky_bands.fits
--rw-rw-r-- 1 root root 1.6K Sep 22 04:00 gleam.sh
--rw-rw-r-- 1 1000 1000 2.4K Sep 28 07:06 gleamconfig.yaml
+-rw-rw-r-- 1 1000 1000 1.3K Sep 29 07:43 gleam.sh
+-rw-rw-r-- 1 1000 1000 2.6K Sep 29 07:43 gleam_doublet_patch.py
+-rw-rw-r-- 1 1000 1000 2.5K Sep 29 09:18 gleamconfig.yaml
 -rw-rw-r-- 1 1000 1000 8.5K Sep 27 12:39 line_table.fits
--rw-rw-r-- 1 1000 1000  115 Sep 28 17:37 meta.dat
--rw-rw-r-- 1 1000 1000  85K Sep 28 17:37 spec1d.sdss.sdss.fiber1.1.fits
+-rw-rw-r-- 1 1000 1000  115 Sep 29 10:24 meta.dat
+-rw-rw-r-- 1 1000 1000  85K Sep 29 10:24 spec1d.sdss.sdss.fiber1.1.fits
 
 /app/output:
-total 4.1M
--rw-rw-r-- 1 1000 1000  13K Sep 28 17:03 docker.log
--rw-r--r-- 1 root root 473K Sep 28 17:40 linefits.sdss.sdss.fiber1.001.Ha.Ha_broad.NII1.png
+total 4.5M
+-rw-rw-r-- 1 1000 1000  13K Sep 29 09:00 docker.log
+-rw-r--r-- 1 root root 473K Sep 29 10:26 linefits.sdss.sdss.fiber1.001.Ha.Ha_broad.NII1.png
 -rw-rw-r-- 1 1000 1000 456K Sep 27 23:39 linefits.sdss.sdss.fiber1.001.Ha.NII1.png
--rw-r--r-- 1 root root 446K Sep 28 17:39 linefits.sdss.sdss.fiber1.001.Hb.Hb_broad.png
+-rw-r--r-- 1 root root 446K Sep 29 10:26 linefits.sdss.sdss.fiber1.001.Hb.Hb_broad.png
 -rw-rw-r-- 1 1000 1000 438K Sep 27 23:39 linefits.sdss.sdss.fiber1.001.Hb.png
--rw-r--r-- 1 root root 445K Sep 28 17:38 linefits.sdss.sdss.fiber1.001.OII.png
--rw-r--r-- 1 root root 435K Sep 28 17:39 linefits.sdss.sdss.fiber1.001.OIII4.png
--rw-r--r-- 1 root root 442K Sep 28 17:39 linefits.sdss.sdss.fiber1.001.OIII5.png
--rw-r--r-- 1 root root 449K Sep 28 17:40 linefits.sdss.sdss.fiber1.001.SII1.SII2.png
--rw-r--r-- 1 root root  20K Sep 28 17:40 linefits.sdss.sdss.fiber1.001.fits
--rw-r--r-- 1 root root 518K Sep 28 17:40 linefits.sdss.sdss.fiber1.001.png
+-rw-r--r-- 1 root root 445K Sep 29 10:25 linefits.sdss.sdss.fiber1.001.OII.png
+-rw-r--r-- 1 root root 448K Sep 29 10:26 linefits.sdss.sdss.fiber1.001.OIII4.OIII5.png
+-rw-r--r-- 1 1000 1000 435K Sep 29 08:59 linefits.sdss.sdss.fiber1.001.OIII4.png
+-rw-r--r-- 1 1000 1000 442K Sep 29 08:59 linefits.sdss.sdss.fiber1.001.OIII5.png
+-rw-r--r-- 1 root root 449K Sep 29 10:26 linefits.sdss.sdss.fiber1.001.SII1.SII2.png
+-rw-r--r-- 1 root root  20K Sep 29 10:27 linefits.sdss.sdss.fiber1.001.fits
+-rw-r--r-- 1 root root 496K Sep 29 10:26 linefits.sdss.sdss.fiber1.001.png

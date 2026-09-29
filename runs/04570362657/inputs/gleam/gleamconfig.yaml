@@ -29,11 +29,13 @@ globals:
   fitting:
     # Signal to noise limit for a detection
     SN_limit: 2
-    # Tolerance for considering emission lines part of a group and thus fitting them together
-    tolerance: 26.0 Angstrom
+    # Tolerance for considering emission lines part of a group and thus fitting
+    # them together.  >=47 A groups the [OIII]4959/5007 doublet so the runtime
+    # doublet-tie patch can enforce the 1/3 ratio (Ha+[NII] were already grouped).
+    tolerance: 50 Angstrom
     # Range around either side of the Gaussian center to be probed
-    w: 3.0 Angstrom
-    cont_width: 40 Angstrom
+    w: 10.0 Angstrom
+    cont_width: 70 Angstrom
     center: constrained
 
 
@@ -42,16 +44,16 @@ setups:
   # SDSS
   sdss:
     # VIMOS does not have a great resolution
-    resolution: 8.0 Angstrom
+    resolution: 2.5 Angstrom
     # Here we override the internal default of gleam with 60 Angstrom
     fitting:
-      cont_width: 60 Angstrom
+      cont_width: 70 Angstrom
   # A particular setup for the AF2 instrument on WHT
   WHT_R316R:
-    resolution: 8.1 Angstrom
+    resolution: 2.5 Angstrom
     # This is definitely too small, but we will override again in our source ;)
     fitting:
-      cont_width: 20 Angstrom
+      cont_width: 70 Angstrom
 
 
 # Some source-specific overrides
