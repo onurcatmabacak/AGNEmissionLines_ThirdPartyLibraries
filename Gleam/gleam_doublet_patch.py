@@ -17,6 +17,51 @@ from __future__ import annotations
 import pathlib
 
 FILE = pathlib.Path("/usr/local/lib/python3.8/site-packages/gleam/gaussian_fitting.py")
+PLOT_FILE = pathlib.Path("/usr/local/lib/python3.8/site-packages/gleam/plot_gaussian.py")
+MAIN_FILE = pathlib.Path("/usr/local/lib/python3.8/site-packages/gleam/main.py")
+
+# The results FITS table is written after the plotting loop; a plotting failure
+# (GLEAM's label code breaks for 3+-line groups) must not discard the table.
+MAIN_OLD = (
+    "                plot_line(\n"
+    "                    lines,\n"
+    "                    spectrum_fit,\n"
+    "                    config.resolution / (1 + target[\"Redshift\"]),\n"
+    "                    sky,\n"
+    "                )"
+)
+MAIN_NEW = (
+    "                # Write the results table before plotting, because GLEAM's\n"
+    "                # label code can crash on 3+-line groups.\n"
+    "                try:\n"
+    "                    _out = astropy.table.vstack(tables)\n"
+    "                    _out = Table(_out, masked=True, copy=False)\n"
+    "                    _out.write(\"{}.fits\".format(rf.naming_convention(\n"
+    "                        data_path, target[\"Sample\"], target[\"SourceNumber\"],\n"
+    "                        target[\"Setup\"], target[\"Pointing\"], \"linefits\")),\n"
+    "                        overwrite=True)\n"
+    "                except Exception as _ew:\n"
+    "                    print(\"WARNING: GLEAM FITS write failed:\", _ew)\n"
+    "                try:\n"
+    "                    plot_line(\n"
+    "                        lines,\n"
+    "                        spectrum_fit,\n"
+    "                        config.resolution / (1 + target[\"Redshift\"]),\n"
+    "                        sky,\n"
+    "                    )\n"
+    "                except Exception as _e:\n"
+    "                    print(\"WARNING: GLEAM plot_line failed:\", _e)"
+)
+
+# plot_gaussian.adjust_labels only defines `offsets` for 1- or 2-line groups;
+# a 3+-line group (e.g. Ha + Ha_broad + [NII]) raises UnboundLocalError and
+# aborts the run before the FITS table is written.
+PLOT_OLD = "        for (text, offset) in zip(texts, offsets):"
+PLOT_NEW = (
+    "        else:\n"
+    "            offsets = tuple((0.0, 0.0) for _ in texts)\n"
+    "        for (text, offset) in zip(texts, offsets):"
+)
 
 INJECT = (
     "    # Tie physical doublets: [OIII]4959 = 5007/3, [NII]6548 = 6583/3.\n"
@@ -26,6 +71,9 @@ INJECT = (
     "            if abs(_wv - target) < tol:\n"
     "                return _i\n"
     "        return None\n"
+    "    # Amplitudes must stay physical (GLEAM otherwise returns negative fluxes).\n"
+    "    for _i in range(len(_wl)):\n"
+    "        model.set_param_hint(f\"g{_i}_amplitude\", min=0.0)\n"
     "    for _a, _b in [(4958.9, 5006.8), (6548.05, 6583.46)]:\n"
     "        _ia, _ib = _idx(_a), _idx(_b)\n"
     "        if _ia is not None and _ib is not None:\n"
@@ -65,6 +113,15 @@ def main() -> int:
     src = src.replace(ANCHOR, INJECT + ANCHOR, 1)
     src = src.replace(OLD_IS_GOOD, NEW_IS_GOOD, 1)
     FILE.write_text(src)
+    if ("patched GLEAM label offsets" not in PLOT_FILE.read_text()
+            and PLOT_OLD in PLOT_FILE.read_text()):
+        plot = PLOT_FILE.read_text().replace(PLOT_OLD, PLOT_NEW, 1)
+        PLOT_FILE.write_text(plot)
+        print("patched GLEAM label offsets")
+    if MAIN_OLD in MAIN_FILE.read_text():
+        main_txt = MAIN_FILE.read_text().replace(MAIN_OLD, MAIN_NEW, 1)
+        MAIN_FILE.write_text(main_txt)
+        print("patched GLEAM non-fatal plotting")
     print("patched GLEAM doublet ties")
     return 0
 

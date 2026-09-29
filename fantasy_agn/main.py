@@ -29,6 +29,7 @@ s.err=np.abs(s.err) #make sure that all errors are positive
 s.flux = s.flux * 1e17
 # s.DeRedden()
 s.CorRed()
+s.fit_host_sdss(mask_host=True)   # subtract the SDSS host+QSO eigenspectrum model
 # s.fit_host_sdss()
 # plt.title(s.name.split('/')[-1].split('.')[0])
 # plt.savefig("./output/" + s.name + '_host.pdf')
@@ -40,13 +41,13 @@ create_input_folder(xmin=3000,xmax=7500, path_to_folder='output/')
 
 ampl = 3
 min_ampl = 0
-max_ampl = 50
+max_ampl = 200          # was 50 -> broad Halpha amplitude pinned at the bound
 fwhm_br = 1500
 fwhm_na = 500
 min_fwhm_br = 700       # was 1200 -> broad Ha wing (observed FWHM ~1400) was being pushed to bounds
 min_fwhm_na = 100
-max_fwhm_br = 6000
-max_fwhm_na = 1500
+max_fwhm_br = 8000      # was 6000 -> broad Halpha FWHM pinned at the bound
+max_fwhm_na = 2000      # was 1500 -> narrow Balmer FWHM pinned at the bound
 offset = 0
 min_offset = -1500      # allow blue-shifted wing components
 max_offset = 500
@@ -56,9 +57,9 @@ cont = continuum(s)
 broad = create_model(['hydrogen.csv', 'helium.csv'], prefix='br', amplitude=ampl, min_amplitude=min_ampl, max_amplitude=max_ampl, fwhm=fwhm_br, min_fwhm=min_fwhm_br, max_fwhm=max_fwhm_br, offset=offset, min_offset=min_offset, max_offset=max_offset)
 narrow = create_tied_model(name='OIII5007',files=['narrow_basic.csv','hydrogen.csv', 'helium.csv'],prefix='nr',amplitude=ampl, min_amplitude=min_ampl, max_amplitude=max_ampl, fwhm=fwhm_na, min_fwhm=min_fwhm_na, max_fwhm=max_fwhm_na, offset=offset, min_offset=min_offset, max_offset=max_offset)
 
-# Standard rest wavelengths (the previous 4834/6551 were wrong by ~30/12 A,
-# which put the model lines outside the scoring windows).
-WB_HB, WB_HA, WB_O3A, WB_O3B, WB_N2A, WB_N2B = 4862.68, 6564.6, 4958.90, 5006.80, 6548.05, 6583.46
+# Rest-frame AIR wavelengths: read_sdss converts vacuum->air and CorRed()
+# divides by (1+z), so the internal frame is rest-frame air.
+WB_HB, WB_HA, WB_O3A, WB_O3B, WB_N2A, WB_N2B = 4861.33, 6562.82, 4958.90, 5006.84, 6548.05, 6583.46
 
 hbeta_br = create_line(name="HBeta4863_br",pos=WB_HB, ampl=ampl, min_ampl=min_ampl, max_ampl=max_ampl, fwhm=fwhm_br, min_fwhm=min_fwhm_br, max_fwhm=max_fwhm_br, offset=offset, min_offset=min_offset, max_offset=max_offset)
 OIIIb_br = create_line(name="OIIIb5007_br",pos=WB_O3B, ampl=ampl, min_ampl=min_ampl, max_ampl=max_ampl, fwhm=fwhm_br, min_fwhm=min_fwhm_br, max_fwhm=max_fwhm_br, offset=offset, min_offset=min_offset, max_offset=max_offset)
@@ -72,6 +73,12 @@ halpha_na = create_line(name="HAlpha6565_na",pos=WB_HA, ampl=ampl, min_ampl=min_
 # [NII] doublet, tied to the narrow width/velocity, ratio 6583/6548 = 3.
 NII6583_na = create_line(name="NII6583_na",pos=WB_N2B, ampl=ampl, min_ampl=min_ampl, max_ampl=max_ampl, fwhm=OIIIb_na.fwhm, offset=OIIIb_na.offs_kms)
 NII6548_na = create_line(name="NII6548_na",pos=WB_N2A, ampl=NII6583_na.ampl/3.0, fwhm=OIIIb_na.fwhm, offset=OIIIb_na.offs_kms)
+# Link Balmer kinematics so the broad decrement is driven by flux, not by
+# independent widths/offsets (the same for the narrow lines).
+halpha_br.fwhm = hbeta_br.fwhm
+halpha_br.offs_kms = hbeta_br.offs_kms
+halpha_na.fwhm = hbeta_na.fwhm
+halpha_na.offs_kms = hbeta_na.offs_kms
 
 # fe=create_feii_model(max_fwhm=6000)
 model = cont + OIIIb_br + OIIIa_br + OIIIb_na + OIIIa_na + NII6583_na + NII6548_na + hbeta_br + halpha_br + hbeta_na + halpha_na + create_feii_model(fwhm=1000, min_fwhm=300, max_fwhm=6000, offset=0, min_offset=-800, max_offset=800)
@@ -165,6 +172,12 @@ print(model)
 # the PDF plot written above.
 if os.environ.get("FANTASY_MC", "1") != "0":
     s.monte_carlo(nsample=int(os.environ.get("FANTASY_MC_N", "50")))
+    # monte_carlo() writes the sample table to the cwd, which is not the mounted
+    # output dir -> copy it so the errors survive.
+    import shutil as _shutil
+    for _f in (s.name + "_pars.csv", s.name + "_mc_pars.csv"):
+        if os.path.exists(_f):
+            _shutil.copy(_f, "./output/")
     print("mcmc ok")
 else:
     print("skipping monte_carlo (FANTASY_MC=0)")

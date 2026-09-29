@@ -172,16 +172,19 @@ def write_sculptor(spec: dict, out: Path) -> Path:
 
 
 def write_pyqsofit(spec: dict, out: Path, fwhm: float = 2.5, ebv: float = 0.0) -> Path:
-    """PyQSOFit: flux in HDU0 (absolute cgs), wavelength in HDU1; header z/fwhm/ebv."""
+    """PyQSOFit: flux + error in HDU0/HDU2 (cgs), wavelength in HDU1."""
     hdr = _base_header(spec, "erg s-1 cm-2 Ang-1")
     hdr["z"] = spec["z"]
     hdr["fwhm"] = fwhm
     hdr["ebv"] = ebv
     flux_cgs = spec["flux_1e17"] * EFEDS_FLUX_UNIT_CGS
+    # The ivar is calibrated for the 1e-17 flux units -> error in cgs.
+    err_cgs = (1.0 / np.sqrt(np.clip(spec["ivar"], 1e-30, None))) * EFEDS_FLUX_UNIT_CGS
     hdul = fits.HDUList(
         [
             fits.PrimaryHDU(data=flux_cgs.astype(np.float64), header=hdr),
             fits.ImageHDU(data=spec["wave"].astype(np.float64), name="WAVELENGTH"),
+            fits.ImageHDU(data=err_cgs.astype(np.float64), name="ERROR"),
         ]
     )
     hdul.writeto(out, overwrite=True)
@@ -227,9 +230,10 @@ def write_gleam(spec: dict, out: Path) -> Path:
     cols = [
         fits.Column(name="flux", format="E", unit="erg / (s cm2 Angstrom)", array=spec["flux_1e17"].astype(np.float32)),
         fits.Column(name="wl", format="E", unit="Angstrom", array=spec["wave"].astype(np.float32)),
-        # GLEAM's reference SDSS file uses a constant unit error and constant
-        # dispersion; the instrument resolution is set in gleamconfig.yaml.
-        fits.Column(name="stdev", format="E", array=np.ones_like(spec["wave"], dtype=np.float32)),
+        # GLEAM weights the fit by 1/stdev; use the real errors (the ivar is
+        # calibrated for the 1e-17 flux units written here).
+        fits.Column(name="stdev", format="E",
+                    array=(1.0 / np.sqrt(np.clip(spec["ivar"], 1e-30, None))).astype(np.float32)),
         fits.Column(name="wdisp", format="E", array=np.full_like(spec["wave"], 1e-4, dtype=np.float32)),
     ]
     zcol = fits.Column(name="redshift", format="E", array=np.array([spec["z"]], dtype=np.float32))

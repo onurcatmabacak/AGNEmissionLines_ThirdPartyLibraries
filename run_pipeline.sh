@@ -184,6 +184,9 @@ run_pyqsofit() {   # $1 = object tag
   mkdir -p "$out" "$tmp"
   cp "$PYQSOFIT_MAIN" "$tmp/main.py"
   cp "$base/inputs/pyqsofit/spectrum.fits" "$tmp/spectrum.fits"
+  # Host-decomposition PCA templates live beside the package; stage them so
+  # path='.' finds them (and so concurrent runs don't share qsopar.fits).
+  cp -r "$ROOT/pyqsofit/PyQSOFit/src/pyqsofit/pca" "$tmp/pca"
   ( cd "$tmp" && PYTHONPATH="$ROOT/pyqsofit/PyQSOFit/src" MPLBACKEND=Agg "${tmo[@]}" "$PYTHON" main.py ) >"$out/fit.log" 2>&1 \
     || { warn "pyqsofit failed for $tag (see $out/fit.log)"; return 1; }
   cp "$tmp"/*.fits "$tmp"/*.pdf "$tmp"/*.csv "$out"/ 2>/dev/null || true

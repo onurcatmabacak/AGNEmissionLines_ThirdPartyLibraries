@@ -310,16 +310,19 @@ def parse_badass(out: Path, tag: str):
         model = np.asarray(d["MODEL"], float)
         noise = np.asarray(d["NOISE"], float)
         chi2 = _line_chi2(wave, data, model, np.abs(noise))
+        # ``*_COMP`` is BADASS' combined (narrow+broad) product, not an outflow.
         cmap = {
             "BR_H_ALPHA": ("Ha6563", "broad"), "NA_H_ALPHA": ("Ha6563", "narrow"),
-            "H_ALPHA_COMP": ("Ha6563", "outflow"),
+            "H_ALPHA_COMP": ("Ha6563", "total"),
             "BR_H_BETA": ("Hb4861", "broad"), "NA_H_BETA": ("Hb4861", "narrow"),
-            "H_BETA_COMP": ("Hb4861", "outflow"),
+            "H_BETA_COMP": ("Hb4861", "total"),
             "BR_OIII_b": ("OIII5007", "broad"), "NA_OIII_b": ("OIII5007", "narrow"),
-            "OIII_b_COMP": ("OIII5007", "outflow"),
+            "OIII_b_COMP": ("OIII5007", "total"),
             "BR_OIII_a": ("OIII4959", "broad"), "NA_OIII_a": ("OIII4959", "narrow"),
-            "OIII_a_COMP": ("OIII4959", "outflow"),
+            "OIII_a_COMP": ("OIII4959", "total"),
             "BR_OII": ("OII3727", "broad"), "NA_OII": ("OII3727", "narrow"),
+            "NA_NII_6585": ("NII6585", "narrow"), "NA_NII_6549": ("NII6548", "narrow"),
+            "NA_SII_6716": ("SII6718", "narrow"), "NA_SII_6731": ("SII6732", "narrow"),
         }
         # Parameter-table errors (fit.log): PARAM  VALUE  ERROR  ...  BADASS logs
         # *_FLUX as log10(flux), so the third column is a dex error; convert it to
@@ -402,29 +405,47 @@ def parse_gelato(out: Path, tag: str):
     if not f.exists():
         return None, []
     p = fits.open(f)["PARAMS"].data
+    names = list(p.columns.names)
+
+    def find(*subs, exclude=()):
+        for c in names:
+            if all(s in c for s in subs) and not any(e in c for e in exclude):
+                return c
+        return None
+
+    # GELATO names the added broad component "Balmer_HI_Broad_*"; the base
+    # "Balmer_HI_*" is the narrow component.  Accept both the corrected and the
+    # legacy rest wavelengths in the column names.
     pairs = [
-        ("AGN_[OIII]_5007.0_Flux", "OIII5007", "narrow"),
-        ("AGN_[OIII]_4958.0_Flux", "OIII4959", "narrow"),
-        ("Balmer_HI_6551.0_Flux", "Ha6563", "broad"),
-        ("Balmer_HI_4834.0_Flux", "Hb4861", "broad"),
-        ("AGN_[NII]_6585.27_Flux", "NII6585", "narrow"),
-        ("AGN_[SII]_6718.29_Flux", "SII6718", "narrow"),
-        ("AGN_[SII]_6732.67_Flux", "SII6732", "narrow"),
-        ("SF_[OII]_3728.48_Flux", "OII3727", "narrow"),
+        (find("[OIII]", "5008", "Flux") or find("[OIII]", "5007", "Flux"), "OIII5007", "narrow"),
+        (find("[OIII]", "4960", "Flux") or find("[OIII]", "4958", "Flux"), "OIII4959", "narrow"),
+        (find("Balmer_HI_", "6564", "Flux", exclude=("Broad",))
+         or find("Balmer_HI_", "6551", "Flux", exclude=("Broad",)), "Ha6563", "narrow"),
+        (find("Balmer_HI_Broad", "6564", "Flux") or find("Balmer_HI_Broad", "6551", "Flux"),
+         "Ha6563", "broad"),
+        (find("Balmer_HI_", "4862", "Flux", exclude=("Broad",))
+         or find("Balmer_HI_", "4834", "Flux", exclude=("Broad",)), "Hb4861", "narrow"),
+        (find("Balmer_HI_Broad", "4862", "Flux") or find("Balmer_HI_Broad", "4834", "Flux"),
+         "Hb4861", "broad"),
+        (find("[NII]", "6585", "Flux"), "NII6585", "narrow"),
+        (find("[NII]", "6549", "Flux"), "NII6548", "narrow"),
+        (find("[SII]", "6718", "Flux"), "SII6718", "narrow"),
+        (find("[SII]", "6732", "Flux"), "SII6732", "narrow"),
+        (find("[OII]", "3728", "Flux"), "OII3727", "narrow"),
     ]
     rows = []
     for col, line, comp in pairs:
-        if col in p.columns.names:
-            disp = col.replace("_Flux", "_Dispersion")
-            # GELATO now receives 1e-17 flux, so its fluxes are already in 1e-17
-            # units.  With NBoot>1 every row is a bootstrap sample: use the
-            # median (matching GELATO's own saved SUMMARY model).
-            vals = np.asarray(p[col], float)
-            flux = _f(np.nanmedian(vals))
-            # With NBoot>1 every row is a bootstrap sample -> flux uncertainty.
-            flux_err = _f(np.nanstd(vals, ddof=1)) if vals.size > 1 else np.nan
-            fwhm = _f(np.nanmedian(np.asarray(p[disp], float))) if disp in p.columns.names else np.nan
-            rows.append(_rec(tag, "gelato", line, comp, flux=flux, flux_err=flux_err, fwhm=fwhm))
+        if not col:
+            continue
+        disp = col.replace("_Flux", "_Dispersion")
+        # GELATO now receives 1e-17 flux, so its fluxes are already in 1e-17
+        # units.  With NBoot>1 every row is a bootstrap sample: use the
+        # median (matching GELATO's own saved SUMMARY model).
+        vals = np.asarray(p[col], float)
+        flux = _f(np.nanmedian(vals))
+        flux_err = _f(np.nanstd(vals, ddof=1)) if vals.size > 1 else np.nan
+        fwhm = _f(np.nanmedian(np.asarray(p[disp], float))) if disp in p.columns.names else np.nan
+        rows.append(_rec(tag, "gelato", line, comp, flux=flux, flux_err=flux_err, fwhm=fwhm))
     rchi = _f(np.nanmedian(np.asarray(p["rChi2"], float))) if "rChi2" in p.columns.names else np.nan
     score = {"tag": tag, "tool": "gelato", "chi2_red": rchi,
              "chi2_kind": "global_reduced (reported)"}
@@ -452,7 +473,7 @@ def parse_gleam(out: Path, tag: str):
         warnings.filterwarnings("ignore")
         from astropy.table import Table
 
-        rows = []
+        raw = []
         for f in tables:
             try:
                 t = Table.read(f)
@@ -470,16 +491,28 @@ def parse_gleam(out: Path, tag: str):
                 fwhm_a = _f(r[names["fwhm"]]) if "fwhm" in names else np.nan
                 # GLEAM reports FWHM in Angstrom (rest frame); convert to km/s
                 fwhm_kms = fwhm_a / wl * 299792.458 if (wl and math.isfinite(fwhm_a)) else np.nan
-                # A line named '*_broad' in the GLEAM line table is the broad
-                # counterpart added by prepare_inputs/Gleam line_table.fits.
-                raw_name = str(r[names["line"]]) if "line" in names else ""
-                component = "broad" if raw_name.endswith("_broad") else "narrow"
-                rows.append(_rec(tag, "gleam", line, component,
-                                 flux=_f(r[names["flux"]]) if "flux" in names else np.nan,
-                                 flux_err=_f(r[names["flux_err"]]) if "flux_err" in names else np.nan,
-                                 fwhm=fwhm_kms,
-                                 ew=_f(r[names["ewrest"]]) if "ewrest" in names else np.nan,
-                                 center=wl))
+                raw.append({
+                    "line": line,
+                    "flux": _f(r[names["flux"]]) if "flux" in names else np.nan,
+                    "flux_err": _f(r[names["flux_err"]]) if "flux_err" in names else np.nan,
+                    "fwhm": fwhm_kms,
+                    "ew": _f(r[names["ewrest"]]) if "ewrest" in names else np.nan,
+                    "center": wl,
+                })
+        # GLEAM's duplicated rows (e.g. Ha / Ha_broad) are fitted independently
+        # and the broad component is not guaranteed to be the row named
+        # '*_broad' (the minima can swap); label by fitted FWHM instead.
+        by_line = {}
+        for c in raw:
+            by_line.setdefault(c["line"], []).append(c)
+        rows = []
+        for line, comps_in in by_line.items():
+            comps_in = sorted(comps_in, key=lambda x: (x["fwhm"] if math.isfinite(x["fwhm"]) else -1),
+                              reverse=True)
+            labels = ["total"] if len(comps_in) == 1 else ["broad"] + ["narrow"] * (len(comps_in) - 1)
+            for c, comp in zip(comps_in, labels):
+                rows.append(_rec(tag, "gleam", line, comp, flux=c["flux"], flux_err=c["flux_err"],
+                                 fwhm=c["fwhm"], ew=c["ew"], center=c["center"]))
         if rows:
             return score, rows
 

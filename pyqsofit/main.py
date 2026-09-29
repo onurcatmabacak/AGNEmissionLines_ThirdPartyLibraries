@@ -46,7 +46,8 @@ def load_spectrum(fits_file):
     # print(fits_file, len(hdulist))
 
     err = hdulist[2].data if len(hdulist) > 2 else None  # Normalized error spectrum, might not exist
-    err = 0.02 * flux
+    if err is None:
+        err = 0.02 * flux   # fallback only when no calibrated error is supplied
     # print('onuronuronur: \n\n', hdulist[0].data, hdulist[1].data, hdulist[2].data)
     # print(hdulist, err)
 
@@ -76,20 +77,22 @@ In this table, we specify the priors / initial conditions and boundaries for the
 """
 
 line_priors = np.rec.array([
-    (6551.61, 'Ha', 6400, 6800, 'Ha_br', 2, 0.0, 0.0, 1e10, 5e-3, 0.004, 0.05, 0.015, 0, 0, 0, 0.05, 1),
-    (6551.61, 'Ha', 6400, 6800, 'Ha_na', 1, 0.0, 0.0, 1e10, 1e-3, 5e-4, 0.00169, 0.01, 1, 1, 0, 0.002, 1),
+    # Rest wavelengths are vacuum (PyQSOFit divides the observed wave by 1+z).
+    (6564.61, 'Ha', 6400, 6800, 'Ha_br', 2, 0.0, 0.0, 1e10, 5e-3, 0.004, 0.05, 0.015, 0, 0, 0, 0.05, 1),
+    (6564.61, 'Ha', 6400, 6800, 'Ha_na', 1, 0.0, 0.0, 1e10, 1e-3, 5e-4, 0.00169, 0.01, 1, 1, 0, 0.002, 1),
     (6549.85, 'Ha', 6400, 6800, 'NII6549', 1, 0.0, 0.0, 1e10, 1e-3, 2.3e-4, 0.00169, 5e-3, 1, 1, 1, 0.001, 1),
     (6585.28, 'Ha', 6400, 6800, 'NII6585', 1, 0.0, 0.0, 1e10, 1e-3, 2.3e-4, 0.00169, 5e-3, 1, 1, 1, 0.003, 1),
-    (6718.29, 'Ha', 6400, 6800, 'SII6718', 1, 0.0, 0.0, 1e10, 1e-3, 2.3e-4, 0.00169, 5e-3, 1, 1, 2, 0.001, 1),
-    (6732.67, 'Ha', 6400, 6800, 'SII6732', 1, 0.0, 0.0, 1e10, 1e-3, 2.3e-4, 0.00169, 5e-3, 1, 1, 2, 0.001, 1),
-    (4834.68, 'Hb', 4640, 5100, 'Hb_br', 2, 0.0, 0.0, 1e10, 5e-3, 0.004, 0.05, 0.01, 0, 0, 0, 0.01, 1),
-    (4834.68, 'Hb', 4640, 5100, 'Hb_na', 1, 0.0, 0.0, 1e10, 1e-3, 2.3e-4, 0.00169, 0.01, 1, 1, 0, 0.002, 1),
+    # [SII] ratio is density-dependent -> leave it free (findex 0).
+    (6718.29, 'Ha', 6400, 6800, 'SII6718', 1, 0.0, 0.0, 1e10, 1e-3, 2.3e-4, 0.00169, 5e-3, 1, 1, 0, 0.001, 1),
+    (6732.67, 'Ha', 6400, 6800, 'SII6732', 1, 0.0, 0.0, 1e10, 1e-3, 2.3e-4, 0.00169, 5e-3, 1, 1, 0, 0.001, 1),
+    (4862.68, 'Hb', 4640, 5100, 'Hb_br', 2, 0.0, 0.0, 1e10, 5e-3, 0.004, 0.05, 0.01, 0, 0, 0, 0.01, 1),
+    (4862.68, 'Hb', 4640, 5100, 'Hb_na', 1, 0.0, 0.0, 1e10, 1e-3, 2.3e-4, 0.00169, 0.01, 1, 1, 0, 0.002, 1),
     # The [OIII] 4959/5007 doublet shares velocity (vindex), width (windex) and a
     # fixed flux ratio (findex 3 for narrow, 4 for outflow; fvalue 0.33 / 1.0).
     # Without the ratio tie the narrow 4959 line collapses to ~0.
-    (4930.30, 'Hb', 4640, 5100, 'OIII4959c', 1, 0.0, 0.0, 1e10, 1e-3, 2.3e-4, 0.00169, 0.01, 1, 1, 3, 0.33, 1),
+    (4960.30, 'Hb', 4640, 5100, 'OIII4959c', 1, 0.0, 0.0, 1e10, 1e-3, 2.3e-4, 0.00169, 0.01, 1, 1, 3, 0.33, 1),
     (5008.24, 'Hb', 4640, 5100, 'OIII5007c', 1, 0.0, 0.0, 1e10, 1e-3, 2.3e-4, 0.00169, 0.01, 1, 1, 3, 1.0, 1),
-    (4930.30, 'Hb', 4640, 5100, 'OIII4959w',   1, 0.0, 0.0, 1e10, 3e-3, 2.3e-4, 0.004,  0.01,  2, 2, 4, 0.33, 1),
+    (4960.30, 'Hb', 4640, 5100, 'OIII4959w',   1, 0.0, 0.0, 1e10, 3e-3, 2.3e-4, 0.004,  0.01,  2, 2, 4, 0.33, 1),
     (5008.24, 'Hb', 4640, 5100, 'OIII5007w',   1, 0.0, 0.0, 1e10, 3e-3, 2.3e-4, 0.004,  0.01,  2, 2, 4, 1.0, 1),
     (4687.02, 'Hb', 4640, 5100, 'HeII4687_br', 1, 0.0, 0.0, 1e10, 5e-3, 0.004,  0.05,   0.005, 0, 0, 0, 0.001, 1),
     (4687.02, 'Hb', 4640, 5100, 'HeII4687_na', 1, 0.0, 0.0, 1e10, 1e-3, 2.3e-4, 0.00169, 0.005, 1, 1, 0, 0.001, 1),
@@ -290,22 +293,22 @@ q_mle.Fit(name='result',  # customize the name of given targets. Default: plate-
           nsmooth=1,  # do n-pixel smoothing to the raw input flux and err spectra
           and_mask=False,  # delete the and masked pixels
           or_mask=False,  # delete the or masked pixels
-          reject_badpix=True,  # reject 10 most possible outliers by the test of pointDistGESD
+          reject_badpix=False,  # do not delete narrow-line pixels as outliers
           deredden=False,  # correct the Galactic extinction
           wave_range=None,  # trim input wavelength
           wave_mask=None,  # 2-D array, mask the given range(s)
 
-          # host decomposition parameters
-          decompose_host=False,  # If True, the host galaxy-QSO decomposition will be applied
+          # host decomposition parameters (Galaxy PCA templates are staged as ./pca)
+          decompose_host=True,  # If True, the host galaxy-QSO decomposition will be applied
           host_prior=False, # If True, the code will adopt prior-informed method to assist decomposition. Currently, only 'CZBIN1' and 'DZBIN1' model for QSO PCA are available. And the model for galaxy must be PCA too.
           host_prior_scale=0.0, # scale of prior panelty. Usually, 0.2 works fine for SDSS spectra. Adjust it smaller if you find the prior affect the fitting results too much.
 
-          host_line_mask=False, # If True, the line region of galaxy will be masked when subtracted from original spectra.
-          decomp_na_mask=False, # If True, the narrow line region will be masked when perform decomposition
+          host_line_mask=True, # Mask the galaxy line region when subtracting the host
+          decomp_na_mask=True, # Mask narrow lines when decomposing
           qso_type='global', # PCA template name for quasar
-          npca_qso=1, # numebr of quasar templates
+          npca_qso=10, # number of quasar templates
           host_type='PCA', # template name for galaxy
-          npca_gal=0, # number of galaxy templates
+          npca_gal=5, # number of galaxy templates (Yip+2004, ~98% variance)
           
           # continuum model fit parameters
           Fe_uv_op=True,  # If True, fit continuum with UV and optical FeII template
