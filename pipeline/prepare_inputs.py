@@ -28,6 +28,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import shutil
 from pathlib import Path
 
@@ -249,11 +250,17 @@ def gleam_meta(spec: dict) -> str:
 
 
 def gelato_json(template: Path, spec: dict) -> str:
-    """Load the project's GELATO JSON template and inject the object redshift."""
+    """Load the project's GELATO JSON template and inject the object redshift.
+
+    ``GELATO_NBOOT`` overrides the bootstrap count so a production pass can turn
+    on flux uncertainties (the search runs with NBoot=0 for speed).
+    """
     import json as _json
 
     cfg = _json.loads(template.read_text())
     cfg["OutFolder"] = "/app/output"
+    if os.environ.get("GELATO_NBOOT"):
+        cfg["NBoot"] = int(os.environ["GELATO_NBOOT"])
     return _json.dumps(cfg, indent=4)
 
 

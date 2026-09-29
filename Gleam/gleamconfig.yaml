@@ -29,8 +29,10 @@ globals:
   fitting:
     # Signal to noise limit for a detection
     SN_limit: 2
-    # Tolerance for considering emission lines part of a group and thus fitting them together
-    tolerance: 26.0 Angstrom
+    # Tolerance for considering emission lines part of a group and thus fitting
+    # them together.  >=47 A groups the [OIII]4959/5007 doublet so the runtime
+    # doublet-tie patch can enforce the 1/3 ratio (Ha+[NII] were already grouped).
+    tolerance: 50.0 Angstrom
     # Range around either side of the Gaussian center to be probed
     w: 3.0 Angstrom
     cont_width: 40 Angstrom

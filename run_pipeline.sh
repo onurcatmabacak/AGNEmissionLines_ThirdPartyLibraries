@@ -219,13 +219,16 @@ run_docker_tool() {  # $1 = tool, $2 = object tag
       mounts=(-v "$in:/app/input:ro"
               -v "$ROOT/Gelato/gelato.sh:/app/gelato.sh:ro") ;;
     gleam)
-      # mount files individually: the image's gleam.sh lives in /app/input
+      # mount files individually: these overlay the image's /app/input copies.
+      # gleam.sh applies the runtime doublet-tie patch to the installed gleam.
       mounts=(
         -v "$in/spec1d.sdss.sdss.fiber1.1.fits:/app/input/spec1d.sdss.sdss.fiber1.1.fits:ro"
         -v "$in/meta.dat:/app/input/meta.dat:ro"
         -v "$in/line_table.fits:/app/input/line_table.fits:ro"
         -v "$in/Sky_bands.fits:/app/input/Sky_bands.fits:ro"
         -v "$in/gleamconfig.yaml:/app/input/gleamconfig.yaml:ro"
+        -v "$ROOT/Gleam/gleam.sh:/app/input/gleam.sh:ro"
+        -v "$ROOT/Gleam/gleam_doublet_patch.py:/app/input/gleam_doublet_patch.py:ro"
       ) ;;
     *) warn "unknown docker tool $tool"; return 1 ;;
   esac

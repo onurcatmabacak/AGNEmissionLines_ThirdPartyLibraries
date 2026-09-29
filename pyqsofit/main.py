@@ -320,11 +320,13 @@ q_mle.Fit(name='result',  # customize the name of given targets. Default: plate-
           rej_abs_line=False, # If True, it will iterately reject 3 sigma outlier absorption pixels in the emission lines
 
           # fitting method selection
-          MC=False,
+          # PYQSOFIT_MC=1 turns on Monte-Carlo resampling for parameter/flux
+          # uncertainties (off during the search for speed).
+          MC=(os.environ.get("PYQSOFIT_MC", "0") == "1"),
           # If True, do Monte Carlo resampling of the spectrum based on the input error array to produce the MC error array
           MCMC=False,
           # If True, do Markov Chain Monte Carlo sampling of the posterior probability densities to produce the error array
-          nsamp=400,
+          nsamp=int(os.environ.get("PYQSOFIT_NSAMP", "50")),
           # The number of trials of the MC process (if MC=True) or number samples to run MCMC chain (if MCMC=True)
 
           # advanced fitting parameters

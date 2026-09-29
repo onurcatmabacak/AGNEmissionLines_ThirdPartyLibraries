@@ -80,9 +80,11 @@ def _line_chi2(wave, flux, model, err):
     return float(np.sum(((flux[m] - model[m]) / err[m]) ** 2) / max(m.sum() - 1, 1))
 
 
-def _rec(tag, tool, line, component, flux=np.nan, fwhm=np.nan, ew=np.nan, center=np.nan):
+def _rec(tag, tool, line, component, flux=np.nan, fwhm=np.nan, ew=np.nan, center=np.nan,
+         flux_err=np.nan):
     return {"tag": tag, "tool": tool, "line": line, "component": component,
-            "flux_1e17": flux, "fwhm_kms": fwhm, "ew_a": ew, "center_a": center, "flux_unit": "1e-17"}
+            "flux_1e17": flux, "flux_err_1e17": flux_err, "fwhm_kms": fwhm,
+            "ew_a": ew, "center_a": center, "flux_unit": "1e-17"}
 
 
 # ---------------------------------------------------------------------------
@@ -261,7 +263,8 @@ def parse_pyqsofit(out: Path, tag: str):
         if f"{whole}_area" in d.columns.names:
             rows.append(_rec(tag, "pyqsofit", line, "broad",
                              flux=_f(d[f"{whole}_area"][0]), fwhm=_f(d[f"{whole}_fwhm"][0]),
-                             ew=_f(d[f"{whole}_ew"][0])))
+                             ew=_f(d[f"{whole}_ew"][0]),
+                             flux_err=_f(d[f"{whole}_area_err"][0]) if f"{whole}_area_err" in d.columns.names else np.nan))
     comps = {
         "OIII5007w_1": ("OIII5007", "outflow"), "OIII5007c_1": ("OIII5007", "narrow"),
         "OIII4959w_1": ("OIII4959", "outflow"), "OIII4959c_1": ("OIII4959", "narrow"),
@@ -276,8 +279,17 @@ def parse_pyqsofit(out: Path, tag: str):
         center_a = math.exp(center_log) if math.isfinite(center_log) else np.nan
         # scale is the Gaussian peak in 1e-17 units; integrate over lambda
         sig = _f(d[f"{col}_sigma"][0])
-        flux = _f(d[k][0]) * sig * math.sqrt(2 * math.pi) * center_a if math.isfinite(center_a) else np.nan
-        rows.append(_rec(tag, "pyqsofit", line, comp, flux=flux, center=center_a))
+        scale = _f(d[k][0])
+        flux = scale * sig * math.sqrt(2 * math.pi) * center_a if math.isfinite(center_a) else np.nan
+        # MC/MCMC error propagation: flux ~ scale * sigma * center.
+        flux_err = np.nan
+        if (f"{col}_scale_err" in d.columns.names and f"{col}_sigma_err" in d.columns.names
+                and math.isfinite(flux) and scale != 0 and sig != 0):
+            se = _f(d[f"{col}_scale_err"][0])
+            ge = _f(d[f"{col}_sigma_err"][0])
+            if math.isfinite(se) and math.isfinite(ge):
+                flux_err = abs(flux) * math.sqrt((se / scale) ** 2 + (ge / sig) ** 2)
+        rows.append(_rec(tag, "pyqsofit", line, comp, flux=flux, flux_err=flux_err, center=center_a))
     return score, rows
 
 
@@ -309,10 +321,19 @@ def parse_badass(out: Path, tag: str):
             "OIII_a_COMP": ("OIII4959", "outflow"),
             "BR_OII": ("OII3727", "broad"), "NA_OII": ("OII3727", "narrow"),
         }
+        # Parameter-table errors (fit.log): PARAM  VALUE  ERROR  ...; the log
+        # keeps the line name's case, so match case-insensitively.
+        perr = {}
+        log = out / "fit.log"
+        if log.exists():
+            for m in re.finditer(r"^(\S+_FLUX)\s+([-\d.eE+]+)\s+([-\d.eE+]+)",
+                                 log.read_text(errors="ignore"), re.M):
+                perr[m.group(1).upper()] = _f(m.group(3))
         for col, (line, comp) in cmap.items():
             if col in d.columns.names:
                 rows.append(_rec(tag, "badass", line, comp,
-                                 flux=_integrate(wave, np.asarray(d[col], float), line, comp)))
+                                 flux=_integrate(wave, np.asarray(d[col], float), line, comp),
+                                 flux_err=perr.get(f"{col}_FLUX".upper(), np.nan)))
         score = {"tag": tag, "tool": "badass", "chi2_red": chi2, "chi2_kind": "line_window_computed"}
         return score, rows
 
@@ -395,9 +416,12 @@ def parse_gelato(out: Path, tag: str):
             # GELATO now receives 1e-17 flux, so its fluxes are already in 1e-17
             # units.  With NBoot>1 every row is a bootstrap sample: use the
             # median (matching GELATO's own saved SUMMARY model).
-            flux = _f(np.nanmedian(np.asarray(p[col], float)))
+            vals = np.asarray(p[col], float)
+            flux = _f(np.nanmedian(vals))
+            # With NBoot>1 every row is a bootstrap sample -> flux uncertainty.
+            flux_err = _f(np.nanstd(vals, ddof=1)) if vals.size > 1 else np.nan
             fwhm = _f(np.nanmedian(np.asarray(p[disp], float))) if disp in p.columns.names else np.nan
-            rows.append(_rec(tag, "gelato", line, comp, flux=flux, fwhm=fwhm))
+            rows.append(_rec(tag, "gelato", line, comp, flux=flux, flux_err=flux_err, fwhm=fwhm))
     rchi = _f(np.nanmedian(np.asarray(p["rChi2"], float))) if "rChi2" in p.columns.names else np.nan
     score = {"tag": tag, "tool": "gelato", "chi2_red": rchi,
              "chi2_kind": "global_reduced (reported)"}
@@ -449,6 +473,7 @@ def parse_gleam(out: Path, tag: str):
                 component = "broad" if raw_name.endswith("_broad") else "narrow"
                 rows.append(_rec(tag, "gleam", line, component,
                                  flux=_f(r[names["flux"]]) if "flux" in names else np.nan,
+                                 flux_err=_f(r[names["flux_err"]]) if "flux_err" in names else np.nan,
                                  fwhm=fwhm_kms,
                                  ew=_f(r[names["ewrest"]]) if "ewrest" in names else np.nan,
                                  center=wl))
@@ -524,7 +549,8 @@ def main(argv=None) -> int:
         w.writeheader(); w.writerows(scores)
     with (args.results / "lines.csv").open("w", newline="") as fh:
         w = csv.DictWriter(fh, fieldnames=["tag", "tool", "line", "component",
-                                           "flux_1e17", "fwhm_kms", "ew_a", "center_a", "flux_unit"])
+                                           "flux_1e17", "flux_err_1e17", "fwhm_kms",
+                                           "ew_a", "center_a", "flux_unit"])
         w.writeheader(); w.writerows(lines)
     print(f"scored {len(scores)} tool run(s); extracted {len(lines)} line measurement(s)")
     return 0

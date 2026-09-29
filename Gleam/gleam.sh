@@ -1,22 +1,16 @@
 #!/bin/bash
 
+# Runtime patch: tie the [OIII] and [NII] doublets (GLEAM has no ratio option).
+python3 /app/input/gleam_doublet_patch.py || echo "WARNING: GLEAM doublet patch failed"
+
 # Options:
 #   --path TEXT      Path to recursively look for metadata files and spectra.
-#                    See --spectra for overrides.
-#   --spectra TEXT   Filter for spectra file paths. e.g.
-#                    "./**/spec1d.Cosmos.Keck.P1.*.fits" to select all sources
-#                    in the Cosmos sample observed with Keck in pointing P1.
+#   --spectra TEXT   Filter for spectra file paths.
 #   --config TEXT    Configuration file in YAML format.
-#   --plot           Save plots of spectrum with emission lines fits next to the
-#                    corresponding spectrum file.
-#   --inspect        Show interactive plots.
+#   --plot           Save plots of spectrum with emission lines fits.
 #   --verbose        Print full output from LMFIT.
-#   --bin INTEGER    Bin the spectrum before fitting.
 #   --nproc INTEGER  Number of threads.
-#   --help           Show this message and exit.
-
 gleam --config /app/input/gleamconfig.yaml --path /app/input/ --spectra spec1d.sdss.sdss.fiber1.1.fits --nproc 1 --verbose --plot
-
 
 # --- Diagnostics: Check the installed NumPy version (Keep this for debugging) ---
 python3 -c "import matplotlib; print(f'Matplotlib Version: {matplotlib.__version__}')"
