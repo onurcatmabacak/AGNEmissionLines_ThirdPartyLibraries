@@ -204,20 +204,20 @@ def render_gelato(text: str, k: dict) -> str:
 GLEAM = {
     "file": "gleamconfig.yaml",
     "base": ROOT / "Gleam" / "gleamconfig.yaml",
-    "defaults": {"resolution": "8.0", "cont_width": "70", "tolerance": "26.0", "w": "3.0", "SN_limit": "2"},
+    "defaults": {"resolution": "8.0", "cont_width": "70", "tolerance": "50.0", "w": "3.0", "SN_limit": "2"},
     "candidates": [
         {},
         {"resolution": "3.0"},
         {"resolution": "5.0"},
         {"resolution": "3.0", "cont_width": "40"},
         {"w": "10.0"},
-        {"tolerance": "15.0"},
+        {"tolerance": "70.0"},
         {"resolution": "3.0", "w": "10.0"},
     ],
     "knob_values": {
         "resolution": ["2.5", "3.0", "5.0", "8.0"],
         "cont_width": ["40", "70", "100"],
-        "tolerance": ["15.0", "26.0", "40.0"],
+        "tolerance": ["50.0", "70.0", "100.0"],
         "w": ["3.0", "6.0", "10.0"],
         "SN_limit": ["2", "3"],
     },
@@ -229,7 +229,10 @@ def render_gleam(text: str, k: dict) -> str:
     assert n >= 1, "gleam: resolution not found"
     text, n = re.subn(r"cont_width:\s*[0-9.]+\s*Angstrom", f"cont_width: {k['cont_width']} Angstrom", text)
     assert n >= 1, "gleam: cont_width not found"
-    text, n = re.subn(r"tolerance:\s*[0-9.]+\s*Angstrom", f"tolerance: {k['tolerance']} Angstrom", text)
+    # Keep tolerance >= 47 A so the [OIII]4959/5007 pair is fit together and the
+    # runtime doublet-tie patch can enforce the 1/3 ratio.
+    tol = max(float(k["tolerance"]), 50.0)
+    text, n = re.subn(r"tolerance:\s*[0-9.]+\s*Angstrom", f"tolerance: {tol:g} Angstrom", text)
     assert n >= 1, "gleam: tolerance not found"
     text, n = re.subn(r"\bw:\s*[0-9.]+\s*Angstrom", f"w: {k['w']} Angstrom", text)
     assert n >= 1, "gleam: w not found"
