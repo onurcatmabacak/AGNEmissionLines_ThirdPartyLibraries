@@ -110,7 +110,8 @@ def render_pyqsofit(text: str, k: dict) -> str:
 BADASS = {
     "file": "main.py",
     "base": ROOT / "badass" / "main.py",
-    "defaults": {"fit_stat": "OLS", "broad_disp_min": "600", "n_basinhop": "5", "tie_disp": "False"},
+    "defaults": {"fit_stat": "OLS", "broad_disp_min": "600", "n_basinhop": "5",
+                 "tie_disp": "False", "opt_feii": "True", "tie_balmer_decrement": "False"},
     "candidates": [
         {},
         {"fit_stat": "RCHI2"},
@@ -119,12 +120,18 @@ BADASS = {
         {"broad_disp_min": "1500", "fit_stat": "RCHI2"},
         {"tie_disp": "True"},
         {"n_basinhop": "20"},
+        {"tie_balmer_decrement": "True"},
+        {"opt_feii": "False"},
+        {"broad_disp_min": "1500", "tie_balmer_decrement": "True"},
+        {"opt_feii": "False", "tie_balmer_decrement": "True"},
     ],
     "knob_values": {
         "fit_stat": ["OLS", "RCHI2"],
         "broad_disp_min": ["600", "1000", "1500", "2500"],
         "n_basinhop": ["5", "20"],
         "tie_disp": ["False", "True"],
+        "opt_feii": ["True", "False"],
+        "tie_balmer_decrement": ["False", "True"],
     },
 }
 
@@ -142,6 +149,14 @@ def render_badass(text: str, k: dict) -> str:
     assert n == 1, "badass: n_basinhop not found"
     text, n = re.subn(r'"tie_line_disp":\s*(True|False)', f'"tie_line_disp": {k["tie_disp"]}', text)
     assert n == 1, "badass: tie_line_disp not found"
+    text, n = re.subn(r'"fit_opt_feii":\s*(True|False)', f'"fit_opt_feii": {k["opt_feii"]}', text)
+    assert n == 1, "badass: fit_opt_feii not found"
+    if k["tie_balmer_decrement"] == "True":
+        # Force the broad Balmer decrement to the case-B value (3:1); the
+        # kinematic tie above then makes this a single physical parameter.
+        text, n = re.subn(r'("BR_H_BETA":\s*\{\s*"center":\s*[\d.]+,\s*"amp":\s*)"free"',
+                          r'\1"(BR_H_ALPHA_AMP/3.0)"', text)
+        assert n == 1, "badass: BR_H_BETA amp not found"
     return text
 
 
