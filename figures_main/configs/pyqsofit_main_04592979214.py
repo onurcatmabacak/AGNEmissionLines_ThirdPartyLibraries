@@ -47,7 +47,7 @@ def load_spectrum(fits_file):
 
     err = hdulist[2].data if len(hdulist) > 2 else None  # Normalized error spectrum, might not exist
     if err is None:
-        err = 0.05 * flux   # fallback only when no calibrated error is supplied
+        err = 0.02 * flux   # fallback only when no calibrated error is supplied
     # print('onuronuronur: \n\n', hdulist[0].data, hdulist[1].data, hdulist[2].data)
     # print(hdulist, err)
 
@@ -78,14 +78,14 @@ In this table, we specify the priors / initial conditions and boundaries for the
 
 line_priors = np.rec.array([
     # Rest wavelengths are vacuum (PyQSOFit divides the observed wave by 1+z).
-    (6564.61, 'Ha', 6400, 6800, 'Ha_br', 2, 0.0, 0.0, 1e10, 5e-3, 0.004, 0.05, 0.015, 0, 0, 0, 0.05, 1),
+    (6564.61, 'Ha', 6400, 6800, 'Ha_br', 1, 0.0, 0.0, 1e10, 5e-3, 0.004, 0.05, 0.015, 0, 0, 0, 0.05, 1),
     (6564.61, 'Ha', 6400, 6800, 'Ha_na', 1, 0.0, 0.0, 1e10, 1e-3, 5e-4, 0.00169, 0.01, 1, 1, 0, 0.002, 1),
     (6549.85, 'Ha', 6400, 6800, 'NII6549', 1, 0.0, 0.0, 1e10, 1e-3, 2.3e-4, 0.00169, 5e-3, 1, 1, 1, 0.001, 1),
     (6585.28, 'Ha', 6400, 6800, 'NII6585', 1, 0.0, 0.0, 1e10, 1e-3, 2.3e-4, 0.00169, 5e-3, 1, 1, 1, 0.003, 1),
     # [SII] ratio is density-dependent -> leave it free (findex 0).
     (6718.29, 'Ha', 6400, 6800, 'SII6718', 1, 0.0, 0.0, 1e10, 1e-3, 2.3e-4, 0.00169, 5e-3, 1, 1, 0, 0.001, 1),
     (6732.67, 'Ha', 6400, 6800, 'SII6732', 1, 0.0, 0.0, 1e10, 1e-3, 2.3e-4, 0.00169, 5e-3, 1, 1, 0, 0.001, 1),
-    (4862.68, 'Hb', 4640, 5100, 'Hb_br', 2, 0.0, 0.0, 1e10, 5e-3, 0.004, 0.05, 0.01, 0, 0, 0, 0.01, 1),
+    (4862.68, 'Hb', 4640, 5100, 'Hb_br', 1, 0.0, 0.0, 1e10, 5e-3, 0.004, 0.05, 0.01, 0, 0, 0, 0.01, 1),
     (4862.68, 'Hb', 4640, 5100, 'Hb_na', 1, 0.0, 0.0, 1e10, 1e-3, 2.3e-4, 0.00169, 0.01, 1, 1, 0, 0.002, 1),
     # The [OIII] 4959/5007 doublet shares velocity (vindex), width (windex) and a
     # fixed flux ratio (findex 3 for narrow, 4 for outflow; fvalue 0.33 / 1.0).
@@ -262,7 +262,7 @@ path_out = "./"
 
 # Required
 wavelength, flux, error, z = load_spectrum('spectrum.fits')
-error = 0.05 * flux
+error = 0.02 * flux
 # Per-object redshift: take it from the FITS header (the original analysis had
 # this hardcoded to 0.348 for its single target). PYQSOFIT_Z overrides it.
 z = float(os.environ.get("PYQSOFIT_Z", z))
@@ -311,7 +311,7 @@ q_mle.Fit(name='result',  # customize the name of given targets. Default: plate-
           npca_gal=5, # number of galaxy templates (Yip+2004, ~98% variance)
           
           # continuum model fit parameters
-          Fe_uv_op=True,  # If True, fit continuum with UV and optical FeII template
+          Fe_uv_op=False,  # If True, fit continuum with UV and optical FeII template
           poly=True,  # If True, fit continuum with the polynomial component to account for the dust reddening
           BC=False,  # If True, fit continuum with Balmer continua from 1000 to 3646A
           initial_guess=None,  # Initial parameters for continuum model, read the annotation of this function for detail
@@ -368,15 +368,22 @@ print(f'Fitting finished in {np.round(end - start, 1)}s')
 # internal error floor.
 try:
     from astropy.table import Table as _Table
-    _conti = q_mle.f_conti_model
-    _line = q_mle.f_line_model
-    _Table({
+    _conti = np.asarray(q_mle.f_conti_model)
+    _line = np.asarray(q_mle.f_line_model)
+    _cols = {
         'wave': np.asarray(q_mle.wave),
-        'flux': np.asarray(q_mle.line_flux) + np.asarray(_conti),  # == input flux
-        'model': np.asarray(_conti) + np.asarray(_line),
-        'conti': np.asarray(_conti),
-        'line': np.asarray(_line),
-    }).write('pyqsofit_model.csv', format='ascii.csv', overwrite=True)
+        'flux': np.asarray(q_mle.line_flux) + _conti,  # host-subtracted input flux
+        'model': _conti + _line,                        # AGN-only model
+        'conti': _conti,
+        'line': _line,
+    }
+    # If the host was decomposed, the AGN-only model must have the host added
+    # back to be comparable with the observed (host-included) spectrum.
+    _host = getattr(q_mle, 'host', None)
+    if _host is not None and np.asarray(_host).shape == _conti.shape:
+        _cols['host'] = np.asarray(_host)
+        _cols['model_total'] = _cols['model'] + np.asarray(_host)
+    _Table(_cols).write('pyqsofit_model.csv', format='ascii.csv', overwrite=True)
     print('wrote pyqsofit_model.csv')
 except Exception as _e:
     print('could not write pyqsofit_model.csv:', _e)

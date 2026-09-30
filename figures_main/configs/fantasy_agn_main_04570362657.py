@@ -91,6 +91,12 @@ print("fit ok")
 
 # creates a file to save the fitting results of the original spectra
 d={'wave':s.wave,'flux':s.flux,'error':s.err,'model':model(s.wave),'cont':cont(s.wave), 'OIIIb_na':OIIIb_na(s.wave), 'OIIIa_na':OIIIa_na(s.wave), 'NII6583_na':NII6583_na(s.wave), 'NII6548_na':NII6548_na(s.wave), 'hbeta_br':hbeta_br(s.wave), 'hbeta_na':hbeta_na(s.wave), 'halpha_br':halpha_br(s.wave), 'halpha_na':halpha_na(s.wave)}
+# fit_host_sdss() subtracts the host from s.flux in place, so add it back for a
+# model comparable with the observed (host-included) spectrum.
+_host = getattr(s, 'host', None)
+if _host is not None and np.asarray(_host).shape == np.asarray(s.wave).shape:
+    d['host'] = np.asarray(_host)
+    d['model_total'] = np.asarray(d['model']) + np.asarray(_host)
 
 df=pd.DataFrame(d)
 df.to_csv("./output/" + s.name+'_model.csv')
@@ -132,9 +138,8 @@ for file in natsorted(glob.glob('./output/my*model.csv')):
     # plt.plot(df.wave, df.narrow * fluxnorm, '-', color='lightblue', label='Narrow',lw=2)
     # plt.plot(df.wave, df.broad * fluxnorm, '-', color="magenta",label='Broad H', lw=2)
     # plt.plot(df.wave, df.fe * fluxnorm, '-', color='brown', label='Fe II', lw=2) 
-    # plt.plot(df.wave, df.OIIIa_br * fluxnorm, '-', color='g', label='OIIIa BR', lw=1) 
-    # plt.plot(df.wave, df.OIIIa_na * fluxnorm, '--', color='g', label='OIIIa NA', lw=1) 
-    plt.plot(df.wave, df.OIIIb_na * fluxnorm, '--', color='r', label='OIIIb NA', lw=1) 
+    plt.plot(df.wave, df.OIIIa_na * fluxnorm, '--', color='g', label='OIIIa 4959 NA', lw=1)
+    plt.plot(df.wave, df.OIIIb_na * fluxnorm, '--', color='r', label='OIIIb 5007 NA', lw=1) 
     plt.plot(df.wave, df.hbeta_br * fluxnorm, '-', color='b', label='HBeta BR', lw=1) 
     plt.plot(df.wave, df.hbeta_na * fluxnorm, '--', color='b', label='HBeta NA', lw=1) 
     plt.plot(df.wave, df.halpha_br * fluxnorm, '-', color='k', label='HAlpha BR', lw=1) 

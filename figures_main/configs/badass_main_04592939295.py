@@ -36,7 +36,7 @@ fit_options = {
     "mask_bad_pix": False,  # mask pixels SDSS flagged as 'bad' (careful!)
     "mask_emline": False,  # automatically mask lines for continuum fitting.
     "mask_metal": False,  # interpolate over metal absorption lines for high-z spectra
-    "fit_stat": "OLS",  # fit statistic; RCHI2=Red. Chi Square 1, ML = Max. Like. , OLS = Ordinary Least Squares
+    "fit_stat": "ML",  # fit statistic; RCHI2=Red. Chi Square 1, ML = Max. Like. , OLS = Ordinary Least Squares
     "n_basinhop": _env_int("BADASS_NBASINHOP", 5),  # Number of consecutive basinhopping thresholds before solution achieved
     "reweighting": False,  # If true, BADASS will reweight the noise vector to achieve a reduced chi-squared ~ 1. This is done after the initial basinhopping fit, and applied to any bootstrapped uncertainties and MCMC fitting performed afterward. This does not affect the chi-squared ratio metric used in line and configuration testing, but does effect the amplitude-over-noise and SNR calculations in BADASS.
     "test_lines": False,  # Perform line/configuration testing for multiple components
@@ -65,7 +65,7 @@ mcmc_options = {
 
 ############################ Fit component op dtions #############################
 comp_options = {
-    "fit_opt_feii": False,  # optical FeII
+    "fit_opt_feii": True,  # optical FeII
     "fit_uv_iron": False,  # UV Iron
     "fit_balmer": False,  # Balmer continuum (<4000 A)
     "fit_losvd": False,  # stellar LOSVD
@@ -214,7 +214,7 @@ user_lines = {
     },
     "BR_H_BETA": {
         "center": 4862.691,
-        "amp": "(BR_H_ALPHA_AMP/3.0)",
+        "amp": "free",
         "disp": "BR_H_ALPHA_DISP",
         "voff": "BR_H_ALPHA_VOFF",
         "line_type": "br",
@@ -298,7 +298,9 @@ power_options = {"type": "simple"}  # alternatively, "broken" for smoothly-broke
 ################################################################################
 
 poly_options = {
-    "apoly": {"bool": True, "order": 7},  # Legendre additive polynomial
+    # A high-order additive polynomial made the AGN continuum go negative at red
+    # wavelengths (host + poly + power-law degeneracy); default to off.
+    "apoly": {"bool": True, "order": 3},  # Legendre additive polynomial
     "mpoly": {"bool": False, "order": 3},  # Legendre multiplicative polynomial
 }
 

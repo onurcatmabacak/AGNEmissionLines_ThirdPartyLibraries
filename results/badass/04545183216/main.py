@@ -214,7 +214,7 @@ user_lines = {
     },
     "BR_H_BETA": {
         "center": 4862.691,
-        "amp": "(BR_H_ALPHA_AMP/3.0)",
+        "amp": "free",
         "disp": "BR_H_ALPHA_DISP",
         "voff": "BR_H_ALPHA_VOFF",
         "line_type": "br",
@@ -298,7 +298,9 @@ power_options = {"type": "simple"}  # alternatively, "broken" for smoothly-broke
 ################################################################################
 
 poly_options = {
-    "apoly": {"bool": True, "order": 7},  # Legendre additive polynomial
+    # A high-order additive polynomial made the AGN continuum go negative at red
+    # wavelengths (host + poly + power-law degeneracy); default to off.
+    "apoly": {"bool": False, "order": 3},  # Legendre additive polynomial
     "mpoly": {"bool": False, "order": 3},  # Legendre multiplicative polynomial
 }
 

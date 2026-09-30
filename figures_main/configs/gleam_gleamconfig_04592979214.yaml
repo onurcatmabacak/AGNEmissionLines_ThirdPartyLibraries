@@ -35,8 +35,8 @@ globals:
     tolerance: 50 Angstrom
     # Range around either side of the Gaussian center to be probed (3 A clips
     # broad lines and any residual redshift error).
-    w: 3.0 Angstrom
-    cont_width: 40 Angstrom
+    w: 10.0 Angstrom
+    cont_width: 70 Angstrom
     center: constrained
 
 
@@ -45,16 +45,16 @@ setups:
   # SDSS
   sdss:
     # SDSS spectra have R ~ 2000 -> ~2.5 A FWHM at 5000 A.
-    resolution: 3.0 Angstrom
+    resolution: 2.5 Angstrom
     # Here we override the internal default of gleam with 60 Angstrom
     fitting:
-      cont_width: 40 Angstrom
+      cont_width: 70 Angstrom
   # A particular setup for the AF2 instrument on WHT
   WHT_R316R:
-    resolution: 3.0 Angstrom
+    resolution: 2.5 Angstrom
     # This is definitely too small, but we will override again in our source ;)
     fitting:
-      cont_width: 40 Angstrom
+      cont_width: 70 Angstrom
 
 
 # Some source-specific overrides
@@ -68,7 +68,7 @@ sources:
     fitting:
       # Keep the local continuum tightly bracketed so the QSO power law is
       # not over-smoothed.
-      cont_width: 40 Angstrom
+      cont_width: 70 Angstrom
 
 # The cosmological parameters, which are fixed for the entire project. You can 
 # set them from here to your preferred value.

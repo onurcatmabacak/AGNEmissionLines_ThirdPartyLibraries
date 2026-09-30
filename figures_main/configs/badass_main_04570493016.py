@@ -37,7 +37,7 @@ fit_options = {
     "mask_emline": False,  # automatically mask lines for continuum fitting.
     "mask_metal": False,  # interpolate over metal absorption lines for high-z spectra
     "fit_stat": "OLS",  # fit statistic; RCHI2=Red. Chi Square 1, ML = Max. Like. , OLS = Ordinary Least Squares
-    "n_basinhop": _env_int("BADASS_NBASINHOP", 5),  # Number of consecutive basinhopping thresholds before solution achieved
+    "n_basinhop": _env_int("BADASS_NBASINHOP", 20),  # Number of consecutive basinhopping thresholds before solution achieved
     "reweighting": False,  # If true, BADASS will reweight the noise vector to achieve a reduced chi-squared ~ 1. This is done after the initial basinhopping fit, and applied to any bootstrapped uncertainties and MCMC fitting performed afterward. This does not affect the chi-squared ratio metric used in line and configuration testing, but does effect the amplitude-over-noise and SNR calculations in BADASS.
     "test_lines": False,  # Perform line/configuration testing for multiple components
     "max_like_niter": _env_int("BADASS_MAX_LIKE_NITER", 100),  # number of maximum likelihood iterations
@@ -91,7 +91,7 @@ narrow_options = {
 
 broad_options = {
     "amp_plim": (0, 50),  # line amplitude parameter limits
-    "disp_plim": (1500, 6000),  # 600-6000 km/s -> wings of Halpha/Hbeta; was (500,4000)
+    "disp_plim": (600, 6000),  # 600-6000 km/s -> wings of Halpha/Hbeta; was (500,4000)
     "voff_plim": (-1500, 1500),  # allowed blueshifted wing components
     "line_profile": "gaussian",  # line profile shape*
     "n_moments": 4,  # number of higher order Gauss-Hermite moments (if line profile is gauss-hermite, laplace, or uniform)
@@ -214,7 +214,7 @@ user_lines = {
     },
     "BR_H_BETA": {
         "center": 4862.691,
-        "amp": "(BR_H_ALPHA_AMP/3.0)",
+        "amp": "free",
         "disp": "BR_H_ALPHA_DISP",
         "voff": "BR_H_ALPHA_VOFF",
         "line_type": "br",
@@ -298,7 +298,9 @@ power_options = {"type": "simple"}  # alternatively, "broken" for smoothly-broke
 ################################################################################
 
 poly_options = {
-    "apoly": {"bool": True, "order": 7},  # Legendre additive polynomial
+    # A high-order additive polynomial made the AGN continuum go negative at red
+    # wavelengths (host + poly + power-law degeneracy); default to off.
+    "apoly": {"bool": False, "order": 3},  # Legendre additive polynomial
     "mpoly": {"bool": False, "order": 3},  # Legendre multiplicative polynomial
 }
 

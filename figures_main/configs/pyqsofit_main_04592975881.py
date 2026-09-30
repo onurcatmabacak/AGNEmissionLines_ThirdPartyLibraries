@@ -368,15 +368,22 @@ print(f'Fitting finished in {np.round(end - start, 1)}s')
 # internal error floor.
 try:
     from astropy.table import Table as _Table
-    _conti = q_mle.f_conti_model
-    _line = q_mle.f_line_model
-    _Table({
+    _conti = np.asarray(q_mle.f_conti_model)
+    _line = np.asarray(q_mle.f_line_model)
+    _cols = {
         'wave': np.asarray(q_mle.wave),
-        'flux': np.asarray(q_mle.line_flux) + np.asarray(_conti),  # == input flux
-        'model': np.asarray(_conti) + np.asarray(_line),
-        'conti': np.asarray(_conti),
-        'line': np.asarray(_line),
-    }).write('pyqsofit_model.csv', format='ascii.csv', overwrite=True)
+        'flux': np.asarray(q_mle.line_flux) + _conti,  # host-subtracted input flux
+        'model': _conti + _line,                        # AGN-only model
+        'conti': _conti,
+        'line': _line,
+    }
+    # If the host was decomposed, the AGN-only model must have the host added
+    # back to be comparable with the observed (host-included) spectrum.
+    _host = getattr(q_mle, 'host', None)
+    if _host is not None and np.asarray(_host).shape == _conti.shape:
+        _cols['host'] = np.asarray(_host)
+        _cols['model_total'] = _cols['model'] + np.asarray(_host)
+    _Table(_cols).write('pyqsofit_model.csv', format='ascii.csv', overwrite=True)
     print('wrote pyqsofit_model.csv')
 except Exception as _e:
     print('could not write pyqsofit_model.csv:', _e)
