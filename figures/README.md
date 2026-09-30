@@ -17,4 +17,5 @@ Regenerate with
 python pipeline/collect_figures.py --clean
 ```
 
-The single best-fit figure per tool is in `../figures_main/`.
+The single best-fit figure per tool and its per-object config are in
+`../figures_main/`.

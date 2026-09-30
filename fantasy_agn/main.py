@@ -134,7 +134,6 @@ for file in natsorted(glob.glob('./output/my*model.csv')):
     # plt.plot(df.wave, df.fe * fluxnorm, '-', color='brown', label='Fe II', lw=2) 
     # plt.plot(df.wave, df.OIIIa_br * fluxnorm, '-', color='g', label='OIIIa BR', lw=1) 
     # plt.plot(df.wave, df.OIIIa_na * fluxnorm, '--', color='g', label='OIIIa NA', lw=1) 
-    plt.plot(df.wave, df.OIIIb_br * fluxnorm, '-', color='r', label='OIIIb BR', lw=1) 
     plt.plot(df.wave, df.OIIIb_na * fluxnorm, '--', color='r', label='OIIIb NA', lw=1) 
     plt.plot(df.wave, df.hbeta_br * fluxnorm, '-', color='b', label='HBeta BR', lw=1) 
     plt.plot(df.wave, df.hbeta_na * fluxnorm, '--', color='b', label='HBeta NA', lw=1) 

@@ -4,36 +4,36 @@
 
 | tool | common reduced chi^2 | own reduced chi^2 | statistic |
 |---|---:|---:|---|
-| pyqsofit | 278.6809153386391 | 2.5089438366305528 | line_complex_reduced (reported) |
-| badass | 3.5939900213578215 | 1.4900484356642798 | line_window_computed |
-| fantasy_agn | 256.4902847149535 | 3.2769352392817566 | line_window_computed |
-| gelato | 41.073455576251 | 29.572015759348766 | global_reduced (reported) |
-| gleam | 443.0882956544116 | 3.2949559907142856 | mean_line_reduced (reported) |
+| pyqsofit | 254.7742998445117 | 0.4119222782039338 | line_complex_reduced (reported) |
+| badass | 3.7437908151077752 | 1.5376319825876903 | line_window_computed |
+| fantasy_agn | 260.43862931146913 | 5.081087118724047 | line_window_computed |
+| gelato | 41.05490707340578 | 29.567887789063523 | global_reduced (reported) |
+| gleam | 429.42647124210475 | 6.647965448571429 | mean_line_reduced (reported) |
 
 _lowest common &chi;&sup2;: **badass**_
 
 | line | component | pyqsofit | badass | fantasy_agn | gelato | gleam |
 |---|---|---:|---:|---:|---:|---:|
-| OII3727 | broad |  | 0 |  |  |  |
-| OII3727 | narrow |  | 30.8 |  | 137 |  |
+| OII3727 | broad |  | 0.00804 |  |  |  |
+| OII3727 | narrow |  | 30.2 |  | 136 |  |
 | OII3727 | total |  |  |  |  | 35.5 |
-| Hb4861 | broad | 2.28e+03 | 1.32e+03 | 2.53e+03 |  |  |
-| Hb4861 | narrow |  | 187 | 62.3 | 669 |  |
-| Hb4861 | total |  | 1.61e+03 |  |  | 288 |
-| OIII4959 | broad |  | 0 | 48.4 |  |  |
-| OIII4959 | narrow | 45.7 | 35.3 | 41.8 | -11.3 |  |
-| OIII4959 | outflow | 44.3 |  |  |  |  |
-| OIII4959 | total |  | 55.6 |  |  | 47.9 |
-| OIII5007 | broad |  | 0 | 146 |  |  |
-| OIII5007 | narrow | 140 | 106 | 127 | -33.9 |  |
-| OIII5007 | outflow | 136 |  |  |  |  |
-| OIII5007 | total |  | 167 |  |  | 144 |
-| Ha6563 | broad | 1.29e+04 | 0 | 1.07e+04 |  |  |
-| Ha6563 | narrow | 435 | 791 | 265 | 2.3e+03 |  |
-| Ha6563 | total |  | 5.82e+03 |  |  | 183 |
-| NII6585 | narrow | 9.3 | 134 | 0 | 1.99e+03 |  |
-| SII6718 | narrow | 16.2 | 0.0277 |  | 109 |  |
-| SII6732 | narrow | 51.9 | 0 |  | -83.8 |  |
+| Hb4861 | broad | 3.81e+03 | 1.29e+03 | 2.46e+03 |  |  |
+| Hb4861 | narrow |  | 186 | 9.68 | 668 |  |
+| Hb4861 | total |  | 1.58e+03 |  |  | 282 |
+| OIII4959 | broad |  | 55.2 |  |  |  |
+| OIII4959 | narrow | 44.7 | 0 | 106 | -8.69 |  |
+| OIII4959 | outflow | 90.6 |  |  |  |  |
+| OIII4959 | total |  | 55.2 |  |  | 47.9 |
+| OIII5007 | broad |  | 166 |  |  |  |
+| OIII5007 | narrow | 137 | 0 | 321 | -26.1 |  |
+| OIII5007 | outflow | 277 |  |  |  |  |
+| OIII5007 | total |  | 166 |  |  | 144 |
+| Ha6563 | broad | 1.05e+04 | 1.23e+03 | 1.07e+04 |  |  |
+| Ha6563 | narrow | 467 | 832 | 149 | 2.3e+03 |  |
+| Ha6563 | total |  | 7.34e+03 |  |  | 173 |
+| NII6585 | narrow | 4.34 | 0 | 0 | 1.99e+03 |  |
+| SII6718 | narrow | 23 | 0 |  | 110 |  |
+| SII6732 | narrow | 12.8 | 0.0122 |  | -83.4 |  |
 
 _flux in 1e-17 erg s-1 cm-2_
 
@@ -48,39 +48,39 @@ _flux in 1e-17 erg s-1 cm-2_
 
 | tool | common reduced chi^2 | own reduced chi^2 | statistic |
 |---|---:|---:|---|
-| pyqsofit | 121.41416556472304 | 2.818411324920504 | line_complex_reduced (reported) |
-| badass | 9.183909243788545 | 4.264456439713385 | line_window_computed |
-| fantasy_agn | 22.688161207676256 | 15.80323904510864 | line_window_computed |
-| gelato | 2.537856418828333 | 11.506087159454037 | global_reduced (reported) |
-| gleam | 140.5263320832684 | 3.54271628 | mean_line_reduced (reported) |
+| pyqsofit | 118.72679802427243 | 11.397230250141813 | line_complex_reduced (reported) |
+| badass | 9.906621545544994 | 4.073058620591634 | line_window_computed |
+| fantasy_agn | 22.916875272462534 | 14.152910793517327 | line_window_computed |
+| gelato | 2.5083735567406897 | 11.504602485892967 | global_reduced (reported) |
+| gleam | 135.55673039394844 | 6.557355025 | mean_line_reduced (reported) |
 
 _lowest common &chi;&sup2;: **gelato**_
 
 | line | component | pyqsofit | badass | fantasy_agn | gelato | gleam |
 |---|---|---:|---:|---:|---:|---:|
-| OII3727 | broad |  | 0.00972 |  |  |  |
-| OII3727 | narrow |  | 0 |  | 74.1 |  |
-| OII3727 | total |  |  |  |  | 58.2 |
-| Hb4861 | broad | 1.58e+03 | 10.1 | 453 | 1.06e+03 |  |
-| Hb4861 | narrow |  | 619 | 623 | 249 |  |
-| Hb4861 | total |  | 978 |  |  | 796 |
-| OIII4959 | broad |  | 0 | 20.1 |  |  |
-| OIII4959 | narrow | 44.4 | 68 | 57.9 | 34.2 |  |
-| OIII4959 | outflow | 43.6 |  |  |  |  |
-| OIII4959 | total |  | 99.8 |  |  | 98.6 |
-| OIII5007 | broad |  | 0 | 61 |  |  |
-| OIII5007 | narrow | 136 | 200 | 175 | 103 |  |
-| OIII5007 | outflow | 133 |  |  |  |  |
-| OIII5007 | total |  | 300 |  |  | 296 |
-| Ha6563 | broad | 4.65e+03 | 3.55e+03 | 2.58e+03 | 3.81e+03 | 3.61e+03 |
-| Ha6563 | narrow | 858 | 0 | 1.2e+03 | 1.45e+03 | 828 |
-| Ha6563 | total |  | 3.55e+03 |  |  |  |
-| NII6585 | narrow | 503 | 59.7 | 123 | 379 |  |
-| NII6585 | total |  |  |  |  | 176 |
-| SII6718 | narrow | 29.6 | 10.5 |  | 97.5 |  |
-| SII6718 | total |  |  |  |  | 49.9 |
-| SII6732 | narrow | 48.9 | 0 |  | 41.7 |  |
-| SII6732 | total |  |  |  |  | 26.2 |
+| OII3727 | broad |  | 0 |  |  |  |
+| OII3727 | narrow |  | 48.6 |  | 73.7 |  |
+| OII3727 | total |  |  |  |  | 68 |
+| Hb4861 | broad | 997 | 0 | 434 | 1.06e+03 |  |
+| Hb4861 | narrow |  | 591 | 608 | 246 |  |
+| Hb4861 | total |  | 922 |  |  | 1.01e+03 |
+| OIII4959 | broad |  | 95 |  |  |  |
+| OIII4959 | narrow | 64.3 | 0 | 91.8 | 33.6 |  |
+| OIII4959 | outflow | 34.4 |  |  |  |  |
+| OIII4959 | total |  | 95 |  |  | 96.3 |
+| OIII5007 | broad |  | 286 |  |  |  |
+| OIII5007 | narrow | 197 | 0 | 278 | 101 |  |
+| OIII5007 | outflow | 105 |  |  |  |  |
+| OIII5007 | total |  | 286 |  |  | 289 |
+| Ha6563 | broad | 2.88e+03 | 1.48e+03 | 2.68e+03 | 3.81e+03 | 3.45e+03 |
+| Ha6563 | narrow | 1.42e+03 | 1.03e+03 | 1.28e+03 | 1.44e+03 | 1.38e+03 |
+| Ha6563 | total |  | 4.48e+03 |  |  |  |
+| NII6585 | narrow | 1.21e+03 | 10.7 | 55.5 | 374 |  |
+| NII6585 | total |  |  |  |  | 208 |
+| SII6718 | narrow | 41.9 | 4.46 |  | 98 |  |
+| SII6718 | total |  |  |  |  | 38.4 |
+| SII6732 | narrow | 67.6 | 5.04 |  | 41.5 |  |
+| SII6732 | total |  |  |  |  | 22.4 |
 
 _flux in 1e-17 erg s-1 cm-2_
 
@@ -95,37 +95,36 @@ _flux in 1e-17 erg s-1 cm-2_
 
 | tool | common reduced chi^2 | own reduced chi^2 | statistic |
 |---|---:|---:|---|
-| pyqsofit | 112.2448628287333 | 3.397246396491919 | line_complex_reduced (reported) |
-| badass | 31.184540575180076 | 15.191785966227647 | line_window_computed |
-| fantasy_agn | 114.5771802823041 | 16.175871154570416 | line_window_computed |
-| gelato | 6.709913554364907 | 17.43981645660039 | global_reduced (reported) |
-| gleam | 269.7407445020783 | 6.6731719925 | mean_line_reduced (reported) |
+| pyqsofit | 108.31271051162899 | 1.7010315507708564 | line_complex_reduced (reported) |
+| badass | 33.32089156730962 | 16.025617211314202 | line_window_computed |
+| fantasy_agn | 104.87515055514854 | 15.305729409793274 | line_window_computed |
+| gelato | 6.710162881222786 | 17.43465278091642 | global_reduced (reported) |
+| gleam | 257.8700000019865 | 53.05698748538461 | mean_line_reduced (reported) |
 
 _lowest common &chi;&sup2;: **gelato**_
 
 | line | component | pyqsofit | badass | fantasy_agn | gelato | gleam |
 |---|---|---:|---:|---:|---:|---:|
-| OII3727 | broad |  | 229 |  |  |  |
+| OII3727 | broad |  | 0 |  |  |  |
 | OII3727 | narrow |  | 0 |  | 344 |  |
-| OII3727 | total |  |  |  |  | 87 |
-| Hb4861 | broad | 5.78e+03 | 1.19e+03 | 2.3e+03 | 3.31e+03 | 2.79e+03 |
-| Hb4861 | narrow |  | 1.6e+03 | 1.65e+03 | 777 | 200 |
-| Hb4861 | total |  | 3.61e+03 |  |  |  |
-| OIII4959 | broad |  | 0 | 39.8 |  |  |
-| OIII4959 | narrow | 327 | 305 | 339 | 204 |  |
-| OIII4959 | outflow | 136 |  |  |  |  |
-| OIII4959 | total |  | 438 |  |  | 336 |
-| OIII5007 | broad |  | 0 | 121 |  |  |
-| OIII5007 | narrow | 1e+03 | 919 | 1.03e+03 | 612 |  |
-| OIII5007 | outflow | 416 |  |  |  |  |
-| OIII5007 | total |  | 1.32e+03 |  |  | 1.01e+03 |
-| Ha6563 | broad | 1.48e+04 | 4.62e+03 | 7.61e+03 | 1.15e+04 | 1.11e+04 |
-| Ha6563 | narrow | 1.78e+03 | 2.68e+03 | 3.29e+03 | 3.49e+03 | 1.16e+03 |
-| Ha6563 | total |  | 1.29e+04 |  |  |  |
-| NII6585 | narrow | 511 | 0 | 123 | 923 |  |
-| NII6585 | total |  |  |  |  | 314 |
-| SII6718 | narrow | 1.02 | 0 |  | 247 |  |
-| SII6732 | narrow | 30.3 | 22.5 |  | 77.7 |  |
+| OII3727 | total |  |  |  |  | 102 |
+| Hb4861 | broad | 4.97e+03 | 0 | 2.41e+03 | 3.31e+03 | 2.92e+03 |
+| Hb4861 | narrow |  | 1.96e+03 | 1.54e+03 | 777 | 433 |
+| Hb4861 | total |  | 3.06e+03 |  |  |  |
+| OIII4959 | broad |  | 0 |  |  |  |
+| OIII4959 | narrow | 272 | 282 | 362 | 204 |  |
+| OIII4959 | outflow | 138 |  |  |  |  |
+| OIII4959 | total |  | 446 |  |  | 302 |
+| OIII5007 | broad |  | 0 |  |  |  |
+| OIII5007 | narrow | 833 | 849 | 1.1e+03 | 613 |  |
+| OIII5007 | outflow | 423 |  |  |  |  |
+| OIII5007 | total |  | 1.34e+03 |  |  | 906 |
+| Ha6563 | broad | 1.46e+04 | 4.52e+03 | 8.32e+03 | 1.15e+04 |  |
+| Ha6563 | narrow | 1.94e+03 | 2.66e+03 | 3.25e+03 | 3.5e+03 |  |
+| Ha6563 | total |  | 1.29e+04 |  |  | 1.24e+04 |
+| NII6585 | narrow | 649 | 29.3 | 1.87 | 923 |  |
+| SII6718 | narrow | 2.41 | 0 |  | 246 |  |
+| SII6732 | narrow | 23.7 | 25.5 |  | 78.7 |  |
 
 _flux in 1e-17 erg s-1 cm-2_
 
@@ -140,38 +139,38 @@ _flux in 1e-17 erg s-1 cm-2_
 
 | tool | common reduced chi^2 | own reduced chi^2 | statistic |
 |---|---:|---:|---|
-| pyqsofit | 89.85575990175737 | 3.2060501218488664 | line_complex_reduced (reported) |
-| badass | 65.3705688558329 | 38.071377348954876 | line_window_computed |
-| fantasy_agn | 62.05559847146493 | 43.98385847651698 | line_window_computed |
-| gelato | 5.065963767369376 | 9.630919225798582 | global_reduced (reported) |
-| gleam | 49.328798580946085 | 5.91851771 | mean_line_reduced (reported) |
+| pyqsofit | 89.8268962401634 | 0.5117031477089717 | line_complex_reduced (reported) |
+| badass | 65.04570066967182 | 36.551232941965615 | line_window_computed |
+| fantasy_agn | 69.29059284808437 | 30.93493345799394 | line_window_computed |
+| gelato | 5.0739047792208725 | 9.622495426687959 | global_reduced (reported) |
+| gleam | 49.35288759555973 | 5.925211703333333 | mean_line_reduced (reported) |
 
 _lowest common &chi;&sup2;: **gelato**_
 
 | line | component | pyqsofit | badass | fantasy_agn | gelato | gleam |
 |---|---|---:|---:|---:|---:|---:|
-| OII3727 | broad |  | 0.528 |  |  |  |
-| OII3727 | narrow |  | 105 |  | 150 |  |
+| OII3727 | broad |  | 3.33 |  |  |  |
+| OII3727 | narrow |  | 99.6 |  | 150 |  |
 | OII3727 | total |  |  |  |  | 125 |
-| Hb4861 | broad | 1.67e+03 | 0 | 347 | 507 |  |
-| Hb4861 | narrow |  | 327 | 295 | 120 |  |
-| Hb4861 | total |  | 506 |  |  | 119 |
-| OIII4959 | broad |  | 0 | 234 |  |  |
-| OIII4959 | narrow | 149 | 207 | 7.39 | 122 |  |
-| OIII4959 | outflow | 105 |  |  |  |  |
-| OIII4959 | total |  | 300 |  |  | 220 |
-| OIII5007 | broad |  | 0 | 709 |  |  |
-| OIII5007 | narrow | 456 | 624 | 22.1 | 368 |  |
-| OIII5007 | outflow | 320 |  |  |  |  |
-| OIII5007 | total |  | 904 |  |  | 660 |
-| Ha6563 | broad | 3.32e+03 | 319 | 1.51e+03 | 2.7e+03 | 2.4e+03 |
-| Ha6563 | narrow | 510 | 954 | 878 | 666 | 421 |
+| Hb4861 | broad | 1.67e+03 | 3.78 | 569 | 506 |  |
+| Hb4861 | narrow |  | 350 | 97.2 | 119 |  |
+| Hb4861 | total |  | 545 |  |  | 119 |
+| OIII4959 | broad |  | 0 |  |  |  |
+| OIII4959 | narrow | 150 | 177 | 227 | 122 |  |
+| OIII4959 | outflow | 104 |  |  |  |  |
+| OIII4959 | total |  | 280 |  |  | 220 |
+| OIII5007 | broad |  | 0 |  |  |  |
+| OIII5007 | narrow | 459 | 532 | 688 | 366 |  |
+| OIII5007 | outflow | 319 |  |  |  |  |
+| OIII5007 | total |  | 842 |  |  | 659 |
+| Ha6563 | broad | 3.32e+03 | 0 | 2.61e+03 | 2.7e+03 | 2.4e+03 |
+| Ha6563 | narrow | 505 | 834 | 628 | 663 | 421 |
 | Ha6563 | total |  | 3.35e+03 |  |  |  |
-| NII6585 | narrow | 401 | 0.0189 | 1.79e-11 | 586 |  |
+| NII6585 | narrow | 404 | 50.6 | 453 | 585 |  |
 | NII6585 | total |  |  |  |  | 351 |
-| SII6718 | narrow | 90.9 | 0 |  | 117 |  |
+| SII6718 | narrow | 90.9 | 34.7 |  | 118 |  |
 | SII6718 | total |  |  |  |  | 89.9 |
-| SII6732 | narrow | 61.9 | 22.1 |  | 77.2 |  |
+| SII6732 | narrow | 61.9 | 0 |  | 77.8 |  |
 | SII6732 | total |  |  |  |  | 56.4 |
 
 _flux in 1e-17 erg s-1 cm-2_
@@ -187,36 +186,36 @@ _flux in 1e-17 erg s-1 cm-2_
 
 | tool | common reduced chi^2 | own reduced chi^2 | statistic |
 |---|---:|---:|---|
-| pyqsofit | 181.40671009536334 | 2.221567840861312 | line_complex_reduced (reported) |
-| badass | 7.895678654323758 | 3.7393807744958245 | line_window_computed |
-| fantasy_agn | 156.2339445345203 | 2.9039461986012602 | line_window_computed |
-| gelato | 17.50561520381579 | 10.691382473480434 | global_reduced (reported) |
-| gleam | 614.4643676682849 | 6.761781600588235 | mean_line_reduced (reported) |
+| pyqsofit | 162.77246367432835 | 10.434943236620626 | line_complex_reduced (reported) |
+| badass | 30.772800259772406 | 16.08337800957427 | line_window_computed |
+| fantasy_agn | 162.51985640240662 | 2.8744151045402186 | line_window_computed |
+| gelato | 17.427925977367536 | 10.679560271699224 | global_reduced (reported) |
+| gleam | 579.8507956887239 | 8.926452763076922 | mean_line_reduced (reported) |
 
-_lowest common &chi;&sup2;: **badass**_
+_lowest common &chi;&sup2;: **gelato**_
 
 | line | component | pyqsofit | badass | fantasy_agn | gelato | gleam |
 |---|---|---:|---:|---:|---:|---:|
 | OII3727 | broad |  | 0 |  |  |  |
-| OII3727 | narrow |  | 6.11 |  | 25.9 |  |
-| OII3727 | total |  |  |  |  | 17.5 |
-| Hb4861 | broad | 609 | 98.6 | 468 |  |  |
-| Hb4861 | narrow |  | 266 | 231 | 379 |  |
-| Hb4861 | total |  | 508 |  |  | 402 |
-| OIII4959 | broad |  | 0 | 51.7 |  |  |
-| OIII4959 | narrow | 2.79 | 30.6 | 3.5 | 25.7 |  |
-| OIII4959 | outflow | 38.5 |  |  |  |  |
-| OIII4959 | total |  | 47.9 |  |  |  |
-| OIII5007 | broad |  | 0 | 157 |  |  |
-| OIII5007 | narrow | 8.53 | 90.1 | 10.6 | 77.3 |  |
-| OIII5007 | outflow | 118 |  |  |  |  |
-| OIII5007 | total |  | 144 |  |  |  |
-| Ha6563 | broad | 1.8e+03 | 0 | 1.36e+03 |  |  |
-| Ha6563 | narrow | 762 | 480 | 435 | 1.21e+03 |  |
-| Ha6563 | total |  | 1.35e+03 |  |  | 1.5e+03 |
-| NII6585 | narrow | 93.9 | 0 | 0 | 286 |  |
-| SII6718 | narrow | 14.2 | 0 |  | 14.9 |  |
-| SII6732 | narrow | 0.0775 | 0 |  | -22 |  |
+| OII3727 | narrow |  | 10.2 |  | 27.2 |  |
+| Hb4861 | broad | 350 | 0.0397 | 436 |  | 360 |
+| Hb4861 | narrow |  | 267 | 220 | 379 | 108 |
+| Hb4861 | total |  | 423 |  |  |  |
+| OIII4959 | broad |  | 0 |  |  |  |
+| OIII4959 | narrow | 0.176 | 27.6 | 56.4 | 20.4 |  |
+| OIII4959 | outflow | 39.6 |  |  |  |  |
+| OIII4959 | total |  | 43.7 |  |  | 25.1 |
+| OIII5007 | broad |  | 0 |  |  |  |
+| OIII5007 | narrow | 0.54 | 81.2 | 169 | 61.2 |  |
+| OIII5007 | outflow | 121 |  |  |  |  |
+| OIII5007 | total |  | 131 |  |  |  |
+| Ha6563 | broad | 1.34e+03 | 11.3 | 1.22e+03 |  |  |
+| Ha6563 | narrow | 930 | 402 | 358 | 1.21e+03 |  |
+| Ha6563 | total |  | 1.62e+03 |  |  | 898 |
+| NII6585 | narrow | 283 | 0.00613 | 50.2 | 287 |  |
+| SII6718 | narrow | 26.4 | 0 |  | 15.1 |  |
+| SII6718 | total |  |  |  |  | 13.3 |
+| SII6732 | narrow | 22.7 | 0.000711 |  | -22.4 |  |
 
 _flux in 1e-17 erg s-1 cm-2_
 
@@ -231,38 +230,38 @@ _flux in 1e-17 erg s-1 cm-2_
 
 | tool | common reduced chi^2 | own reduced chi^2 | statistic |
 |---|---:|---:|---|
-| pyqsofit | 165.34098132591689 | 3.02865776761992 | line_complex_reduced (reported) |
-| badass | 20.51760636606131 | 7.649462925561983 | line_window_computed |
-| fantasy_agn | 154.69331957539384 | 8.497564741856383 | line_window_computed |
-| gelato | 3.497073192433206 | 7.9827052158699106 | global_reduced (reported) |
-| gleam | 189.10566505570048 | 6.561451852857142 | mean_line_reduced (reported) |
+| pyqsofit | 154.21981699996329 | 0.6307392851090011 | line_complex_reduced (reported) |
+| badass | 16.56440701444993 | 6.077258166153778 | line_window_computed |
+| fantasy_agn | 153.96843051726194 | 10.56293695089248 | line_window_computed |
+| gelato | 3.4920469247793275 | 7.976494530202093 | global_reduced (reported) |
+| gleam | 197.47034131423155 | 5.617181918333334 | mean_line_reduced (reported) |
 
 _lowest common &chi;&sup2;: **gelato**_
 
 | line | component | pyqsofit | badass | fantasy_agn | gelato | gleam |
 |---|---|---:|---:|---:|---:|---:|
-| OII3727 | broad |  | 0.0042 |  |  |  |
-| OII3727 | narrow |  | 52.8 |  | 97.8 |  |
+| OII3727 | broad |  | 50.9 |  |  |  |
+| OII3727 | narrow |  | 0 |  | 98 |  |
 | OII3727 | total |  |  |  |  | 36.1 |
-| Hb4861 | broad | 2.82e+03 | 429 | 1.21e+03 | 1.26e+03 | 628 |
-| Hb4861 | narrow |  | 557 | 440 | 295 | 15.6 |
-| Hb4861 | total |  | 1.29e+03 |  |  |  |
-| OIII4959 | broad |  | 3.04 | 50.4 |  |  |
-| OIII4959 | narrow | 92.5 | 84.1 | 58.5 | 48.8 |  |
-| OIII4959 | outflow | 3.78 |  |  |  |  |
-| OIII4959 | total |  | 136 |  |  | 93.7 |
-| OIII5007 | broad |  | 9.13 | 153 |  |  |
-| OIII5007 | narrow | 283 | 253 | 177 | 146 |  |
-| OIII5007 | outflow | 11.6 |  |  |  |  |
-| OIII5007 | total |  | 410 |  |  | 281 |
-| Ha6563 | broad | 5.05e+03 | 926 | 3.71e+03 | 4.83e+03 |  |
-| Ha6563 | narrow | 1.2e+03 | 1e+03 | 1.05e+03 | 1.46e+03 |  |
-| Ha6563 | total |  | 4.64e+03 |  |  | 3.4e+03 |
-| NII6585 | narrow | 371 | 0 | 45.9 | 141 |  |
-| NII6585 | total |  |  |  |  | 58.8 |
-| SII6718 | narrow | 2.75 | 13.1 |  | 93 |  |
-| SII6718 | total |  |  |  |  | 29.3 |
-| SII6732 | narrow | 53.9 | 3.59 |  | 67.2 |  |
+| Hb4861 | broad | 1.87e+03 | 0 | 1.1e+03 | 1.26e+03 |  |
+| Hb4861 | narrow |  | 691 | 468 | 296 |  |
+| Hb4861 | total |  | 1.07e+03 |  |  | 637 |
+| OIII4959 | broad |  | 0 |  |  |  |
+| OIII4959 | narrow | 109 | 77.4 | 115 | 48 |  |
+| OIII4959 | outflow | 1.68 |  |  |  |  |
+| OIII4959 | total |  | 122 |  |  | 93.7 |
+| OIII5007 | broad |  | 0 |  |  |  |
+| OIII5007 | narrow | 333 | 233 | 348 | 144 |  |
+| OIII5007 | outflow | 5.14 |  |  |  |  |
+| OIII5007 | total |  | 367 |  |  | 281 |
+| Ha6563 | broad | 5.11e+03 | 967 | 3.68e+03 | 4.83e+03 | 3.44e+03 |
+| Ha6563 | narrow | 1.19e+03 | 1.02e+03 | 1.1e+03 | 1.45e+03 | 129 |
+| Ha6563 | total |  | 4.66e+03 |  |  |  |
+| NII6585 | narrow | 357 | 0 | 0 | 141 |  |
+| NII6585 | total |  |  |  |  | 45.4 |
+| SII6718 | narrow | 3.28 | 16.9 |  | 94.5 |  |
+| SII6718 | total |  |  |  |  | 29.4 |
+| SII6732 | narrow | 53.1 | 0 |  | 66.2 |  |
 | SII6732 | total |  |  |  |  | 20.1 |
 
 _flux in 1e-17 erg s-1 cm-2_
@@ -278,38 +277,38 @@ _flux in 1e-17 erg s-1 cm-2_
 
 | tool | common reduced chi^2 | own reduced chi^2 | statistic |
 |---|---:|---:|---|
-| pyqsofit | 9.795454019755992 | 2.7863695553157113 | line_complex_reduced (reported) |
-| badass | 14.722286725686796 | 7.145589367435795 | line_window_computed |
-| fantasy_agn | 25.75347240236986 | 19.465591886671834 | line_window_computed |
-| gelato | 4.204828307749551 | 8.068442809724317 | global_reduced (reported) |
-| gleam | 58.30209087188553 | 4.241710693333333 | mean_line_reduced (reported) |
+| pyqsofit | 11.783823148081737 | 0.4534889394744983 | line_complex_reduced (reported) |
+| badass | 14.657788853830619 | 7.095120587225127 | line_window_computed |
+| fantasy_agn | 29.92661796302919 | 18.22879258904259 | line_window_computed |
+| gelato | 4.213439824543534 | 8.063410344882952 | global_reduced (reported) |
+| gleam | 58.33161068560424 | 4.262436038333333 | mean_line_reduced (reported) |
 
 _lowest common &chi;&sup2;: **gelato**_
 
 | line | component | pyqsofit | badass | fantasy_agn | gelato | gleam |
 |---|---|---:|---:|---:|---:|---:|
-| OII3727 | broad |  | 221 |  |  |  |
-| OII3727 | narrow |  | 67.8 |  | 181 |  |
+| OII3727 | broad |  | 186 |  |  |  |
+| OII3727 | narrow |  | 97.9 |  | 182 |  |
 | OII3727 | total |  |  |  |  | 62.4 |
-| Hb4861 | broad | 4.08e+03 | 465 | 1.03e+03 | 1.65e+03 |  |
-| Hb4861 | narrow |  | 861 | 844 | 406 |  |
-| Hb4861 | total |  | 1.8e+03 |  |  | 1.06e+03 |
-| OIII4959 | broad |  | 0 | 124 |  |  |
-| OIII4959 | narrow | 107 | 101 | 0 | 89.9 |  |
-| OIII4959 | outflow | 4.53 |  |  |  |  |
+| Hb4861 | broad | 2.23e+03 | 321 | 1.09e+03 | 1.65e+03 |  |
+| Hb4861 | narrow |  | 920 | 737 | 406 |  |
+| Hb4861 | total |  | 1.75e+03 |  |  | 1.06e+03 |
+| OIII4959 | broad |  | 0.335 |  |  |  |
+| OIII4959 | narrow | 81.3 | 101 | 117 | 90 |  |
+| OIII4959 | outflow | 59.2 |  |  |  |  |
 | OIII4959 | total |  | 160 |  |  | 107 |
-| OIII5007 | broad |  | 0 | 377 |  |  |
-| OIII5007 | narrow | 327 | 304 | 0 | 270 |  |
-| OIII5007 | outflow | 13.9 |  |  |  |  |
-| OIII5007 | total |  | 481 |  |  | 322 |
-| Ha6563 | broad | 5.94e+03 | 627 | 3.52e+03 | 5.25e+03 | 4.44e+03 |
-| Ha6563 | narrow | 1.06e+03 | 1.39e+03 | 1.39e+03 | 1.67e+03 | 328 |
-| Ha6563 | total |  | 6.18e+03 |  |  |  |
-| NII6585 | narrow | 846 | 0 | 45.5 | 479 |  |
-| NII6585 | total |  |  |  |  | 232 |
-| SII6718 | narrow | 11.7 | 23.2 |  | 92.3 |  |
+| OIII5007 | broad |  | 1.01 |  |  |  |
+| OIII5007 | narrow | 249 | 303 | 355 | 270 |  |
+| OIII5007 | outflow | 181 |  |  |  |  |
+| OIII5007 | total |  | 480 |  |  | 322 |
+| Ha6563 | broad | 5.88e+03 | 678 | 4.36e+03 | 5.24e+03 | 4.57e+03 |
+| Ha6563 | narrow | 1.08e+03 | 1.39e+03 | 1.24e+03 | 1.68e+03 | 270 |
+| Ha6563 | total |  | 6.26e+03 |  |  |  |
+| NII6585 | narrow | 886 | 0 | 127 | 481 |  |
+| NII6585 | total |  |  |  |  | 174 |
+| SII6718 | narrow | 4.04 | 13.8 |  | 90.3 |  |
 | SII6718 | total |  |  |  |  | 43.9 |
-| SII6732 | narrow | 67.2 | 0.00192 |  | 63.9 |  |
+| SII6732 | narrow | 67 | 5.56 |  | 61.9 |  |
 | SII6732 | total |  |  |  |  | 22.6 |
 
 _flux in 1e-17 erg s-1 cm-2_
@@ -325,36 +324,36 @@ _flux in 1e-17 erg s-1 cm-2_
 
 | tool | common reduced chi^2 | own reduced chi^2 | statistic |
 |---|---:|---:|---|
-| pyqsofit | 108.6700012126676 | 5.832820998493082 | line_complex_reduced (reported) |
-| badass | 9.657246150902445 | 4.036961824240215 | line_window_computed |
-| fantasy_agn | 105.72308423629345 | 12.75071890489186 | line_window_computed |
-| gelato | 2.523086729207244 | 6.4509944831035835 | global_reduced (reported) |
-| gleam | 143.85604230430886 | 8.590674842000002 | mean_line_reduced (reported) |
+| pyqsofit | 101.57639216774618 | 2.073758452348709 | line_complex_reduced (reported) |
+| badass | 40.77287648278703 | 17.946222331387315 | line_window_computed |
+| fantasy_agn | 102.33728271550177 | 21.180463692491845 | line_window_computed |
+| gelato | 2.517967205637623 | 6.444395134420421 | global_reduced (reported) |
+| gleam | 140.03497471617663 | 22.51900747 | mean_line_reduced (reported) |
 
 _lowest common &chi;&sup2;: **gelato**_
 
 | line | component | pyqsofit | badass | fantasy_agn | gelato | gleam |
 |---|---|---:|---:|---:|---:|---:|
 | OII3727 | broad |  | 0 |  |  |  |
-| OII3727 | narrow |  | 120 |  | 190 |  |
+| OII3727 | narrow |  | 111 |  | 192 |  |
 | OII3727 | total |  |  |  |  | 124 |
-| Hb4861 | broad | 2.99e+03 | 0 | 1.95e+03 | 1.95e+03 | 523 |
-| Hb4861 | narrow |  | 784 | 333 | 204 | 44 |
-| Hb4861 | total |  | 1.31e+03 |  |  |  |
-| OIII4959 | broad |  | 129 | 77.4 |  |  |
-| OIII4959 | narrow | 252 | 196 | 233 | 183 |  |
-| OIII4959 | outflow | 0.441 |  |  |  |  |
-| OIII4959 | total |  | 325 |  |  | 264 |
-| OIII5007 | broad |  | 386 | 234 |  |  |
-| OIII5007 | narrow | 772 | 591 | 705 | 549 |  |
-| OIII5007 | outflow | 1.35 |  |  |  |  |
-| OIII5007 | total |  | 977 |  |  | 792 |
-| Ha6563 | broad | 7.6e+03 | 3.21e+03 | 6.85e+03 | 8.16e+03 | 3.78e+03 |
-| Ha6563 | narrow | 1.1e+03 | 922 | 883 | 1.23e+03 | 247 |
-| Ha6563 | total |  | 7.29e+03 |  |  |  |
-| NII6585 | narrow | 851 | 0 | 123 | 202 |  |
-| NII6585 | total |  |  |  |  | 129 |
-| SII6718 | narrow | 0.119 | 0 |  | 156 |  |
+| Hb4861 | broad | 2.7e+03 | 963 | 1.89e+03 | 1.95e+03 | 523 |
+| Hb4861 | narrow |  | 513 | 262 | 203 | 44 |
+| Hb4861 | total |  | 1.76e+03 |  |  |  |
+| OIII4959 | broad |  | 0 |  |  |  |
+| OIII4959 | narrow | 178 | 195 | 293 | 182 |  |
+| OIII4959 | outflow | 141 |  |  |  |  |
+| OIII4959 | total |  | 308 |  |  | 264 |
+| OIII5007 | broad |  | 0 |  |  |  |
+| OIII5007 | narrow | 545 | 587 | 888 | 546 |  |
+| OIII5007 | outflow | 433 |  |  |  |  |
+| OIII5007 | total |  | 928 |  |  | 792 |
+| Ha6563 | broad | 7.6e+03 | 3.59e+03 | 7.28e+03 | 8.16e+03 |  |
+| Ha6563 | narrow | 1.1e+03 | 969 | 763 | 1.23e+03 |  |
+| Ha6563 | total |  | 7.47e+03 |  |  | 3.68e+03 |
+| NII6585 | narrow | 851 | 0 | 74.9 | 203 |  |
+| NII6585 | total |  |  |  |  | 89.5 |
+| SII6718 | narrow | 0.0391 | 17.5 |  | 154 |  |
 | SII6718 | total |  |  |  |  | 68.4 |
 | SII6732 | narrow | 202 | 0 |  | 109 |  |
 | SII6732 | total |  |  |  |  | 31.1 |
@@ -372,38 +371,38 @@ _flux in 1e-17 erg s-1 cm-2_
 
 | tool | common reduced chi^2 | own reduced chi^2 | statistic |
 |---|---:|---:|---|
-| pyqsofit | 82.80904659952367 | 2.4471208183477144 | line_complex_reduced (reported) |
-| badass | 180.3884093548456 | 110.58145130820799 | line_window_computed |
-| fantasy_agn | 157.7659718988859 | 61.790914902285394 | line_window_computed |
-| gelato | 1.9120004941918498 | 6.602820513454798 | global_reduced (reported) |
-| gleam | 26.004532251587513 | 4.189678322 | mean_line_reduced (reported) |
+| pyqsofit | 99.12430740418795 | 0.38174923991115733 | line_complex_reduced (reported) |
+| badass | 32.90932159287843 | 21.11372272115262 | line_window_computed |
+| fantasy_agn | 165.66788291953583 | 56.219384487484035 | line_window_computed |
+| gelato | 1.9176211594444164 | 6.595611511688038 | global_reduced (reported) |
+| gleam | 23.805160913502043 | 35.99569704428571 | mean_line_reduced (reported) |
 
 _lowest common &chi;&sup2;: **gelato**_
 
 | line | component | pyqsofit | badass | fantasy_agn | gelato | gleam |
 |---|---|---:|---:|---:|---:|---:|
-| OII3727 | broad |  | 152 |  |  |  |
-| OII3727 | narrow |  | 343 |  | 407 |  |
+| OII3727 | broad |  | 0 |  |  |  |
+| OII3727 | narrow |  | 415 |  | 407 |  |
 | OII3727 | total |  |  |  |  | 379 |
-| Hb4861 | broad | 2.46e+03 | 338 | 935 | 1.12e+03 | 182 |
-| Hb4861 | narrow |  | 574 | 187 | 171 | 145 |
-| Hb4861 | total |  | 1.23e+03 |  |  |  |
-| OIII4959 | broad |  | 0 | 145 |  |  |
-| OIII4959 | narrow | 373 | 360 | 267 | 366 |  |
-| OIII4959 | outflow | 59.6 |  |  |  |  |
-| OIII4959 | total |  | 570 |  |  | 410 |
-| OIII5007 | broad |  | 0 | 438 |  |  |
-| OIII5007 | narrow | 1.14e+03 | 1.08e+03 | 808 | 1.1e+03 |  |
+| Hb4861 | broad | 1.97e+03 | 0 | 1.01e+03 | 1.12e+03 | 197 |
+| Hb4861 | narrow |  | 601 | 160 | 172 | 140 |
+| Hb4861 | total |  | 936 |  |  |  |
+| OIII4959 | broad |  | 9.84 |  |  |  |
+| OIII4959 | narrow | 381 | 380 | 398 | 366 |  |
+| OIII4959 | outflow | 59.5 |  |  |  |  |
+| OIII4959 | total |  | 390 |  |  | 410 |
+| OIII5007 | broad |  | 29.6 |  |  |  |
+| OIII5007 | narrow | 1.17e+03 | 1.14e+03 | 1.21e+03 | 1.1e+03 |  |
 | OIII5007 | outflow | 182 |  |  |  |  |
-| OIII5007 | total |  | 1.71e+03 |  |  | 1.23e+03 |
-| Ha6563 | broad | 4.74e+03 | 1.23e+03 | 4.3e+03 | 4.46e+03 | 1.78e+03 |
-| Ha6563 | narrow | 582 | 769 | 448 | 655 | 533 |
-| Ha6563 | total |  | 4.31e+03 |  |  |  |
-| NII6585 | narrow | 174 | 109 | 173 | 177 |  |
-| NII6585 | total |  |  |  |  | 167 |
-| SII6718 | narrow | 166 | 27.1 |  | 184 |  |
+| OIII5007 | total |  | 1.17e+03 |  |  | 1.23e+03 |
+| Ha6563 | broad | 4.74e+03 | 0 | 4.52e+03 | 4.46e+03 |  |
+| Ha6563 | narrow | 579 | 0 | 618 | 657 |  |
+| Ha6563 | total |  | 0 |  |  | 982 |
+| NII6585 | narrow | 174 | 661 | 191 | 177 |  |
+| NII6585 | total |  |  |  |  | 357 |
+| SII6718 | narrow | 166 | 0 |  | 184 |  |
 | SII6718 | total |  |  |  |  | 162 |
-| SII6732 | narrow | 150 | 50.5 |  | 160 |  |
+| SII6732 | narrow | 150 | 47.5 |  | 160 |  |
 | SII6732 | total |  |  |  |  | 143 |
 
 _flux in 1e-17 erg s-1 cm-2_
@@ -419,11 +418,11 @@ _flux in 1e-17 erg s-1 cm-2_
 
 | tool | common reduced chi^2 | own reduced chi^2 | statistic |
 |---|---:|---:|---|
-| pyqsofit | 251.70827559317084 | 2.5034158444589947 | line_complex_reduced (reported) |
-| badass | 19.79976621535167 | 16.502046578481874 | line_window_computed |
-| fantasy_agn | 63.41571392438628 | 42.73866693449478 | line_window_computed |
-| gelato | 1.3041292525746846 | 2.8352847321365275 | global_reduced (reported) |
-| gleam | 47.824954934559706 | 3.705399648 | mean_line_reduced (reported) |
+| pyqsofit | 246.76164862849868 | 0.7763708644725396 | line_complex_reduced (reported) |
+| badass | 19.08120702460722 | 16.28097493257583 | line_window_computed |
+| fantasy_agn | 69.82759179837777 | 42.65602723518327 | line_window_computed |
+| gelato | 1.3151841421812198 | 2.8277704482034385 | global_reduced (reported) |
+| gleam | 36.35738196239399 | 25.74418603857143 | mean_line_reduced (reported) |
 
 _lowest common &chi;&sup2;: **gelato**_
 
@@ -432,26 +431,26 @@ _lowest common &chi;&sup2;: **gelato**_
 | OII3727 | broad |  | 0 |  |  |  |
 | OII3727 | narrow |  | 112 |  | 109 |  |
 | OII3727 | total |  |  |  |  | 105 |
-| Hb4861 | broad | 672 | 21.7 | 315 | 153 | 44.4 |
-| Hb4861 | narrow |  | 131 | 33.9 | 47 | 33.7 |
-| Hb4861 | total |  | 224 |  |  |  |
-| OIII4959 | broad |  | 16 | 148 |  |  |
-| OIII4959 | narrow | 137 | 129 | 0 | 78.6 |  |
-| OIII4959 | outflow | 1.73 |  |  |  |  |
-| OIII4959 | total |  | 145 |  |  | 139 |
-| OIII5007 | broad |  | 48 | 448 |  |  |
-| OIII5007 | narrow | 420 | 389 | 0 | 236 |  |
-| OIII5007 | outflow | 5.28 |  |  |  |  |
-| OIII5007 | total |  | 437 |  |  | 417 |
-| Ha6563 | broad | 1.12e+03 | 170 | 505 | 1.14e+03 | 723 |
-| Ha6563 | narrow | 223 | 382 | 148 | 276 | 228 |
-| Ha6563 | total |  | 1.58e+03 |  |  |  |
-| NII6585 | narrow | 198 | 0 | 261 | 214 |  |
-| NII6585 | total |  |  |  |  | 212 |
-| SII6718 | narrow | 62 | 11.3 |  | 73.4 |  |
-| SII6718 | total |  |  |  |  | 60.9 |
-| SII6732 | narrow | 54.6 | 14.8 |  | 61.3 |  |
-| SII6732 | total |  |  |  |  | 52.7 |
+| Hb4861 | broad | 412 | 34.9 | 210 | 153 | 38.7 |
+| Hb4861 | narrow |  | 127 | 3.77 | 47.2 | 28.1 |
+| Hb4861 | total |  | 230 |  |  |  |
+| OIII4959 | broad |  | 0 |  |  |  |
+| OIII4959 | narrow | 84.7 | 133 | 140 | 78.3 |  |
+| OIII4959 | outflow | 59.5 |  |  |  |  |
+| OIII4959 | total |  | 133 |  |  | 139 |
+| OIII5007 | broad |  | 0 |  |  |  |
+| OIII5007 | narrow | 259 | 399 | 423 | 235 |  |
+| OIII5007 | outflow | 182 |  |  |  |  |
+| OIII5007 | total |  | 399 |  |  | 417 |
+| Ha6563 | broad | 1.18e+03 | 387 | 1.23e+03 | 1.14e+03 |  |
+| Ha6563 | narrow | 222 | 374 | 0 | 276 |  |
+| Ha6563 | total |  | 1.63e+03 |  |  | 416 |
+| NII6585 | narrow | 195 | 0.0179 | 131 | 214 |  |
+| NII6585 | total |  |  |  |  | 296 |
+| SII6718 | narrow | 61.8 | 27.9 |  | 73.6 |  |
+| SII6718 | total |  |  |  |  | 57.2 |
+| SII6732 | narrow | 55 | 0 |  | 61.3 |  |
+| SII6732 | total |  |  |  |  | 57.9 |
 
 _flux in 1e-17 erg s-1 cm-2_
 
