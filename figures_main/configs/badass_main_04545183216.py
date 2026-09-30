@@ -65,7 +65,7 @@ mcmc_options = {
 
 ############################ Fit component op dtions #############################
 comp_options = {
-    "fit_opt_feii": True,  # optical FeII
+    "fit_opt_feii": False,  # optical FeII
     "fit_uv_iron": False,  # UV Iron
     "fit_balmer": False,  # Balmer continuum (<4000 A)
     "fit_losvd": False,  # stellar LOSVD
@@ -114,44 +114,9 @@ absorp_options = {
 ################################################################################
 # User lines overrides the default line list with a user-input line list!
 user_lines = {
-    "NA_OII": {
-        "center": 3727.09,
-        "amp": "free",
-        "disp": "free",
-        "voff": "free",
-        "line_type": "na",
-        "label": r"[OII]",
-        "ncomp": 1,
-    },
-    "NA_H_BETA": {
-        "center": 4862.691,
-        "amp": "free",
-        "disp": "free",
-        "voff": "free",
-        "line_type": "na",
-        "label": r"H$\beta$",
-        "ncomp": 1,
-    },
-    # [OIII] 4959 is tied to [OIII] 5007 (amp, width, velocity), ratio 1/2.98.
-    # Free amplitudes let the narrow 4959 line collapse to ~0.
-    "NA_OIII_a": {
-        "center": 4960.295,
-        "amp": "(NA_OIII_b_AMP/2.98)",
-        "disp": "NA_OIII_b_DISP",
-        "voff": "NA_OIII_b_VOFF",
-        "line_type": "na",
-        "label": r"[OIIIa]",
-        "ncomp": 1,
-    },
-    "NA_OIII_b": {
-        "center": 5008.240,
-        "amp": "free",
-        "disp": "free",
-        "voff": "free",
-        "line_type": "na",
-        "label": r"[OIIIb]",
-        "ncomp": 1,
-    },
+    # Narrow reference: all narrow lines share its width and velocity.  This is
+    # what BADASS' built-in line list does; the previous override set them free,
+    # which let each line drift independently.
     "NA_H_ALPHA": {
         "center": 6564.6,
         "amp": "free",
@@ -159,6 +124,43 @@ user_lines = {
         "voff": "free",
         "line_type": "na",
         "label": r"[H$\alpha$]",
+        "ncomp": 1,
+    },
+    "NA_H_BETA": {
+        "center": 4862.691,
+        "amp": "free",
+        "disp": "NA_H_ALPHA_DISP",
+        "voff": "NA_H_ALPHA_VOFF",
+        "line_type": "na",
+        "label": r"H$\beta$",
+        "ncomp": 1,
+    },
+    # [OIII] 4959 tied to 5007 (1/2.98) and to the narrow kinematics.
+    "NA_OIII_a": {
+        "center": 4960.295,
+        "amp": "(NA_OIII_b_AMP/2.98)",
+        "disp": "NA_H_ALPHA_DISP",
+        "voff": "NA_H_ALPHA_VOFF",
+        "line_type": "na",
+        "label": r"[OIIIa]",
+        "ncomp": 1,
+    },
+    "NA_OIII_b": {
+        "center": 5008.240,
+        "amp": "free",
+        "disp": "NA_H_ALPHA_DISP",
+        "voff": "NA_H_ALPHA_VOFF",
+        "line_type": "na",
+        "label": r"[OIIIb]",
+        "ncomp": 1,
+    },
+    "NA_OII": {
+        "center": 3727.09,
+        "amp": "free",
+        "disp": "free",
+        "voff": "free",
+        "line_type": "na",
+        "label": r"[OII]",
         "ncomp": 1,
     },
     # [NII] and [SII] share the narrow Halpha width/velocity; NII has the fixed
@@ -199,38 +201,9 @@ user_lines = {
         "label": r"[SII]",
         "ncomp": 1,
     },
-    "BR_H_BETA": {
-        "center": 4862.691,
-        "amp": "free",
-        "disp": "free",
-        "voff": "free",
-        "line_type": "br",
-        "ncomp": 1,
-    },
-    "BR_OII": {
-        "center": 3727.09,
-        "amp": "free",
-        "disp": "free",
-        "voff": "free",
-        "line_type": "br",
-        "ncomp": 1,
-    },
-    "BR_OIII_a": {
-        "center": 4960.295,
-        "amp": "(BR_OIII_b_AMP/2.98)",
-        "disp": "BR_OIII_b_DISP",
-        "voff": "BR_OIII_b_VOFF",
-        "line_type": "br",
-        "ncomp": 1,
-    },
-    "BR_OIII_b": {
-        "center": 5008.240,
-        "amp": "free",
-        "disp": "free",
-        "voff": "free",
-        "line_type": "br",
-        "ncomp": 1,
-    },
+    # Broad reference: broad Hbeta is the *same* gas as broad Halpha, so it
+    # shares its width and velocity.  Without this tie the fit gives broad Hbeta
+    # an independent width and the Halpha/Hbeta decrement becomes meaningless.
     "BR_H_ALPHA": {
         "center": 6564.6,
         "amp": "free",
@@ -239,6 +212,16 @@ user_lines = {
         "line_type": "br",
         "ncomp": 1,
     },
+    "BR_H_BETA": {
+        "center": 4862.691,
+        "amp": "(BR_H_ALPHA_AMP/3.0)",
+        "disp": "BR_H_ALPHA_DISP",
+        "voff": "BR_H_ALPHA_VOFF",
+        "line_type": "br",
+        "ncomp": 1,
+    },
+    # (Forbidden [OII]/[OIII] have no broad counterpart in this model; the fit
+    # otherwise puts [OIII] flux into a spurious broad component.)
 }
 
 
@@ -274,10 +257,7 @@ test_options = {
 # generated for lines with multiple components (parent+child lines)
 
 combined_lines = {
-    "OII_COMP": ["NA_OII", "BR_OII"],
     "H_BETA_COMP": ["NA_H_BETA", "BR_H_BETA"],
-    "OIII_a_COMP": ["NA_OIII_a", "BR_OIII_a"],
-    "OIII_b_COMP": ["NA_OIII_b", "BR_OIII_b"],
     "H_ALPHA_COMP": ["NA_H_ALPHA", "BR_H_ALPHA"],
 }
 

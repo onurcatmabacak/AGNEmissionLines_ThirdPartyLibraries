@@ -24,7 +24,7 @@ Regenerate with
 
 ```bash
 python pipeline/collect_figures.py --select --out figures_main --clean
-python pipeline/save_object_configs.py
+python pipeline/save_object_configs.py --best configs/BEST_PER_OBJECT.json
 ```
 
 The full set of every plot is in `../figures/`; the machine-readable winner
