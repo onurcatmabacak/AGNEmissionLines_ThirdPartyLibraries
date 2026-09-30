@@ -30,7 +30,7 @@ SELECTED = {
     "pyqsofit": {"result"},
     "badass": {"max_likelihood_fit"},
     "fantasy_agn": {"my_sdss"},
-    "gelato": {"my_sdss-spec"},
+    "gelato": {"my_sdss-comp"},
     "gleam": {"linefits.sdss.sdss.fiber1.001"},
 }
 

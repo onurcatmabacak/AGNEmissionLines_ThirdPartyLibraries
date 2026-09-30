@@ -111,7 +111,8 @@ BADASS = {
     "file": "main.py",
     "base": ROOT / "badass" / "main.py",
     "defaults": {"fit_stat": "OLS", "broad_disp_min": "600", "n_basinhop": "5",
-                 "tie_disp": "False", "opt_feii": "True", "tie_balmer_decrement": "False"},
+                 "tie_disp": "False", "opt_feii": "True", "tie_balmer_decrement": "False",
+                 "apoly": "False"},
     "candidates": [
         {},
         {"fit_stat": "RCHI2"},
@@ -124,9 +125,12 @@ BADASS = {
         {"opt_feii": "False"},
         {"broad_disp_min": "1500", "tie_balmer_decrement": "True"},
         {"opt_feii": "False", "tie_balmer_decrement": "True"},
+        {"apoly": "True"},
+        {"fit_stat": "ML"},
     ],
     "knob_values": {
-        "fit_stat": ["OLS", "RCHI2"],
+        "apoly": ["False", "True"],
+        "fit_stat": ["OLS", "RCHI2", "ML"],
         "broad_disp_min": ["600", "1000", "1500", "2500"],
         "n_basinhop": ["5", "20"],
         "tie_disp": ["False", "True"],
@@ -151,6 +155,9 @@ def render_badass(text: str, k: dict) -> str:
     assert n == 1, "badass: tie_line_disp not found"
     text, n = re.subn(r'"fit_opt_feii":\s*(True|False)', f'"fit_opt_feii": {k["opt_feii"]}', text)
     assert n == 1, "badass: fit_opt_feii not found"
+    text, n = re.subn(r'("apoly":\s*\{\s*"bool":\s*)(True|False)',
+                      lambda m: m.group(1) + k["apoly"], text)
+    assert n == 1, "badass: apoly bool not found"
     if k["tie_balmer_decrement"] == "True":
         # Force the broad Balmer decrement to the case-B value (3:1); the
         # kinematic tie above then makes this a single physical parameter.

@@ -115,7 +115,9 @@ def _tool_model_rest(obj_dir: Path, tool: str, out: Path, wave_rest: np.ndarray,
         arr = np.genfromtxt(p, delimiter=",", names=True)
         if arr.size == 0:
             return None
-        return np.interp(wave_rest, np.atleast_1d(arr["wave"]), np.atleast_1d(arr["model"]))
+        names = set(arr.dtype.names or ())
+        key = "model_total" if "model_total" in names else "model"
+        return np.interp(wave_rest, np.atleast_1d(arr["wave"]), np.atleast_1d(arr[key]))
     if tool == "badass":
         f = next(out.rglob("best_model_components.fits"), None)
         if f is None:
@@ -127,10 +129,17 @@ def _tool_model_rest(obj_dir: Path, tool: str, out: Path, wave_rest: np.ndarray,
         p = out / "my_sdss_model.csv"
         if not p.exists():
             return None
-        arr = np.genfromtxt(p, delimiter=",", skip_header=1)
+        try:
+            with p.open() as fh:
+                header = [h.strip() for h in fh.readline().rstrip("\n").split(",")]
+                arr = np.genfromtxt(fh, delimiter=",", comments=None)
+        except Exception:
+            return None
         if arr.ndim != 2 or arr.shape[1] < 5:
             return None
-        return np.interp(wave_rest, arr[:, 1], arr[:, 4])
+        col = {name: i for i, name in enumerate(header)}
+        mk = col.get("model_total", col.get("model", 4))
+        return np.interp(wave_rest, arr[:, col.get("wave", 1)], arr[:, mk])
     if tool == "gelato":
         from astropy.io import fits
         f = out / "my_sdss-results.fits"
@@ -198,7 +207,7 @@ def line_penalty(lrows):
 
     pen = 0.0
     # [OIII] doublet: wherever 5007 is detected, 4959 must be present ~0.33x.
-    for comp in ("narrow", "outflow", "broad"):
+    for comp in ("narrow", "outflow", "broad", "total"):
         f7 = g("OIII5007", comp)
         if f7 is None or f7 <= 0:
             continue
@@ -207,9 +216,20 @@ def line_penalty(lrows):
             pen += 1.0
         elif not (0.22 <= f9 / f7 <= 0.45):
             pen += 1.0
-    # Broad Balmer decrement (case B gives Halpha/Hbeta ~ 2.8-3.3).
+    # A positive, detected [OIII]5007 is required.
+    o7 = g("OIII5007", "narrow")
+    if o7 is None:
+        o7 = g("OIII5007", "total")
+    if o7 is None or not (o7 > 0):
+        pen += 1.0
+    # These are broad-line QSOs: broad Halpha *and* broad Hbeta must be present.
     ha, hb = g("Ha6563", "broad"), g("Hb4861", "broad")
-    if ha and hb and hb > 0 and not (2.0 <= ha / hb <= 6.0):
+    if ha is None or not (ha > 0):
+        pen += 1.0
+    if hb is None or not (hb > 0):
+        pen += 1.0
+    # Broad Balmer decrement (case B ~2.8-3.3; allow reddening up to ~6).
+    if ha and hb and ha > 0 and hb > 0 and not (2.0 <= ha / hb <= 6.0):
         pen += 1.0
     return pen
 
