@@ -44,10 +44,10 @@ min_ampl = 0
 max_ampl = 200          # was 50 -> broad Halpha amplitude pinned at the bound
 fwhm_br = 1500
 fwhm_na = 500
-min_fwhm_br = 700       # was 1200 -> broad Ha wing (observed FWHM ~1400) was being pushed to bounds
-min_fwhm_na = 100
-max_fwhm_br = 6000      # was 6000 -> broad Halpha FWHM pinned at the bound
-max_fwhm_na = 2000      # was 1500 -> narrow Balmer FWHM pinned at the bound
+min_fwhm_br = 1200      # broad lines must be genuinely broad
+min_fwhm_na = 70
+max_fwhm_br = 6000
+max_fwhm_na = 600       # was 2000 -> narrow Balmer FWHM inflated to 2-4x the [OIII]/[NII] width
 offset = 0
 min_offset = -1500      # allow blue-shifted wing components
 max_offset = 500
@@ -73,17 +73,20 @@ halpha_na = create_line(name="HAlpha6565_na",pos=WB_HA, ampl=ampl, min_ampl=min_
 # [NII] doublet, tied to the narrow width/velocity, ratio 6583/6548 = 3.
 NII6583_na = create_line(name="NII6583_na",pos=WB_N2B, ampl=ampl, min_ampl=min_ampl, max_ampl=max_ampl, fwhm=OIIIb_na.fwhm, offset=OIIIb_na.offs_kms)
 NII6548_na = create_line(name="NII6548_na",pos=WB_N2A, ampl=NII6583_na.ampl/3.0, fwhm=OIIIb_na.fwhm, offset=OIIIb_na.offs_kms)
-# Link Balmer kinematics so the broad decrement is driven by flux, not by
-# independent widths/offsets (the same for the narrow lines).
+# Link Balmer kinematics.  Broad Halpha/Hbeta share one profile; narrow
+# Balmer shares the forbidden-line ([OIII]/[NII]) width and velocity, which is
+# how the narrow lines are defined physically.
 halpha_br.fwhm = hbeta_br.fwhm
 halpha_br.offs_kms = hbeta_br.offs_kms
-halpha_na.fwhm = hbeta_na.fwhm
-halpha_na.offs_kms = hbeta_na.offs_kms
+hbeta_na.fwhm = OIIIb_na.fwhm
+hbeta_na.offs_kms = OIIIb_na.offs_kms
+halpha_na.fwhm = OIIIb_na.fwhm
+halpha_na.offs_kms = OIIIb_na.offs_kms
 
 # fe=create_feii_model(max_fwhm=6000)
 # Forbidden [OIII]/[NII] lines are narrow: do not include the broad counterparts
 # (with both free, the fit puts all [OIII] flux into the broad component).
-model = cont + OIIIb_na + OIIIa_na + NII6583_na + NII6548_na + hbeta_br + halpha_br + hbeta_na + halpha_na
+model = cont + OIIIb_na + OIIIa_na + NII6583_na + NII6548_na + hbeta_br + halpha_br + hbeta_na + halpha_na + create_feii_model(fwhm=1000, min_fwhm=300, max_fwhm=6000, offset=0, min_offset=-800, max_offset=800)
 
 # fits a spectrum with the above model, iterate 2 times
 s.fit(model, ntrial=10)

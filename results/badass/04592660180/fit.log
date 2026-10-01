@@ -2,7 +2,7 @@
 /app/BADASS3/example_spectra/2-onur
 /app/BADASS3/example_spectra/2-onur/my_sdss.fits
 0.34872591495513916
-Start process memory: 0.22328934                    
+Start process memory: 0.22382592                    
  Folder has not been created.  Creating MCMC_output folder...
 
  > Starting fit for 2-onur
@@ -132,26 +132,26 @@ NA_OIII_a
                               amp                           (NA_OIII_b_AMP/2.98)          
                               center                        4960.295                      
                               center_pix                    2331.5873465310824            
-                              disp                          NA_H_ALPHA_DISP               
+                              disp                          NA_OIII_b_DISP                
                               disp_res_ang                  1.8891807905118316            
                               disp_res_kms                  114.17912700634238            
                               label                         [OIIIa]                       
                               line_profile                  gaussian                      
                               line_type                     na                            
                               ncomp                         1                             
-                              voff                          NA_H_ALPHA_VOFF               
+                              voff                          NA_OIII_b_VOFF                
 NA_OIII_b                                                                                 
                               amp                           free                          
                               center                        5008.24                       
                               center_pix                    2373.361781647544             
-                              disp                          NA_H_ALPHA_DISP               
+                              disp                          free                          
                               disp_res_ang                  1.8891807905118316            
                               disp_res_kms                  113.08606472411967            
                               label                         [OIIIb]                       
                               line_profile                  gaussian                      
                               line_type                     na                            
                               ncomp                         1                             
-                              voff                          NA_H_ALPHA_VOFF               
+                              voff                          free                          
 NA_SII_6716                                                                               
                               amp                           free                          
                               center                        6718.29                       
@@ -179,7 +179,7 @@ NA_SII_6731
 
 ----------------------------------------------------------------------------------------------------------------------------------------
 
- Number of Free Line Parameters: 15
+ Number of Free Line Parameters: 17
 
 ----------------------------------------------------------------------------------------------------------------------------------------
 
@@ -188,7 +188,7 @@ NA_SII_6731
 ----------------------------------------------------------------------------------------------------------------------------------------
 BR_H_ALPHA_AMP                                                                            
                               init                          0.9917872749381111            
-                              plim                          (0, 50)                       
+                              plim                          (0, 200)                      
 BR_H_ALPHA_DISP                                                                           
                               init                          3300.0                        
                               plim                          (600, 6000)                   
@@ -198,7 +198,7 @@ BR_H_ALPHA_VOFF
                               prior                         {'type': 'gaussian'}          
 BR_H_BETA_AMP                                                                             
                               init                          0.4695823788660961            
-                              plim                          (0, 50)                       
+                              plim                          (0, 200)                      
 BR_OPT_FEII_AMP                                                                           
                               init                          0.026628368030811103          
                               plim                          (0, 1.5000000427715077)       
@@ -218,8 +218,8 @@ NA_H_ALPHA_AMP
                               init                          0.9917872749381111            
                               plim                          (0, 50)                       
 NA_H_ALPHA_DISP                                                                           
-                              init                          1300.0                        
-                              plim                          (100, 2500)                   
+                              init                          50.0                          
+                              plim                          (50, 400)                     
 NA_H_ALPHA_VOFF                                                                           
                               init                          0.0                           
                               plim                          (-1000, 1000)                 
@@ -233,12 +233,19 @@ NA_NII_6585_AMP
 NA_OIII_b_AMP                                                                             
                               init                          0.4666799439411946            
                               plim                          (0, 50)                       
+NA_OIII_b_DISP                                                                            
+                              init                          50.0                          
+                              plim                          (50, 400)                     
+NA_OIII_b_VOFF                                                                            
+                              init                          0.0                           
+                              plim                          (-1000, 1000)                 
+                              prior                         {'type': 'gaussian'}          
 NA_OII_AMP                                                                                
                               init                          0.38542321874283453           
                               plim                          (0, 50)                       
 NA_OII_DISP                                                                               
-                              init                          1300.0                        
-                              plim                          (100, 2500)                   
+                              init                          50.0                          
+                              plim                          (50, 400)                     
 NA_OII_VOFF                                                                               
                               init                          0.0                           
                               plim                          (-1000, 1000)                 
@@ -267,7 +274,7 @@ POWER_SLOPE
 
 ----------------------------------------------------------------------------------------------------------------------------------------
 
- Total number of free parameters: 25
+ Total number of free parameters: 27
 
 ----------------------------------------------------------------------------------------------------------------------------------------
 
@@ -283,96 +290,2009 @@ POWER_SLOPE
 
  Performing max. likelihood fitting.
 
- Using Basin-hopping algorithm to estimate parameters. niter_success = 5
-basinhopping step 0: f 2.39168
+ Using Basin-hopping algorithm to estimate parameters. niter_success = 50
+basinhopping step 0: f 2.18036
  Fit Status: False
  Force threshold: 0.4694
- Lowest RMSE: 0.0891
- Current RMSE: 0.0891
+ Lowest RMSE: 0.0851
+ Current RMSE: 0.0851
  Accepted count: 1
  Basinhop count: 0
 
 
 adaptive stepsize: acceptance rate 0.000000 target 0.500000 new stepsize 0.9 old stepsize 1
-basinhopping step 1: f 2.39168 trial_f 2.79053 accepted 0  lowest_f 2.39168
+basinhopping step 1: f 2.42247 trial_f 2.42247 accepted 1  lowest_f 2.18036
  Fit Status: False
  Force threshold: 0.4694
- Lowest RMSE: 0.0891
- Current RMSE: 0.0963
- Accepted count: 1
- Basinhop count: 1
-
-
-adaptive stepsize: acceptance rate 0.000000 target 0.500000 new stepsize 0.81 old stepsize 0.9
-basinhopping step 2: f 2.39168 trial_f 2.95546 accepted 0  lowest_f 2.39168
- Fit Status: False
- Force threshold: 0.4694
- Lowest RMSE: 0.0891
- Current RMSE: 0.0991
- Accepted count: 1
- Basinhop count: 2
-
-
-adaptive stepsize: acceptance rate 0.000000 target 0.500000 new stepsize 0.729 old stepsize 0.81
-basinhopping step 3: f 2.14296 trial_f 2.14296 accepted 1  lowest_f 2.14296
-found new global minimum on step 3 with function value 2.14296
- Fit Status: False
- Force threshold: 0.4694
- Lowest RMSE: 0.0843
- Current RMSE: 0.0843
+ Lowest RMSE: 0.0851
+ Current RMSE: 0.0897
  Accepted count: 2
- Basinhop count: 0
-
-
-adaptive stepsize: acceptance rate 0.250000 target 0.500000 new stepsize 0.6561 old stepsize 0.729
-basinhopping step 4: f 2.35487 trial_f 2.35487 accepted 1  lowest_f 2.14296
- Fit Status: False
- Force threshold: 0.4694
- Lowest RMSE: 0.0843
- Current RMSE: 0.0884
- Accepted count: 3
  Basinhop count: 1
 
 
-adaptive stepsize: acceptance rate 0.400000 target 0.500000 new stepsize 0.59049 old stepsize 0.6561
-basinhopping step 5: f 2.34448 trial_f 2.34448 accepted 1  lowest_f 2.14296
+adaptive stepsize: acceptance rate 0.500000 target 0.500000 new stepsize 0.81 old stepsize 0.9
+basinhopping step 2: f 2.64045 trial_f 2.64045 accepted 1  lowest_f 2.18036
  Fit Status: False
  Force threshold: 0.4694
- Lowest RMSE: 0.0843
- Current RMSE: 0.0882
- Accepted count: 4
+ Lowest RMSE: 0.0851
+ Current RMSE: 0.0936
+ Accepted count: 3
  Basinhop count: 2
 
 
-adaptive stepsize: acceptance rate 0.500000 target 0.500000 new stepsize 0.531441 old stepsize 0.59049
-basinhopping step 6: f 2.56212 trial_f 2.56212 accepted 1  lowest_f 2.14296
+adaptive stepsize: acceptance rate 0.666667 target 0.500000 new stepsize 0.9 old stepsize 0.81
+basinhopping step 3: f 2.64045 trial_f 6.74366 accepted 0  lowest_f 2.18036
  Fit Status: False
  Force threshold: 0.4694
- Lowest RMSE: 0.0843
- Current RMSE: 0.0922
- Accepted count: 5
+ Lowest RMSE: 0.0851
+ Current RMSE: 0.1496
+ Accepted count: 3
  Basinhop count: 3
 
 
-adaptive stepsize: acceptance rate 0.571429 target 0.500000 new stepsize 0.59049 old stepsize 0.531441
-basinhopping step 7: f 2.56212 trial_f 4.30421 accepted 0  lowest_f 2.14296
+adaptive stepsize: acceptance rate 0.500000 target 0.500000 new stepsize 0.81 old stepsize 0.9
+basinhopping step 4: f 2.64045 trial_f 4.42745 accepted 0  lowest_f 2.18036
  Fit Status: False
  Force threshold: 0.4694
- Lowest RMSE: 0.0843
- Current RMSE: 0.1195
- Accepted count: 5
+ Lowest RMSE: 0.0851
+ Current RMSE: 0.1212
+ Accepted count: 3
  Basinhop count: 4
 
 
-adaptive stepsize: acceptance rate 0.500000 target 0.500000 new stepsize 0.531441 old stepsize 0.59049
-warning: basinhopping: local minimization failure
-basinhopping step 8: f 2.59269 trial_f 2.59269 accepted 1  lowest_f 2.14296
+adaptive stepsize: acceptance rate 0.400000 target 0.500000 new stepsize 0.729 old stepsize 0.81
+basinhopping step 5: f 2.64045 trial_f 2.99547 accepted 0  lowest_f 2.18036
+ Fit Status: False
+ Force threshold: 0.4694
+ Lowest RMSE: 0.0851
+ Current RMSE: 0.0997
+ Accepted count: 3
+ Basinhop count: 5
+
+
+adaptive stepsize: acceptance rate 0.333333 target 0.500000 new stepsize 0.6561 old stepsize 0.729
+basinhopping step 6: f 2.64045 trial_f 3.52681 accepted 0  lowest_f 2.18036
+ Fit Status: False
+ Force threshold: 0.4694
+ Lowest RMSE: 0.0851
+ Current RMSE: 0.1082
+ Accepted count: 3
+ Basinhop count: 6
+
+
+adaptive stepsize: acceptance rate 0.285714 target 0.500000 new stepsize 0.59049 old stepsize 0.6561
+basinhopping step 7: f 2.64045 trial_f 132.086 accepted 0  lowest_f 2.18036
+ Fit Status: False
+ Force threshold: 0.4694
+ Lowest RMSE: 0.0851
+ Current RMSE: 0.6622
+ Accepted count: 3
+ Basinhop count: 7
+
+
+adaptive stepsize: acceptance rate 0.250000 target 0.500000 new stepsize 0.531441 old stepsize 0.59049
+basinhopping step 8: f 2.64035 trial_f 2.64035 accepted 1  lowest_f 2.18036
+ Fit Status: False
+ Force threshold: 0.4694
+ Lowest RMSE: 0.0851
+ Current RMSE: 0.0936
+ Accepted count: 4
+ Basinhop count: 8
+
+
+adaptive stepsize: acceptance rate 0.333333 target 0.500000 new stepsize 0.478297 old stepsize 0.531441
+basinhopping step 9: f 2.52058 trial_f 2.52058 accepted 1  lowest_f 2.18036
+ Fit Status: False
+ Force threshold: 0.4694
+ Lowest RMSE: 0.0851
+ Current RMSE: 0.0915
+ Accepted count: 5
+ Basinhop count: 9
+
+
+adaptive stepsize: acceptance rate 0.400000 target 0.500000 new stepsize 0.430467 old stepsize 0.478297
+basinhopping step 10: f 3.86687 trial_f 3.86687 accepted 1  lowest_f 2.18036
+ Fit Status: False
+ Force threshold: 0.4694
+ Lowest RMSE: 0.0851
+ Current RMSE: 0.1133
+ Accepted count: 6
+ Basinhop count: 10
+
+
+adaptive stepsize: acceptance rate 0.454545 target 0.500000 new stepsize 0.38742 old stepsize 0.430467
+basinhopping step 11: f 4.04078 trial_f 4.04078 accepted 1  lowest_f 2.18036
+ Fit Status: False
+ Force threshold: 0.4694
+ Lowest RMSE: 0.0851
+ Current RMSE: 0.1158
+ Accepted count: 7
+ Basinhop count: 11
+
+
+adaptive stepsize: acceptance rate 0.500000 target 0.500000 new stepsize 0.348678 old stepsize 0.38742
+basinhopping step 12: f 2.21828 trial_f 2.21828 accepted 1  lowest_f 2.18036
+ Fit Status: False
+ Force threshold: 0.4694
+ Lowest RMSE: 0.0851
+ Current RMSE: 0.0858
+ Accepted count: 8
+ Basinhop count: 12
+
+
+adaptive stepsize: acceptance rate 0.538462 target 0.500000 new stepsize 0.38742 old stepsize 0.348678
+basinhopping step 13: f 2.21828 trial_f 4.2924 accepted 0  lowest_f 2.18036
+ Fit Status: False
+ Force threshold: 0.4694
+ Lowest RMSE: 0.0851
+ Current RMSE: 0.1194
+ Accepted count: 8
+ Basinhop count: 13
+
+
+adaptive stepsize: acceptance rate 0.500000 target 0.500000 new stepsize 0.348678 old stepsize 0.38742
+basinhopping step 14: f 2.20948 trial_f 2.20948 accepted 1  lowest_f 2.18036
+ Fit Status: False
+ Force threshold: 0.4694
+ Lowest RMSE: 0.0851
+ Current RMSE: 0.0856
+ Accepted count: 9
+ Basinhop count: 14
+
+
+adaptive stepsize: acceptance rate 0.533333 target 0.500000 new stepsize 0.38742 old stepsize 0.348678
+basinhopping step 15: f 2.20941 trial_f 2.20941 accepted 1  lowest_f 2.18036
+ Fit Status: False
+ Force threshold: 0.4694
+ Lowest RMSE: 0.0851
+ Current RMSE: 0.0856
+ Accepted count: 10
+ Basinhop count: 15
+
+
+adaptive stepsize: acceptance rate 0.562500 target 0.500000 new stepsize 0.430467 old stepsize 0.38742
+basinhopping step 16: f 2.20941 trial_f 4.03973 accepted 0  lowest_f 2.18036
+ Fit Status: False
+ Force threshold: 0.4694
+ Lowest RMSE: 0.0851
+ Current RMSE: 0.1158
+ Accepted count: 10
+ Basinhop count: 16
+
+
+adaptive stepsize: acceptance rate 0.529412 target 0.500000 new stepsize 0.478297 old stepsize 0.430467
+basinhopping step 17: f 2.20941 trial_f 7.71945 accepted 0  lowest_f 2.18036
+ Fit Status: False
+ Force threshold: 0.4694
+ Lowest RMSE: 0.0851
+ Current RMSE: 0.1601
+ Accepted count: 10
+ Basinhop count: 17
+
+
+adaptive stepsize: acceptance rate 0.500000 target 0.500000 new stepsize 0.430467 old stepsize 0.478297
+basinhopping step 18: f 2.21575 trial_f 2.21575 accepted 1  lowest_f 2.18036
+ Fit Status: False
+ Force threshold: 0.4694
+ Lowest RMSE: 0.0851
+ Current RMSE: 0.0858
+ Accepted count: 11
+ Basinhop count: 18
+
+
+adaptive stepsize: acceptance rate 0.526316 target 0.500000 new stepsize 0.478297 old stepsize 0.430467
+basinhopping step 19: f 2.21575 trial_f 4.27462 accepted 0  lowest_f 2.18036
+ Fit Status: False
+ Force threshold: 0.4694
+ Lowest RMSE: 0.0851
+ Current RMSE: 0.1191
+ Accepted count: 11
+ Basinhop count: 19
+
+
+adaptive stepsize: acceptance rate 0.500000 target 0.500000 new stepsize 0.430467 old stepsize 0.478297
+basinhopping step 20: f 2.42328 trial_f 2.42328 accepted 1  lowest_f 2.18036
+ Fit Status: False
+ Force threshold: 0.4694
+ Lowest RMSE: 0.0851
+ Current RMSE: 0.0897
+ Accepted count: 12
+ Basinhop count: 20
+
+
+adaptive stepsize: acceptance rate 0.523810 target 0.500000 new stepsize 0.478297 old stepsize 0.430467
+basinhopping step 21: f 2.69631 trial_f 2.69631 accepted 1  lowest_f 2.18036
+ Fit Status: False
+ Force threshold: 0.4694
+ Lowest RMSE: 0.0851
+ Current RMSE: 0.0946
+ Accepted count: 13
+ Basinhop count: 21
+
+
+adaptive stepsize: acceptance rate 0.545455 target 0.500000 new stepsize 0.531441 old stepsize 0.478297
+basinhopping step 22: f 2.69631 trial_f 5.25238 accepted 0  lowest_f 2.18036
+ Fit Status: False
+ Force threshold: 0.4694
+ Lowest RMSE: 0.0851
+ Current RMSE: 0.1321
+ Accepted count: 13
+ Basinhop count: 22
+
+
+adaptive stepsize: acceptance rate 0.521739 target 0.500000 new stepsize 0.59049 old stepsize 0.531441
+basinhopping step 23: f 2.21597 trial_f 2.21597 accepted 1  lowest_f 2.18036
+ Fit Status: False
+ Force threshold: 0.4694
+ Lowest RMSE: 0.0851
+ Current RMSE: 0.0858
+ Accepted count: 14
+ Basinhop count: 23
+
+
+adaptive stepsize: acceptance rate 0.541667 target 0.500000 new stepsize 0.6561 old stepsize 0.59049
+basinhopping step 24: f 2.21597 trial_f 4.0715 accepted 0  lowest_f 2.18036
+ Fit Status: False
+ Force threshold: 0.4694
+ Lowest RMSE: 0.0851
+ Current RMSE: 0.1163
+ Accepted count: 14
+ Basinhop count: 24
+
+
+adaptive stepsize: acceptance rate 0.520000 target 0.500000 new stepsize 0.729 old stepsize 0.6561
+basinhopping step 25: f 2.21597 trial_f 4.27748 accepted 0  lowest_f 2.18036
+ Fit Status: False
+ Force threshold: 0.4694
+ Lowest RMSE: 0.0851
+ Current RMSE: 0.1192
+ Accepted count: 14
+ Basinhop count: 25
+
+
+adaptive stepsize: acceptance rate 0.500000 target 0.500000 new stepsize 0.6561 old stepsize 0.729
+basinhopping step 26: f 2.21597 trial_f 4.05743 accepted 0  lowest_f 2.18036
+ Fit Status: False
+ Force threshold: 0.4694
+ Lowest RMSE: 0.0851
+ Current RMSE: 0.1161
+ Accepted count: 14
+ Basinhop count: 26
+
+
+adaptive stepsize: acceptance rate 0.481481 target 0.500000 new stepsize 0.59049 old stepsize 0.6561
+basinhopping step 27: f 2.21597 trial_f 127.556 accepted 0  lowest_f 2.18036
+ Fit Status: False
+ Force threshold: 0.4694
+ Lowest RMSE: 0.0851
+ Current RMSE: 0.6507
+ Accepted count: 14
+ Basinhop count: 27
+
+
+adaptive stepsize: acceptance rate 0.464286 target 0.500000 new stepsize 0.531441 old stepsize 0.59049
+basinhopping step 28: f 4.3627 trial_f 4.3627 accepted 1  lowest_f 2.18036
+ Fit Status: False
+ Force threshold: 0.4694
+ Lowest RMSE: 0.0851
+ Current RMSE: 0.1203
+ Accepted count: 15
+ Basinhop count: 28
+
+
+adaptive stepsize: acceptance rate 0.482759 target 0.500000 new stepsize 0.478297 old stepsize 0.531441
+basinhopping step 29: f 3.05177 trial_f 3.05177 accepted 1  lowest_f 2.18036
+ Fit Status: False
+ Force threshold: 0.4694
+ Lowest RMSE: 0.0851
+ Current RMSE: 0.1007
+ Accepted count: 16
+ Basinhop count: 29
+
+
+adaptive stepsize: acceptance rate 0.500000 target 0.500000 new stepsize 0.430467 old stepsize 0.478297
+basinhopping step 30: f 2.21864 trial_f 2.21864 accepted 1  lowest_f 2.18036
+ Fit Status: False
+ Force threshold: 0.4694
+ Lowest RMSE: 0.0851
+ Current RMSE: 0.0858
+ Accepted count: 17
+ Basinhop count: 30
+
+
+adaptive stepsize: acceptance rate 0.516129 target 0.500000 new stepsize 0.478297 old stepsize 0.430467
+basinhopping step 31: f 2.21864 trial_f 4.35401 accepted 0  lowest_f 2.18036
+ Fit Status: False
+ Force threshold: 0.4694
+ Lowest RMSE: 0.0851
+ Current RMSE: 0.1202
+ Accepted count: 17
+ Basinhop count: 31
+
+
+adaptive stepsize: acceptance rate 0.500000 target 0.500000 new stepsize 0.430467 old stepsize 0.478297
+basinhopping step 32: f 2.21864 trial_f 2.69252 accepted 0  lowest_f 2.18036
+ Fit Status: False
+ Force threshold: 0.4694
+ Lowest RMSE: 0.0851
+ Current RMSE: 0.0945
+ Accepted count: 17
+ Basinhop count: 32
+
+
+adaptive stepsize: acceptance rate 0.484848 target 0.500000 new stepsize 0.38742 old stepsize 0.430467
+basinhopping step 33: f 2.21877 trial_f 2.21877 accepted 1  lowest_f 2.18036
+ Fit Status: False
+ Force threshold: 0.4694
+ Lowest RMSE: 0.0851
+ Current RMSE: 0.0858
+ Accepted count: 18
+ Basinhop count: 33
+
+
+adaptive stepsize: acceptance rate 0.500000 target 0.500000 new stepsize 0.348678 old stepsize 0.38742
+basinhopping step 34: f 2.42305 trial_f 2.42305 accepted 1  lowest_f 2.18036
+ Fit Status: False
+ Force threshold: 0.4694
+ Lowest RMSE: 0.0851
+ Current RMSE: 0.0897
+ Accepted count: 19
+ Basinhop count: 34
+
+
+adaptive stepsize: acceptance rate 0.514286 target 0.500000 new stepsize 0.38742 old stepsize 0.348678
+basinhopping step 35: f 2.42305 trial_f 4.26928 accepted 0  lowest_f 2.18036
+ Fit Status: False
+ Force threshold: 0.4694
+ Lowest RMSE: 0.0851
+ Current RMSE: 0.1191
+ Accepted count: 19
+ Basinhop count: 35
+
+
+adaptive stepsize: acceptance rate 0.500000 target 0.500000 new stepsize 0.348678 old stepsize 0.38742
+basinhopping step 36: f 2.42305 trial_f 2.69238 accepted 0  lowest_f 2.18036
+ Fit Status: False
+ Force threshold: 0.4694
+ Lowest RMSE: 0.0851
+ Current RMSE: 0.0945
+ Accepted count: 19
+ Basinhop count: 36
+
+
+adaptive stepsize: acceptance rate 0.486486 target 0.500000 new stepsize 0.313811 old stepsize 0.348678
+basinhopping step 37: f 2.21574 trial_f 2.21574 accepted 1  lowest_f 2.18036
+ Fit Status: False
+ Force threshold: 0.4694
+ Lowest RMSE: 0.0851
+ Current RMSE: 0.0858
+ Accepted count: 20
+ Basinhop count: 37
+
+
+adaptive stepsize: acceptance rate 0.500000 target 0.500000 new stepsize 0.28243 old stepsize 0.313811
+basinhopping step 38: f 2.21872 trial_f 2.21872 accepted 1  lowest_f 2.18036
+ Fit Status: False
+ Force threshold: 0.4694
+ Lowest RMSE: 0.0851
+ Current RMSE: 0.0858
+ Accepted count: 21
+ Basinhop count: 38
+
+
+adaptive stepsize: acceptance rate 0.512821 target 0.500000 new stepsize 0.313811 old stepsize 0.28243
+basinhopping step 39: f 2.21872 trial_f 4.26913 accepted 0  lowest_f 2.18036
+ Fit Status: False
+ Force threshold: 0.4694
+ Lowest RMSE: 0.0851
+ Current RMSE: 0.1191
+ Accepted count: 21
+ Basinhop count: 39
+
+
+adaptive stepsize: acceptance rate 0.500000 target 0.500000 new stepsize 0.28243 old stepsize 0.313811
+basinhopping step 40: f 2.69646 trial_f 2.69646 accepted 1  lowest_f 2.18036
+ Fit Status: False
+ Force threshold: 0.4694
+ Lowest RMSE: 0.0851
+ Current RMSE: 0.0946
+ Accepted count: 22
+ Basinhop count: 40
+
+
+adaptive stepsize: acceptance rate 0.512195 target 0.500000 new stepsize 0.313811 old stepsize 0.28243
+basinhopping step 41: f 2.69646 trial_f 4.76342 accepted 0  lowest_f 2.18036
+ Fit Status: False
+ Force threshold: 0.4694
+ Lowest RMSE: 0.0851
+ Current RMSE: 0.1258
+ Accepted count: 22
+ Basinhop count: 41
+
+
+adaptive stepsize: acceptance rate 0.500000 target 0.500000 new stepsize 0.28243 old stepsize 0.313811
+basinhopping step 42: f 2.21861 trial_f 2.21861 accepted 1  lowest_f 2.18036
+ Fit Status: False
+ Force threshold: 0.4694
+ Lowest RMSE: 0.0851
+ Current RMSE: 0.0858
+ Accepted count: 23
+ Basinhop count: 42
+
+
+adaptive stepsize: acceptance rate 0.511628 target 0.500000 new stepsize 0.313811 old stepsize 0.28243
+basinhopping step 43: f 2.21565 trial_f 2.21565 accepted 1  lowest_f 2.18036
+ Fit Status: False
+ Force threshold: 0.4694
+ Lowest RMSE: 0.0851
+ Current RMSE: 0.0858
+ Accepted count: 24
+ Basinhop count: 43
+
+
+adaptive stepsize: acceptance rate 0.522727 target 0.500000 new stepsize 0.348678 old stepsize 0.313811
+basinhopping step 44: f 2.42616 trial_f 2.42616 accepted 1  lowest_f 2.18036
+ Fit Status: False
+ Force threshold: 0.4694
+ Lowest RMSE: 0.0851
+ Current RMSE: 0.0897
+ Accepted count: 25
+ Basinhop count: 44
+
+
+adaptive stepsize: acceptance rate 0.533333 target 0.500000 new stepsize 0.38742 old stepsize 0.348678
+basinhopping step 45: f 2.43213 trial_f 2.43213 accepted 1  lowest_f 2.18036
+ Fit Status: False
+ Force threshold: 0.4694
+ Lowest RMSE: 0.0851
+ Current RMSE: 0.0899
+ Accepted count: 26
+ Basinhop count: 45
+
+
+adaptive stepsize: acceptance rate 0.543478 target 0.500000 new stepsize 0.430467 old stepsize 0.38742
+basinhopping step 46: f 2.55973 trial_f 2.55973 accepted 1  lowest_f 2.18036
+ Fit Status: False
+ Force threshold: 0.4694
+ Lowest RMSE: 0.0851
+ Current RMSE: 0.0922
+ Accepted count: 27
+ Basinhop count: 46
+
+
+adaptive stepsize: acceptance rate 0.553191 target 0.500000 new stepsize 0.478297 old stepsize 0.430467
+basinhopping step 47: f 2.69534 trial_f 2.69534 accepted 1  lowest_f 2.18036
+ Fit Status: False
+ Force threshold: 0.4694
+ Lowest RMSE: 0.0851
+ Current RMSE: 0.0946
+ Accepted count: 28
+ Basinhop count: 47
+
+
+adaptive stepsize: acceptance rate 0.562500 target 0.500000 new stepsize 0.531441 old stepsize 0.478297
+basinhopping step 48: f 2.69534 trial_f 4.37341 accepted 0  lowest_f 2.18036
+ Fit Status: False
+ Force threshold: 0.4694
+ Lowest RMSE: 0.0851
+ Current RMSE: 0.1205
+ Accepted count: 28
+ Basinhop count: 48
+
+
+adaptive stepsize: acceptance rate 0.551020 target 0.500000 new stepsize 0.59049 old stepsize 0.531441
+basinhopping step 49: f 2.20961 trial_f 2.20961 accepted 1  lowest_f 2.18036
+ Fit Status: False
+ Force threshold: 0.4694
+ Lowest RMSE: 0.0851
+ Current RMSE: 0.0856
+ Accepted count: 29
+ Basinhop count: 49
+
+
+adaptive stepsize: acceptance rate 0.560000 target 0.500000 new stepsize 0.6561 old stepsize 0.59049
+basinhopping step 50: f 1.95249 trial_f 1.95249 accepted 1  lowest_f 1.95249
+found new global minimum on step 50 with function value 1.95249
+ Fit Status: False
+ Force threshold: 0.4694
+ Lowest RMSE: 0.0805
+ Current RMSE: 0.0805
+ Accepted count: 30
+ Basinhop count: 0
+
+
+adaptive stepsize: acceptance rate 0.568627 target 0.500000 new stepsize 0.729 old stepsize 0.6561
+basinhopping step 51: f 1.95249 trial_f 18.1669 accepted 0  lowest_f 1.95249
+ Fit Status: False
+ Force threshold: 0.4694
+ Lowest RMSE: 0.0805
+ Current RMSE: 0.2456
+ Accepted count: 30
+ Basinhop count: 1
+
+
+adaptive stepsize: acceptance rate 0.557692 target 0.500000 new stepsize 0.81 old stepsize 0.729
+basinhopping step 52: f 1.95249 trial_f 129.023 accepted 0  lowest_f 1.95249
+ Fit Status: False
+ Force threshold: 0.4694
+ Lowest RMSE: 0.0805
+ Current RMSE: 0.6545
+ Accepted count: 30
+ Basinhop count: 2
+
+
+adaptive stepsize: acceptance rate 0.547170 target 0.500000 new stepsize 0.9 old stepsize 0.81
+basinhopping step 53: f 1.95249 trial_f 4.23786 accepted 0  lowest_f 1.95249
+ Fit Status: False
+ Force threshold: 0.4694
+ Lowest RMSE: 0.0805
+ Current RMSE: 0.1186
+ Accepted count: 30
+ Basinhop count: 3
+
+
+adaptive stepsize: acceptance rate 0.537037 target 0.500000 new stepsize 1 old stepsize 0.9
+basinhopping step 54: f 1.95249 trial_f 4.41896 accepted 0  lowest_f 1.95249
+ Fit Status: False
+ Force threshold: 0.4694
+ Lowest RMSE: 0.0805
+ Current RMSE: 0.1211
+ Accepted count: 30
+ Basinhop count: 4
+
+
+adaptive stepsize: acceptance rate 0.527273 target 0.500000 new stepsize 1.11111 old stepsize 1
+basinhopping step 55: f 1.95249 trial_f 3.38149 accepted 0  lowest_f 1.95249
+ Fit Status: False
+ Force threshold: 0.4694
+ Lowest RMSE: 0.0805
+ Current RMSE: 0.1060
+ Accepted count: 30
+ Basinhop count: 5
+
+
+adaptive stepsize: acceptance rate 0.517857 target 0.500000 new stepsize 1.23457 old stepsize 1.11111
+basinhopping step 56: f 1.95249 trial_f 127.517 accepted 0  lowest_f 1.95249
+ Fit Status: False
+ Force threshold: 0.4694
+ Lowest RMSE: 0.0805
+ Current RMSE: 0.6507
+ Accepted count: 30
+ Basinhop count: 6
+
+
+adaptive stepsize: acceptance rate 0.508772 target 0.500000 new stepsize 1.37174 old stepsize 1.23457
+basinhopping step 57: f 1.95249 trial_f 127.308 accepted 0  lowest_f 1.95249
+ Fit Status: False
+ Force threshold: 0.4694
+ Lowest RMSE: 0.0805
+ Current RMSE: 0.6501
+ Accepted count: 30
+ Basinhop count: 7
+
+
+adaptive stepsize: acceptance rate 0.500000 target 0.500000 new stepsize 1.23457 old stepsize 1.37174
+basinhopping step 58: f 2.31449 trial_f 2.31449 accepted 1  lowest_f 1.95249
+ Fit Status: False
+ Force threshold: 0.4694
+ Lowest RMSE: 0.0805
+ Current RMSE: 0.0877
+ Accepted count: 31
+ Basinhop count: 8
+
+
+adaptive stepsize: acceptance rate 0.508475 target 0.500000 new stepsize 1.37174 old stepsize 1.23457
+basinhopping step 59: f 2.31449 trial_f 17.2956 accepted 0  lowest_f 1.95249
+ Fit Status: False
+ Force threshold: 0.4694
+ Lowest RMSE: 0.0805
+ Current RMSE: 0.2396
+ Accepted count: 31
+ Basinhop count: 9
+
+
+adaptive stepsize: acceptance rate 0.500000 target 0.500000 new stepsize 1.23457 old stepsize 1.37174
+basinhopping step 60: f 2.23591 trial_f 2.23591 accepted 1  lowest_f 1.95249
+ Fit Status: False
+ Force threshold: 0.4694
+ Lowest RMSE: 0.0805
+ Current RMSE: 0.0862
+ Accepted count: 32
+ Basinhop count: 10
+
+
+adaptive stepsize: acceptance rate 0.508197 target 0.500000 new stepsize 1.37174 old stepsize 1.23457
+basinhopping step 61: f 2.22339 trial_f 2.22339 accepted 1  lowest_f 1.95249
+ Fit Status: False
+ Force threshold: 0.4694
+ Lowest RMSE: 0.0805
+ Current RMSE: 0.0859
+ Accepted count: 33
+ Basinhop count: 11
+
+
+adaptive stepsize: acceptance rate 0.516129 target 0.500000 new stepsize 1.52416 old stepsize 1.37174
+basinhopping step 62: f 2.60481 trial_f 2.60481 accepted 1  lowest_f 1.95249
+ Fit Status: False
+ Force threshold: 0.4694
+ Lowest RMSE: 0.0805
+ Current RMSE: 0.0930
+ Accepted count: 34
+ Basinhop count: 12
+
+
+adaptive stepsize: acceptance rate 0.523810 target 0.500000 new stepsize 1.69351 old stepsize 1.52416
+basinhopping step 63: f 2.60481 trial_f 7.23497 accepted 0  lowest_f 1.95249
+ Fit Status: False
+ Force threshold: 0.4694
+ Lowest RMSE: 0.0805
+ Current RMSE: 0.1550
+ Accepted count: 34
+ Basinhop count: 13
+
+
+adaptive stepsize: acceptance rate 0.515625 target 0.500000 new stepsize 1.88168 old stepsize 1.69351
+basinhopping step 64: f 2.47244 trial_f 2.47244 accepted 1  lowest_f 1.95249
+ Fit Status: False
+ Force threshold: 0.4694
+ Lowest RMSE: 0.0805
+ Current RMSE: 0.0906
+ Accepted count: 35
+ Basinhop count: 14
+
+
+adaptive stepsize: acceptance rate 0.523077 target 0.500000 new stepsize 2.09075 old stepsize 1.88168
+basinhopping step 65: f 2.47244 trial_f 3.51739 accepted 0  lowest_f 1.95249
+ Fit Status: False
+ Force threshold: 0.4694
+ Lowest RMSE: 0.0805
+ Current RMSE: 0.1081
+ Accepted count: 35
+ Basinhop count: 15
+
+
+adaptive stepsize: acceptance rate 0.515152 target 0.500000 new stepsize 2.32306 old stepsize 2.09075
+basinhopping step 66: f 2.24728 trial_f 2.24728 accepted 1  lowest_f 1.95249
+ Fit Status: False
+ Force threshold: 0.4694
+ Lowest RMSE: 0.0805
+ Current RMSE: 0.0864
+ Accepted count: 36
+ Basinhop count: 16
+
+
+adaptive stepsize: acceptance rate 0.522388 target 0.500000 new stepsize 2.58117 old stepsize 2.32306
+basinhopping step 67: f 2.85545 trial_f 2.85545 accepted 1  lowest_f 1.95249
+ Fit Status: False
+ Force threshold: 0.4694
+ Lowest RMSE: 0.0805
+ Current RMSE: 0.0974
+ Accepted count: 37
+ Basinhop count: 17
+
+
+adaptive stepsize: acceptance rate 0.529412 target 0.500000 new stepsize 2.86797 old stepsize 2.58117
+basinhopping step 68: f 2.85545 trial_f 129.947 accepted 0  lowest_f 1.95249
+ Fit Status: False
+ Force threshold: 0.4694
+ Lowest RMSE: 0.0805
+ Current RMSE: 0.6568
+ Accepted count: 37
+ Basinhop count: 18
+
+
+adaptive stepsize: acceptance rate 0.521739 target 0.500000 new stepsize 3.18664 old stepsize 2.86797
+basinhopping step 69: f 2.85545 trial_f 18.4478 accepted 0  lowest_f 1.95249
+ Fit Status: False
+ Force threshold: 0.4694
+ Lowest RMSE: 0.0805
+ Current RMSE: 0.2475
+ Accepted count: 37
+ Basinhop count: 19
+
+
+adaptive stepsize: acceptance rate 0.514286 target 0.500000 new stepsize 3.54071 old stepsize 3.18664
+basinhopping step 70: f 2.85545 trial_f 5.55688 accepted 0  lowest_f 1.95249
+ Fit Status: False
+ Force threshold: 0.4694
+ Lowest RMSE: 0.0805
+ Current RMSE: 0.1358
+ Accepted count: 37
+ Basinhop count: 20
+
+
+adaptive stepsize: acceptance rate 0.507042 target 0.500000 new stepsize 3.93412 old stepsize 3.54071
+basinhopping step 71: f 2.85545 trial_f 6.96228 accepted 0  lowest_f 1.95249
+ Fit Status: False
+ Force threshold: 0.4694
+ Lowest RMSE: 0.0805
+ Current RMSE: 0.1520
+ Accepted count: 37
+ Basinhop count: 21
+
+
+adaptive stepsize: acceptance rate 0.500000 target 0.500000 new stepsize 3.54071 old stepsize 3.93412
+basinhopping step 72: f 2.85545 trial_f 130.131 accepted 0  lowest_f 1.95249
+ Fit Status: False
+ Force threshold: 0.4694
+ Lowest RMSE: 0.0805
+ Current RMSE: 0.6573
+ Accepted count: 37
+ Basinhop count: 22
+
+
+adaptive stepsize: acceptance rate 0.493151 target 0.500000 new stepsize 3.18664 old stepsize 3.54071
+basinhopping step 73: f 2.85545 trial_f 130.579 accepted 0  lowest_f 1.95249
+ Fit Status: False
+ Force threshold: 0.4694
+ Lowest RMSE: 0.0805
+ Current RMSE: 0.6584
+ Accepted count: 37
+ Basinhop count: 23
+
+
+adaptive stepsize: acceptance rate 0.486486 target 0.500000 new stepsize 2.86797 old stepsize 3.18664
+basinhopping step 74: f 1.96285 trial_f 1.96285 accepted 1  lowest_f 1.95249
+ Fit Status: False
+ Force threshold: 0.4694
+ Lowest RMSE: 0.0805
+ Current RMSE: 0.0807
+ Accepted count: 38
+ Basinhop count: 24
+
+
+adaptive stepsize: acceptance rate 0.493333 target 0.500000 new stepsize 2.58117 old stepsize 2.86797
+basinhopping step 75: f 1.96285 trial_f 141.13 accepted 0  lowest_f 1.95249
+ Fit Status: False
+ Force threshold: 0.4694
+ Lowest RMSE: 0.0805
+ Current RMSE: 0.6845
+ Accepted count: 38
+ Basinhop count: 25
+
+
+adaptive stepsize: acceptance rate 0.486842 target 0.500000 new stepsize 2.32306 old stepsize 2.58117
+basinhopping step 76: f 1.96285 trial_f 18.4303 accepted 0  lowest_f 1.95249
+ Fit Status: False
+ Force threshold: 0.4694
+ Lowest RMSE: 0.0805
+ Current RMSE: 0.2474
+ Accepted count: 38
+ Basinhop count: 26
+
+
+adaptive stepsize: acceptance rate 0.480519 target 0.500000 new stepsize 2.09075 old stepsize 2.32306
+basinhopping step 77: f 1.96285 trial_f 130.084 accepted 0  lowest_f 1.95249
+ Fit Status: False
+ Force threshold: 0.4694
+ Lowest RMSE: 0.0805
+ Current RMSE: 0.6572
+ Accepted count: 38
+ Basinhop count: 27
+
+
+adaptive stepsize: acceptance rate 0.474359 target 0.500000 new stepsize 1.88168 old stepsize 2.09075
+basinhopping step 78: f 1.96285 trial_f 4.21488 accepted 0  lowest_f 1.95249
+ Fit Status: False
+ Force threshold: 0.4694
+ Lowest RMSE: 0.0805
+ Current RMSE: 0.1183
+ Accepted count: 38
+ Basinhop count: 28
+
+
+adaptive stepsize: acceptance rate 0.468354 target 0.500000 new stepsize 1.69351 old stepsize 1.88168
+basinhopping step 79: f 1.96285 trial_f 128.641 accepted 0  lowest_f 1.95249
+ Fit Status: False
+ Force threshold: 0.4694
+ Lowest RMSE: 0.0805
+ Current RMSE: 0.6535
+ Accepted count: 38
+ Basinhop count: 29
+
+
+adaptive stepsize: acceptance rate 0.462500 target 0.500000 new stepsize 1.52416 old stepsize 1.69351
+basinhopping step 80: f 2.78469 trial_f 2.78469 accepted 1  lowest_f 1.95249
+ Fit Status: False
+ Force threshold: 0.4694
+ Lowest RMSE: 0.0805
+ Current RMSE: 0.0962
+ Accepted count: 39
+ Basinhop count: 30
+
+
+adaptive stepsize: acceptance rate 0.469136 target 0.500000 new stepsize 1.37174 old stepsize 1.52416
+basinhopping step 81: f 2.78469 trial_f 127.684 accepted 0  lowest_f 1.95249
+ Fit Status: False
+ Force threshold: 0.4694
+ Lowest RMSE: 0.0805
+ Current RMSE: 0.6511
+ Accepted count: 39
+ Basinhop count: 31
+
+
+adaptive stepsize: acceptance rate 0.463415 target 0.500000 new stepsize 1.23457 old stepsize 1.37174
+basinhopping step 82: f 2.78469 trial_f 17.3665 accepted 0  lowest_f 1.95249
+ Fit Status: False
+ Force threshold: 0.4694
+ Lowest RMSE: 0.0805
+ Current RMSE: 0.2401
+ Accepted count: 39
+ Basinhop count: 32
+
+
+adaptive stepsize: acceptance rate 0.457831 target 0.500000 new stepsize 1.11111 old stepsize 1.23457
+basinhopping step 83: f 2.1087 trial_f 2.1087 accepted 1  lowest_f 1.95249
+ Fit Status: False
+ Force threshold: 0.4694
+ Lowest RMSE: 0.0805
+ Current RMSE: 0.0837
+ Accepted count: 40
+ Basinhop count: 33
+
+
+adaptive stepsize: acceptance rate 0.464286 target 0.500000 new stepsize 1 old stepsize 1.11111
+basinhopping step 84: f 2.1087 trial_f 17.3699 accepted 0  lowest_f 1.95249
+ Fit Status: False
+ Force threshold: 0.4694
+ Lowest RMSE: 0.0805
+ Current RMSE: 0.2401
+ Accepted count: 40
+ Basinhop count: 34
+
+
+adaptive stepsize: acceptance rate 0.458824 target 0.500000 new stepsize 0.9 old stepsize 1
+basinhopping step 85: f 2.22288 trial_f 2.22288 accepted 1  lowest_f 1.95249
+ Fit Status: False
+ Force threshold: 0.4694
+ Lowest RMSE: 0.0805
+ Current RMSE: 0.0859
+ Accepted count: 41
+ Basinhop count: 35
+
+
+adaptive stepsize: acceptance rate 0.465116 target 0.500000 new stepsize 0.81 old stepsize 0.9
+basinhopping step 86: f 2.45208 trial_f 2.45208 accepted 1  lowest_f 1.95249
+ Fit Status: False
+ Force threshold: 0.4694
+ Lowest RMSE: 0.0805
+ Current RMSE: 0.0902
+ Accepted count: 42
+ Basinhop count: 36
+
+
+adaptive stepsize: acceptance rate 0.471264 target 0.500000 new stepsize 0.729 old stepsize 0.81
+basinhopping step 87: f 2.30788 trial_f 2.30788 accepted 1  lowest_f 1.95249
+ Fit Status: False
+ Force threshold: 0.4694
+ Lowest RMSE: 0.0805
+ Current RMSE: 0.0875
+ Accepted count: 43
+ Basinhop count: 37
+
+
+adaptive stepsize: acceptance rate 0.477273 target 0.500000 new stepsize 0.6561 old stepsize 0.729
+basinhopping step 88: f 2.30788 trial_f 3.88936 accepted 0  lowest_f 1.95249
+ Fit Status: False
+ Force threshold: 0.4694
+ Lowest RMSE: 0.0805
+ Current RMSE: 0.1136
+ Accepted count: 43
+ Basinhop count: 38
+
+
+adaptive stepsize: acceptance rate 0.471910 target 0.500000 new stepsize 0.59049 old stepsize 0.6561
+basinhopping step 89: f 2.30788 trial_f 3.69344 accepted 0  lowest_f 1.95249
+ Fit Status: False
+ Force threshold: 0.4694
+ Lowest RMSE: 0.0805
+ Current RMSE: 0.1107
+ Accepted count: 43
+ Basinhop count: 39
+
+
+adaptive stepsize: acceptance rate 0.466667 target 0.500000 new stepsize 0.531441 old stepsize 0.59049
+basinhopping step 90: f 2.27547 trial_f 2.27547 accepted 1  lowest_f 1.95249
+ Fit Status: False
+ Force threshold: 0.4694
+ Lowest RMSE: 0.0805
+ Current RMSE: 0.0869
+ Accepted count: 44
+ Basinhop count: 40
+
+
+adaptive stepsize: acceptance rate 0.472527 target 0.500000 new stepsize 0.478297 old stepsize 0.531441
+basinhopping step 91: f 2.49424 trial_f 2.49424 accepted 1  lowest_f 1.95249
+ Fit Status: False
+ Force threshold: 0.4694
+ Lowest RMSE: 0.0805
+ Current RMSE: 0.0910
+ Accepted count: 45
+ Basinhop count: 41
+
+
+adaptive stepsize: acceptance rate 0.478261 target 0.500000 new stepsize 0.430467 old stepsize 0.478297
+basinhopping step 92: f 2.49605 trial_f 2.49605 accepted 1  lowest_f 1.95249
+ Fit Status: False
+ Force threshold: 0.4694
+ Lowest RMSE: 0.0805
+ Current RMSE: 0.0910
+ Accepted count: 46
+ Basinhop count: 42
+
+
+adaptive stepsize: acceptance rate 0.483871 target 0.500000 new stepsize 0.38742 old stepsize 0.430467
+basinhopping step 93: f 2.29034 trial_f 2.29034 accepted 1  lowest_f 1.95249
+ Fit Status: False
+ Force threshold: 0.4694
+ Lowest RMSE: 0.0805
+ Current RMSE: 0.0872
+ Accepted count: 47
+ Basinhop count: 43
+
+
+adaptive stepsize: acceptance rate 0.489362 target 0.500000 new stepsize 0.348678 old stepsize 0.38742
+basinhopping step 94: f 2.29034 trial_f 2.84254 accepted 0  lowest_f 1.95249
+ Fit Status: False
+ Force threshold: 0.4694
+ Lowest RMSE: 0.0805
+ Current RMSE: 0.0971
+ Accepted count: 47
+ Basinhop count: 44
+
+
+adaptive stepsize: acceptance rate 0.484211 target 0.500000 new stepsize 0.313811 old stepsize 0.348678
+basinhopping step 95: f 1.92513 trial_f 1.92513 accepted 1  lowest_f 1.92513
+found new global minimum on step 95 with function value 1.92513
+ Fit Status: False
+ Force threshold: 0.4694
+ Lowest RMSE: 0.0799
+ Current RMSE: 0.0799
+ Accepted count: 48
+ Basinhop count: 0
+
+
+adaptive stepsize: acceptance rate 0.489583 target 0.500000 new stepsize 0.28243 old stepsize 0.313811
+basinhopping step 96: f 1.93081 trial_f 1.93081 accepted 1  lowest_f 1.92513
+ Fit Status: False
+ Force threshold: 0.4694
+ Lowest RMSE: 0.0799
+ Current RMSE: 0.0801
+ Accepted count: 49
+ Basinhop count: 1
+
+
+adaptive stepsize: acceptance rate 0.494845 target 0.500000 new stepsize 0.254187 old stepsize 0.28243
+basinhopping step 97: f 1.9427 trial_f 1.9427 accepted 1  lowest_f 1.92513
+ Fit Status: False
+ Force threshold: 0.4694
+ Lowest RMSE: 0.0799
+ Current RMSE: 0.0803
+ Accepted count: 50
+ Basinhop count: 2
+
+
+adaptive stepsize: acceptance rate 0.500000 target 0.500000 new stepsize 0.228768 old stepsize 0.254187
+basinhopping step 98: f 1.91614 trial_f 1.91614 accepted 1  lowest_f 1.91614
+found new global minimum on step 98 with function value 1.91614
+ Fit Status: False
+ Force threshold: 0.4694
+ Lowest RMSE: 0.0798
+ Current RMSE: 0.0798
+ Accepted count: 51
+ Basinhop count: 0
+
+
+adaptive stepsize: acceptance rate 0.505051 target 0.500000 new stepsize 0.254187 old stepsize 0.228768
+basinhopping step 99: f 1.95084 trial_f 1.95084 accepted 1  lowest_f 1.91614
+ Fit Status: False
+ Force threshold: 0.4694
+ Lowest RMSE: 0.0798
+ Current RMSE: 0.0805
+ Accepted count: 52
+ Basinhop count: 1
+
+
+adaptive stepsize: acceptance rate 0.510000 target 0.500000 new stepsize 0.28243 old stepsize 0.254187
+basinhopping step 100: f 1.95712 trial_f 1.95712 accepted 1  lowest_f 1.91614
+ Fit Status: False
+ Force threshold: 0.4694
+ Lowest RMSE: 0.0798
+ Current RMSE: 0.0806
+ Accepted count: 53
+ Basinhop count: 2
+
+
+adaptive stepsize: acceptance rate 0.514851 target 0.500000 new stepsize 0.313811 old stepsize 0.28243
+basinhopping step 101: f 1.91675 trial_f 1.91675 accepted 1  lowest_f 1.91614
+ Fit Status: False
+ Force threshold: 0.4694
+ Lowest RMSE: 0.0798
+ Current RMSE: 0.0798
+ Accepted count: 54
+ Basinhop count: 3
+
+
+adaptive stepsize: acceptance rate 0.519608 target 0.500000 new stepsize 0.348678 old stepsize 0.313811
+basinhopping step 102: f 1.91675 trial_f 3.36404 accepted 0  lowest_f 1.91614
+ Fit Status: False
+ Force threshold: 0.4694
+ Lowest RMSE: 0.0798
+ Current RMSE: 0.1057
+ Accepted count: 54
+ Basinhop count: 4
+
+
+adaptive stepsize: acceptance rate 0.514563 target 0.500000 new stepsize 0.38742 old stepsize 0.348678
+basinhopping step 103: f 2.47493 trial_f 2.47493 accepted 1  lowest_f 1.91614
+ Fit Status: False
+ Force threshold: 0.4694
+ Lowest RMSE: 0.0798
+ Current RMSE: 0.0906
+ Accepted count: 55
+ Basinhop count: 5
+
+
+adaptive stepsize: acceptance rate 0.519231 target 0.500000 new stepsize 0.430467 old stepsize 0.38742
+basinhopping step 104: f 1.90875 trial_f 1.90875 accepted 1  lowest_f 1.90875
+found new global minimum on step 104 with function value 1.90875
+ Fit Status: False
+ Force threshold: 0.4694
+ Lowest RMSE: 0.0796
+ Current RMSE: 0.0796
+ Accepted count: 56
+ Basinhop count: 0
+
+
+adaptive stepsize: acceptance rate 0.523810 target 0.500000 new stepsize 0.478297 old stepsize 0.430467
+basinhopping step 105: f 1.90875 trial_f 2.23541 accepted 0  lowest_f 1.90875
+ Fit Status: False
+ Force threshold: 0.4694
+ Lowest RMSE: 0.0796
+ Current RMSE: 0.0861
+ Accepted count: 56
+ Basinhop count: 1
+
+
+adaptive stepsize: acceptance rate 0.518868 target 0.500000 new stepsize 0.531441 old stepsize 0.478297
+basinhopping step 106: f 1.93118 trial_f 1.93118 accepted 1  lowest_f 1.90875
+ Fit Status: False
+ Force threshold: 0.4694
+ Lowest RMSE: 0.0796
+ Current RMSE: 0.0801
+ Accepted count: 57
+ Basinhop count: 2
+
+
+adaptive stepsize: acceptance rate 0.523364 target 0.500000 new stepsize 0.59049 old stepsize 0.531441
+basinhopping step 107: f 1.93118 trial_f 2.81222 accepted 0  lowest_f 1.90875
+ Fit Status: False
+ Force threshold: 0.4694
+ Lowest RMSE: 0.0796
+ Current RMSE: 0.0966
+ Accepted count: 57
+ Basinhop count: 3
+
+
+adaptive stepsize: acceptance rate 0.518519 target 0.500000 new stepsize 0.6561 old stepsize 0.59049
+basinhopping step 108: f 1.94971 trial_f 1.94971 accepted 1  lowest_f 1.90875
+ Fit Status: False
+ Force threshold: 0.4694
+ Lowest RMSE: 0.0796
+ Current RMSE: 0.0805
+ Accepted count: 58
+ Basinhop count: 4
+
+
+adaptive stepsize: acceptance rate 0.522936 target 0.500000 new stepsize 0.729 old stepsize 0.6561
+basinhopping step 109: f 2.82855 trial_f 2.82855 accepted 1  lowest_f 1.90875
+ Fit Status: False
+ Force threshold: 0.4694
+ Lowest RMSE: 0.0796
+ Current RMSE: 0.0969
+ Accepted count: 59
+ Basinhop count: 5
+
+
+adaptive stepsize: acceptance rate 0.527273 target 0.500000 new stepsize 0.81 old stepsize 0.729
+basinhopping step 110: f 2.82855 trial_f 17.3546 accepted 0  lowest_f 1.90875
+ Fit Status: False
+ Force threshold: 0.4694
+ Lowest RMSE: 0.0796
+ Current RMSE: 0.2400
+ Accepted count: 59
+ Basinhop count: 6
+
+
+adaptive stepsize: acceptance rate 0.522523 target 0.500000 new stepsize 0.9 old stepsize 0.81
+basinhopping step 111: f 2.82855 trial_f 128.494 accepted 0  lowest_f 1.90875
+ Fit Status: False
+ Force threshold: 0.4694
+ Lowest RMSE: 0.0796
+ Current RMSE: 0.6531
+ Accepted count: 59
+ Basinhop count: 7
+
+
+adaptive stepsize: acceptance rate 0.517857 target 0.500000 new stepsize 1 old stepsize 0.9
+basinhopping step 112: f 2.82855 trial_f 5.67485 accepted 0  lowest_f 1.90875
+ Fit Status: False
+ Force threshold: 0.4694
+ Lowest RMSE: 0.0796
+ Current RMSE: 0.1373
+ Accepted count: 59
+ Basinhop count: 8
+
+
+adaptive stepsize: acceptance rate 0.513274 target 0.500000 new stepsize 1.11111 old stepsize 1
+basinhopping step 113: f 3.33121 trial_f 3.33121 accepted 1  lowest_f 1.90875
+ Fit Status: False
+ Force threshold: 0.4694
+ Lowest RMSE: 0.0796
+ Current RMSE: 0.1052
+ Accepted count: 60
+ Basinhop count: 9
+
+
+adaptive stepsize: acceptance rate 0.517544 target 0.500000 new stepsize 1.23457 old stepsize 1.11111
+basinhopping step 114: f 3.34701 trial_f 3.34701 accepted 1  lowest_f 1.90875
+ Fit Status: False
+ Force threshold: 0.4694
+ Lowest RMSE: 0.0796
+ Current RMSE: 0.1054
+ Accepted count: 61
+ Basinhop count: 10
+
+
+adaptive stepsize: acceptance rate 0.521739 target 0.500000 new stepsize 1.37174 old stepsize 1.23457
+basinhopping step 115: f 3.34701 trial_f 137.139 accepted 0  lowest_f 1.90875
+ Fit Status: False
+ Force threshold: 0.4694
+ Lowest RMSE: 0.0796
+ Current RMSE: 0.6748
+ Accepted count: 61
+ Basinhop count: 11
+
+
+adaptive stepsize: acceptance rate 0.517241 target 0.500000 new stepsize 1.52416 old stepsize 1.37174
+basinhopping step 116: f 3.35111 trial_f 3.35111 accepted 1  lowest_f 1.90875
+ Fit Status: False
+ Force threshold: 0.4694
+ Lowest RMSE: 0.0796
+ Current RMSE: 0.1055
+ Accepted count: 62
+ Basinhop count: 12
+
+
+adaptive stepsize: acceptance rate 0.521368 target 0.500000 new stepsize 1.69351 old stepsize 1.52416
+basinhopping step 117: f 3.35111 trial_f 7.23785 accepted 0  lowest_f 1.90875
+ Fit Status: False
+ Force threshold: 0.4694
+ Lowest RMSE: 0.0796
+ Current RMSE: 0.1550
+ Accepted count: 62
+ Basinhop count: 13
+
+
+adaptive stepsize: acceptance rate 0.516949 target 0.500000 new stepsize 1.88168 old stepsize 1.69351
+basinhopping step 118: f 3.35111 trial_f 129.202 accepted 0  lowest_f 1.90875
+ Fit Status: False
+ Force threshold: 0.4694
+ Lowest RMSE: 0.0796
+ Current RMSE: 0.6549
+ Accepted count: 62
+ Basinhop count: 14
+
+
+adaptive stepsize: acceptance rate 0.512605 target 0.500000 new stepsize 2.09075 old stepsize 1.88168
+basinhopping step 119: f 2.22433 trial_f 2.22433 accepted 1  lowest_f 1.90875
+ Fit Status: False
+ Force threshold: 0.4694
+ Lowest RMSE: 0.0796
+ Current RMSE: 0.0859
+ Accepted count: 63
+ Basinhop count: 15
+
+
+adaptive stepsize: acceptance rate 0.516667 target 0.500000 new stepsize 2.32306 old stepsize 2.09075
+basinhopping step 120: f 2.50473 trial_f 2.50473 accepted 1  lowest_f 1.90875
+ Fit Status: False
+ Force threshold: 0.4694
+ Lowest RMSE: 0.0796
+ Current RMSE: 0.0912
+ Accepted count: 64
+ Basinhop count: 16
+
+
+adaptive stepsize: acceptance rate 0.520661 target 0.500000 new stepsize 2.58117 old stepsize 2.32306
+basinhopping step 121: f 1.95418 trial_f 1.95418 accepted 1  lowest_f 1.90875
+ Fit Status: False
+ Force threshold: 0.4694
+ Lowest RMSE: 0.0796
+ Current RMSE: 0.0805
+ Accepted count: 65
+ Basinhop count: 17
+
+
+adaptive stepsize: acceptance rate 0.524590 target 0.500000 new stepsize 2.86797 old stepsize 2.58117
+basinhopping step 122: f 1.95418 trial_f 7.54634 accepted 0  lowest_f 1.90875
+ Fit Status: False
+ Force threshold: 0.4694
+ Lowest RMSE: 0.0796
+ Current RMSE: 0.1583
+ Accepted count: 65
+ Basinhop count: 18
+
+
+adaptive stepsize: acceptance rate 0.520325 target 0.500000 new stepsize 3.18664 old stepsize 2.86797
+basinhopping step 123: f 1.95418 trial_f 7.52405 accepted 0  lowest_f 1.90875
+ Fit Status: False
+ Force threshold: 0.4694
+ Lowest RMSE: 0.0796
+ Current RMSE: 0.1580
+ Accepted count: 65
+ Basinhop count: 19
+
+
+adaptive stepsize: acceptance rate 0.516129 target 0.500000 new stepsize 3.54071 old stepsize 3.18664
+basinhopping step 124: f 1.95418 trial_f 2.7496 accepted 0  lowest_f 1.90875
+ Fit Status: False
+ Force threshold: 0.4694
+ Lowest RMSE: 0.0796
+ Current RMSE: 0.0955
+ Accepted count: 65
+ Basinhop count: 20
+
+
+adaptive stepsize: acceptance rate 0.512000 target 0.500000 new stepsize 3.93412 old stepsize 3.54071
+basinhopping step 125: f 1.95418 trial_f 5.96478 accepted 0  lowest_f 1.90875
+ Fit Status: False
+ Force threshold: 0.4694
+ Lowest RMSE: 0.0796
+ Current RMSE: 0.1407
+ Accepted count: 65
+ Basinhop count: 21
+
+
+adaptive stepsize: acceptance rate 0.507937 target 0.500000 new stepsize 4.37124 old stepsize 3.93412
+basinhopping step 126: f 1.95418 trial_f 3.11316 accepted 0  lowest_f 1.90875
+ Fit Status: False
+ Force threshold: 0.4694
+ Lowest RMSE: 0.0796
+ Current RMSE: 0.1017
+ Accepted count: 65
+ Basinhop count: 22
+
+
+adaptive stepsize: acceptance rate 0.503937 target 0.500000 new stepsize 4.85694 old stepsize 4.37124
+basinhopping step 127: f 1.95418 trial_f 420656 accepted 0  lowest_f 1.90875
+ Fit Status: False
+ Force threshold: 0.4694
+ Lowest RMSE: 0.0796
+ Current RMSE: 37.3703
+ Accepted count: 65
+ Basinhop count: 23
+
+
+adaptive stepsize: acceptance rate 0.500000 target 0.500000 new stepsize 4.37124 old stepsize 4.85694
+basinhopping step 128: f 1.95418 trial_f 128.636 accepted 0  lowest_f 1.90875
+ Fit Status: False
+ Force threshold: 0.4694
+ Lowest RMSE: 0.0796
+ Current RMSE: 0.6535
+ Accepted count: 65
+ Basinhop count: 24
+
+
+adaptive stepsize: acceptance rate 0.496124 target 0.500000 new stepsize 3.93412 old stepsize 4.37124
+basinhopping step 129: f 1.95418 trial_f 3.37987 accepted 0  lowest_f 1.90875
+ Fit Status: False
+ Force threshold: 0.4694
+ Lowest RMSE: 0.0796
+ Current RMSE: 0.1059
+ Accepted count: 65
+ Basinhop count: 25
+
+
+adaptive stepsize: acceptance rate 0.492308 target 0.500000 new stepsize 3.54071 old stepsize 3.93412
+basinhopping step 130: f 2.33512 trial_f 2.33512 accepted 1  lowest_f 1.90875
+ Fit Status: False
+ Force threshold: 0.4694
+ Lowest RMSE: 0.0796
+ Current RMSE: 0.0880
+ Accepted count: 66
+ Basinhop count: 26
+
+
+adaptive stepsize: acceptance rate 0.496183 target 0.500000 new stepsize 3.18664 old stepsize 3.54071
+basinhopping step 131: f 2.33512 trial_f 267307 accepted 0  lowest_f 1.90875
+ Fit Status: False
+ Force threshold: 0.4694
+ Lowest RMSE: 0.0796
+ Current RMSE: 29.7898
+ Accepted count: 66
+ Basinhop count: 27
+
+
+adaptive stepsize: acceptance rate 0.492424 target 0.500000 new stepsize 2.86797 old stepsize 3.18664
+basinhopping step 132: f 2.33512 trial_f 140.631 accepted 0  lowest_f 1.90875
+ Fit Status: False
+ Force threshold: 0.4694
+ Lowest RMSE: 0.0796
+ Current RMSE: 0.6833
+ Accepted count: 66
+ Basinhop count: 28
+
+
+adaptive stepsize: acceptance rate 0.488722 target 0.500000 new stepsize 2.58117 old stepsize 2.86797
+basinhopping step 133: f 2.33512 trial_f 2.76764 accepted 0  lowest_f 1.90875
+ Fit Status: False
+ Force threshold: 0.4694
+ Lowest RMSE: 0.0796
+ Current RMSE: 0.0959
+ Accepted count: 66
+ Basinhop count: 29
+
+
+adaptive stepsize: acceptance rate 0.485075 target 0.500000 new stepsize 2.32306 old stepsize 2.58117
+basinhopping step 134: f 2.33512 trial_f 5.6386 accepted 0  lowest_f 1.90875
+ Fit Status: False
+ Force threshold: 0.4694
+ Lowest RMSE: 0.0796
+ Current RMSE: 0.1368
+ Accepted count: 66
+ Basinhop count: 30
+
+
+adaptive stepsize: acceptance rate 0.481481 target 0.500000 new stepsize 2.09075 old stepsize 2.32306
+basinhopping step 135: f 2.33512 trial_f 17.2878 accepted 0  lowest_f 1.90875
+ Fit Status: False
+ Force threshold: 0.4694
+ Lowest RMSE: 0.0796
+ Current RMSE: 0.2396
+ Accepted count: 66
+ Basinhop count: 31
+
+
+adaptive stepsize: acceptance rate 0.477941 target 0.500000 new stepsize 1.88168 old stepsize 2.09075
+basinhopping step 136: f 2.33512 trial_f 131.726 accepted 0  lowest_f 1.90875
+ Fit Status: False
+ Force threshold: 0.4694
+ Lowest RMSE: 0.0796
+ Current RMSE: 0.6613
+ Accepted count: 66
+ Basinhop count: 32
+
+
+adaptive stepsize: acceptance rate 0.474453 target 0.500000 new stepsize 1.69351 old stepsize 1.88168
+basinhopping step 137: f 2.33512 trial_f 5.98229 accepted 0  lowest_f 1.90875
+ Fit Status: False
+ Force threshold: 0.4694
+ Lowest RMSE: 0.0796
+ Current RMSE: 0.1409
+ Accepted count: 66
+ Basinhop count: 33
+
+
+adaptive stepsize: acceptance rate 0.471014 target 0.500000 new stepsize 1.52416 old stepsize 1.69351
+basinhopping step 138: f 2.33512 trial_f 5.66991 accepted 0  lowest_f 1.90875
+ Fit Status: False
+ Force threshold: 0.4694
+ Lowest RMSE: 0.0796
+ Current RMSE: 0.1372
+ Accepted count: 66
+ Basinhop count: 34
+
+
+adaptive stepsize: acceptance rate 0.467626 target 0.500000 new stepsize 1.37174 old stepsize 1.52416
+basinhopping step 139: f 2.33512 trial_f 5.53909 accepted 0  lowest_f 1.90875
+ Fit Status: False
+ Force threshold: 0.4694
+ Lowest RMSE: 0.0796
+ Current RMSE: 0.1356
+ Accepted count: 66
+ Basinhop count: 35
+
+
+adaptive stepsize: acceptance rate 0.464286 target 0.500000 new stepsize 1.23457 old stepsize 1.37174
+basinhopping step 140: f 2.33512 trial_f 18.434 accepted 0  lowest_f 1.90875
+ Fit Status: False
+ Force threshold: 0.4694
+ Lowest RMSE: 0.0796
+ Current RMSE: 0.2474
+ Accepted count: 66
+ Basinhop count: 36
+
+
+adaptive stepsize: acceptance rate 0.460993 target 0.500000 new stepsize 1.11111 old stepsize 1.23457
+basinhopping step 141: f 2.33512 trial_f 4.41106 accepted 0  lowest_f 1.90875
+ Fit Status: False
+ Force threshold: 0.4694
+ Lowest RMSE: 0.0796
+ Current RMSE: 0.1210
+ Accepted count: 66
+ Basinhop count: 37
+
+
+adaptive stepsize: acceptance rate 0.457746 target 0.500000 new stepsize 1 old stepsize 1.11111
+basinhopping step 142: f 2.33512 trial_f 7.22926 accepted 0  lowest_f 1.90875
+ Fit Status: False
+ Force threshold: 0.4694
+ Lowest RMSE: 0.0796
+ Current RMSE: 0.1549
+ Accepted count: 66
+ Basinhop count: 38
+
+
+adaptive stepsize: acceptance rate 0.454545 target 0.500000 new stepsize 0.9 old stepsize 1
+basinhopping step 143: f 2.33512 trial_f 3.8673 accepted 0  lowest_f 1.90875
+ Fit Status: False
+ Force threshold: 0.4694
+ Lowest RMSE: 0.0796
+ Current RMSE: 0.1133
+ Accepted count: 66
+ Basinhop count: 39
+
+
+adaptive stepsize: acceptance rate 0.451389 target 0.500000 new stepsize 0.81 old stepsize 0.9
+basinhopping step 144: f 1.93854 trial_f 1.93854 accepted 1  lowest_f 1.90875
+ Fit Status: False
+ Force threshold: 0.4694
+ Lowest RMSE: 0.0796
+ Current RMSE: 0.0802
+ Accepted count: 67
+ Basinhop count: 40
+
+
+adaptive stepsize: acceptance rate 0.455172 target 0.500000 new stepsize 0.729 old stepsize 0.81
+basinhopping step 145: f 1.91767 trial_f 1.91767 accepted 1  lowest_f 1.90875
+ Fit Status: False
+ Force threshold: 0.4694
+ Lowest RMSE: 0.0796
+ Current RMSE: 0.0798
+ Accepted count: 68
+ Basinhop count: 41
+
+
+adaptive stepsize: acceptance rate 0.458904 target 0.500000 new stepsize 0.6561 old stepsize 0.729
+basinhopping step 146: f 1.97727 trial_f 1.97727 accepted 1  lowest_f 1.90875
+ Fit Status: False
+ Force threshold: 0.4694
+ Lowest RMSE: 0.0796
+ Current RMSE: 0.0810
+ Accepted count: 69
+ Basinhop count: 42
+
+
+adaptive stepsize: acceptance rate 0.462585 target 0.500000 new stepsize 0.59049 old stepsize 0.6561
+basinhopping step 147: f 1.91748 trial_f 1.91748 accepted 1  lowest_f 1.90875
+ Fit Status: False
+ Force threshold: 0.4694
+ Lowest RMSE: 0.0796
+ Current RMSE: 0.0798
+ Accepted count: 70
+ Basinhop count: 43
+
+
+adaptive stepsize: acceptance rate 0.466216 target 0.500000 new stepsize 0.531441 old stepsize 0.59049
+basinhopping step 148: f 1.92421 trial_f 1.92421 accepted 1  lowest_f 1.90875
+ Fit Status: False
+ Force threshold: 0.4694
+ Lowest RMSE: 0.0796
+ Current RMSE: 0.0799
+ Accepted count: 71
+ Basinhop count: 44
+
+
+adaptive stepsize: acceptance rate 0.469799 target 0.500000 new stepsize 0.478297 old stepsize 0.531441
+basinhopping step 149: f 1.90014 trial_f 1.90014 accepted 1  lowest_f 1.90014
+found new global minimum on step 149 with function value 1.90014
+ Fit Status: False
+ Force threshold: 0.4694
+ Lowest RMSE: 0.0794
+ Current RMSE: 0.0794
+ Accepted count: 72
+ Basinhop count: 0
+
+
+adaptive stepsize: acceptance rate 0.473333 target 0.500000 new stepsize 0.430467 old stepsize 0.478297
+basinhopping step 150: f 1.90631 trial_f 1.90631 accepted 1  lowest_f 1.90014
+ Fit Status: False
+ Force threshold: 0.4694
+ Lowest RMSE: 0.0794
+ Current RMSE: 0.0796
+ Accepted count: 73
+ Basinhop count: 1
+
+
+adaptive stepsize: acceptance rate 0.476821 target 0.500000 new stepsize 0.38742 old stepsize 0.430467
+basinhopping step 151: f 1.90631 trial_f 2.47635 accepted 0  lowest_f 1.90014
+ Fit Status: False
+ Force threshold: 0.4694
+ Lowest RMSE: 0.0794
+ Current RMSE: 0.0907
+ Accepted count: 73
+ Basinhop count: 2
+
+
+adaptive stepsize: acceptance rate 0.473684 target 0.500000 new stepsize 0.348678 old stepsize 0.38742
+basinhopping step 152: f 1.90031 trial_f 1.90031 accepted 1  lowest_f 1.90014
+ Fit Status: False
+ Force threshold: 0.4694
+ Lowest RMSE: 0.0794
+ Current RMSE: 0.0794
+ Accepted count: 74
+ Basinhop count: 3
+
+
+adaptive stepsize: acceptance rate 0.477124 target 0.500000 new stepsize 0.313811 old stepsize 0.348678
+basinhopping step 153: f 1.90045 trial_f 1.90045 accepted 1  lowest_f 1.90014
+ Fit Status: False
+ Force threshold: 0.4694
+ Lowest RMSE: 0.0794
+ Current RMSE: 0.0794
+ Accepted count: 75
+ Basinhop count: 4
+
+
+adaptive stepsize: acceptance rate 0.480519 target 0.500000 new stepsize 0.28243 old stepsize 0.313811
+basinhopping step 154: f 1.9059 trial_f 1.9059 accepted 1  lowest_f 1.90014
+ Fit Status: False
+ Force threshold: 0.4694
+ Lowest RMSE: 0.0794
+ Current RMSE: 0.0795
+ Accepted count: 76
+ Basinhop count: 5
+
+
+adaptive stepsize: acceptance rate 0.483871 target 0.500000 new stepsize 0.254187 old stepsize 0.28243
+basinhopping step 155: f 1.90578 trial_f 1.90578 accepted 1  lowest_f 1.90014
+ Fit Status: False
+ Force threshold: 0.4694
+ Lowest RMSE: 0.0794
+ Current RMSE: 0.0795
+ Accepted count: 77
+ Basinhop count: 6
+
+
+adaptive stepsize: acceptance rate 0.487179 target 0.500000 new stepsize 0.228768 old stepsize 0.254187
+basinhopping step 156: f 2.45877 trial_f 2.45877 accepted 1  lowest_f 1.90014
+ Fit Status: False
+ Force threshold: 0.4694
+ Lowest RMSE: 0.0794
+ Current RMSE: 0.0903
+ Accepted count: 78
+ Basinhop count: 7
+
+
+adaptive stepsize: acceptance rate 0.490446 target 0.500000 new stepsize 0.205891 old stepsize 0.228768
+basinhopping step 157: f 2.48609 trial_f 2.48609 accepted 1  lowest_f 1.90014
+ Fit Status: False
+ Force threshold: 0.4694
+ Lowest RMSE: 0.0794
+ Current RMSE: 0.0908
+ Accepted count: 79
+ Basinhop count: 8
+
+
+adaptive stepsize: acceptance rate 0.493671 target 0.500000 new stepsize 0.185302 old stepsize 0.205891
+basinhopping step 158: f 1.93761 trial_f 1.93761 accepted 1  lowest_f 1.90014
+ Fit Status: False
+ Force threshold: 0.4694
+ Lowest RMSE: 0.0794
+ Current RMSE: 0.0802
+ Accepted count: 80
+ Basinhop count: 9
+
+
+adaptive stepsize: acceptance rate 0.496855 target 0.500000 new stepsize 0.166772 old stepsize 0.185302
+basinhopping step 159: f 1.93795 trial_f 1.93795 accepted 1  lowest_f 1.90014
+ Fit Status: False
+ Force threshold: 0.4694
+ Lowest RMSE: 0.0794
+ Current RMSE: 0.0802
+ Accepted count: 81
+ Basinhop count: 10
+
+
+adaptive stepsize: acceptance rate 0.500000 target 0.500000 new stepsize 0.150095 old stepsize 0.166772
+basinhopping step 160: f 1.94124 trial_f 1.94124 accepted 1  lowest_f 1.90014
+ Fit Status: False
+ Force threshold: 0.4694
+ Lowest RMSE: 0.0794
+ Current RMSE: 0.0803
+ Accepted count: 82
+ Basinhop count: 11
+
+
+adaptive stepsize: acceptance rate 0.503106 target 0.500000 new stepsize 0.166772 old stepsize 0.150095
+basinhopping step 161: f 1.90592 trial_f 1.90592 accepted 1  lowest_f 1.90014
+ Fit Status: False
+ Force threshold: 0.4694
+ Lowest RMSE: 0.0794
+ Current RMSE: 0.0795
+ Accepted count: 83
+ Basinhop count: 12
+
+
+adaptive stepsize: acceptance rate 0.506173 target 0.500000 new stepsize 0.185302 old stepsize 0.166772
+basinhopping step 162: f 3.34 trial_f 3.34 accepted 1  lowest_f 1.90014
+ Fit Status: False
+ Force threshold: 0.4694
+ Lowest RMSE: 0.0794
+ Current RMSE: 0.1053
+ Accepted count: 84
+ Basinhop count: 13
+
+
+adaptive stepsize: acceptance rate 0.509202 target 0.500000 new stepsize 0.205891 old stepsize 0.185302
+basinhopping step 163: f 1.93797 trial_f 1.93797 accepted 1  lowest_f 1.90014
+ Fit Status: False
+ Force threshold: 0.4694
+ Lowest RMSE: 0.0794
+ Current RMSE: 0.0802
+ Accepted count: 85
+ Basinhop count: 14
+
+
+adaptive stepsize: acceptance rate 0.512195 target 0.500000 new stepsize 0.228768 old stepsize 0.205891
+basinhopping step 164: f 1.91704 trial_f 1.91704 accepted 1  lowest_f 1.90014
+ Fit Status: False
+ Force threshold: 0.4694
+ Lowest RMSE: 0.0794
+ Current RMSE: 0.0798
+ Accepted count: 86
+ Basinhop count: 15
+
+
+adaptive stepsize: acceptance rate 0.515152 target 0.500000 new stepsize 0.254187 old stepsize 0.228768
+basinhopping step 165: f 1.92045 trial_f 1.92045 accepted 1  lowest_f 1.90014
+ Fit Status: False
+ Force threshold: 0.4694
+ Lowest RMSE: 0.0794
+ Current RMSE: 0.0798
+ Accepted count: 87
+ Basinhop count: 16
+
+
+adaptive stepsize: acceptance rate 0.518072 target 0.500000 new stepsize 0.28243 old stepsize 0.254187
+basinhopping step 166: f 3.36374 trial_f 3.36374 accepted 1  lowest_f 1.90014
+ Fit Status: False
+ Force threshold: 0.4694
+ Lowest RMSE: 0.0794
+ Current RMSE: 0.1057
+ Accepted count: 88
+ Basinhop count: 17
+
+
+adaptive stepsize: acceptance rate 0.520958 target 0.500000 new stepsize 0.313811 old stepsize 0.28243
+basinhopping step 167: f 1.94895 trial_f 1.94895 accepted 1  lowest_f 1.90014
+ Fit Status: False
+ Force threshold: 0.4694
+ Lowest RMSE: 0.0794
+ Current RMSE: 0.0804
+ Accepted count: 89
+ Basinhop count: 18
+
+
+adaptive stepsize: acceptance rate 0.523810 target 0.500000 new stepsize 0.348678 old stepsize 0.313811
+basinhopping step 168: f 1.92311 trial_f 1.92311 accepted 1  lowest_f 1.90014
+ Fit Status: False
+ Force threshold: 0.4694
+ Lowest RMSE: 0.0794
+ Current RMSE: 0.0799
+ Accepted count: 90
+ Basinhop count: 19
+
+
+adaptive stepsize: acceptance rate 0.526627 target 0.500000 new stepsize 0.38742 old stepsize 0.348678
+basinhopping step 169: f 2.50109 trial_f 2.50109 accepted 1  lowest_f 1.90014
+ Fit Status: False
+ Force threshold: 0.4694
+ Lowest RMSE: 0.0794
+ Current RMSE: 0.0911
+ Accepted count: 91
+ Basinhop count: 20
+
+
+adaptive stepsize: acceptance rate 0.529412 target 0.500000 new stepsize 0.430467 old stepsize 0.38742
+basinhopping step 170: f 1.95461 trial_f 1.95461 accepted 1  lowest_f 1.90014
+ Fit Status: False
+ Force threshold: 0.4694
+ Lowest RMSE: 0.0794
+ Current RMSE: 0.0806
+ Accepted count: 92
+ Basinhop count: 21
+
+
+adaptive stepsize: acceptance rate 0.532164 target 0.500000 new stepsize 0.478297 old stepsize 0.430467
+basinhopping step 171: f 1.95461 trial_f 5.65815 accepted 0  lowest_f 1.90014
+ Fit Status: False
+ Force threshold: 0.4694
+ Lowest RMSE: 0.0794
+ Current RMSE: 0.1371
+ Accepted count: 92
+ Basinhop count: 22
+
+
+adaptive stepsize: acceptance rate 0.529070 target 0.500000 new stepsize 0.531441 old stepsize 0.478297
+basinhopping step 172: f 1.95461 trial_f 2.44935 accepted 0  lowest_f 1.90014
+ Fit Status: False
+ Force threshold: 0.4694
+ Lowest RMSE: 0.0794
+ Current RMSE: 0.0902
+ Accepted count: 92
+ Basinhop count: 23
+
+
+adaptive stepsize: acceptance rate 0.526012 target 0.500000 new stepsize 0.59049 old stepsize 0.531441
+basinhopping step 173: f 1.92389 trial_f 1.92389 accepted 1  lowest_f 1.90014
+ Fit Status: False
+ Force threshold: 0.4694
+ Lowest RMSE: 0.0794
+ Current RMSE: 0.0799
+ Accepted count: 93
+ Basinhop count: 24
+
+
+adaptive stepsize: acceptance rate 0.528736 target 0.500000 new stepsize 0.6561 old stepsize 0.59049
+basinhopping step 174: f 2.33557 trial_f 2.33557 accepted 1  lowest_f 1.90014
+ Fit Status: False
+ Force threshold: 0.4694
+ Lowest RMSE: 0.0794
+ Current RMSE: 0.0881
+ Accepted count: 94
+ Basinhop count: 25
+
+
+adaptive stepsize: acceptance rate 0.531429 target 0.500000 new stepsize 0.729 old stepsize 0.6561
+basinhopping step 175: f 1.95493 trial_f 1.95493 accepted 1  lowest_f 1.90014
+ Fit Status: False
+ Force threshold: 0.4694
+ Lowest RMSE: 0.0794
+ Current RMSE: 0.0806
+ Accepted count: 95
+ Basinhop count: 26
+
+
+adaptive stepsize: acceptance rate 0.534091 target 0.500000 new stepsize 0.81 old stepsize 0.729
+basinhopping step 176: f 1.95493 trial_f 2.78241 accepted 0  lowest_f 1.90014
+ Fit Status: False
+ Force threshold: 0.4694
+ Lowest RMSE: 0.0794
+ Current RMSE: 0.0961
+ Accepted count: 95
+ Basinhop count: 27
+
+
+adaptive stepsize: acceptance rate 0.531073 target 0.500000 new stepsize 0.9 old stepsize 0.81
+basinhopping step 177: f 1.95493 trial_f 4.22087 accepted 0  lowest_f 1.90014
+ Fit Status: False
+ Force threshold: 0.4694
+ Lowest RMSE: 0.0794
+ Current RMSE: 0.1184
+ Accepted count: 95
+ Basinhop count: 28
+
+
+adaptive stepsize: acceptance rate 0.528090 target 0.500000 new stepsize 1 old stepsize 0.9
+basinhopping step 178: f 1.95493 trial_f 2.84923 accepted 0  lowest_f 1.90014
+ Fit Status: False
+ Force threshold: 0.4694
+ Lowest RMSE: 0.0794
+ Current RMSE: 0.0973
+ Accepted count: 95
+ Basinhop count: 29
+
+
+adaptive stepsize: acceptance rate 0.525140 target 0.500000 new stepsize 1.11111 old stepsize 1
+basinhopping step 179: f 2.33434 trial_f 2.33434 accepted 1  lowest_f 1.90014
+ Fit Status: False
+ Force threshold: 0.4694
+ Lowest RMSE: 0.0794
+ Current RMSE: 0.0880
+ Accepted count: 96
+ Basinhop count: 30
+
+
+adaptive stepsize: acceptance rate 0.527778 target 0.500000 new stepsize 1.23457 old stepsize 1.11111
+basinhopping step 180: f 2.33434 trial_f 7.22921 accepted 0  lowest_f 1.90014
+ Fit Status: False
+ Force threshold: 0.4694
+ Lowest RMSE: 0.0794
+ Current RMSE: 0.1549
+ Accepted count: 96
+ Basinhop count: 31
+
+
+adaptive stepsize: acceptance rate 0.524862 target 0.500000 new stepsize 1.37174 old stepsize 1.23457
+basinhopping step 181: f 2.26556 trial_f 2.26556 accepted 1  lowest_f 1.90014
+ Fit Status: False
+ Force threshold: 0.4694
+ Lowest RMSE: 0.0794
+ Current RMSE: 0.0867
+ Accepted count: 97
+ Basinhop count: 32
+
+
+adaptive stepsize: acceptance rate 0.527473 target 0.500000 new stepsize 1.52416 old stepsize 1.37174
+basinhopping step 182: f 2.26556 trial_f 4.22179 accepted 0  lowest_f 1.90014
+ Fit Status: False
+ Force threshold: 0.4694
+ Lowest RMSE: 0.0794
+ Current RMSE: 0.1184
+ Accepted count: 97
+ Basinhop count: 33
+
+
+adaptive stepsize: acceptance rate 0.524590 target 0.500000 new stepsize 1.69351 old stepsize 1.52416
+basinhopping step 183: f 2.26556 trial_f 4.20096 accepted 0  lowest_f 1.90014
+ Fit Status: False
+ Force threshold: 0.4694
+ Lowest RMSE: 0.0794
+ Current RMSE: 0.1181
+ Accepted count: 97
+ Basinhop count: 34
+
+
+adaptive stepsize: acceptance rate 0.521739 target 0.500000 new stepsize 1.88168 old stepsize 1.69351
+basinhopping step 184: f 1.93944 trial_f 1.93944 accepted 1  lowest_f 1.90014
+ Fit Status: False
+ Force threshold: 0.4694
+ Lowest RMSE: 0.0794
+ Current RMSE: 0.0802
+ Accepted count: 98
+ Basinhop count: 35
+
+
+adaptive stepsize: acceptance rate 0.524324 target 0.500000 new stepsize 2.09075 old stepsize 1.88168
+basinhopping step 185: f 1.93944 trial_f 2.51863 accepted 0  lowest_f 1.90014
+ Fit Status: False
+ Force threshold: 0.4694
+ Lowest RMSE: 0.0794
+ Current RMSE: 0.0914
+ Accepted count: 98
+ Basinhop count: 36
+
+
+adaptive stepsize: acceptance rate 0.521505 target 0.500000 new stepsize 2.32306 old stepsize 2.09075
+basinhopping step 186: f 1.93944 trial_f 128.637 accepted 0  lowest_f 1.90014
+ Fit Status: False
+ Force threshold: 0.4694
+ Lowest RMSE: 0.0794
+ Current RMSE: 0.6535
+ Accepted count: 98
+ Basinhop count: 37
+
+
+adaptive stepsize: acceptance rate 0.518717 target 0.500000 new stepsize 2.58117 old stepsize 2.32306
+basinhopping step 187: f 1.93944 trial_f 2.86681 accepted 0  lowest_f 1.90014
+ Fit Status: False
+ Force threshold: 0.4694
+ Lowest RMSE: 0.0794
+ Current RMSE: 0.0976
+ Accepted count: 98
+ Basinhop count: 38
+
+
+adaptive stepsize: acceptance rate 0.515957 target 0.500000 new stepsize 2.86797 old stepsize 2.58117
+basinhopping step 188: f 1.93944 trial_f 16.9773 accepted 0  lowest_f 1.90014
+ Fit Status: False
+ Force threshold: 0.4694
+ Lowest RMSE: 0.0794
+ Current RMSE: 0.2374
+ Accepted count: 98
+ Basinhop count: 39
+
+
+adaptive stepsize: acceptance rate 0.513228 target 0.500000 new stepsize 3.18664 old stepsize 2.86797
+basinhopping step 189: f 1.93944 trial_f 2.98085 accepted 0  lowest_f 1.90014
+ Fit Status: False
+ Force threshold: 0.4694
+ Lowest RMSE: 0.0794
+ Current RMSE: 0.0995
+ Accepted count: 98
+ Basinhop count: 40
+
+
+adaptive stepsize: acceptance rate 0.510526 target 0.500000 new stepsize 3.54071 old stepsize 3.18664
+basinhopping step 190: f 2.28321 trial_f 2.28321 accepted 1  lowest_f 1.90014
+ Fit Status: False
+ Force threshold: 0.4694
+ Lowest RMSE: 0.0794
+ Current RMSE: 0.0871
+ Accepted count: 99
+ Basinhop count: 41
+
+
+adaptive stepsize: acceptance rate 0.513089 target 0.500000 new stepsize 3.93412 old stepsize 3.54071
+basinhopping step 191: f 2.28321 trial_f 3.70144 accepted 0  lowest_f 1.90014
+ Fit Status: False
+ Force threshold: 0.4694
+ Lowest RMSE: 0.0794
+ Current RMSE: 0.1109
+ Accepted count: 99
+ Basinhop count: 42
+
+
+adaptive stepsize: acceptance rate 0.510417 target 0.500000 new stepsize 4.37124 old stepsize 3.93412
+basinhopping step 192: f 2.28321 trial_f 17.2193 accepted 0  lowest_f 1.90014
+ Fit Status: False
+ Force threshold: 0.4694
+ Lowest RMSE: 0.0794
+ Current RMSE: 0.2391
+ Accepted count: 99
+ Basinhop count: 43
+
+
+adaptive stepsize: acceptance rate 0.507772 target 0.500000 new stepsize 4.85694 old stepsize 4.37124
+basinhopping step 193: f 2.28321 trial_f 134.601 accepted 0  lowest_f 1.90014
+ Fit Status: False
+ Force threshold: 0.4694
+ Lowest RMSE: 0.0794
+ Current RMSE: 0.6685
+ Accepted count: 99
+ Basinhop count: 44
+
+
+adaptive stepsize: acceptance rate 0.505155 target 0.500000 new stepsize 5.3966 old stepsize 4.85694
+basinhopping step 194: f 1.9299 trial_f 1.9299 accepted 1  lowest_f 1.90014
+ Fit Status: False
+ Force threshold: 0.4694
+ Lowest RMSE: 0.0794
+ Current RMSE: 0.0800
+ Accepted count: 100
+ Basinhop count: 45
+
+
+adaptive stepsize: acceptance rate 0.507692 target 0.500000 new stepsize 5.99622 old stepsize 5.3966
+basinhopping step 195: f 2.86184 trial_f 2.86184 accepted 1  lowest_f 1.90014
+ Fit Status: False
+ Force threshold: 0.4694
+ Lowest RMSE: 0.0794
+ Current RMSE: 0.0975
+ Accepted count: 101
+ Basinhop count: 46
+
+
+adaptive stepsize: acceptance rate 0.510204 target 0.500000 new stepsize 6.66246 old stepsize 5.99622
+basinhopping step 196: f 2.8076 trial_f 2.8076 accepted 1  lowest_f 1.90014
+ Fit Status: False
+ Force threshold: 0.4694
+ Lowest RMSE: 0.0794
+ Current RMSE: 0.0965
+ Accepted count: 102
+ Basinhop count: 47
+
+
+adaptive stepsize: acceptance rate 0.512690 target 0.500000 new stepsize 7.40274 old stepsize 6.66246
+basinhopping step 197: f 2.76725 trial_f 2.76725 accepted 1  lowest_f 1.90014
+ Fit Status: False
+ Force threshold: 0.4694
+ Lowest RMSE: 0.0794
+ Current RMSE: 0.0958
+ Accepted count: 103
+ Basinhop count: 48
+
+
+adaptive stepsize: acceptance rate 0.515152 target 0.500000 new stepsize 8.22526 old stepsize 7.40274
+basinhopping step 198: f 2.76725 trial_f 496710 accepted 0  lowest_f 1.90014
+ Fit Status: False
+ Force threshold: 0.4694
+ Lowest RMSE: 0.0794
+ Current RMSE: 40.6083
+ Accepted count: 103
+ Basinhop count: 49
+
+
+adaptive stepsize: acceptance rate 0.512563 target 0.500000 new stepsize 9.13918 old stepsize 8.22526
+basinhopping step 199: f 2.76725 trial_f 17.3356 accepted 0  lowest_f 1.90014
  Fit Status: True
  Force threshold: 0.4694
- Lowest RMSE: 0.0843
- Current RMSE: 0.0928
- Accepted count: 6
- Basinhop count: 5
+ Lowest RMSE: 0.0794
+ Current RMSE: 0.2399
+ Accepted count: 103
+ Basinhop count: 50
 
 
 
@@ -381,218 +2301,218 @@ basinhopping step 8: f 2.59269 trial_f 2.59269 accepted 1  lowest_f 2.14296
 
 Parameter                     Best-fit Value                +/- 1-sigma                   Flag                          
 --------------------------------------------------------------------------------------
-AGN_FRAC_4000                 0.980348                      0.000000                      1.0                           
-AGN_FRAC_7000                 0.921190                      0.000000                      1.0                           
-BR_H_ALPHA_AMP                10.028566                     0.000000                      1.0                           
-BR_H_ALPHA_DISP               3305.265163                   0.000000                      1.0                           
-BR_H_ALPHA_DISP_CORR          3304.138978                   0.000000                      1.0                           
+AGN_FRAC_4000                 0.966984                      0.000000                      1.0                           
+AGN_FRAC_7000                 0.867685                      0.000000                      1.0                           
+BR_H_ALPHA_AMP                41.837078                     0.000000                      1.0                           
+BR_H_ALPHA_DISP               1619.374611                   0.000000                      1.0                           
+BR_H_ALPHA_DISP_CORR          1617.074742                   0.000000                      1.0                           
 BR_H_ALPHA_DISP_RES           86.275196                     nan                           nan                           
-BR_H_ALPHA_EW                 180.785732                    0.000000                      0.0                           
-BR_H_ALPHA_FLUX               -13.610142                    0.000000                      0.0                           
-BR_H_ALPHA_FWHM               7783.544143                   0.000000                      0.0                           
-BR_H_ALPHA_FWHM_CORR          7780.892308                   0.000000                      0.0                           
-BR_H_ALPHA_LUM                43.001759                     0.000000                      0.0                           
-BR_H_ALPHA_NPIX               220.000000                    0.000000                      0.0                           
-BR_H_ALPHA_SNR                9.931479                      0.000000                      0.0                           
-BR_H_ALPHA_VOFF               -9.917769                     0.000000                      1.0                           
-BR_H_ALPHA_W80                8669.392156                   0.000000                      0.0                           
-BR_H_ALPHA_W80_CORR           8666.562877                   0.000000                      0.0                           
-BR_H_BETA_AMP                 2.209994                      0.000000                      1.0                           
-BR_H_BETA_DISP                3305.265163                   0.000000                      1.0                           
-BR_H_BETA_DISP_CORR           3303.212424                   0.000000                      1.0                           
+BR_H_ALPHA_EW                 363.696017                    0.000000                      0.0                           
+BR_H_ALPHA_FLUX               -13.299977                    0.000000                      0.0                           
+BR_H_ALPHA_FWHM               3813.819461                   0.000000                      0.0                           
+BR_H_ALPHA_FWHM_CORR          3808.404464                   0.000000                      0.0                           
+BR_H_ALPHA_LUM                43.311924                     0.000000                      0.0                           
+BR_H_ALPHA_NPIX               133.000000                    0.000000                      0.0                           
+BR_H_ALPHA_SNR                41.427660                     0.000000                      0.0                           
+BR_H_ALPHA_VOFF               -202.603135                   0.000000                      1.0                           
+BR_H_ALPHA_W80                4244.101218                   0.000000                      0.0                           
+BR_H_ALPHA_W80_CORR           4238.318875                   0.000000                      0.0                           
+BR_H_BETA_AMP                 14.381807                     0.000000                      1.0                           
+BR_H_BETA_DISP                1619.374611                   0.000000                      1.0                           
+BR_H_BETA_DISP_CORR           1615.180687                   0.000000                      1.0                           
 BR_H_BETA_DISP_RES            116.470932                    nan                           nan                           
-BR_H_BETA_EW                  18.701271                     0.000000                      0.0                           
-BR_H_BETA_FLUX                -14.397324                    0.000000                      0.0                           
-BR_H_BETA_FWHM                7783.430762                   0.000000                      0.0                           
-BR_H_BETA_FWHM_CORR           7778.597092                   0.000000                      0.0                           
-BR_H_BETA_LUM                 42.214578                     0.000000                      0.0                           
-BR_H_BETA_NPIX                131.000000                    0.000000                      0.0                           
-BR_H_BETA_SNR                 2.188665                      0.000000                      0.0                           
-BR_H_BETA_VOFF                -9.917769                     0.000000                      1.0                           
-BR_H_BETA_W80                 8669.318333                   0.000000                      0.0                           
-BR_H_BETA_W80_CORR            8664.161286                   0.000000                      0.0                           
-BR_OPT_FEII_AMP               19.976142                     0.000000                      1.0                           
-BR_OPT_FEII_DISP              504.428891                    0.000000                      1.0                           
-BR_OPT_FEII_TEMPLATE_EW       46.049093                     0.000000                      1.0                           
-BR_OPT_FEII_TEMPLATE_FLUX     -14.037512                    0.000000                      1.0                           
-BR_OPT_FEII_TEMPLATE_LUM      42.574390                     0.000000                      1.0                           
-BR_OPT_FEII_VOFF              -3.450167                     0.000000                      1.0                           
-HOST_FRAC_4000                0.019652                      0.000000                      1.0                           
-HOST_FRAC_7000                0.078810                      0.000000                      1.0                           
-HOST_TEMP_DISP                100.905406                    0.000000                      1.0                           
-HOST_TEMP_VEL                 2.113598                      0.000000                      1.0                           
-H_ALPHA_COMP_DISP             2190.566526                   0.000000                      0.0                           
-H_ALPHA_COMP_DISP_CORR        2188.866897                   0.000000                      0.0                           
+BR_H_BETA_EW                  59.148771                     0.000000                      0.0                           
+BR_H_BETA_FLUX                -13.894057                    0.000000                      0.0                           
+BR_H_BETA_FWHM                3813.750838                   0.000000                      0.0                           
+BR_H_BETA_FWHM_CORR           3803.876149                   0.000000                      0.0                           
+BR_H_BETA_LUM                 42.717844                     0.000000                      0.0                           
+BR_H_BETA_NPIX                112.000000                    0.000000                      0.0                           
+BR_H_BETA_SNR                 14.241502                     0.000000                      0.0                           
+BR_H_BETA_VOFF                -202.603135                   0.000000                      1.0                           
+BR_H_BETA_W80                 4244.259556                   0.000000                      0.0                           
+BR_H_BETA_W80_CORR            4233.715816                   0.000000                      0.0                           
+BR_OPT_FEII_AMP               21.690724                     0.000000                      1.0                           
+BR_OPT_FEII_DISP              568.341824                    0.000000                      1.0                           
+BR_OPT_FEII_TEMPLATE_EW       49.551634                     0.000000                      1.0                           
+BR_OPT_FEII_TEMPLATE_FLUX     -14.001898                    0.000000                      1.0                           
+BR_OPT_FEII_TEMPLATE_LUM      42.610004                     0.000000                      1.0                           
+BR_OPT_FEII_VOFF              -105.916485                   0.000000                      1.0                           
+HOST_FRAC_4000                0.033016                      0.000000                      1.0                           
+HOST_FRAC_7000                0.132315                      0.000000                      1.0                           
+HOST_TEMP_DISP                312.513666                    0.000000                      1.0                           
+HOST_TEMP_VEL                 -12.675282                    0.000000                      1.0                           
+H_ALPHA_COMP_DISP             1507.079090                   0.000000                      0.0                           
+H_ALPHA_COMP_DISP_CORR        1504.607582                   0.000000                      0.0                           
 H_ALPHA_COMP_DISP_RES         86.275196                     nan                           nan                           
-H_ALPHA_COMP_EW               497.914562                    0.000000                      1.0                           
-H_ALPHA_COMP_FLUX             -13.170027                    0.000000                      1.0                           
-H_ALPHA_COMP_FWHM             2990.294788                   0.000000                      0.0                           
-H_ALPHA_COMP_FWHM_CORR        2983.385425                   0.000000                      0.0                           
-H_ALPHA_COMP_LUM              43.441875                     0.000000                      1.0                           
-H_ALPHA_COMP_NPIX             220.000000                    0.000000                      0.0                           
-H_ALPHA_COMP_SNR              48.756630                     0.000000                      0.0                           
-H_ALPHA_COMP_VOFF             -154.030126                   0.000000                      0.0                           
-H_ALPHA_COMP_W80              4869.348485                   0.000000                      0.0                           
-H_ALPHA_COMP_W80_CORR         4864.309448                   0.000000                      0.0                           
-H_BETA_COMP_DISP              1982.284638                   0.000000                      0.0                           
-H_BETA_COMP_DISP_CORR         1978.860002                   0.000000                      0.0                           
+H_ALPHA_COMP_EW               424.463507                    0.000000                      1.0                           
+H_ALPHA_COMP_FLUX             -13.233188                    0.000000                      1.0                           
+H_ALPHA_COMP_FWHM             2078.268336                   0.000000                      0.0                           
+H_ALPHA_COMP_FWHM_CORR        2068.314520                   0.000000                      0.0                           
+H_ALPHA_COMP_LUM              43.378713                     0.000000                      1.0                           
+H_ALPHA_COMP_NPIX             133.000000                    0.000000                      0.0                           
+H_ALPHA_COMP_SNR              43.395743                     0.000000                      0.0                           
+H_ALPHA_COMP_VOFF             -200.487470                   0.000000                      0.0                           
+H_ALPHA_COMP_W80              3958.622753                   0.000000                      0.0                           
+H_ALPHA_COMP_W80_CORR         3952.422780                   0.000000                      0.0                           
+H_BETA_COMP_DISP              1537.585774                   0.000000                      0.0                           
+H_BETA_COMP_DISP_CORR         1533.168136                   0.000000                      0.0                           
 H_BETA_COMP_DISP_RES          116.470932                    nan                           nan                           
-H_BETA_COMP_EW                68.522769                     0.000000                      1.0                           
-H_BETA_COMP_FLUX              -13.833378                    0.000000                      1.0                           
-H_BETA_COMP_FWHM              2884.325840                   0.000000                      0.0                           
-H_BETA_COMP_FWHM_CORR         2871.256493                   0.000000                      0.0                           
-H_BETA_COMP_LUM               42.778524                     0.000000                      1.0                           
-H_BETA_COMP_NPIX              132.000000                    0.000000                      0.0                           
-H_BETA_COMP_SNR               16.666347                     0.000000                      0.0                           
-H_BETA_COMP_VOFF              -174.390327                   0.000000                      0.0                           
-H_BETA_COMP_W80               4226.953028                   0.000000                      0.0                           
-H_BETA_COMP_W80_CORR          4216.366011                   0.000000                      0.0                           
-LOG_LIKE                      2.142963                      0.000000                      0.0                           
-L_CONT_AGN_3000               44.740547                     0.000000                      1.0                           
-L_CONT_AGN_5100               44.597691                     0.000000                      1.0                           
-L_CONT_HOST_3000              41.988580                     0.000000                      1.0                           
-L_CONT_HOST_5100              43.262148                     0.000000                      1.0                           
-L_CONT_TOT_3000               44.741315                     0.000000                      1.0                           
-L_CONT_TOT_5100               44.617298                     0.000000                      1.0                           
-NA_H_ALPHA_AMP                51.213558                     0.000000                      1.0                           
-NA_H_ALPHA_DISP               1136.785218                   0.000000                      1.0                           
-NA_H_ALPHA_DISP_CORR          1133.506605                   0.000000                      1.0                           
+H_BETA_COMP_EW                66.102871                     0.000000                      1.0                           
+H_BETA_COMP_FLUX              -13.845969                    0.000000                      1.0                           
+H_BETA_COMP_FWHM              2548.527192                   0.000000                      0.0                           
+H_BETA_COMP_FWHM_CORR         2533.726336                   0.000000                      0.0                           
+H_BETA_COMP_LUM               42.765933                     0.000000                      1.0                           
+H_BETA_COMP_NPIX              112.000000                    0.000000                      0.0                           
+H_BETA_COMP_SNR               17.318162                     0.000000                      0.0                           
+H_BETA_COMP_VOFF              -201.047172                   0.000000                      0.0                           
+H_BETA_COMP_W80               4039.740251                   0.000000                      0.0                           
+H_BETA_COMP_W80_CORR          4028.661282                   0.000000                      0.0                           
+LOG_LIKE                      1.900137                      0.000000                      0.0                           
+L_CONT_AGN_3000               44.740416                     0.000000                      1.0                           
+L_CONT_AGN_5100               44.586092                     0.000000                      1.0                           
+L_CONT_HOST_3000              42.240191                     0.000000                      1.0                           
+L_CONT_HOST_5100              43.506649                     0.000000                      1.0                           
+L_CONT_TOT_3000               44.741786                     0.000000                      1.0                           
+L_CONT_TOT_5100               44.620834                     0.000000                      1.0                           
+NA_H_ALPHA_AMP                28.221136                     0.000000                      1.0                           
+NA_H_ALPHA_DISP               399.081218                    0.000000                      1.0                           
+NA_H_ALPHA_DISP_CORR          389.643952                    0.000000                      1.0                           
 NA_H_ALPHA_DISP_RES           86.275196                     nan                           nan                           
-NA_H_ALPHA_EW                 317.128830                    0.000000                      0.0                           
-NA_H_ALPHA_FLUX               -13.365874                    0.000000                      0.0                           
-NA_H_ALPHA_FWHM               2677.290288                   0.000000                      0.0                           
-NA_H_ALPHA_FWHM_CORR          2669.570932                   0.000000                      0.0                           
-NA_H_ALPHA_LUM                43.246027                     0.000000                      0.0                           
-NA_H_ALPHA_NPIX               93.000000                     0.000000                      0.0                           
-NA_H_ALPHA_SNR                50.718126                     0.000000                      0.0                           
-NA_H_ALPHA_VOFF               -236.080936                   0.000000                      1.0                           
-NA_H_ALPHA_W80                2979.453414                   0.000000                      0.0                           
-NA_H_ALPHA_W80_CORR           2971.210928                   0.000000                      0.0                           
-NA_H_BETA_AMP                 17.131220                     0.000000                      1.0                           
-NA_H_BETA_DISP                1136.785218                   0.000000                      1.0                           
-NA_H_BETA_DISP_CORR           1130.802880                   0.000000                      1.0                           
+NA_H_ALPHA_EW                 60.767490                     0.000000                      0.0                           
+NA_H_ALPHA_FLUX               -14.079235                    0.000000                      0.0                           
+NA_H_ALPHA_FWHM               940.522335                    0.000000                      0.0                           
+NA_H_ALPHA_FWHM_CORR          918.317994                    0.000000                      0.0                           
+NA_H_ALPHA_LUM                42.532667                     0.000000                      0.0                           
+NA_H_ALPHA_NPIX               26.000000                     0.000000                      0.0                           
+NA_H_ALPHA_SNR                27.935599                     0.000000                      0.0                           
+NA_H_ALPHA_VOFF               -187.759971                   0.000000                      1.0                           
+NA_H_ALPHA_W80                1045.567689                   0.000000                      0.0                           
+NA_H_ALPHA_W80_CORR           1021.843201                   0.000000                      0.0                           
+NA_H_BETA_AMP                 6.832921                      0.000000                      1.0                           
+NA_H_BETA_DISP                399.081218                    0.000000                      1.0                           
+NA_H_BETA_DISP_CORR           381.707140                    0.000000                      1.0                           
 NA_H_BETA_DISP_RES            116.470932                    nan                           nan                           
-NA_H_BETA_EW                  49.821498                     0.000000                      0.0                           
-NA_H_BETA_FLUX                -13.971803                    0.000000                      0.0                           
-NA_H_BETA_FWHM                2677.298589                   0.000000                      0.0                           
-NA_H_BETA_FWHM_CORR           2663.213478                   0.000000                      0.0                           
-NA_H_BETA_LUM                 42.640099                     0.000000                      0.0                           
-NA_H_BETA_NPIX                78.000000                     0.000000                      0.0                           
-NA_H_BETA_SNR                 16.965371                     0.000000                      0.0                           
-NA_H_BETA_VOFF                -236.080936                   0.000000                      1.0                           
-NA_H_BETA_W80                 2979.402327                   0.000000                      0.0                           
-NA_H_BETA_W80_CORR            2964.363112                   0.000000                      0.0                           
-NA_NII_6549_AMP               0.000000                      0.000000                      2.0                           
-NA_NII_6549_DISP              1136.785218                   0.000000                      1.0                           
-NA_NII_6549_DISP_CORR         1133.491810                   0.000000                      1.0                           
+NA_H_BETA_EW                  6.954100                      0.000000                      0.0                           
+NA_H_BETA_FLUX                -14.825536                    0.000000                      0.0                           
+NA_H_BETA_FWHM                942.635420                    0.000000                      0.0                           
+NA_H_BETA_FWHM_CORR           901.853554                    0.000000                      0.0                           
+NA_H_BETA_LUM                 41.786366                     0.000000                      0.0                           
+NA_H_BETA_NPIX                20.000000                     0.000000                      0.0                           
+NA_H_BETA_SNR                 6.747694                      0.000000                      0.0                           
+NA_H_BETA_VOFF                -187.759971                   0.000000                      1.0                           
+NA_H_BETA_W80                 1047.418400                   0.000000                      0.0                           
+NA_H_BETA_W80_CORR            1003.840494                   0.000000                      0.0                           
+NA_NII_6549_AMP               1.951078                      0.000000                      1.0                           
+NA_NII_6549_DISP              399.081218                    0.000000                      1.0                           
+NA_NII_6549_DISP_CORR         389.600911                    0.000000                      1.0                           
 NA_NII_6549_DISP_RES          86.469352                     nan                           nan                           
-NA_NII_6549_EW                0.000000                      0.000000                      1.0                           
-NA_NII_6549_FLUX              0.000000                      0.000000                      0.0                           
-NA_NII_6549_FWHM              0.000000                      0.000000                      0.0                           
-NA_NII_6549_FWHM_CORR         0.000000                      0.000000                      0.0                           
-NA_NII_6549_LUM               0.000000                      0.000000                      1.0                           
+NA_NII_6549_EW                4.153576                      0.000000                      0.0                           
+NA_NII_6549_FLUX              -15.240515                    0.000000                      0.0                           
+NA_NII_6549_FWHM              940.285713                    0.000000                      0.0                           
+NA_NII_6549_FWHM_CORR         917.974356                    0.000000                      0.0                           
+NA_NII_6549_LUM               41.371387                     0.000000                      0.0                           
 NA_NII_6549_NPIX              0.000000                      0.000000                      0.0                           
-NA_NII_6549_SNR               0.000000                      0.000000                      0.0                           
-NA_NII_6549_VOFF              -236.080936                   0.000000                      1.0                           
-NA_NII_6549_W80               0.000000                      0.000000                      0.0                           
-NA_NII_6549_W80_CORR          0.000000                      0.000000                      0.0                           
-NA_NII_6585_AMP               0.000000                      0.000000                      2.0                           
-NA_NII_6585_DISP              1136.785218                   0.000000                      1.0                           
-NA_NII_6585_DISP_CORR         1133.527184                   0.000000                      1.0                           
+NA_NII_6549_SNR               1.932154                      0.000000                      0.0                           
+NA_NII_6549_VOFF              -187.759971                   0.000000                      1.0                           
+NA_NII_6549_W80               1047.167630                   0.000000                      0.0                           
+NA_NII_6549_W80_CORR          1023.372255                   0.000000                      0.0                           
+NA_NII_6585_AMP               5.853235                      0.000000                      1.0                           
+NA_NII_6585_DISP              399.081218                    0.000000                      1.0                           
+NA_NII_6585_DISP_CORR         389.703815                    0.000000                      1.0                           
 NA_NII_6585_DISP_RES          86.004394                     nan                           nan                           
-NA_NII_6585_EW                0.000000                      0.000000                      1.0                           
-NA_NII_6585_FLUX              0.000000                      0.000000                      0.0                           
-NA_NII_6585_FWHM              0.000000                      0.000000                      0.0                           
-NA_NII_6585_FWHM_CORR         0.000000                      0.000000                      0.0                           
-NA_NII_6585_LUM               0.000000                      0.000000                      1.0                           
-NA_NII_6585_NPIX              0.000000                      0.000000                      0.0                           
-NA_NII_6585_SNR               0.000000                      0.000000                      0.0                           
-NA_NII_6585_VOFF              -236.080936                   0.000000                      1.0                           
-NA_NII_6585_W80               0.000000                      0.000000                      0.0                           
-NA_NII_6585_W80_CORR          0.000000                      0.000000                      0.0                           
-NA_OIII_a_AMP                 2.151296                      0.000000                      1.0                           
-NA_OIII_a_DISP                1136.785218                   0.000000                      1.0                           
-NA_OIII_a_DISP_CORR           1131.036586                   0.000000                      1.0                           
+NA_NII_6585_EW                12.649437                     0.000000                      0.0                           
+NA_NII_6585_FLUX              -14.761049                    0.000000                      0.0                           
+NA_NII_6585_FWHM              943.000410                    0.000000                      0.0                           
+NA_NII_6585_FWHM_CORR         920.996280                    0.000000                      0.0                           
+NA_NII_6585_LUM               41.850853                     0.000000                      0.0                           
+NA_NII_6585_NPIX              17.000000                     0.000000                      0.0                           
+NA_NII_6585_SNR               5.777297                      0.000000                      0.0                           
+NA_NII_6585_VOFF              -187.759971                   0.000000                      1.0                           
+NA_NII_6585_W80               1047.930370                   0.000000                      0.0                           
+NA_NII_6585_W80_CORR          1024.410669                   0.000000                      0.0                           
+NA_OIII_a_AMP                 6.365696                      0.000000                      1.0                           
+NA_OIII_a_DISP                281.391198                    0.000000                      1.0                           
+NA_OIII_a_DISP_CORR           257.185018                    0.000000                      1.0                           
 NA_OIII_a_DISP_RES            114.179127                    nan                           nan                           
-NA_OIII_a_EW                  6.563610                      0.000000                      0.0                           
-NA_OIII_a_FLUX                -14.864263                    0.000000                      0.0                           
-NA_OIII_a_FWHM                2677.318033                   0.000000                      0.0                           
-NA_OIII_a_FWHM_CORR           2663.783270                   0.000000                      0.0                           
-NA_OIII_a_LUM                 41.747639                     0.000000                      0.0                           
-NA_OIII_a_NPIX                43.000000                     0.000000                      0.0                           
-NA_OIII_a_SNR                 2.130432                      0.000000                      0.0                           
-NA_OIII_a_VOFF                -236.080936                   0.000000                      1.0                           
-NA_OIII_a_W80                 2979.350370                   0.000000                      0.0                           
-NA_OIII_a_W80_CORR            2964.898361                   0.000000                      0.0                           
-NA_OIII_b_AMP                 6.410861                      0.000000                      1.0                           
-NA_OIII_b_DISP                1136.785218                   0.000000                      1.0                           
-NA_OIII_b_DISP_CORR           1131.146398                   0.000000                      1.0                           
+NA_OIII_a_EW                  4.771768                      0.000000                      0.0                           
+NA_OIII_a_FLUX                -14.999282                    0.000000                      0.0                           
+NA_OIII_a_FWHM                663.856629                    0.000000                      0.0                           
+NA_OIII_a_FWHM_CORR           606.972059                    0.000000                      0.0                           
+NA_OIII_a_LUM                 41.612620                     0.000000                      0.0                           
+NA_OIII_a_NPIX                17.000000                     0.000000                      0.0                           
+NA_OIII_a_SNR                 6.296431                      0.000000                      0.0                           
+NA_OIII_a_VOFF                -95.526777                    0.000000                      1.0                           
+NA_OIII_a_W80                 740.051186                    0.000000                      0.0                           
+NA_OIII_a_W80_CORR            679.536185                    0.000000                      0.0                           
+NA_OIII_b_AMP                 18.969774                     0.000000                      1.0                           
+NA_OIII_b_DISP                281.391198                    0.000000                      1.0                           
+NA_OIII_b_DISP_CORR           257.667515                    0.000000                      1.0                           
 NA_OIII_b_DISP_RES            113.086065                    nan                           nan                           
-NA_OIII_b_EW                  20.104234                     0.000000                      0.0                           
-NA_OIII_b_FLUX                -14.385867                    0.000000                      0.0                           
-NA_OIII_b_FWHM                2677.266330                   0.000000                      0.0                           
-NA_OIII_b_FWHM_CORR           2663.989853                   0.000000                      0.0                           
-NA_OIII_b_LUM                 42.226035                     0.000000                      0.0                           
-NA_OIII_b_NPIX                65.000000                     0.000000                      0.0                           
-NA_OIII_b_SNR                 6.348978                      0.000000                      0.0                           
-NA_OIII_b_VOFF                -236.080936                   0.000000                      1.0                           
-NA_OIII_b_W80                 2979.484342                   0.000000                      0.0                           
-NA_OIII_b_W80_CORR            2965.309013                   0.000000                      0.0                           
-NA_OII_AMP                    0.000000                      0.000000                      2.0                           
-NA_OII_DISP                   1300.684434                   0.000000                      1.0                           
-NA_OII_DISP_CORR              1291.777334                   0.000000                      1.0                           
+NA_OIII_b_EW                  14.677556                     0.000000                      0.0                           
+NA_OIII_b_FLUX                -14.520888                    0.000000                      0.0                           
+NA_OIII_b_FWHM                663.279430                    0.000000                      0.0                           
+NA_OIII_b_FWHM_CORR           607.475547                    0.000000                      0.0                           
+NA_OIII_b_LUM                 42.091014                     0.000000                      0.0                           
+NA_OIII_b_NPIX                21.000000                     0.000000                      0.0                           
+NA_OIII_b_SNR                 18.786503                     0.000000                      0.0                           
+NA_OIII_b_VOFF                -95.526777                    0.000000                      1.0                           
+NA_OIII_b_W80                 738.423887                    0.000000                      0.0                           
+NA_OIII_b_W80_CORR            678.970127                    0.000000                      0.0                           
+NA_OII_AMP                    5.253012                      0.000000                      1.0                           
+NA_OII_DISP                   196.909679                    0.000000                      1.0                           
+NA_OII_DISP_CORR              125.228214                    0.000000                      1.0                           
 NA_OII_DISP_RES               151.958271                    nan                           nan                           
-NA_OII_EW                     0.000000                      0.000000                      1.0                           
-NA_OII_FLUX                   0.000000                      0.000000                      0.0                           
-NA_OII_FWHM                   0.000000                      0.000000                      0.0                           
-NA_OII_FWHM_CORR              0.000000                      0.000000                      0.0                           
-NA_OII_LUM                    0.000000                      0.000000                      1.0                           
-NA_OII_NPIX                   0.000000                      0.000000                      0.0                           
-NA_OII_SNR                    0.000000                      0.000000                      0.0                           
-NA_OII_VOFF                   0.239306                      0.000000                      1.0                           
-NA_OII_W80                    0.000000                      0.000000                      0.0                           
-NA_OII_W80_CORR               0.000000                      0.000000                      0.0                           
-NA_OPT_FEII_AMP               0.000000                      0.000000                      1.0                           
-NA_OPT_FEII_DISP              10.417190                     0.000000                      1.0                           
+NA_OII_EW                     1.374636                      0.000000                      0.0                           
+NA_OII_FLUX                   -15.361572                    0.000000                      0.0                           
+NA_OII_FWHM                   466.085788                    0.000000                      0.0                           
+NA_OII_FWHM_CORR              298.651462                    0.000000                      0.0                           
+NA_OII_LUM                    41.250330                     0.000000                      0.0                           
+NA_OII_NPIX                   9.000000                      0.000000                      0.0                           
+NA_OII_SNR                    5.192709                      0.000000                      0.0                           
+NA_OII_VOFF                   131.715556                    0.000000                      1.0                           
+NA_OII_W80                    518.426343                    0.000000                      0.0                           
+NA_OII_W80_CORR               341.476060                    0.000000                      0.0                           
+NA_OPT_FEII_AMP               0.000000                      0.000000                      2.0                           
+NA_OPT_FEII_DISP              12.826191                     0.000000                      1.0                           
 NA_OPT_FEII_TEMPLATE_EW       0.000000                      0.000000                      1.0                           
-NA_OPT_FEII_TEMPLATE_FLUX     -29.984534                    0.000000                      1.0                           
-NA_OPT_FEII_TEMPLATE_LUM      26.627368                     0.000000                      1.0                           
-NA_OPT_FEII_VOFF              -0.716001                     0.000000                      1.0                           
-NA_SII_6716_AMP               0.004295                      0.000000                      1.0                           
-NA_SII_6716_DISP              1136.785218                   0.000000                      1.0                           
-NA_SII_6716_DISP_CORR         1133.655099                   0.000000                      1.0                           
+NA_OPT_FEII_TEMPLATE_FLUX     0.000000                      0.000000                      1.0                           
+NA_OPT_FEII_TEMPLATE_LUM      0.000000                      0.000000                      1.0                           
+NA_OPT_FEII_VOFF              7.131483                      0.000000                      1.0                           
+NA_SII_6716_AMP               2.435622                      0.000000                      1.0                           
+NA_SII_6716_DISP              399.081218                    0.000000                      1.0                           
+NA_SII_6716_DISP_CORR         390.075724                    0.000000                      1.0                           
 NA_SII_6716_DISP_RES          84.301534                     nan                           nan                           
-NA_SII_6716_EW                0.028066                      0.000000                      0.0                           
-NA_SII_6716_FLUX              -17.434485                    0.000000                      0.0                           
-NA_SII_6716_FWHM              2677.558503                   0.000000                      0.0                           
-NA_SII_6716_FWHM_CORR         2670.189512                   0.000000                      0.0                           
-NA_SII_6716_LUM               39.177416                     0.000000                      0.0                           
-NA_SII_6716_NPIX              0.000000                      0.000000                      0.0                           
-NA_SII_6716_SNR               0.004253                      0.000000                      0.0                           
-NA_SII_6716_VOFF              -236.080936                   0.000000                      1.0                           
-NA_SII_6716_W80               2950.456973                   0.000000                      0.0                           
-NA_SII_6716_W80_CORR          2942.510239                   0.000000                      0.0                           
-NA_SII_6731_AMP               1.878302                      0.000000                      1.0                           
-NA_SII_6731_DISP              1136.785218                   0.000000                      1.0                           
-NA_SII_6731_DISP_CORR         1133.668474                   0.000000                      1.0                           
+NA_SII_6716_EW                5.542897                      0.000000                      0.0                           
+NA_SII_6716_FLUX              -15.133152                    0.000000                      0.0                           
+NA_SII_6716_FWHM              941.593151                    0.000000                      0.0                           
+NA_SII_6716_FWHM_CORR         920.429330                    0.000000                      0.0                           
+NA_SII_6716_LUM               41.478750                     0.000000                      0.0                           
+NA_SII_6716_NPIX              18.000000                     0.000000                      0.0                           
+NA_SII_6716_SNR               2.408386                      0.000000                      0.0                           
+NA_SII_6716_VOFF              -187.759971                   0.000000                      1.0                           
+NA_SII_6716_W80               1048.250077                   0.000000                      0.0                           
+NA_SII_6716_W80_CORR          1025.669723                   0.000000                      0.0                           
+NA_SII_6731_AMP               2.554881                      0.000000                      1.0                           
+NA_SII_6731_DISP              399.081218                    0.000000                      1.0                           
+NA_SII_6731_DISP_CORR         390.114593                    0.000000                      1.0                           
 NA_SII_6731_DISP_RES          84.121478                     nan                           nan                           
-NA_SII_6731_EW                12.406039                     0.000000                      0.0                           
-NA_SII_6731_FLUX              -14.790518                    0.000000                      0.0                           
-NA_SII_6731_FWHM              2677.277196                   0.000000                      0.0                           
-NA_SII_6731_FWHM_CORR         2669.938919                   0.000000                      0.0                           
-NA_SII_6731_LUM               41.821383                     0.000000                      0.0                           
-NA_SII_6731_NPIX              49.000000                     0.000000                      0.0                           
-NA_SII_6731_SNR               1.860153                      0.000000                      0.0                           
-NA_SII_6731_VOFF              -236.080936                   0.000000                      1.0                           
-NA_SII_6731_W80               2979.422726                   0.000000                      0.0                           
-NA_SII_6731_W80_CORR          2971.587079                   0.000000                      0.0                           
-POWER_AMP                     17.802409                     0.000000                      1.0                           
-POWER_SLOPE                   -1.620177                     0.000000                      1.0                           
-RCHI_SQUARED                  88.227023                     0.000000                      0.0                           
-R_SQUARED                     0.994858                      0.000000                      0.0                           
+NA_SII_6731_EW                5.845763                      0.000000                      0.0                           
+NA_SII_6731_FLUX              -15.111462                    0.000000                      0.0                           
+NA_SII_6731_FWHM              942.216677                    0.000000                      0.0                           
+NA_SII_6731_FWHM_CORR         921.158462                    0.000000                      0.0                           
+NA_SII_6731_LUM               41.500439                     0.000000                      0.0                           
+NA_SII_6731_NPIX              19.000000                     0.000000                      0.0                           
+NA_SII_6731_SNR               2.524408                      0.000000                      0.0                           
+NA_SII_6731_VOFF              -187.759971                   0.000000                      1.0                           
+NA_SII_6731_W80               1047.065003                   0.000000                      0.0                           
+NA_SII_6731_W80_CORR          1024.556054                   0.000000                      0.0                           
+POWER_AMP                     17.299257                     0.000000                      1.0                           
+POWER_SLOPE                   -1.669948                     0.000000                      1.0                           
+RCHI_SQUARED                  91.281318                     0.000000                      0.0                           
+R_SQUARED                     0.995440                      0.000000                      0.0                           
 NOISE_STD                     0.936060                                                                                  
-RESID_STD                     2.006247                                                                                  
+RESID_STD                     1.889120                                                                                  
 --------------------------------------------------------------------------------------
  - Done fitting 2-onur! 
 
-End process memory: 0.26039091                    
+End process memory: 0.26107494                    

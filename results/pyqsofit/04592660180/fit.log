@@ -6,8 +6,7 @@
 FWHM Resolution: 2.5 Å
 [ 3566.97426784  3567.79484559  3568.6175712  ... 10394.41199851
  10396.80892696 10399.20640813] Angstrom [57.09850693 57.09289932 57.08731079 ... 10.64587688 10.64599609
- 10.6461153 ] erg / (Angstrom s cm2) [2.85492535 2.85464497 2.85436554 ... 0.53229384 0.5322998  0.53230577] erg / (Angstrom s cm2) 0.34872591495513916
-Got negative host galaxy / QSO flux over 10% of coverage, decomposition is not applied!
+ 10.6461153 ] erg / (Angstrom s cm2) [1.14197014 1.14185799 1.14174622 ... 0.21291754 0.21291992 0.21292231] erg / (Angstrom s cm2) 0.34872591495513916
 Name            Value      Min      Max   Stderr     Vary     Expr Brute_Step
 Balmer_Tau        0.5      0.1        2     None    False     None     None
 Balmer_Te     1.5e+04    1e+04    5e+04     None    False     None     None
@@ -15,9 +14,9 @@ Blamer_norm         0        0    1e+10     None    False     None     None
 Fe_op_FWHM       3000     1200  1.8e+04     None     True     None     None
 Fe_op_norm          0        0    1e+10     None     True     None     None
 Fe_op_shift         0    -0.01     0.01     None     True     None     None
-Fe_uv_FWHM       3000     1200  1.8e+04     None     True     None     None
-Fe_uv_norm          0        0    1e+10     None     True     None     None
-Fe_uv_shift         0    -0.01     0.01     None     True     None     None
+Fe_uv_FWHM       3000     1200  1.8e+04     None    False     None     None
+Fe_uv_norm          0        0    1e+10     None    False     None     None
+Fe_uv_shift         0    -0.01     0.01     None    False     None     None
 PL_norm             1        0    1e+10     None     True     None     None
 PL_slope         -1.5       -5        3     None     True     None     None
 conti_a_0           0     -inf      inf     None     True     None     None
@@ -26,189 +25,224 @@ conti_a_2           0     -inf      inf     None     True     None     None
 Fitting continuum
 Fit report
 [[Variables]]
-    Fe_uv_norm:   3.01954795 (init = 0)
-    Fe_uv_FWHM:   14613.7809 (init = 3000)
-    Fe_uv_shift:  0.00789893 (init = 0)
-    Fe_op_norm:   5.01658548 (init = 0)
-    Fe_op_FWHM:   18000.0000 (init = 3000)
-    Fe_op_shift:  0.01000000 (init = 0)
-    PL_norm:      50.6839654 (init = 1)
-    PL_slope:    -0.96398158 (init = -1.5)
+    Fe_uv_norm:   0 (fixed)
+    Fe_uv_FWHM:   3000 (fixed)
+    Fe_uv_shift:  0 (fixed)
+    Fe_op_norm:   3.98664823 +/- 0.07708629 (1.93%) (init = 0)
+    Fe_op_FWHM:   2960.26260 +/- 146.993277 (4.97%) (init = 3000)
+    Fe_op_shift:  0.00153815 +/- 2.1225e-04 (13.80%) (init = 0)
+    PL_norm:      50.7106457 +/- 2.01672175 (3.98%) (init = 1)
+    PL_slope:    -1.44359170 +/- 0.63788376 (44.19%) (init = -1.5)
     Blamer_norm:  0 (fixed)
     Balmer_Te:    15000 (fixed)
     Balmer_Tau:   0.5 (fixed)
-    conti_a_0:   -12214.1434 (init = 0)
-    conti_a_1:    4.99889215 (init = 0)
-    conti_a_2:   -5.5806e-04 (init = 0)
+    conti_a_0:   -16924.3325 +/- 6445.44599 (38.08%) (init = 0)
+    conti_a_1:    7.66716583 +/- 1.84862412 (24.11%) (init = 0)
+    conti_a_2:   -8.9616e-04 +/- 1.7654e-04 (19.70%) (init = 0)
+[[Correlations]] (unreported correlations are < 0.100)
+    C(conti_a_1, conti_a_2)    = -0.9967
+    C(conti_a_0, conti_a_1)    = -0.9967
+    C(PL_slope, conti_a_0)     = -0.9949
+    C(conti_a_0, conti_a_2)    = +0.9870
+    C(PL_slope, conti_a_1)     = +0.9836
+    C(PL_slope, conti_a_2)     = -0.9663
+    C(PL_norm, PL_slope)       = -0.9639
+    C(PL_norm, conti_a_0)      = +0.9347
+    C(PL_norm, conti_a_1)      = -0.9064
+    C(PL_norm, conti_a_2)      = +0.8733
+    C(Fe_op_norm, Fe_op_FWHM)  = +0.3384
+    C(Fe_op_shift, conti_a_0)  = +0.2570
+    C(Fe_op_shift, PL_slope)   = -0.2560
+    C(Fe_op_shift, conti_a_1)  = -0.2534
+    C(Fe_op_shift, conti_a_2)  = +0.2478
+    C(Fe_op_shift, PL_norm)    = +0.2163
+    C(Fe_op_norm, PL_norm)     = +0.1441
+    C(Fe_op_norm, Fe_op_shift) = +0.1053
 Name                    Value      Min      Max   Stderr     Vary     Expr Brute_Step
 Hb_br_1_dwave               0    -0.01     0.01     None     True     None     None
 Hb_br_1_scale               0        0    1e+10     None     True     None     None
-Hb_br_1_sigma           0.005    0.004     0.05     None     True     None     None
+Hb_br_1_sigma           0.005   0.0015     0.05     None     True     None     None
 Hb_br_2_dwave               0    -0.01     0.01     None     True     None     None
 Hb_br_2_scale               0        0    1e+10     None     True     None     None
-Hb_br_2_sigma           0.005    0.004     0.05     None     True     None     None
+Hb_br_2_sigma           0.005   0.0015     0.05     None     True     None     None
 Hb_na_1_dwave               0    -0.01     0.01     None     True     None     None
 Hb_na_1_scale               0        0    1e+10     None     True     None     None
-Hb_na_1_sigma           0.001  0.00023  0.00169     None     True     None     None
+Hb_na_1_sigma           0.001  0.00023   0.0012     None     True     None     None
 HeII4687_br_1_dwave         0   -0.005    0.005     None     True     None     None
 HeII4687_br_1_scale         0        0    1e+10     None     True     None     None
 HeII4687_br_1_sigma     0.005    0.004     0.05     None     True     None     None
 HeII4687_na_1_dwave         0   -0.005    0.005     None    False Hb_na_1_dwave     None
 HeII4687_na_1_scale         0        0    1e+10     None     True     None     None
-HeII4687_na_1_sigma     0.001  0.00023  0.00169     None    False Hb_na_1_sigma     None
+HeII4687_na_1_sigma     0.001  0.00023   0.0012     None    False Hb_na_1_sigma     None
 OIII4959c_1_dwave           0    -0.01     0.01     None    False Hb_na_1_dwave     None
 OIII4959c_1_scale           0        0    1e+10     None     True     None     None
-OIII4959c_1_sigma       0.001  0.00023  0.00169     None    False Hb_na_1_sigma     None
+OIII4959c_1_sigma       0.001  0.00023   0.0012     None    False Hb_na_1_sigma     None
 OIII4959w_1_dwave           0    -0.01     0.01     None     True     None     None
 OIII4959w_1_scale           0        0    1e+10     None     True     None     None
-OIII4959w_1_sigma       0.003  0.00023    0.004     None     True     None     None
+OIII4959w_1_sigma       0.003  0.00023    0.006     None     True     None     None
 OIII5007c_1_dwave           0    -0.01     0.01     None    False Hb_na_1_dwave     None
 OIII5007c_1_scale           0        0    1e+10     None    False 3.0303030014038086 * OIII4959c_1_scale     None
-OIII5007c_1_sigma       0.001  0.00023  0.00169     None    False Hb_na_1_sigma     None
+OIII5007c_1_sigma       0.001  0.00023   0.0012     None    False Hb_na_1_sigma     None
 OIII5007w_1_dwave           0    -0.01     0.01     None    False OIII4959w_1_dwave     None
 OIII5007w_1_scale           0        0    1e+10     None    False 3.0303030014038086 * OIII4959w_1_scale     None
-OIII5007w_1_sigma       0.003  0.00023    0.004     None    False OIII4959w_1_sigma     None
+OIII5007w_1_sigma       0.003  0.00023    0.006     None    False OIII4959w_1_sigma     None
 Fitting complex Hb
 Fit report
 [[Variables]]
-    Hb_br_1_scale:        10.4681713 (init = 0)
-    Hb_br_1_dwave:        0.00239885 (init = 0)
-    Hb_br_1_sigma:        0.00815830 (init = 0.005)
-    Hb_br_2_scale:        13.4877187 (init = 0)
-    Hb_br_2_dwave:       -0.00224194 (init = 0)
-    Hb_br_2_sigma:        0.00401632 (init = 0.005)
-    Hb_na_1_scale:        8.61112459 (init = 0)
-    Hb_na_1_dwave:       -4.2233e-04 (init = 0)
-    Hb_na_1_sigma:        0.00114333 (init = 0.001)
-    OIII4959c_1_scale:    7.65010055 (init = 0)
-    OIII4959c_1_dwave:   -4.2233e-04 == 'Hb_na_1_dwave'
-    OIII4959c_1_sigma:    0.00114333 == 'Hb_na_1_sigma'
-    OIII5007c_1_scale:    23.1821227 == '3.0303030014038086 * OIII4959c_1_scale'
-    OIII5007c_1_dwave:   -4.2233e-04 == 'Hb_na_1_dwave'
-    OIII5007c_1_sigma:    0.00114333 == 'Hb_na_1_sigma'
-    OIII4959w_1_scale:    0.03432532 (init = 0)
-    OIII4959w_1_dwave:   -0.00913686 (init = 0)
-    OIII4959w_1_sigma:    0.00396886 (init = 0.003)
-    OIII5007w_1_scale:    0.10401612 == '3.0303030014038086 * OIII4959w_1_scale'
-    OIII5007w_1_dwave:   -0.00913686 == 'OIII4959w_1_dwave'
-    OIII5007w_1_sigma:    0.00396886 == 'OIII4959w_1_sigma'
-    HeII4687_br_1_scale:  2.15935436 (init = 0)
-    HeII4687_br_1_dwave: -0.00500000 (init = 0)
-    HeII4687_br_1_sigma:  0.00637802 (init = 0.005)
-    HeII4687_na_1_scale:  0.72405193 (init = 0)
-    HeII4687_na_1_dwave: -4.2233e-04 == 'Hb_na_1_dwave'
-    HeII4687_na_1_sigma:  0.00114333 == 'Hb_na_1_sigma'
+    Hb_br_1_scale:        9.97201766 (init = 0)
+    Hb_br_1_dwave:        2.4936e-04 (init = 0)
+    Hb_br_1_sigma:        0.00759987 (init = 0.005)
+    Hb_br_2_scale:        15.5626878 (init = 0)
+    Hb_br_2_dwave:       -0.00160068 (init = 0)
+    Hb_br_2_sigma:        0.00369689 (init = 0.005)
+    Hb_na_1_scale:        6.52226329 (init = 0)
+    Hb_na_1_dwave:       -3.4815e-04 (init = 0)
+    Hb_na_1_sigma:        9.3082e-04 (init = 0.001)
+    OIII4959c_1_scale:    7.64265484 (init = 0)
+    OIII4959c_1_dwave:   -3.4815e-04 == 'Hb_na_1_dwave'
+    OIII4959c_1_sigma:    9.3082e-04 == 'Hb_na_1_sigma'
+    OIII5007c_1_scale:    23.1595599 == '3.0303030014038086 * OIII4959c_1_scale'
+    OIII5007c_1_dwave:   -3.4815e-04 == 'Hb_na_1_dwave'
+    OIII5007c_1_sigma:    9.3082e-04 == 'Hb_na_1_sigma'
+    OIII4959w_1_scale:    0.31123826 (init = 0)
+    OIII4959w_1_dwave:    0.00756251 (init = 0)
+    OIII4959w_1_sigma:    0.00600000 (init = 0.003)
+    OIII5007w_1_scale:    0.94314623 == '3.0303030014038086 * OIII4959w_1_scale'
+    OIII5007w_1_dwave:    0.00756251 == 'OIII4959w_1_dwave'
+    OIII5007w_1_sigma:    0.00600000 == 'OIII4959w_1_sigma'
+    HeII4687_br_1_scale:  2.21617114 (init = 0)
+    HeII4687_br_1_dwave:  0.00500000 (init = 0)
+    HeII4687_br_1_sigma:  0.05000000 (init = 0.005)
+    HeII4687_na_1_scale:  2.09843642 (init = 0)
+    HeII4687_na_1_dwave: -3.4815e-04 == 'Hb_na_1_dwave'
+    HeII4687_na_1_sigma:  9.3082e-04 == 'Hb_na_1_sigma'
 Name                Value      Min      Max   Stderr     Vary     Expr Brute_Step
 Ha_br_1_dwave           0   -0.015    0.015     None     True     None     None
 Ha_br_1_scale           0        0    1e+10     None     True     None     None
-Ha_br_1_sigma       0.005    0.004     0.05     None     True     None     None
+Ha_br_1_sigma       0.005   0.0015     0.05     None     True     None     None
 Ha_br_2_dwave           0   -0.015    0.015     None     True     None     None
 Ha_br_2_scale           0        0    1e+10     None     True     None     None
-Ha_br_2_sigma       0.005    0.004     0.05     None     True     None     None
+Ha_br_2_sigma       0.005   0.0015     0.05     None     True     None     None
 Ha_na_1_dwave           0    -0.01     0.01     None     True     None     None
 Ha_na_1_scale           0        0    1e+10     None     True     None     None
-Ha_na_1_sigma       0.001   0.0005  0.00169     None     True     None     None
+Ha_na_1_sigma       0.001   0.0005   0.0012     None     True     None     None
 NII6549_1_dwave         0   -0.005    0.005     None    False Ha_na_1_dwave     None
 NII6549_1_scale         0        0    1e+10     None     True     None     None
-NII6549_1_sigma     0.001  0.00023  0.00169     None    False Ha_na_1_sigma     None
+NII6549_1_sigma     0.001  0.00023   0.0012     None    False Ha_na_1_sigma     None
 NII6585_1_dwave         0   -0.005    0.005     None    False Ha_na_1_dwave     None
 NII6585_1_scale         0        0    1e+10     None    False 3.0 * NII6549_1_scale     None
-NII6585_1_sigma     0.001  0.00023  0.00169     None    False Ha_na_1_sigma     None
+NII6585_1_sigma     0.001  0.00023   0.0012     None    False Ha_na_1_sigma     None
 SII6718_1_dwave         0   -0.005    0.005     None    False Ha_na_1_dwave     None
 SII6718_1_scale         0        0    1e+10     None     True     None     None
-SII6718_1_sigma     0.001  0.00023  0.00169     None    False Ha_na_1_sigma     None
+SII6718_1_sigma     0.001  0.00023   0.0012     None    False Ha_na_1_sigma     None
 SII6732_1_dwave         0   -0.005    0.005     None    False Ha_na_1_dwave     None
 SII6732_1_scale         0        0    1e+10     None     True     None     None
-SII6732_1_sigma     0.001  0.00023  0.00169     None    False Ha_na_1_sigma     None
+SII6732_1_sigma     0.001  0.00023   0.0012     None    False Ha_na_1_sigma     None
 Fitting complex Ha
 Fit report
 [[Variables]]
-    Ha_br_1_scale:    10.5270337 +/- 1.12320596 (10.67%) (init = 0)
-    Ha_br_1_dwave:   -2.7353e-04 +/- 2.4838e-04 (90.80%) (init = 0)
-    Ha_br_1_sigma:    0.01238262 +/- 6.0594e-04 (4.89%) (init = 0.005)
-    Ha_br_2_scale:    34.4857332 +/- 1.78204178 (5.17%) (init = 0)
-    Ha_br_2_dwave:   -8.6754e-04 +/- 8.9766e-05 (10.35%) (init = 0)
-    Ha_br_2_sigma:    0.00524715 +/- 2.2046e-04 (4.20%) (init = 0.005)
-    Ha_na_1_scale:    43.0196778 +/- 1.81616473 (4.22%) (init = 0)
-    Ha_na_1_dwave:   -7.9587e-04 +/- 8.7857e-05 (11.04%) (init = 0)
-    Ha_na_1_sigma:    0.00168357 +/- 1.1454e-04 (6.80%) (init = 0.001)
-    NII6549_1_scale:  4.28312885 +/- 0.73446842 (17.15%) (init = 0)
-    NII6549_1_dwave: -7.9587e-04 +/- 8.7857e-05 (11.04%) == 'Ha_na_1_dwave'
-    NII6549_1_sigma:  0.00168357 +/- 1.1454e-04 (6.80%) == 'Ha_na_1_sigma'
-    NII6585_1_scale:  12.8493866 +/- 2.20340525 (17.15%) == '3.0 * NII6549_1_scale'
-    NII6585_1_dwave: -7.9587e-04 +/- 8.7857e-05 (11.04%) == 'Ha_na_1_dwave'
-    NII6585_1_sigma:  0.00168357 +/- 1.1454e-04 (6.80%) == 'Ha_na_1_sigma'
-    SII6718_1_scale:  0.11578072 +/- 2.21937916 (1916.88%) (init = 0)
-    SII6718_1_dwave: -7.9587e-04 +/- 8.7857e-05 (11.04%) == 'Ha_na_1_dwave'
-    SII6718_1_sigma:  0.00168357 +/- 1.1454e-04 (6.80%) == 'Ha_na_1_sigma'
-    SII6732_1_scale:  1.87098836 +/- 0.26321829 (14.07%) (init = 0)
-    SII6732_1_dwave: -7.9587e-04 +/- 8.7857e-05 (11.04%) == 'Ha_na_1_dwave'
-    SII6732_1_sigma:  0.00168357 +/- 1.1454e-04 (6.80%) == 'Ha_na_1_sigma'
+    Ha_br_1_scale:    41.2667622 +/- 2.14863388 (5.21%) (init = 0)
+    Ha_br_1_dwave:   -0.00102013 +/- 1.0049e-04 (9.85%) (init = 0)
+    Ha_br_1_sigma:    0.00414661 +/- 1.4286e-04 (3.45%) (init = 0.005)
+    Ha_br_2_scale:    16.6129382 +/- 1.05219274 (6.33%) (init = 0)
+    Ha_br_2_dwave:   -2.0301e-04 +/- 1.5100e-04 (74.38%) (init = 0)
+    Ha_br_2_sigma:    0.01023583 +/- 2.8523e-04 (2.79%) (init = 0.005)
+    Ha_na_1_scale:    37.4510645 +/- 2.49120573 (6.65%) (init = 0)
+    Ha_na_1_dwave:   -4.0807e-04 +/- 7.8712e-05 (19.29%) (init = 0)
+    Ha_na_1_sigma:    0.00120000 +/- 3.5907e-04 (29.92%) (init = 0.001)
+    NII6549_1_scale:  3.68408082 +/- 0.54816934 (14.88%) (init = 0)
+    NII6549_1_dwave: -4.0807e-04 +/- 7.8712e-05 (19.29%) == 'Ha_na_1_dwave'
+    NII6549_1_sigma:  0.00120000 +/- 3.5907e-04 (29.92%) == 'Ha_na_1_sigma'
+    NII6585_1_scale:  11.0522425 +/- 1.64450802 (14.88%) == '3.0 * NII6549_1_scale'
+    NII6585_1_dwave: -4.0807e-04 +/- 7.8712e-05 (19.29%) == 'Ha_na_1_dwave'
+    NII6585_1_sigma:  0.00120000 +/- 3.5907e-04 (29.92%) == 'Ha_na_1_sigma'
+    SII6718_1_scale:  1.26379740 +/- 0.28486765 (22.54%) (init = 0)
+    SII6718_1_dwave: -4.0807e-04 +/- 7.8712e-05 (19.29%) == 'Ha_na_1_dwave'
+    SII6718_1_sigma:  0.00120000 +/- 3.5907e-04 (29.92%) == 'Ha_na_1_sigma'
+    SII6732_1_scale:  2.33576658 +/- 0.27258129 (11.67%) (init = 0)
+    SII6732_1_dwave: -4.0807e-04 +/- 7.8712e-05 (19.29%) == 'Ha_na_1_dwave'
+    SII6732_1_sigma:  0.00120000 +/- 3.5907e-04 (29.92%) == 'Ha_na_1_sigma'
 [[Correlations]] (unreported correlations are < 0.100)
-    C(Ha_br_1_scale, Ha_br_1_sigma)     = -0.9540
-    C(Ha_br_1_scale, Ha_br_2_sigma)     = -0.8446
-    C(Ha_na_1_dwave, NII6549_1_scale)   = -0.7277
-    C(Ha_br_1_sigma, Ha_br_2_sigma)     = +0.7216
-    C(Ha_br_2_sigma, Ha_na_1_scale)     = +0.6092
-    C(Ha_na_1_sigma, NII6549_1_scale)   = -0.5550
-    C(Ha_br_1_dwave, Ha_br_2_dwave)     = -0.5483
-    C(Ha_br_2_scale, Ha_na_1_sigma)     = -0.5105
-    C(Ha_br_2_scale, Ha_br_2_sigma)     = -0.4418
-    C(Ha_br_2_scale, Ha_na_1_scale)     = -0.4323
-    C(SII6718_1_scale, SII6732_1_scale) = +0.4263
-    C(Ha_br_1_scale, Ha_na_1_scale)     = -0.4232
-    C(Ha_na_1_dwave, Ha_na_1_sigma)     = +0.4038
-    C(Ha_br_2_sigma, NII6549_1_scale)   = +0.3847
-    C(Ha_br_1_sigma, SII6732_1_scale)   = -0.3625
-    C(Ha_br_1_sigma, Ha_na_1_scale)     = +0.3406
-    C(Ha_br_2_scale, Ha_br_2_dwave)     = +0.3387
-    C(Ha_br_1_scale, SII6732_1_scale)   = +0.3377
-    C(Ha_br_1_scale, Ha_br_1_dwave)     = -0.3213
-    C(Ha_br_2_sigma, Ha_na_1_dwave)     = -0.3213
-    C(Ha_br_1_dwave, Ha_br_2_sigma)     = +0.3103
-    C(Ha_br_1_dwave, Ha_br_1_sigma)     = +0.3098
-    C(Ha_br_1_scale, NII6549_1_scale)   = -0.3078
-    C(Ha_br_1_sigma, NII6549_1_scale)   = +0.2868
-    C(Ha_br_1_scale, Ha_na_1_dwave)     = +0.2867
-    C(Ha_br_1_dwave, SII6718_1_scale)   = +0.2836
-    C(Ha_br_1_sigma, Ha_na_1_dwave)     = -0.2741
-    C(Ha_br_1_sigma, SII6718_1_scale)   = +0.2638
-    C(Ha_br_2_sigma, Ha_na_1_sigma)     = +0.2501
-    C(Ha_br_2_sigma, SII6732_1_scale)   = -0.2496
-    C(Ha_br_2_scale, NII6549_1_scale)   = -0.2367
-    C(Ha_br_1_dwave, NII6549_1_scale)   = +0.2314
-    C(Ha_na_1_scale, NII6549_1_scale)   = +0.2233
-    C(Ha_br_2_dwave, NII6549_1_scale)   = -0.2169
-    C(Ha_br_1_scale, SII6718_1_scale)   = -0.1947
-    C(Ha_br_1_dwave, Ha_na_1_scale)     = +0.1899
-    C(Ha_na_1_dwave, SII6718_1_scale)   = -0.1846
-    C(Ha_br_2_dwave, Ha_br_2_sigma)     = -0.1819
-    C(Ha_br_1_dwave, SII6732_1_scale)   = -0.1763
-    C(Ha_br_2_dwave, Ha_na_1_scale)     = -0.1745
-    C(Ha_br_1_sigma, Ha_br_2_scale)     = +0.1660
-    C(Ha_br_2_dwave, Ha_na_1_dwave)     = -0.1578
-    C(Ha_br_2_sigma, SII6718_1_scale)   = +0.1520
-    C(NII6549_1_scale, SII6718_1_scale) = +0.1306
-    C(Ha_na_1_sigma, SII6732_1_scale)   = -0.1306
-    C(Ha_na_1_scale, SII6732_1_scale)   = -0.1241
-    C(Ha_br_2_scale, Ha_na_1_dwave)     = +0.1219
-    C(Ha_br_2_dwave, Ha_na_1_sigma)     = -0.1090
+    C(Ha_br_2_scale, Ha_br_2_sigma)     = -0.9416
+    C(Ha_br_1_sigma, Ha_br_2_scale)     = -0.7963
+    C(Ha_br_1_sigma, Ha_br_2_sigma)     = +0.6690
+    C(Ha_br_1_scale, Ha_br_1_dwave)     = +0.6335
+    C(Ha_br_1_scale, NII6549_1_scale)   = -0.6283
+    C(Ha_br_1_dwave, NII6549_1_scale)   = -0.6005
+    C(Ha_br_1_scale, Ha_na_1_scale)     = -0.5903
+    C(Ha_br_1_sigma, Ha_na_1_scale)     = +0.5719
+    C(Ha_na_1_scale, NII6549_1_scale)   = +0.5571
+    C(Ha_br_1_scale, Ha_na_1_sigma)     = +0.5254
+    C(Ha_br_1_dwave, Ha_br_2_dwave)     = -0.4691
+    C(Ha_br_1_dwave, Ha_na_1_scale)     = -0.4302
+    C(Ha_br_2_sigma, SII6718_1_scale)   = -0.3909
+    C(Ha_br_1_scale, Ha_br_1_sigma)     = -0.3828
+    C(Ha_br_1_sigma, Ha_na_1_dwave)     = -0.3782
+    C(Ha_br_1_sigma, Ha_br_2_dwave)     = +0.3734
+    C(Ha_br_2_scale, SII6718_1_scale)   = +0.3677
+    C(Ha_br_1_sigma, SII6718_1_scale)   = -0.3665
+    C(Ha_br_1_sigma, Ha_na_1_sigma)     = -0.3423
+    C(Ha_br_2_scale, Ha_br_2_dwave)     = -0.3356
+    C(Ha_br_1_sigma, NII6549_1_scale)   = +0.3314
+    C(Ha_na_1_dwave, SII6718_1_scale)   = +0.3283
+    C(Ha_br_1_dwave, Ha_na_1_sigma)     = +0.3026
+    C(Ha_br_2_dwave, Ha_br_2_sigma)     = +0.2879
+    C(Ha_br_2_scale, Ha_na_1_scale)     = -0.2826
+    C(Ha_br_2_dwave, Ha_na_1_scale)     = +0.2782
+    C(Ha_na_1_sigma, SII6718_1_scale)   = +0.2747
+    C(Ha_br_2_dwave, NII6549_1_scale)   = +0.2595
+    C(SII6718_1_scale, SII6732_1_scale) = -0.2584
+    C(Ha_br_2_scale, Ha_na_1_dwave)     = +0.2467
+    C(Ha_br_2_dwave, SII6718_1_scale)   = -0.2455
+    C(Ha_na_1_dwave, NII6549_1_scale)   = -0.2382
+    C(Ha_br_1_scale, Ha_br_2_sigma)     = +0.2316
+    C(Ha_br_1_dwave, Ha_br_1_sigma)     = -0.2251
+    C(Ha_na_1_sigma, SII6732_1_scale)   = +0.2220
+    C(Ha_br_1_scale, Ha_na_1_dwave)     = +0.2117
+    C(Ha_br_2_sigma, Ha_na_1_scale)     = +0.2117
+    C(Ha_br_2_sigma, Ha_na_1_dwave)     = -0.2040
+    C(Ha_br_2_sigma, SII6732_1_scale)   = -0.1853
+    C(Ha_br_1_scale, Ha_br_2_dwave)     = -0.1712
+    C(Ha_br_2_scale, SII6732_1_scale)   = +0.1707
+    C(Ha_na_1_scale, Ha_na_1_dwave)     = -0.1655
+    C(Ha_br_1_scale, Ha_br_2_scale)     = -0.1573
+    C(Ha_na_1_dwave, SII6732_1_scale)   = -0.1517
+    C(Ha_br_1_sigma, SII6732_1_scale)   = -0.1415
+    C(Ha_br_1_dwave, Ha_na_1_dwave)     = -0.1366
+    C(Ha_na_1_dwave, Ha_na_1_sigma)     = +0.1356
+    C(Ha_br_2_dwave, SII6732_1_scale)   = -0.1264
+    C(Ha_na_1_scale, SII6718_1_scale)   = -0.1215
+    C(Ha_br_2_dwave, Ha_na_1_sigma)     = -0.1151
+    C(Ha_br_1_scale, SII6718_1_scale)   = +0.1134
+    C(Ha_br_1_dwave, SII6732_1_scale)   = +0.1061
+    C(Ha_br_2_scale, Ha_na_1_sigma)     = +0.1005
 Saving figure as ./result.pdf
-Fitting finished in 34.1s
+Fitting finished in 1122.9s
 wrote pyqsofit_model.csv
 ['ra' 'dec' 'plateid' 'MJD' 'fiberid' 'redshift' 'SN_ratio_conti'
  'Fe_uv_norm' 'Fe_uv_FWHM' 'Fe_uv_shift' 'Fe_op_norm' 'Fe_op_FWHM'
  'Fe_op_shift' 'PL_norm' 'PL_slope' 'Blamer_norm' 'Balmer_Te' 'Balmer_Tau'
  'conti_a_0' 'conti_a_1' 'conti_a_2' 'L1350' 'L1450' 'L3000' 'L4200'
- 'L5100' 'Fe_flux_4435_4685']
+ 'L5100' 'Fe_flux_4435_4685' 'SN_host' 'rchi2_decomp' 'frac_host_4200'
+ 'frac_host_5100' 'Dn4000' 'sigma' 'sigma_err' 'v_off' 'v_off_err'
+ 'rchi2_ppxf' 'gal_par_0' 'gal_par_1' 'gal_par_2' 'gal_par_3' 'gal_par_4'
+ 'qso_par_0' 'qso_par_1' 'qso_par_2' 'qso_par_3' 'qso_par_4' 'qso_par_5'
+ 'qso_par_6' 'qso_par_7' 'qso_par_8' 'qso_par_9']
 
 ['-999' '-999' '0' '0' '0' '0.34872591495513916' '42.454379254610956'
- '3.019547945015688' '14613.780900500773' '0.007898926210847316'
- '5.016585480355218' '17999.999993523135' '0.009999999773706695'
- '50.68396535801156' '-0.9639815782002978' '0.0' '15000.0' '0.5'
- '-12214.143427431816' '4.9988921541026405' '-0.0005580584174669223'
- '-1.0' '-1.0' '44.79380270754332' '44.68563812194063' '44.65416903998273'
- '1697.485940725974']
+ '0.0' '3000.0' '0.0' '3.9866482337558296' '2960.2626019713543'
+ '0.001538149057944296' '50.71064568262784' '-1.4435917049928468' '0.0'
+ '15000.0' '0.5' '-16924.332454421026' '7.667165827955692'
+ '-0.0008961618374956635' '-1.0' '-1.0' '-1.0' '44.54432008786603'
+ '44.45116961602669' '1707.66730375206' '11.654892717827348'
+ '7.86759864052166' '0.26473801609169456' '0.32329645546594593'
+ '1.3072547396269636' '650.2043273906872' '179.38607949543814'
+ '1298.8372085518122' '140.5935517308711' '1.3116658772116896'
+ '408.67419243698356' '-128.12784250018558' '34.490543671023836'
+ '32.934471909921314' '33.487500517805266' '1503.0971169995598'
+ '-77.57266764854083' '24.15481827583629' '56.21046647113076'
+ '1.9034240270731038' '23.31038086713113' '22.767950569668713'
+ '8.319290760048665' '-11.06757951873674' '-8.197674918104335']
 ['Hb_br_1_scale' 'Hb_br_1_centerwave' 'Hb_br_1_sigma' 'Hb_br_2_scale'
  'Hb_br_2_centerwave' 'Hb_br_2_sigma' 'Hb_na_1_scale' 'Hb_na_1_centerwave'
  'Hb_na_1_sigma' 'OIII4959c_1_scale' 'OIII4959c_1_centerwave'
@@ -225,18 +259,18 @@ wrote pyqsofit_model.csv
  'SII6718_1_centerwave' 'SII6718_1_sigma' 'SII6732_1_scale'
  'SII6732_1_centerwave' 'SII6732_1_sigma']
 
-[1.04681713e+01 8.49174440e+00 8.15830383e-03 1.34877187e+01
- 8.48710361e+00 4.01631704e-03 8.61112459e+00 8.48892322e+00
- 1.14332504e-03 7.65010055e+00 8.50879875e+00 1.14332504e-03
- 2.31821227e+01 8.51841751e+00 1.14332504e-03 3.43253204e-02
- 8.50008422e+00 3.96885936e-03 1.04016121e-01 8.50970298e+00
- 3.96885936e-03 2.15935436e+00 8.44755184e+00 6.37801631e-03
- 7.24051930e-01 8.45212952e+00 1.14332504e-03 1.05270337e+01
- 8.78917520e+00 1.23826249e-02 3.44857332e+01 8.78858120e+00
- 5.24715404e-03 4.30196778e+01 8.78865287e+00 1.68357480e-03
- 4.28312885e+00 8.78640125e+00 1.68357480e-03 1.28493866e+01
- 8.79179618e+00 1.68357480e-03 1.15780718e-01 8.81179282e+00
- 1.68357480e-03 1.87098836e+00 8.81393096e+00 1.68357480e-03]
+[9.97201766e+00 8.48959491e+00 7.59987033e-03 1.55626878e+01
+ 8.48774487e+00 3.69688752e-03 6.52226329e+00 8.48899740e+00
+ 9.30822213e-04 7.64265484e+00 8.50887293e+00 9.30822213e-04
+ 2.31595599e+01 8.51849169e+00 9.30822213e-04 3.11238257e-01
+ 8.51678359e+00 6.00000005e-03 9.43146226e-01 8.52640235e+00
+ 6.00000005e-03 2.21617114e+00 8.45755184e+00 5.00000003e-02
+ 2.09843642e+00 8.45220369e+00 9.30822213e-04 4.12667622e+01
+ 8.78842861e+00 4.14661207e-03 1.66129382e+01 8.78924573e+00
+ 1.02358250e-02 3.74510645e+01 8.78904067e+00 1.20000006e-03
+ 3.68408082e+00 8.78678904e+00 1.20000006e-03 1.10522425e+01
+ 8.79218398e+00 1.20000006e-03 1.26379740e+00 8.81218062e+00
+ 1.20000006e-03 2.33576658e+00 8.81431876e+00 1.20000006e-03]
 ['Hb_br_1_scale' 'Hb_br_1_sigma' 'Hb_br_2_centerwave' 'Hb_na_1_scale'
  'Hb_na_1_sigma' 'OIII4959c_1_centerwave' 'OIII5007c_1_scale'
  'OIII5007c_1_sigma' 'OIII4959w_1_centerwave' 'OIII5007w_1_scale'
@@ -271,57 +305,57 @@ wrote pyqsofit_model.csv
  'Ha_whole_br_sigma' 'Ha_whole_br_ew' 'Ha_whole_br_peak'
  'Ha_whole_br_area' 'Ha_whole_br_snr']
 
-['Hb' '1' '258.3436251435167' '-87.09062630712357' '0.6573629138511875'
- '1192' '393' 'Ha' '1' '151.6330297480705' '-77.96580791597005'
- '0.6041156563668147' '228' '251' '10.468171329769405' '8.491744398287763'
- '0.008158303834964856' '13.48771871967358' '8.487103610173078'
- '0.00401631704424404' '8.611124591162422' '8.488923224340699'
- '0.0011433250424544672' '7.650100553036054' '8.508798750768921'
- '0.0011433250424544672' '23.182122666906093' '8.518417509924195'
- '0.0011433250424544672' '0.03432532036384828' '8.500084221504329'
- '0.003968859362170626' '0.1040161213227167' '8.509702980659602'
- '0.003968859362170626' '2.159354361985777' '8.447551841851453'
- '0.0063780163103305965' '0.7240519295237391' '8.45212951553943'
- '0.0011433250424544672' '10.527033689200493' '8.789175203840124'
- '0.0123826249133174' '34.48573315800729' '8.788581196091933'
- '0.00524715404450246' '43.019677820055335' '8.78865287131207'
- '0.0016835747975069276' '4.283128851589879' '8.786401246251035'
- '0.0016835747975069276' '12.849386554769637' '8.791796181858945'
- '0.0016835747975069276' '0.11578071834605907' '8.811792824925352'
- '0.0016835747975069276' '1.8709883642387126' '8.813930962742734'
- '0.0016835747975069276' '3949.29339179735' '4111.437950647984'
- '81.68188547637716' '4855.404908605537' '1869.7749466532991'
- '17.22232532017921' '4288.721177616413' '2657.0165363183473'
- '275.96315592019096' '6559.020629491' '5113.765919117348'
- '55.18107110069611']
+['Hb' '1' '804.7848505415726' '378.78597610685165' '2.0477986018869534'
+ '2484' '393' 'Ha' '1' '1040.186977392992' '428.49130331114475'
+ '4.144171224673275' '1724' '251' '9.972017656068033' '8.489594914743954'
+ '0.0075998703304009235' '15.56268780511516' '8.487744865623748'
+ '0.003696887518935154' '6.5222632850137074' '8.488997401833522'
+ '0.0009308222125332251' '7.642654842321406' '8.508872928261745'
+ '0.0009308222125332251' '23.159559907379908' '8.518491687417018'
+ '0.0009308222125332251' '0.31123825738887945' '8.516783591481323'
+ '0.006000000052154064' '0.9431462255172125' '8.526402350636596'
+ '0.006000000052154064' '2.216171135493994' '8.45755184138829'
+ '0.0500000002786874' '2.0984364246245946' '8.452203693032253'
+ '0.0009308222125332251' '41.26676222959702' '8.788428611130751'
+ '0.0041466120685022465' '16.612938247284603' '8.789245727170147'
+ '0.010235825012595052' '37.451064471838436' '8.789040668971603'
+ '0.001200000056883662' '3.6840808181892726' '8.786789043910568'
+ '0.001200000056883662' '11.052242454567818' '8.792183979518478'
+ '0.001200000056883662' '1.2637974000639929' '8.812180622584885'
+ '0.001200000056883662' '2.335766580152665' '8.814318760402267'
+ '0.001200000056883662' '3535.8765202286245' '10660.75561448785'
+ '203.05298750215715' '4855.535484688267' '3025.568826365634'
+ '25.57685805817854' '3548.0802364407114' '2314.727001336343'
+ '435.2152599007913' '6557.958218560945' '5603.046095636979'
+ '64.29940708496464']
 Broad Hb:
-FWHM (km/s) 3946.0
-Sigma (km/s) 2148.7
-EW (A) 74.6
-Peak (A) 4854.6
-Area (10^(-17) erg/s/cm^2) 1699.5
-SNR 13.9
+FWHM (km/s) 3333.0
+Sigma (km/s) 1866.1
+EW (A) 111.4
+Peak (A) 4856.6
+Area (10^(-17) erg/s/cm^2) 1621.7
+SNR 17.3
 
 Narrow Hb:
-FWHM (km/s) 806.8
-Sigma (km/s) 337.9
-EW (A) 5.2
-Peak (A) 4860.6
-Area (10^(-17) erg/s/cm^2) 119.6
-SNR 3.8
+FWHM (km/s) 660.9
+Sigma (km/s) 275.1
+EW (A) 5.1
+Peak (A) 4860.4
+Area (10^(-17) erg/s/cm^2) 73.8
+SNR 2.9
 
 Broad [OIII]5007:
-FWHM (km/s) 2776.4
-Sigma (km/s) 1163.2
-EW (A) 0.2
-Peak (A) 4962.7
-Area (10^(-17) erg/s/cm^2) 5.1
-SNR 0.0
+FWHM (km/s) 4268.5
+Sigma (km/s) 1788.2
+EW (A) 5.2
+Peak (A) 5045.7
+Area (10^(-17) erg/s/cm^2) 71.4
+SNR 0.4
 
 Narrow [OIII]5007:
-FWHM (km/s) 806.8
-Sigma (km/s) 337.9
-EW (A) 15.0
-Peak (A) 5006.1
-Area (10^(-17) erg/s/cm^2) 331.7
-SNR 11.0
+FWHM (km/s) 660.9
+Sigma (km/s) 275.1
+EW (A) 19.4
+Peak (A) 5005.9
+Area (10^(-17) erg/s/cm^2) 269.8
+SNR 10.3
