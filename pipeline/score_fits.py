@@ -211,22 +211,20 @@ def line_penalty(lrows):
         return None
 
     pen = 0.0
-    # [OIII] doublet: wherever 5007 is detected, 4959 must be present ~0.33x.
-    for comp in ("narrow", "outflow", "broad", "total"):
-        f7 = g("OIII5007", comp)
-        if f7 is None or f7 <= 0:
-            continue
-        f9 = g("OIII4959", comp)
-        if f9 is None or f9 <= 0:
-            pen += 1.0
-        elif not (0.22 <= f9 / f7 <= 0.45):
-            pen += 1.0
-    # A positive, detected [OIII]5007 is required.
-    o7 = g("OIII5007", "narrow")
-    if o7 is None:
-        o7 = g("OIII5007", "total")
-    if o7 is None or not (o7 > 0):
-        pen += 1.0
+    # [OIII] doublet: aggregate over components, because tools label the pair
+    # 'narrow'/'outflow'/'broad'/'total' inconsistently.
+    comps = ("narrow", "outflow", "broad", "total")
+    def total(line):
+        vals = [g(line, c) for c in comps]
+        vals = [v for v in vals if v is not None and math.isfinite(v) and v > 0]
+        return sum(vals) if vals else None
+    f7, f9 = total("OIII5007"), total("OIII4959")
+    if f7 is None:
+        pen += 1.0   # no positive [OIII]5007 at all
+    elif f9 is None:
+        pen += 1.0   # 4959 missing
+    elif not (0.22 <= f9 / f7 <= 0.45):
+        pen += 1.0   # 4959/5007 ratio unphysical
     # These are broad-line QSOs: broad Halpha *and* broad Hbeta must be present.
     ha, hb = g("Ha6563", "broad"), g("Hb4861", "broad")
     if ha is None or not (ha > 0):
