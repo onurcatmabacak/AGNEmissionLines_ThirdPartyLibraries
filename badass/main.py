@@ -83,14 +83,14 @@ comp_options = {
 # gaussian, lorentzian, voigt, gauss-hermite, laplace, or uniform
 narrow_options = {
     "amp_plim": (0, 50),  # line amplitude (1e-17 units); was (0,1000) -> narrows were pinned at 0
-    "disp_plim": (100, 2500),  # km/s; was (0,500) which is BELOW the ~300-450 km/s instrument profile
+    "disp_plim": (50, 400),  # km/s; 2500 allowed narrow Halpha to swallow the broad line
     "voff_plim": (-1000, 1000),  # line velocity offset parameter limits; default (0,)
     "line_profile": "gaussian",  # line profile shape*
     "n_moments": 4,  # number of higher order Gauss-Hermite moments (if line profile is gauss-hermite, laplace, or uniform)
 }
 
 broad_options = {
-    "amp_plim": (0, 50),  # line amplitude parameter limits
+    "amp_plim": (0, 200),  # broad Halpha amplitude reached 71 with the old (0,50) cap
     "disp_plim": (600, 6000),  # 600-6000 km/s -> wings of Halpha/Hbeta; was (500,4000)
     "voff_plim": (-1500, 1500),  # allowed blueshifted wing components
     "line_profile": "gaussian",  # line profile shape*
@@ -139,8 +139,8 @@ user_lines = {
     "NA_OIII_a": {
         "center": 4960.295,
         "amp": "(NA_OIII_b_AMP/2.98)",
-        "disp": "NA_H_ALPHA_DISP",
-        "voff": "NA_H_ALPHA_VOFF",
+        "disp": "NA_OIII_b_DISP",
+        "voff": "NA_OIII_b_VOFF",
         "line_type": "na",
         "label": r"[OIIIa]",
         "ncomp": 1,
@@ -148,8 +148,8 @@ user_lines = {
     "NA_OIII_b": {
         "center": 5008.240,
         "amp": "free",
-        "disp": "NA_H_ALPHA_DISP",
-        "voff": "NA_H_ALPHA_VOFF",
+        "disp": "free",
+        "voff": "free",
         "line_type": "na",
         "label": r"[OIIIb]",
         "ncomp": 1,

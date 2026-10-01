@@ -57,6 +57,21 @@ MAIN_NEW = (
 # a 3+-line group (e.g. Ha + Ha_broad + [NII]) raises UnboundLocalError and
 # aborts the run before the FITS table is written.
 PLOT_OLD = "        for (text, offset) in zip(texts, offsets):"
+
+# plot_gaussian_fit draws each Gaussian separately over the continuum; add the
+# sum so the user can see the TOTAL line model.
+PLOT2_OLD = "    for line_fit in spectrum_fit.lines:\n        # Plot detections"
+PLOT2_NEW = (
+    "    # Total model = continuum + sum of all detected Gaussians.\n"
+    "    _detected = [l for l in spectrum_fit.lines if isinstance(l, gf.Line)]\n"
+    "    if _detected:\n"
+    "        _total = sum(\n"
+    "            gf.gauss_function(wl, l.height.value, l.wavelength.value, l.sigma.value)\n"
+    "            for l in _detected\n"
+    "        )\n"
+    "        ax.plot(wl, _total + spectrum_fit.continuum.value, color=\"black\", lw=1.2)\n"
+    + PLOT2_OLD
+)
 PLOT_NEW = (
     "        else:\n"
     "            offsets = tuple((0.0, 0.0) for _ in texts)\n"
@@ -83,6 +98,12 @@ INJECT = (
     "    # Amplitudes must stay physical (GLEAM otherwise returns negative fluxes).\n"
     "    for _i in range(len(_wl)):\n"
     "        model.set_param_hint(f\"g{_i}_amplitude\", min=0.0)\n"
+    "    # [NII] is narrow: cap its width so a broad Gaussian cannot be\n"
+    "    # misfiled at the [NII] position (which steals the broad Halpha).\n"
+    "    for _i, _w in enumerate(_wl):\n"
+    "        if abs(_w - 6548.05) < 3.0 or abs(_w - 6583.46) < 3.0:\n"
+    "            model.set_param_hint(f\"g{_i}_fwhm\", max=20.0)\n"
+    "            model.set_param_hint(f\"g{_i}_sigma\", max=8.5)\n"
     "    for _a, _b in [(4958.9, 5006.8), (6548.05, 6583.46)]:\n"
     "        _ia, _ib = _idx(_a), _idx(_b)\n"
     "        if _ia is not None and _ib is not None:\n"
@@ -122,11 +143,16 @@ def main() -> int:
     src = src.replace(ANCHOR, INJECT + ANCHOR, 1)
     src = src.replace(OLD_IS_GOOD, NEW_IS_GOOD, 1)
     FILE.write_text(src)
-    if ("patched GLEAM label offsets" not in PLOT_FILE.read_text()
-            and PLOT_OLD in PLOT_FILE.read_text()):
-        plot = PLOT_FILE.read_text().replace(PLOT_OLD, PLOT_NEW, 1)
-        PLOT_FILE.write_text(plot)
+    _plot = PLOT_FILE.read_text()
+    if "patched GLEAM label offsets" not in _plot and PLOT_OLD in _plot:
+        _plot = _plot.replace(PLOT_OLD, PLOT_NEW, 1)
+        PLOT_FILE.write_text(_plot)
         print("patched GLEAM label offsets")
+    _plot = PLOT_FILE.read_text()
+    if "_total = sum(" not in _plot and PLOT2_OLD in _plot:
+        _plot = _plot.replace(PLOT2_OLD, PLOT2_NEW, 1)
+        PLOT_FILE.write_text(_plot)
+        print("patched GLEAM total-line plot")
     if MAIN_OLD in MAIN_FILE.read_text():
         main_txt = MAIN_FILE.read_text().replace(MAIN_OLD, MAIN_NEW, 1)
         MAIN_FILE.write_text(main_txt)

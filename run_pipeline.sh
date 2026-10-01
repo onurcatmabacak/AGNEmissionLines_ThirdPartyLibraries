@@ -67,7 +67,7 @@ NO_REPORT=0                      # skip the HTML/MD report (used during paramete
 # BADASS3 is slow with full MCMC; the pipeline defaults to a fast OLS/basinhopping
 # fit. Set BADASS_MCMC=1 to restore the full uncertainty run.
 BADASS_MCMC="${BADASS_MCMC:-0}"
-BADASS_NBASINHOP="${BADASS_NBASINHOP:-5}"
+BADASS_NBASINHOP="${BADASS_NBASINHOP:-50}"
 BADASS_MAX_LIKE_NITER="${BADASS_MAX_LIKE_NITER:-100}"   # MC bootstrap iterations (0 = fastest)
 DOCKER_TOOLS="badass fantasy_agn gelato gleam"
 FETCH_N=""

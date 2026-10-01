@@ -117,7 +117,10 @@ def _tool_model_rest(obj_dir: Path, tool: str, out: Path, wave_rest: np.ndarray,
             return None
         names = set(arr.dtype.names or ())
         key = "model_total" if "model_total" in names else "model"
-        return np.interp(wave_rest, np.atleast_1d(arr["wave"]), np.atleast_1d(arr[key]))
+        model = np.interp(wave_rest, np.atleast_1d(arr["wave"]), np.atleast_1d(arr[key]))
+        # PyQSOFit's _RestFrame multiplies flux by (1+z); undo it so the model is
+        # in the observed frame of the prepared spectrum.
+        return model / (1.0 + z)
     if tool == "badass":
         f = next(out.rglob("best_model_components.fits"), None)
         if f is None:
@@ -139,7 +142,9 @@ def _tool_model_rest(obj_dir: Path, tool: str, out: Path, wave_rest: np.ndarray,
             return None
         col = {name: i for i, name in enumerate(header)}
         mk = col.get("model_total", col.get("model", 4))
-        return np.interp(wave_rest, arr[:, col.get("wave", 1)], arr[:, mk])
+        model = np.interp(wave_rest, arr[:, col.get("wave", 1)], arr[:, mk])
+        # fantasy's CorRed multiplies flux by (1+z); undo it for comparison.
+        return model / (1.0 + z)
     if tool == "gelato":
         from astropy.io import fits
         f = out / "my_sdss-results.fits"
@@ -529,7 +534,18 @@ def parse_gleam(out: Path, tag: str):
         for line, comps_in in by_line.items():
             comps_in = sorted(comps_in, key=lambda x: (x["fwhm"] if math.isfinite(x["fwhm"]) else -1),
                               reverse=True)
-            labels = ["total"] if len(comps_in) == 1 else ["broad"] + ["narrow"] * (len(comps_in) - 1)
+            if len(comps_in) == 1:
+                # A single component can still be a genuine broad line; classify
+                # it by its fitted FWHM instead of hiding it as 'total'.
+                _fw = comps_in[0]["fwhm"]
+                if math.isfinite(_fw) and _fw > 1000:
+                    labels = ["broad"]
+                elif math.isfinite(_fw) and _fw < 500:
+                    labels = ["narrow"]
+                else:
+                    labels = ["total"]
+            else:
+                labels = ["broad"] + ["narrow"] * (len(comps_in) - 1)
             for c, comp in zip(comps_in, labels):
                 rows.append(_rec(tag, "gleam", line, comp, flux=c["flux"], flux_err=c["flux_err"],
                                  fwhm=c["fwhm"], ew=c["ew"], center=c["center"]))
