@@ -202,7 +202,8 @@ def render_fantasy(text: str, k: dict) -> str:
 GELATO = {
     "file": "my_sdss.json",
     "base": ROOT / "Gelato" / "my_sdss.json",
-    "defaults": {"FThresh": 0.95, "TieDispersion": False, "LineRegion": 300, "NBoot": 0},
+    "defaults": {"FThresh": 0.95, "TieDispersion": False, "LineRegion": 300, "NBoot": 0,
+                 "force_broad": "False"},
     "candidates": [
         {},
         {"FThresh": 0.80},
@@ -210,11 +211,14 @@ GELATO = {
         {"TieDispersion": True},
         {"LineRegion": 200},
         {"LineRegion": 500},
+        {"force_broad": "True"},
+        {"force_broad": "True", "FThresh": 0.80},
     ],
     "knob_values": {
         "FThresh": [0.80, 0.90, 0.95],
         "TieDispersion": [False, True],
         "LineRegion": [200, 300, 500],
+        "force_broad": ["False", "True"],
     },
 }
 
@@ -230,6 +234,22 @@ def render_gelato(text: str, k: dict) -> str:
     for g in cfg.get("EmissionGroups", []):
         if g.get("Name") == "AGN":
             g["TieDispersion"] = bool(k["TieDispersion"])
+    if k.get("force_broad") == "True":
+        # Some objects' broad Balmer is rejected by GELATO's F-test even though
+        # the data have broad wings.  Add HI_Broad as a second *base* species
+        # (Flag 0, so no flag-added component collides with it) to force it.
+        import copy as _copy
+        for g in cfg.get("EmissionGroups", []):
+            if g.get("Name") == "Balmer":
+                hi = next((s for s in g["Species"] if s["Name"] == "HI"), None)
+                if hi is not None and not any(s["Name"] == "HI_Broad" for s in g["Species"]):
+                    broad = _copy.deepcopy(hi)
+                    broad["Name"] = "HI_Broad"
+                    broad["Flag"] = 0
+                    broad["FlagGroups"] = []
+                    hi["Flag"] = 0
+                    hi["FlagGroups"] = []
+                    g["Species"].append(broad)
     return json.dumps(cfg, indent=4)
 
 

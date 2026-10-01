@@ -59,7 +59,7 @@ TOOLS="${TOOLS:-pyqsofit badass fantasy_agn gelato gleam}"   # sculptor is GUI-o
 BUILD="${BUILD:-1}"
 CLEAN="${CLEAN:-0}"
 TOOL_TIMEOUT="${TOOL_TIMEOUT:-}"   # optional per-tool wall-clock limit, seconds (e.g. 3600)
-FANTASY_TIMEOUT="${FANTASY_TIMEOUT:-900}"  # fantasy_agn can hang after writing its products
+FANTASY_TIMEOUT="${FANTASY_TIMEOUT:-3600}"  # ntrial=30 fits need longer than 900 s
 VARIANTS="${VARIANTS:-}"           # per-tool config variants, e.g. "pyqsofit=err05,badass=fast"
 RUN_LABEL="${RUN_LABEL:-}"         # namespaces runs/ and results/ for variant grids
 REPORT_ONLY=0

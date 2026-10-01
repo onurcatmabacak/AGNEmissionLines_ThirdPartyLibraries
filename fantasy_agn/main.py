@@ -51,6 +51,10 @@ max_fwhm_na = 600       # was 2000 -> narrow Balmer FWHM inflated to 2-4x the [O
 offset = 0
 min_offset = -1500      # allow blue-shifted wing components
 max_offset = 500
+# Narrow forbidden/Balmer lines are at the systemic velocity: keep them tight
+# (a free +-1500 km/s let [OIII] drift to -790 km/s, off the observed doublet).
+min_offset_na = -400
+max_offset_na = 400
 # defines fitting model
 # cont = continuum(s,min_refer=5350, refer=5550, max_refer=5650,min_index1=-3.7, max_index1=1,max_index2=3)
 cont = continuum(s)
@@ -66,10 +70,10 @@ OIIIb_br = create_line(name="OIIIb5007_br",pos=WB_O3B, ampl=ampl, min_ampl=min_a
 # [OIII] 4959 is tied to 5007: 1/3 flux, same width and velocity.
 OIIIa_br = create_line(name="OIIIa4959_br",pos=WB_O3A, ampl=OIIIb_br.ampl/3.0, fwhm=OIIIb_br.fwhm, offset=OIIIb_br.offs_kms)
 halpha_br = create_line(name="HAlpha6565_br",pos=WB_HA, ampl=ampl, min_ampl=min_ampl, max_ampl=max_ampl, fwhm=fwhm_br, min_fwhm=min_fwhm_br, max_fwhm=max_fwhm_br, offset=offset, min_offset=min_offset, max_offset=max_offset)
-hbeta_na = create_line(name="HBeta4863_na",pos=WB_HB, ampl=ampl, min_ampl=min_ampl, max_ampl=max_ampl, fwhm=fwhm_na, min_fwhm=min_fwhm_na, max_fwhm=max_fwhm_na, offset=offset, min_offset=min_offset, max_offset=max_offset)
-OIIIb_na = create_line(name="OIIIb5007_na",pos=WB_O3B, ampl=ampl, min_ampl=min_ampl, max_ampl=max_ampl, fwhm=fwhm_na, min_fwhm=min_fwhm_na, max_fwhm=max_fwhm_na, offset=offset, min_offset=min_offset, max_offset=max_offset)
+hbeta_na = create_line(name="HBeta4863_na",pos=WB_HB, ampl=ampl, min_ampl=min_ampl, max_ampl=max_ampl, fwhm=fwhm_na, min_fwhm=min_fwhm_na, max_fwhm=max_fwhm_na, offset=offset, min_offset=min_offset_na, max_offset=max_offset_na)
+OIIIb_na = create_line(name="OIIIb5007_na",pos=WB_O3B, ampl=ampl, min_ampl=min_ampl, max_ampl=max_ampl, fwhm=fwhm_na, min_fwhm=min_fwhm_na, max_fwhm=max_fwhm_na, offset=offset, min_offset=min_offset_na, max_offset=max_offset_na)
 OIIIa_na = create_line(name="OIIIa4959_na",pos=WB_O3A, ampl=OIIIb_na.ampl/3.0, fwhm=OIIIb_na.fwhm, offset=OIIIb_na.offs_kms)
-halpha_na = create_line(name="HAlpha6565_na",pos=WB_HA, ampl=ampl, min_ampl=min_ampl, max_ampl=max_ampl, fwhm=fwhm_na, min_fwhm=min_fwhm_na, max_fwhm=max_fwhm_na, offset=offset, min_offset=min_offset, max_offset=max_offset)
+halpha_na = create_line(name="HAlpha6565_na",pos=WB_HA, ampl=ampl, min_ampl=min_ampl, max_ampl=max_ampl, fwhm=fwhm_na, min_fwhm=min_fwhm_na, max_fwhm=max_fwhm_na, offset=offset, min_offset=min_offset_na, max_offset=max_offset_na)
 # [NII] doublet, tied to the narrow width/velocity, ratio 6583/6548 = 3.
 NII6583_na = create_line(name="NII6583_na",pos=WB_N2B, ampl=ampl, min_ampl=min_ampl, max_ampl=max_ampl, fwhm=OIIIb_na.fwhm, offset=OIIIb_na.offs_kms)
 NII6548_na = create_line(name="NII6548_na",pos=WB_N2A, ampl=NII6583_na.ampl/3.0, fwhm=OIIIb_na.fwhm, offset=OIIIb_na.offs_kms)
@@ -82,6 +86,8 @@ hbeta_na.fwhm = OIIIb_na.fwhm
 hbeta_na.offs_kms = OIIIb_na.offs_kms
 halpha_na.fwhm = OIIIb_na.fwhm
 halpha_na.offs_kms = OIIIb_na.offs_kms
+# The narrow-line region is Case B: link the narrow Balmer decrement.
+halpha_na.ampl = hbeta_na.ampl * 2.86
 
 # fe=create_feii_model(max_fwhm=6000)
 # Forbidden [OIII]/[NII] lines are narrow: do not include the broad counterparts
