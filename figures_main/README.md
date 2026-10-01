@@ -6,9 +6,9 @@ One best-fit figure per tool, named `<tool>_<filename>_<object>.<ext>`:
 |------|------|
 | pyqsofit | `pyqsofit_result_<obj>.pdf` |
 | badass | `badass_max_likelihood_fit_<obj>.pdf` |
-| fantasy_agn | `fantasy_agn_my_sdss_<obj>.pdf` (OIIIa 4959 + OIIIb 5007) |
-| gelato | `gelato_my_sdss-comp_<obj>.pdf` (per-line component decomposition) |
-| gleam | `gleam_linefits...Ha..._<obj>.png` (Hα group, with the TOTAL model and the full bump) |
+| fantasy_agn | `fantasy_agn_my_sdss_<obj>.pdf` (OIIIa/OIIIb, [NII], [SII]) |
+| gelato | `gelato_my_sdss-comp_<obj>.pdf` (per-line components) |
+| gleam | `gleam_linefits.sdss.sdss.fiber1.001_<obj>.png` (overview, wide Hα inset with the TOTAL model) |
 
 `configs/` holds the exact configuration behind each fit
 (`<tool>_<configfilename>_<object>.<ext>`, from the per-object search).

@@ -183,32 +183,39 @@ component (broad / narrow / outflow) and normalised to 1e-17 erg s⁻¹ cm⁻².
 
 ### Automatic tuning (iterative search)
 
-`pipeline/auto_tune.py` (wrapper: `bash analyze.sh`) turns the pipeline into a
-self-optimising fitter:
+Two drivers share the same candidate grids and physical objective:
+
+| driver | scope | wrapper |
+|--------|-------|---------|
+| `pipeline/per_object_search.py` | **each object tuned on itself** (default) | `bash analyze.sh` |
+| `pipeline/auto_tune.py` | one config per tool for the whole sample | `bash analyze.sh --global` |
 
 ```
 input/*.fits
    └─ prepare
-        └─ stage 1: run every candidate config on a few tuning objects
-             └─ rank by mean chi2_common
-                  └─ stage 2: coordinate descent around the winner
-                       └─ final run with the winner on all objects + report
+        └─ stage 1: run every (object, tool, candidate) config
+             └─ rank by the physical objective (chi2_common + line penalties)
+                  └─ stage 2: coordinate descent around each object's winner
+                       └─ final run with the per-object winners + report
 ```
 
 ```bash
 cp new_spectrum.fits input/
-bash analyze.sh                     # full automatic run
+bash analyze.sh                     # per-object automatic run (default)
 bash analyze.sh --dry-run           # print the candidate grid
-bash analyze.sh --tools gelato --limit 1 --rounds 1   # a focused search
+bash analyze.sh --tools gelato --rounds 1 --pool 8    # a focused search
+bash analyze.sh --global            # whole-sample tuning (auto_tune.py)
 ```
 
 Per-tool knobs currently searched: PyQSOFit error floor / Fe templates /
-bad-pixel rejection; BADASS3 `fit_stat` / broad dispersion floor / `n_basinhop` /
-width ties; fantasy_agn broad-FWHM bounds / Fe II / `ntrial`; GELATO `FThresh` /
-`LineRegion` / `TieDispersion`; GLEAM resolution / continuum width / tolerance /
-probe width / `SN_limit`. Generated variants are written under
-`configs/<tool>/auto_<tool>_<key>/` and the winner is recorded in
-`work/auto_tune/best_configs.json`.
+bad-pixel rejection / broad-Gaussian multiplicity; BADASS3 `fit_stat` / broad
+dispersion floor / `n_basinhop` / width ties / Fe II / broad-decrement tie;
+fantasy_agn broad-FWHM bounds / Fe II / `ntrial`; GELATO `FThresh` / `LineRegion`
+/ `TieDispersion` / `force_broad`; GLEAM resolution / continuum width / tolerance
+/ probe width / `SN_limit`. Generated variants are written under
+`configs/<tool>/auto_<tool>_<key>/`; the per-object winners are recorded in
+`configs/BEST_PER_OBJECT.json` (and copied next to the figures in
+`figures_main/configs/`).
 
 > **Runtime.** The search runs each tool many times, so it uses fast modes:
 > GELATO `NBoot=0`, BADASS3 `BADASS_MAX_LIKE_NITER=0`, and fantasy_agn

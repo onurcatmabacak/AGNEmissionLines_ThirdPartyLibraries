@@ -1,5 +1,6 @@
 patched GLEAM label offsets
 patched GLEAM total-line plot
+patched GLEAM overview labels
 patched GLEAM non-fatal plotting
 patched GLEAM doublet ties
 WARNING: AstropyDeprecationWarning: The truth value of a Quantity is ambiguous. In the future this will raise a ValueError. [astropy.units.quantity]
@@ -271,113 +272,49 @@ Warning: non-constant dispersion
 Warning: non-constant dispersion
 Warning: non-constant dispersion
 Warning: non-constant dispersion
-multiprocessing.pool.RemoteTraceback: 
-"""
-Traceback (most recent call last):
-  File "/usr/local/lib/python3.8/multiprocessing/pool.py", line 125, in worker
-    result = (True, func(*args, **kwds))
-  File "/usr/local/lib/python3.8/multiprocessing/pool.py", line 51, in starmapstar
-    return list(itertools.starmap(args[0], args[1]))
-  File "/usr/local/lib/python3.8/site-packages/gleam/main.py", line 147, in run_main
-    print("WARNING: GLEAM plot_line failed:", _e)
-  File "/usr/local/lib/python3.8/contextlib.py", line 120, in __exit__
-    next(self.gen)
-  File "/usr/local/lib/python3.8/site-packages/gleam/plot_gaussian.py", line 401, in overview_plot
-    plt.savefig(f"{basename}.png", format="png", bbox_inches="tight")
-  File "/usr/local/lib/python3.8/site-packages/matplotlib/pyplot.py", line 1023, in savefig
-    res = fig.savefig(*args, **kwargs)
-  File "/usr/local/lib/python3.8/site-packages/matplotlib/figure.py", line 3378, in savefig
-    self.canvas.print_figure(fname, **kwargs)
-  File "/usr/local/lib/python3.8/site-packages/matplotlib/backend_bases.py", line 2342, in print_figure
-    self.figure.draw(renderer)
-  File "/usr/local/lib/python3.8/site-packages/matplotlib/artist.py", line 95, in draw_wrapper
-    result = draw(artist, renderer, *args, **kwargs)
-  File "/usr/local/lib/python3.8/site-packages/matplotlib/artist.py", line 72, in draw_wrapper
-    return draw(artist, renderer)
-  File "/usr/local/lib/python3.8/site-packages/matplotlib/figure.py", line 3175, in draw
-    mimage._draw_list_compositing_images(
-  File "/usr/local/lib/python3.8/site-packages/matplotlib/image.py", line 131, in _draw_list_compositing_images
-    a.draw(renderer)
-  File "/usr/local/lib/python3.8/site-packages/matplotlib/artist.py", line 39, in draw_wrapper
-    return draw(artist, renderer, *args, **kwargs)
-  File "/usr/local/lib/python3.8/site-packages/mpl_toolkits/axes_grid1/parasite_axes.py", line 138, in draw
-    super().draw(renderer)
-  File "/usr/local/lib/python3.8/site-packages/matplotlib/artist.py", line 72, in draw_wrapper
-    return draw(artist, renderer)
-  File "/usr/local/lib/python3.8/site-packages/matplotlib/axes/_base.py", line 3064, in draw
-    mimage._draw_list_compositing_images(
-  File "/usr/local/lib/python3.8/site-packages/matplotlib/image.py", line 131, in _draw_list_compositing_images
-    a.draw(renderer)
-  File "/usr/local/lib/python3.8/site-packages/matplotlib/artist.py", line 72, in draw_wrapper
-    return draw(artist, renderer)
-  File "/usr/local/lib/python3.8/site-packages/matplotlib/text.py", line 757, in draw
-    posx = float(self.convert_xunits(self._x))
-TypeError: only size-1 arrays can be converted to Python scalars
-"""
-
-The above exception was the direct cause of the following exception:
-
-Traceback (most recent call last):
-  File "/usr/local/bin/gleam", line 8, in <module>
-    sys.exit(pipeline())
-  File "/usr/local/lib/python3.8/site-packages/click/core.py", line 829, in __call__
-    return self.main(*args, **kwargs)
-  File "/usr/local/lib/python3.8/site-packages/click/core.py", line 782, in main
-    rv = self.invoke(ctx)
-  File "/usr/local/lib/python3.8/site-packages/click/core.py", line 1066, in invoke
-    return ctx.invoke(self.callback, **ctx.params)
-  File "/usr/local/lib/python3.8/site-packages/click/core.py", line 610, in invoke
-    return callback(*args, **kwargs)
-  File "/usr/local/lib/python3.8/site-packages/gleam/__init__.py", line 136, in pipeline
-    p.starmap(gleam.main.run_main, unique_sources)
-  File "/usr/local/lib/python3.8/multiprocessing/pool.py", line 372, in starmap
-    return self._map_async(func, iterable, starmapstar, chunksize).get()
-  File "/usr/local/lib/python3.8/multiprocessing/pool.py", line 771, in get
-    raise self._value
-TypeError: only size-1 arrays can be converted to Python scalars
 Matplotlib Version: 3.7.5
-total 5264
--rw-rw-r-- 1 1000 1000  20440 Oct  1 06:01 docker.log
+total 5292
+-rw-rw-r-- 1 1000 1000  19931 Oct  1 13:28 docker.log
 -rw-r--r-- 1 1000 1000 484973 Sep 29 10:31 linefits.sdss.sdss.fiber1.001.Ha.Ha_broad.NII1.png
 -rw-rw-r-- 1 1000 1000 480075 Sep 27 23:39 linefits.sdss.sdss.fiber1.001.Ha.NII1.png
--rw-r--r-- 1 root root 510434 Oct  1 13:27 linefits.sdss.sdss.fiber1.001.Hb.Hb_broad.png
+-rw-r--r-- 1 root root 510434 Oct  1 16:34 linefits.sdss.sdss.fiber1.001.Hb.Hb_broad.png
 -rw-rw-r-- 1 1000 1000 477198 Sep 27 23:39 linefits.sdss.sdss.fiber1.001.Hb.png
--rw-r--r-- 1 root root 502227 Oct  1 13:28 linefits.sdss.sdss.fiber1.001.NII2.Ha.Ha_broad.NII1.png
--rw-r--r-- 1 root root 494513 Oct  1 13:27 linefits.sdss.sdss.fiber1.001.OII.png
--rw-r--r-- 1 root root 483014 Oct  1 13:27 linefits.sdss.sdss.fiber1.001.OIII4.OIII5.png
+-rw-r--r-- 1 root root 502227 Oct  1 16:35 linefits.sdss.sdss.fiber1.001.NII2.Ha.Ha_broad.NII1.png
+-rw-r--r-- 1 root root 494513 Oct  1 16:34 linefits.sdss.sdss.fiber1.001.OII.png
+-rw-r--r-- 1 root root 483014 Oct  1 16:34 linefits.sdss.sdss.fiber1.001.OIII4.OIII5.png
 -rw-r--r-- 1 1000 1000 467979 Sep 29 09:05 linefits.sdss.sdss.fiber1.001.OIII4.png
 -rw-r--r-- 1 1000 1000 464937 Sep 29 09:05 linefits.sdss.sdss.fiber1.001.OIII5.png
--rw-r--r-- 1 root root 455877 Oct  1 13:28 linefits.sdss.sdss.fiber1.001.SII1.SII2.png
--rw-r--r-- 1 root root  20160 Oct  1 13:28 linefits.sdss.sdss.fiber1.001.fits
--rw-r--r-- 1 1000 1000 506781 Sep 29 10:32 linefits.sdss.sdss.fiber1.001.png
+-rw-r--r-- 1 root root 455877 Oct  1 16:35 linefits.sdss.sdss.fiber1.001.SII1.SII2.png
+-rw-r--r-- 1 root root  20160 Oct  1 16:35 linefits.sdss.sdss.fiber1.001.fits
+-rw-r--r-- 1 root root 534010 Oct  1 16:35 linefits.sdss.sdss.fiber1.001.png
 total 12K
 -rw-r--r-- 1 root root 1.2K Sep 21 02:20 =5.2
-drwxr-xr-x 1 root root 4.0K Oct  1 13:26 input
-drwxrwxr-x 2 1000 1000 4.0K Oct  1 13:28 output
+drwxr-xr-x 1 root root 4.0K Oct  1 16:33 input
+drwxrwxr-x 2 1000 1000 4.0K Oct  1 16:35 output
 -rw-r--r-- 1 root root 1.2K Sep 21 02:20 /app/=5.2
 
 /app/input:
 total 132K
 -rw-rw-r-- 1 1000 1000  12K Aug 28 20:16 Sky_bands.fits
 -rw-rw-r-- 1 1000 1000 1.3K Sep 29 07:43 gleam.sh
--rw-rw-r-- 1 1000 1000 7.2K Oct  1 02:23 gleam_doublet_patch.py
+-rw-rw-r-- 1 1000 1000 8.0K Oct  1 15:49 gleam_doublet_patch.py
 -rw-rw-r-- 1 1000 1000 2.6K Oct  1 11:39 gleamconfig.yaml
 -rw-rw-r-- 1 1000 1000 8.5K Sep 29 14:37 line_table.fits
--rw-rw-r-- 1 1000 1000  115 Oct  1 13:03 meta.dat
--rw-rw-r-- 1 1000 1000  85K Oct  1 13:03 spec1d.sdss.sdss.fiber1.1.fits
+-rw-rw-r-- 1 1000 1000  115 Oct  1 16:07 meta.dat
+-rw-rw-r-- 1 1000 1000  85K Oct  1 16:07 spec1d.sdss.sdss.fiber1.1.fits
 
 /app/output:
 total 5.2M
--rw-rw-r-- 1 1000 1000  20K Oct  1 06:01 docker.log
+-rw-rw-r-- 1 1000 1000  20K Oct  1 13:28 docker.log
 -rw-r--r-- 1 1000 1000 474K Sep 29 10:31 linefits.sdss.sdss.fiber1.001.Ha.Ha_broad.NII1.png
 -rw-rw-r-- 1 1000 1000 469K Sep 27 23:39 linefits.sdss.sdss.fiber1.001.Ha.NII1.png
--rw-r--r-- 1 root root 499K Oct  1 13:27 linefits.sdss.sdss.fiber1.001.Hb.Hb_broad.png
+-rw-r--r-- 1 root root 499K Oct  1 16:34 linefits.sdss.sdss.fiber1.001.Hb.Hb_broad.png
 -rw-rw-r-- 1 1000 1000 467K Sep 27 23:39 linefits.sdss.sdss.fiber1.001.Hb.png
--rw-r--r-- 1 root root 491K Oct  1 13:28 linefits.sdss.sdss.fiber1.001.NII2.Ha.Ha_broad.NII1.png
--rw-r--r-- 1 root root 483K Oct  1 13:27 linefits.sdss.sdss.fiber1.001.OII.png
--rw-r--r-- 1 root root 472K Oct  1 13:27 linefits.sdss.sdss.fiber1.001.OIII4.OIII5.png
+-rw-r--r-- 1 root root 491K Oct  1 16:35 linefits.sdss.sdss.fiber1.001.NII2.Ha.Ha_broad.NII1.png
+-rw-r--r-- 1 root root 483K Oct  1 16:34 linefits.sdss.sdss.fiber1.001.OII.png
+-rw-r--r-- 1 root root 472K Oct  1 16:34 linefits.sdss.sdss.fiber1.001.OIII4.OIII5.png
 -rw-r--r-- 1 1000 1000 458K Sep 29 09:05 linefits.sdss.sdss.fiber1.001.OIII4.png
 -rw-r--r-- 1 1000 1000 455K Sep 29 09:05 linefits.sdss.sdss.fiber1.001.OIII5.png
--rw-r--r-- 1 root root 446K Oct  1 13:28 linefits.sdss.sdss.fiber1.001.SII1.SII2.png
--rw-r--r-- 1 root root  20K Oct  1 13:28 linefits.sdss.sdss.fiber1.001.fits
--rw-r--r-- 1 1000 1000 495K Sep 29 10:32 linefits.sdss.sdss.fiber1.001.png
+-rw-r--r-- 1 root root 446K Oct  1 16:35 linefits.sdss.sdss.fiber1.001.SII1.SII2.png
+-rw-r--r-- 1 root root  20K Oct  1 16:35 linefits.sdss.sdss.fiber1.001.fits
+-rw-r--r-- 1 root root 522K Oct  1 16:35 linefits.sdss.sdss.fiber1.001.png

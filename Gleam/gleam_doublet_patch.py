@@ -60,6 +60,24 @@ PLOT_OLD = "        for (text, offset) in zip(texts, offsets):"
 
 # plot_gaussian_fit draws each Gaussian separately over the continuum; add the
 # sum so the user can see the TOTAL line model.
+PLOT3_OLD = (
+    "        texts = [\n"
+    "            axins.text(\n"
+    "                l[\"wavelength\"],\n"
+    "                axins.get_ylim()[1] * 1.01,\n"
+    "                f\"{l['latex']}\",\n"
+    "                ha=\"center\",\n"
+    "                va=\"bottom\",\n"
+    "            )\n"
+    "            for l in line\n"
+    "        ]"
+)
+PLOT3_NEW = (
+    "        # Labels disabled: GLEAM's text layout raises for 3+ lines and\n"
+    "        # aborts the overview savefig.\n"
+    "        texts = []"
+)
+
 PLOT2_OLD = "    for line_fit in spectrum_fit.lines:\n        # Plot detections"
 PLOT2_NEW = (
     "    # Total model = continuum + sum of all detected Gaussians.\n"
@@ -153,6 +171,11 @@ def main() -> int:
         _plot = _plot.replace(PLOT2_OLD, PLOT2_NEW, 1)
         PLOT_FILE.write_text(_plot)
         print("patched GLEAM total-line plot")
+    _plot = PLOT_FILE.read_text()
+    if "texts = []" not in _plot and PLOT3_OLD in _plot:
+        _plot = _plot.replace(PLOT3_OLD, PLOT3_NEW, 1)
+        PLOT_FILE.write_text(_plot)
+        print("patched GLEAM overview labels")
     if MAIN_OLD in MAIN_FILE.read_text():
         main_txt = MAIN_FILE.read_text().replace(MAIN_OLD, MAIN_NEW, 1)
         MAIN_FILE.write_text(main_txt)

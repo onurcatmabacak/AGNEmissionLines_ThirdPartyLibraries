@@ -58,14 +58,8 @@ def main(argv=None) -> int:
             for f in sorted(obj_dir.rglob("*")):
                 if not f.is_file() or f.suffix.lower() not in EXTS:
                     continue
-                if args.select:
-                    if tool == "gleam":
-                        # Prefer the Halpha group plot: it now carries the TOTAL
-                        # model curve (the overview does not show the sum).
-                        if "Ha" not in f.stem:
-                            continue
-                    elif f.stem not in SELECTED.get(tool, set()):
-                        continue
+                if args.select and f.stem not in SELECTED.get(tool, set()):
+                    continue
                 target = args.out / f"{tool}_{f.stem}_{obj}{f.suffix.lower()}"
                 k = 1
                 while target.name in used:   # same name from a different source file

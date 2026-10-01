@@ -77,6 +77,10 @@ halpha_na = create_line(name="HAlpha6565_na",pos=WB_HA, ampl=ampl, min_ampl=min_
 # [NII] doublet, tied to the narrow width/velocity, ratio 6583/6548 = 3.
 NII6583_na = create_line(name="NII6583_na",pos=WB_N2B, ampl=ampl, min_ampl=min_ampl, max_ampl=max_ampl, fwhm=OIIIb_na.fwhm, offset=OIIIb_na.offs_kms)
 NII6548_na = create_line(name="NII6548_na",pos=WB_N2A, ampl=NII6583_na.ampl/3.0, fwhm=OIIIb_na.fwhm, offset=OIIIb_na.offs_kms)
+# [SII] 6716/6731 doublet: shares the narrow width/velocity, free ratio
+# (density-dependent).  These lines sit to the red of Halpha.
+SII6716_na = create_line(name="SII6716_na",pos=6718.29, ampl=ampl, min_ampl=min_ampl, max_ampl=max_ampl, fwhm=OIIIb_na.fwhm, offset=OIIIb_na.offs_kms)
+SII6732_na = create_line(name="SII6732_na",pos=6732.67, ampl=ampl, min_ampl=min_ampl, max_ampl=max_ampl, fwhm=OIIIb_na.fwhm, offset=OIIIb_na.offs_kms)
 # Link Balmer kinematics.  Broad Halpha/Hbeta share one profile; narrow
 # Balmer shares the forbidden-line ([OIII]/[NII]) width and velocity, which is
 # how the narrow lines are defined physically.
@@ -92,14 +96,14 @@ halpha_na.ampl = hbeta_na.ampl * 2.86
 # fe=create_feii_model(max_fwhm=6000)
 # Forbidden [OIII]/[NII] lines are narrow: do not include the broad counterparts
 # (with both free, the fit puts all [OIII] flux into the broad component).
-model = cont + OIIIb_na + OIIIa_na + NII6583_na + NII6548_na + hbeta_br + halpha_br + hbeta_na + halpha_na + create_feii_model(fwhm=1000, min_fwhm=300, max_fwhm=6000, offset=0, min_offset=-800, max_offset=800)
+model = cont + OIIIb_na + OIIIa_na + NII6583_na + NII6548_na + SII6716_na + SII6732_na + hbeta_br + halpha_br + hbeta_na + halpha_na + create_feii_model(fwhm=1000, min_fwhm=300, max_fwhm=6000, offset=0, min_offset=-800, max_offset=800)
 
 # fits a spectrum with the above model, iterate 2 times
 s.fit(model, ntrial=30)
 print("fit ok")
 
 # creates a file to save the fitting results of the original spectra
-d={'wave':s.wave,'flux':s.flux,'error':s.err,'model':model(s.wave),'cont':cont(s.wave), 'OIIIb_na':OIIIb_na(s.wave), 'OIIIa_na':OIIIa_na(s.wave), 'NII6583_na':NII6583_na(s.wave), 'NII6548_na':NII6548_na(s.wave), 'hbeta_br':hbeta_br(s.wave), 'hbeta_na':hbeta_na(s.wave), 'halpha_br':halpha_br(s.wave), 'halpha_na':halpha_na(s.wave)}
+d={'wave':s.wave,'flux':s.flux,'error':s.err,'model':model(s.wave),'cont':cont(s.wave), 'OIIIb_na':OIIIb_na(s.wave), 'OIIIa_na':OIIIa_na(s.wave), 'NII6583_na':NII6583_na(s.wave), 'NII6548_na':NII6548_na(s.wave), 'SII6716_na':SII6716_na(s.wave), 'SII6732_na':SII6732_na(s.wave), 'hbeta_br':hbeta_br(s.wave), 'hbeta_na':hbeta_na(s.wave), 'halpha_br':halpha_br(s.wave), 'halpha_na':halpha_na(s.wave)}
 # fit_host_sdss() subtracts the host from s.flux in place, so add it back for a
 # model comparable with the observed (host-included) spectrum.
 _host = getattr(s, 'host', None)
@@ -149,6 +153,10 @@ for file in natsorted(glob.glob('./output/my*model.csv')):
     # plt.plot(df.wave, df.fe * fluxnorm, '-', color='brown', label='Fe II', lw=2) 
     plt.plot(df.wave, df.OIIIa_na * fluxnorm, '--', color='g', label='OIIIa 4959 NA', lw=1)
     plt.plot(df.wave, df.OIIIb_na * fluxnorm, '--', color='r', label='OIIIb 5007 NA', lw=1) 
+    plt.plot(df.wave, df.NII6548_na * fluxnorm, ':', color='m', label='NII 6549 NA', lw=1)
+    plt.plot(df.wave, df.NII6583_na * fluxnorm, ':', color='orange', label='NII 6585 NA', lw=1)
+    plt.plot(df.wave, df.SII6716_na * fluxnorm, ':', color='olive', label='SII 6718 NA', lw=1)
+    plt.plot(df.wave, df.SII6732_na * fluxnorm, ':', color='brown', label='SII 6732 NA', lw=1)
     plt.plot(df.wave, df.hbeta_br * fluxnorm, '-', color='b', label='HBeta BR', lw=1) 
     plt.plot(df.wave, df.hbeta_na * fluxnorm, '--', color='b', label='HBeta NA', lw=1) 
     plt.plot(df.wave, df.halpha_br * fluxnorm, '-', color='k', label='HAlpha BR', lw=1) 

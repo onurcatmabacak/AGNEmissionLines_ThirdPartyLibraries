@@ -3,29 +3,33 @@
 #  analyze.sh -- one command: drop spectra in input/ and get the best fit
 # =============================================================================
 #
+#  By default this runs the PER-OBJECT optimiser (pipeline/per_object_search.py):
+#  for every object it evaluates that tool's whole candidate config grid, ranks
+#  the runs with the physical objective (chi2_common + line penalties), refines
+#  the winner by coordinate descent, and applies each object's winning config
+#  in a final pass.  So a config is tuned on the object it is used for, not once
+#  for the whole sample.
+#
 #      cp my_spectrum.fits input/
-#      bash analyze.sh
+#      bash analyze.sh                     # per-object search (default)
+#      bash analyze.sh --tools pyqsofit gelato --rounds 1
+#      bash analyze.sh --dry-run           # print the candidate grid
+#      bash analyze.sh --global            # older whole-sample tuning (auto_tune.py)
 #
-#  This drives pipeline/auto_tune.py, which:
-#    1. adapts every spectrum in input/ for the five tools,
-#    2. searches each tool's parameter space on a few tuning objects,
-#    3. scores every run with the common reduced chi-square,
-#    4. refines the winner by coordinate descent,
-#    5. re-runs the winning configuration on all objects and writes
-#       results/report.html / report.md.
-#
-#  Useful flags (forwarded to auto_tune.py):
-#      --tools pyqsofit badass ...   restrict the search
-#      --limit N                     tune on the first N objects (default 3)
-#      --rounds N                    coordinate-descent rounds (default 2)
-#      --jobs N                      parallel jobs per run (default 4)
-#      --dry-run                     print the candidate grid and exit
-#      --stage1-only                 skip the final full-quality run
-#
-#  Python deps: auto_tune.py uses only the .venv interpreter; the fitting tools
-#  run through run_pipeline.sh (Docker + local venv) exactly as before.
+#  Useful flags (forwarded to the chosen driver):
+#      --tools A B        restrict tools
+#      --limit N          objects used for a global search (auto_tune only)
+#      --rounds N         coordinate-descent rounds
+#      --pool N           max concurrent fits (per-object driver)
+#      --jobs N           parallel jobs per pipeline run
+#      --stage1-only      skip the final full-quality run
 # =============================================================================
 set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PYTHON="${PYTHON:-$ROOT/.venv/bin/python}"
-exec "$PYTHON" "$ROOT/pipeline/auto_tune.py" "$@"
+
+if [[ "${1:-}" == "--global" ]]; then
+  shift
+  exec "$PYTHON" "$ROOT/pipeline/auto_tune.py" "$@"
+fi
+exec "$PYTHON" "$ROOT/pipeline/per_object_search.py" "$@"

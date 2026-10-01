@@ -200,28 +200,29 @@ every tool's products.
 > Cross-tool χ² is a guide (the statistics differ); the **line-flux matrix** is
 > the like-for-like comparison.
 
-### Automatic tuning — one command, best fit
+### Automatic tuning — one command, best fit, per object
 
-`pipeline/auto_tune.py` (wrapper `analyze.sh`) searches each tool's parameter
-space automatically instead of running every tool once with a fixed config:
+`bash analyze.sh` tunes **each object on itself**: for every object it evaluates
+that tool's whole candidate config grid, ranks the runs with the physical
+objective (`chi2_common + line penalties`), refines the winner by coordinate
+descent, and applies the per-object winning config in a final pass.
 
 ```bash
 cp new_spectrum.fits input/
-bash analyze.sh                 # adapt -> search -> refine -> final report
+bash analyze.sh                 # per-object search -> refine -> final report
 bash analyze.sh --dry-run       # show the candidate grid without running
-bash analyze.sh --limit 1       # tune on a single object
+bash analyze.sh --tools pyqsofit gelato --rounds 1 --pool 8
+bash analyze.sh --global        # older whole-sample tuning (auto_tune.py)
 ```
 
-For each tool it runs a candidate grid on a few tuning objects, ranks the runs by
-a **common reduced χ²** (`chi2_common` in `results/scores.csv`) that uses the same
-model/data/error definition for every tool, then refines the winner by coordinate
-descent and re-runs it on all objects. Generated variants live in
-`configs/<tool>/auto_<tool>_<key>/`; the winners are in
-`work/auto_tune/best_configs.json`. Fast modes are used during the search
+Each object/tool's winning config is saved next to its figure as
+`figures_main/configs/<tool>_<configfile>_<object>.<ext>`; the machine-readable
+map is `configs/BEST_PER_OBJECT.json`. Generated variants live in
+`configs/<tool>/auto_<tool>_<key>/`. Fast modes are used during the search
 (GELATO `NBoot=0`, BADASS3 `BADASS_MAX_LIKE_NITER=0`, fantasy_agn `FANTASY_MC=0`).
 
-`pipeline/parallel_search.py` is the same search driven by one global CPU pool
-across all tools (the serial per-tool chain otherwise leaves cores idle):
+`pipeline/auto_tune.py` (the `--global` path) instead finds one config per tool
+for the whole sample; `pipeline/parallel_search.py` is the pooled global variant:
 
 ```bash
 python pipeline/parallel_search.py --pool 8 --limit 3 --rounds 1

@@ -408,6 +408,7 @@ def parse_fantasy(out: Path, tag: str):
         "hbeta_br": ("Hb4861", "broad"), "hbeta_na": ("Hb4861", "narrow"),
         "halpha_br": ("Ha6563", "broad"), "halpha_na": ("Ha6563", "narrow"),
         "NII6583_na": ("NII6585", "narrow"), "NII6548_na": ("NII6548", "narrow"),
+        "SII6716_na": ("SII6718", "narrow"), "SII6732_na": ("SII6732", "narrow"),
     }
     rows = []
     for name, (line, comp) in cmap.items():
