@@ -112,23 +112,31 @@ BADASS = {
     "base": ROOT / "badass" / "main.py",
     "defaults": {"fit_stat": "OLS", "broad_disp_min": "600", "n_basinhop": "50",
                  "tie_disp": "False", "opt_feii": "True", "tie_balmer_decrement": "False",
-                 "apoly": "False"},
+                 "apoly": "False", "fit_balmer": "False", "fit_uv_iron": "False",
+                 "fit_losvd": "False"},
+    # NOTE: BADASS3 only accepts fit_stat "ML" or "OLS"; "RCHI2" makes every
+    # run fail with "Fit statistic can be either ML or OLS" and, because a failed
+    # run scores inf, it can be picked as a bogus winner. Do not re-add it.
     "candidates": [
         {},
-        {"fit_stat": "RCHI2"},
         {"broad_disp_min": "1500"},
         {"broad_disp_min": "2500"},
-        {"broad_disp_min": "1500", "fit_stat": "RCHI2"},
         {"tie_disp": "True"},
         {"n_basinhop": "20"},
         {"tie_balmer_decrement": "True"},
         {"opt_feii": "False"},
+        {"fit_balmer": "True"},
+        {"fit_losvd": "True"},
+        {"apoly": "True"},
         {"broad_disp_min": "1500", "tie_balmer_decrement": "True"},
         {"opt_feii": "False", "tie_balmer_decrement": "True"},
     ],
     "knob_values": {
-        "apoly": ["False"],
-        "fit_stat": ["OLS", "RCHI2"],
+        "apoly": ["False", "True"],
+        "fit_stat": ["OLS", "ML"],
+        "fit_balmer": ["False", "True"],
+        "fit_uv_iron": ["False", "True"],
+        "fit_losvd": ["False", "True"],
         "broad_disp_min": ["600", "1000", "1500", "2500"],
         "n_basinhop": ["20", "50"],
         "tie_disp": ["False", "True"],
@@ -156,6 +164,12 @@ def render_badass(text: str, k: dict) -> str:
     text, n = re.subn(r'("apoly":\s*\{\s*"bool":\s*)(True|False)',
                       lambda m: m.group(1) + k["apoly"], text)
     assert n == 1, "badass: apoly bool not found"
+    text, n = re.subn(r'"fit_balmer":\s*(True|False)', f'"fit_balmer": {k["fit_balmer"]}', text)
+    assert n == 1, "badass: fit_balmer not found"
+    text, n = re.subn(r'"fit_uv_iron":\s*(True|False)', f'"fit_uv_iron": {k["fit_uv_iron"]}', text)
+    assert n == 1, "badass: fit_uv_iron not found"
+    text, n = re.subn(r'"fit_losvd":\s*(True|False)', f'"fit_losvd": {k["fit_losvd"]}', text)
+    assert n == 1, "badass: fit_losvd not found"
     if k["tie_balmer_decrement"] == "True":
         # Force the broad Balmer decrement to the case-B value (3:1); the
         # kinematic tie above then makes this a single physical parameter.
@@ -350,7 +364,13 @@ def run_pipeline(tools: list[str], variants: dict[str, str], input_dir: Path, la
     for t, v in variants.items():
         cmd += ["--variant", f"{t}={v}"]
     env = {"INPUT_DIR": str(input_dir), "RUNS_DIR": str(runs_dir),
-           "RESULTS_DIR": str(results_dir)}
+           "RESULTS_DIR": str(results_dir),
+           # Fast search mode: skip the expensive uncertainty machinery.  In
+           # particular BADASS_MAX_LIKE_NITER=0 avoids the object-specific
+           # "ValueError: scale < 0" raised by BADASS3's max_likelihood Monte
+           # Carlo bootstrap, which otherwise kills every BADASS candidate for
+           # some objects.
+           "BADASS_MCMC": "0", "BADASS_MAX_LIKE_NITER": "0", "FANTASY_MC": "0"}
     print(f"[auto_tune] run {label}: {' '.join(cmd)}")
     rc = subprocess.run(cmd, cwd=repo, env={**os.environ, **env}).returncode
     if rc != 0:
@@ -479,6 +499,14 @@ def scoped_input(tags: list[str], runs_or_manifest_root: Path, dest: Path) -> Pa
         sp = Path(src)
         if not sp.is_absolute():
             sp = Path.cwd() / sp
+        # The manifest may point at a transient per-object scope
+        # (work/per_object/obj_<tag>/input/...) that scoped_one has just
+        # deleted.  Fall back to the canonical input/ spectrum by basename so a
+        # re-run never silently ends up with an empty scope.
+        if not sp.exists():
+            alt = ROOT / "input" / sp.name
+            if alt.exists():
+                sp = alt
         if sp.exists():
             link = dest / "input" / sp.name
             if not link.exists():

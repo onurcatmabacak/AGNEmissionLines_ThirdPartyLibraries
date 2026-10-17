@@ -44,7 +44,7 @@ min_ampl = 0
 max_ampl = 200          # was 50 -> broad Halpha amplitude pinned at the bound
 fwhm_br = 1500
 fwhm_na = 500
-min_fwhm_br = 1200      # broad lines must be genuinely broad
+min_fwhm_br = 2000      # broad lines must be genuinely broad
 min_fwhm_na = 70
 max_fwhm_br = 6000
 max_fwhm_na = 600       # was 2000 -> narrow Balmer FWHM inflated to 2-4x the [OIII]/[NII] width
@@ -99,7 +99,7 @@ halpha_na.ampl = hbeta_na.ampl * 2.86
 model = cont + OIIIb_na + OIIIa_na + NII6583_na + NII6548_na + SII6716_na + SII6732_na + hbeta_br + halpha_br + hbeta_na + halpha_na + create_feii_model(fwhm=1000, min_fwhm=300, max_fwhm=6000, offset=0, min_offset=-800, max_offset=800)
 
 # fits a spectrum with the above model, iterate 2 times
-s.fit(model, ntrial=10)
+s.fit(model, ntrial=30)
 print("fit ok")
 
 # creates a file to save the fitting results of the original spectra

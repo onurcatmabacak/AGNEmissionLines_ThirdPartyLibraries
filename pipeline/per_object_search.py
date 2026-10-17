@@ -23,7 +23,9 @@ from __future__ import annotations
 
 import argparse
 import json
+import math
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -72,7 +74,21 @@ def main(argv=None) -> int:
     p.add_argument("--objects", nargs="*", default=None)
     p.add_argument("--rounds", type=int, default=2)
     p.add_argument("--pool", type=int, default=(os.cpu_count() or 4) + 4)
-    p.add_argument("--final-jobs", type=int, default=os.cpu_count() or 4)
+    p.add_argument("--final-jobs", type=int, default=os.cpu_count() or 4,
+                   help="tools run in parallel within each object's final fit")
+    p.add_argument("--final-parallel", type=int, default=2,
+                   help="number of objects fitted concurrently in the final pass")
+    p.add_argument("--production", action="store_true",
+                   help="final pass uses each tool's full uncertainty machinery "
+                        "(BADASS emcee MCMC, PyQSOFit MC, fantasy MC, GELATO bootstrap)")
+    p.add_argument("--pyqsofit-nsamp", type=int, default=5000,
+                   help="PyQSOFit MCMC chain samples in --production mode")
+    p.add_argument("--pyqsofit-nburn", type=int, default=500,
+                   help="PyQSOFit MCMC burn-in samples in --production mode")
+    p.add_argument("--pyqsofit-nthin", type=int, default=10,
+                   help="PyQSOFit MCMC thinning in --production mode")
+    p.add_argument("--gelato-nboot", type=int, default=100,
+                   help="GELATO bootstrap iterations in --production mode")
     p.add_argument("--runs", type=Path, default=ROOT / "runs")
     p.add_argument("--results", type=Path, default=ROOT / "results")
     p.add_argument("--input", type=Path, default=ROOT / "input")
@@ -97,6 +113,12 @@ def main(argv=None) -> int:
     scopes = {t: scoped_one(t, args.runs, args.workdir) for t in tags}
     print(f"[perobj] objects={tags}")
     print(f"[perobj] tools={args.tools} pool={args.pool} rounds={args.rounds}")
+    # Preflight: never start a multi-hour/day search with an empty object scope
+    # (that silently produces no results for those objects).
+    empty = [t for t in tags if not list(scopes[t].glob("*.fits"))]
+    if empty:
+        print(f"[perobj] ERROR: no .fits in scope for {empty}; aborting", file=sys.stderr)
+        return 2
 
     # ---- Stage 1: every (object, tool, candidate) through one global pool ----
     seen: dict[str, set] = {t: set() for t in tags}
@@ -115,10 +137,18 @@ def main(argv=None) -> int:
     print(f"[perobj] stage 1 finished in {time.time() - t0:.0f}s")
 
     best: dict[tuple[str, str], tuple[dict, str, float]] = {}
+    failed: set[tuple[str, str]] = set()
     for tag, tool, knobs, variant, score in res:
         key = (tag, tool)
+        # A failed run scores +inf; never let it become a "winner".
+        if not math.isfinite(score):
+            failed.add(key)
+            continue
         if key not in best or score < best[key][2]:
             best[key] = (knobs, variant, score)
+    for key in sorted(failed):
+        if key not in best:
+            print(f"[perobj]   {key[0]} {key[1]:12s} FAILED - no finite score, excluded")
     for (tag, tool), (knobs, variant, score) in sorted(best.items()):
         print(f"[perobj]   {tag} {tool:12s} best {variant:42s} score={score:.3f}")
 
@@ -145,6 +175,8 @@ def main(argv=None) -> int:
         improved = False
         for tag, tool, knobs, variant, score in rres:
             key = (tag, tool)
+            if not math.isfinite(score):
+                continue
             if score < best[key][2] - 1e-9:
                 best[key] = (knobs, variant, score)
                 queues[key] = neighbour_queue(tag, tool, knobs)
@@ -165,19 +197,73 @@ def main(argv=None) -> int:
         return 0
 
     # ---- Final: apply each object's winners to the shared runs/results tree ----
-    print("[perobj] final per-object run")
-    for tag in tags:
+    # OBJECT-BASED PARALLELISM: one task per object (its tools run in parallel
+    # inside run_pipeline), N objects concurrently.  Collect/score/report are
+    # deferred to a single aggregate pass at the end (--no-collect) so the
+    # concurrent objects never race on results/.
+    final_parallel = max(1, args.final_parallel)
+    print(f"[perobj] final per-object run (object-parallel x{final_parallel}, "
+          f"tools/object jobs={args.final_jobs}, production={args.production})")
+
+    prod_env: dict[str, str] = {}
+    if args.production:
+        # Full uncertainty machinery for the production pass; the tuning search
+        # itself stays in fast point-estimate mode.
+        prod_env = {
+            # BADASS3: emcee MCMC posteriors + line/configuration model testing
+            # + noise reweighting.  max_like_niter=0 avoids the object-specific
+            # "ValueError: scale < 0" in the MC bootstrap.
+            "BADASS_MCMC": "1",
+            "BADASS_MAX_LIKE_NITER": "0",
+            "BADASS_TEST_LINES": "1",
+            "BADASS_REWEIGHTING": "1",
+            # PyQSOFit: full emcee MCMC posterior sampling.  MC must be OFF:
+            # PyQSOFit raises "MCMC and MC modes cannot both be True".
+            "PYQSOFIT_MC": "0",
+            "PYQSOFIT_MCMC": "1",
+            "PYQSOFIT_NSAMP": str(args.pyqsofit_nsamp),
+            "PYQSOFIT_NBURN": str(args.pyqsofit_nburn),
+            "PYQSOFIT_NTHIN": str(args.pyqsofit_nthin),
+            # fantasy_agn: Monte-Carlo error estimation.
+            "FANTASY_MC": "1",
+            "FANTASY_MC_N": "50",
+        }
+
+    def _gelato_prod_variant(variant: str) -> str:
+        """Write a copy of a GELATO winner config with NBoot>1 for production."""
+        src = args.repo / "configs" / "gelato" / variant / "my_sdss.json"
+        if not src.exists():
+            return variant
+        text = src.read_text()
+        new = re.sub(r'"NBoot":\s*\d+', f'"NBoot": {args.gelato_nboot}', text)
+        if new == text:
+            return variant
+        dest_variant = f"{variant}_nboot{args.gelato_nboot}"
+        dest = args.repo / "configs" / "gelato" / dest_variant / "my_sdss.json"
+        dest.parent.mkdir(parents=True, exist_ok=True)
+        dest.write_text(new)
+        return dest_variant
+
+    def run_final(tag: str) -> None:
         variants = {tool: best[(tag, tool)][1] for tool in args.tools if (tag, tool) in best}
         if not variants:
-            continue
+            print(f"[perobj] final {tag}: no valid winners; skipped")
+            return
+        if args.production and "gelato" in variants:
+            variants["gelato"] = _gelato_prod_variant(variants["gelato"])
         cmd = ["bash", str(args.repo / "run_pipeline.sh"), "--no-build", "--no-report",
-               "--tools", " ".join(args.tools), "--jobs", str(args.final_jobs)]
+               "--no-collect", "--tools", " ".join(args.tools),
+               "--jobs", str(args.final_jobs)]
         for t, v in variants.items():
             cmd += ["--variant", f"{t}={v}"]
         env = {**os.environ, "INPUT_DIR": str(scopes[tag]),
-               "RUNS_DIR": str(args.runs), "RESULTS_DIR": str(args.results)}
+               "RUNS_DIR": str(args.runs), "RESULTS_DIR": str(args.results), **prod_env}
         print(f"[perobj] final {tag}: {variants}")
         subprocess.run(cmd, cwd=args.repo, env=env, check=False)
+
+    final_tags = [t for t in tags if any((t, tool) in best for tool in args.tools)]
+    with ThreadPoolExecutor(max_workers=final_parallel) as ex:
+        list(ex.map(run_final, final_tags))
 
     # Rebuild the aggregate results/report over the whole tree.
     for script in ("collect_results.py", "score_fits.py", "make_report.py"):

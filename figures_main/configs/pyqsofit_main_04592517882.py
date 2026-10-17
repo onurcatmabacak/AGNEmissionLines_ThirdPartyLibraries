@@ -47,7 +47,7 @@ def load_spectrum(fits_file):
 
     err = hdulist[2].data if len(hdulist) > 2 else None  # Normalized error spectrum, might not exist
     if err is None:
-        err = 0.02 * flux   # fallback only when no calibrated error is supplied
+        err = 0.03 * flux   # fallback only when no calibrated error is supplied
     # print('onuronuronur: \n\n', hdulist[0].data, hdulist[1].data, hdulist[2].data)
     # print(hdulist, err)
 
@@ -78,14 +78,14 @@ In this table, we specify the priors / initial conditions and boundaries for the
 
 line_priors = np.rec.array([
     # Rest wavelengths are vacuum (PyQSOFit divides the observed wave by 1+z).
-    (6564.61, 'Ha', 6400, 6800, 'Ha_br', 2, 0.0, 0.0, 1e10, 5e-3, 0.0015, 0.05, 0.015, 0, 0, 0, 0.05, 1),
+    (6564.61, 'Ha', 6400, 6800, 'Ha_br', 1, 0.0, 0.0, 1e10, 5e-3, 0.0015, 0.05, 0.015, 0, 0, 0, 0.05, 1),
     (6564.61, 'Ha', 6400, 6800, 'Ha_na', 1, 0.0, 0.0, 1e10, 1e-3, 5e-4, 0.0012, 0.01, 1, 1, 0, 0.002, 1),
     (6549.85, 'Ha', 6400, 6800, 'NII6549', 1, 0.0, 0.0, 1e10, 1e-3, 2.3e-4, 0.0012, 5e-3, 1, 1, 1, 0.001, 1),
     (6585.28, 'Ha', 6400, 6800, 'NII6585', 1, 0.0, 0.0, 1e10, 1e-3, 2.3e-4, 0.0012, 5e-3, 1, 1, 1, 0.003, 1),
     # [SII] ratio is density-dependent -> leave it free (findex 0).
     (6718.29, 'Ha', 6400, 6800, 'SII6718', 1, 0.0, 0.0, 1e10, 1e-3, 2.3e-4, 0.0012, 5e-3, 1, 1, 0, 0.001, 1),
     (6732.67, 'Ha', 6400, 6800, 'SII6732', 1, 0.0, 0.0, 1e10, 1e-3, 2.3e-4, 0.0012, 5e-3, 1, 1, 0, 0.001, 1),
-    (4862.68, 'Hb', 4640, 5100, 'Hb_br', 2, 0.0, 0.0, 1e10, 5e-3, 0.0015, 0.05, 0.01, 0, 0, 0, 0.01, 1),
+    (4862.68, 'Hb', 4640, 5100, 'Hb_br', 1, 0.0, 0.0, 1e10, 5e-3, 0.0015, 0.05, 0.01, 0, 0, 0, 0.01, 1),
     (4862.68, 'Hb', 4640, 5100, 'Hb_na', 1, 0.0, 0.0, 1e10, 1e-3, 2.3e-4, 0.0012, 0.01, 1, 1, 0, 0.002, 1),
     # The [OIII] 4959/5007 doublet shares velocity (vindex), width (windex) and a
     # fixed flux ratio (findex 3 for narrow, 4 for outflow; fvalue 0.33 / 1.0).
@@ -262,7 +262,7 @@ path_out = "./"
 
 # Required
 wavelength, flux, error, z = load_spectrum('spectrum.fits')
-error = 0.02 * flux
+error = 0.03 * flux
 # Per-object redshift: take it from the FITS header (the original analysis had
 # this hardcoded to 0.348 for its single target). PYQSOFIT_Z overrides it.
 z = float(os.environ.get("PYQSOFIT_Z", z))
@@ -327,15 +327,16 @@ q_mle.Fit(name='result',  # customize the name of given targets. Default: plate-
           # uncertainties (off during the search for speed).
           MC=(os.environ.get("PYQSOFIT_MC", "0") == "1"),
           # If True, do Monte Carlo resampling of the spectrum based on the input error array to produce the MC error array
-          MCMC=False,
+          # PYQSOFIT_MCMC=1 turns on full emcee MCMC sampling of the posterior.
+          MCMC=(os.environ.get("PYQSOFIT_MCMC", "0") == "1"),
           # If True, do Markov Chain Monte Carlo sampling of the posterior probability densities to produce the error array
           nsamp=int(os.environ.get("PYQSOFIT_NSAMP", "50")),
           # The number of trials of the MC process (if MC=True) or number samples to run MCMC chain (if MCMC=True)
 
           # advanced fitting parameters
           param_file_name='qsopar.fits',  # Name of the qso fitting parameter FITS file.
-          nburn=20,  # The number of burn-in samples to run MCMC chain
-          nthin=10,  # To set the MCMC chain returns every n samples
+          nburn=int(os.environ.get("PYQSOFIT_NBURN", "20")),  # The number of burn-in samples to run MCMC chain
+          nthin=int(os.environ.get("PYQSOFIT_NTHIN", "10")),  # To set the MCMC chain returns every n samples
           epsilon_jitter=0.,
           # Initial jitter for every initial guass to avoid local minimum. (Under test, not recommanded to change)
 

@@ -99,7 +99,7 @@ halpha_na.ampl = hbeta_na.ampl * 2.86
 model = cont + OIIIb_na + OIIIa_na + NII6583_na + NII6548_na + SII6716_na + SII6732_na + hbeta_br + halpha_br + hbeta_na + halpha_na + create_feii_model(fwhm=1000, min_fwhm=300, max_fwhm=6000, offset=0, min_offset=-800, max_offset=800)
 
 # fits a spectrum with the above model, iterate 2 times
-s.fit(model, ntrial=10)
+s.fit(model, ntrial=30)
 print("fit ok")
 
 # creates a file to save the fitting results of the original spectra

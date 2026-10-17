@@ -327,15 +327,16 @@ q_mle.Fit(name='result',  # customize the name of given targets. Default: plate-
           # uncertainties (off during the search for speed).
           MC=(os.environ.get("PYQSOFIT_MC", "0") == "1"),
           # If True, do Monte Carlo resampling of the spectrum based on the input error array to produce the MC error array
-          MCMC=False,
+          # PYQSOFIT_MCMC=1 turns on full emcee MCMC sampling of the posterior.
+          MCMC=(os.environ.get("PYQSOFIT_MCMC", "0") == "1"),
           # If True, do Markov Chain Monte Carlo sampling of the posterior probability densities to produce the error array
           nsamp=int(os.environ.get("PYQSOFIT_NSAMP", "50")),
           # The number of trials of the MC process (if MC=True) or number samples to run MCMC chain (if MCMC=True)
 
           # advanced fitting parameters
           param_file_name='qsopar.fits',  # Name of the qso fitting parameter FITS file.
-          nburn=20,  # The number of burn-in samples to run MCMC chain
-          nthin=10,  # To set the MCMC chain returns every n samples
+          nburn=int(os.environ.get("PYQSOFIT_NBURN", "20")),  # The number of burn-in samples to run MCMC chain
+          nthin=int(os.environ.get("PYQSOFIT_NTHIN", "10")),  # To set the MCMC chain returns every n samples
           epsilon_jitter=0.,
           # Initial jitter for every initial guass to avoid local minimum. (Under test, not recommanded to change)
 

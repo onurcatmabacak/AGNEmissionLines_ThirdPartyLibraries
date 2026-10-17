@@ -93,7 +93,9 @@ Regenerate figures/configs after a run:
 ```bash
 python pipeline/collect_figures.py --clean                      # figures/ (all plots)
 python pipeline/collect_figures.py --select --out figures_main --clean
-python pipeline/save_object_configs.py --best configs/BEST_PER_OBJECT.json
+# promote the per-object winners, then copy the winning config next to each figure
+cp work/per_object/best_configs.json configs/BEST_PER_OBJECT.json
+python pipeline/save_object_configs.py --best work/per_object/best_configs.json
 ```
 
 ---

@@ -38,8 +38,8 @@ fit_options = {
     "mask_metal": False,  # interpolate over metal absorption lines for high-z spectra
     "fit_stat": "OLS",  # fit statistic; RCHI2=Red. Chi Square 1, ML = Max. Like. , OLS = Ordinary Least Squares
     "n_basinhop": _env_int("BADASS_NBASINHOP", 50),  # Number of consecutive basinhopping thresholds before solution achieved
-    "reweighting": False,  # If true, BADASS will reweight the noise vector to achieve a reduced chi-squared ~ 1. This is done after the initial basinhopping fit, and applied to any bootstrapped uncertainties and MCMC fitting performed afterward. This does not affect the chi-squared ratio metric used in line and configuration testing, but does effect the amplitude-over-noise and SNR calculations in BADASS.
-    "test_lines": False,  # Perform line/configuration testing for multiple components
+    "reweighting": _env_bool("BADASS_REWEIGHTING", False),  # If true, BADASS will reweight the noise vector to achieve a reduced chi-squared ~ 1. This is done after the initial basinhopping fit, and applied to any bootstrapped uncertainties and MCMC fitting performed afterward. This does not affect the chi-squared ratio metric used in line and configuration testing, but does effect the amplitude-over-noise and SNR calculations in BADASS.
+    "test_lines": _env_bool("BADASS_TEST_LINES", False),  # Perform line/configuration testing for multiple components
     "max_like_niter": _env_int("BADASS_MAX_LIKE_NITER", 100),  # number of maximum likelihood iterations
     "output_pars": False,  # only output free parameters of fit and stop code (diagnostic)
     "cosmology": {"H0": 70.0, "Om0": 0.30},  # Flat Lam-CDM Cosmology
@@ -65,7 +65,7 @@ mcmc_options = {
 
 ############################ Fit component op dtions #############################
 comp_options = {
-    "fit_opt_feii": True,  # optical FeII
+    "fit_opt_feii": False,  # optical FeII
     "fit_uv_iron": False,  # UV Iron
     "fit_balmer": False,  # Balmer continuum (<4000 A)
     "fit_losvd": False,  # stellar LOSVD
@@ -77,6 +77,11 @@ comp_options = {
     "fit_absorp": False,  # absorption lines
     "tie_line_disp": False,  # tie line widths (dispersions)
     "tie_line_voff": False,  # tie line velocity offsets
+    # BADASS3 reads comp_options["na_line_profile"]/["br_line_profile"] in
+    # initialize_line_pars when tie_line_disp=True; without these keys it
+    # raises KeyError. Keep them in sync with narrow_options/broad_options.
+    "na_line_profile": "gaussian",
+    "br_line_profile": "gaussian",
 }
 
 # Line options for each narrow, broad, and absorption.
@@ -225,8 +230,14 @@ user_lines = {
 }
 
 
-# configs = [["NA_H_BETA", "NA_OIII_a", "NA_OIII_b", "NA_H_ALPHA"], ["BR_H_BETA", "BR_OIII_a", "BR_OIII_b", "BR_H_ALPHA"]]
-configs = []
+# Lines/groups offered to BADASS' line/configuration testing (test_lines=1).
+# Each entry must be a parent line in user_lines with ncomp=1.  These test
+# whether the narrow Balmer/forbidden group and the broad Balmer pair are
+# required by the data.
+configs = [
+    ["NA_H_BETA", "NA_OIII_a", "NA_OIII_b", "NA_H_ALPHA"],
+    ["BR_H_BETA", "BR_H_ALPHA"],
+]
 
 # The [OIII] doublet ratio is now enforced in user_lines; the soft
 # inequality is redundant and would conflict with the fixed ratio.

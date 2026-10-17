@@ -60,15 +60,25 @@ BUILD="${BUILD:-1}"
 CLEAN="${CLEAN:-0}"
 TOOL_TIMEOUT="${TOOL_TIMEOUT:-}"   # optional per-tool wall-clock limit, seconds (e.g. 3600)
 FANTASY_TIMEOUT="${FANTASY_TIMEOUT:-3600}"  # ntrial=30 fits need longer than 900 s
+# No-limit support: empty or 0/none/off/unlimited = run the tool with NO wall-clock
+# limit.  The presence of $ROOT/.unlimited_tool_timeout force-disables every tool
+# timeout, which also lets an already-running driver's *future* children run
+# without limits (they inherit TOOL_TIMEOUT from the environment).
+if [[ -f "$ROOT/.unlimited_tool_timeout" ]]; then TOOL_TIMEOUT=""; FANTASY_TIMEOUT=""; fi
+case "${TOOL_TIMEOUT,,}" in ""|0|none|off|unlimited|no|false) TOOL_TIMEOUT="" ;; esac
+case "${FANTASY_TIMEOUT,,}" in ""|0|none|off|unlimited|no|false) FANTASY_TIMEOUT="" ;; esac
 VARIANTS="${VARIANTS:-}"           # per-tool config variants, e.g. "pyqsofit=err05,badass=fast"
 RUN_LABEL="${RUN_LABEL:-}"         # namespaces runs/ and results/ for variant grids
 REPORT_ONLY=0
 NO_REPORT=0                      # skip the HTML/MD report (used during parameter sweeps)
+NO_COLLECT=0                     # skip collect/score/report (used when many objects run in parallel)
 # BADASS3 is slow with full MCMC; the pipeline defaults to a fast OLS/basinhopping
 # fit. Set BADASS_MCMC=1 to restore the full uncertainty run.
 BADASS_MCMC="${BADASS_MCMC:-0}"
 BADASS_NBASINHOP="${BADASS_NBASINHOP:-50}"
 BADASS_MAX_LIKE_NITER="${BADASS_MAX_LIKE_NITER:-100}"   # MC bootstrap iterations (0 = fastest)
+BADASS_TEST_LINES="${BADASS_TEST_LINES:-0}"             # line/configuration model testing
+BADASS_REWEIGHTING="${BADASS_REWEIGHTING:-0}"           # reweight noise to reduced chi2 ~ 1
 DOCKER_TOOLS="badass fantasy_agn gelato gleam"
 FETCH_N=""
 
@@ -88,6 +98,7 @@ while [[ $# -gt 0 ]]; do
     --label)    RUN_LABEL="$2"; shift 2 ;;
     --report-only) REPORT_ONLY=1; shift ;;
     --no-report) NO_REPORT=1; shift ;;
+    --no-collect) NO_COLLECT=1; shift ;;
     -h|--help)  sed -n '2,34p' "$SCRIPT" | sed 's/^# \{0,1\}//'; exit 0 ;;
     *) die "unknown argument: $1 (try --help)" ;;
   esac
@@ -210,6 +221,8 @@ run_docker_tool() {  # $1 = tool, $2 = object tag
         -e "BADASS_MCMC=$BADASS_MCMC"
         -e "BADASS_NBASINHOP=$BADASS_NBASINHOP"
         -e "BADASS_MAX_LIKE_NITER=$BADASS_MAX_LIKE_NITER"
+        -e "BADASS_TEST_LINES=$BADASS_TEST_LINES"
+        -e "BADASS_REWEIGHTING=$BADASS_REWEIGHTING"
       ) ;;
     fantasy_agn)
       mounts=(-v "$in/my_sdss.fits:/app/my_sdss.fits:ro"
@@ -326,19 +339,23 @@ log "finished $started job(s)"
 fi   # end REPORT_ONLY==0
 
 # ------------------------------ COLLECT --------------------------------------
-[[ $REPORT_ONLY -eq 1 ]] || {
+if [[ $REPORT_ONLY -eq 0 && $NO_COLLECT -eq 0 ]]; then
   log "collecting results -> $RESULTS_DIR"
   "$PYTHON" pipeline/collect_results.py --runs "$RUNS_DIR" --results "$RESULTS_DIR" \
     || warn "collector reported an error"
-}
+fi
 
 # --------------------------- SCORE + REPORT ----------------------------------
-"$PYTHON" pipeline/score_fits.py --runs "$RUNS_DIR" --results "$RESULTS_DIR" \
-  || warn "scorer reported an error"
-if [[ $NO_REPORT -eq 1 ]]; then
-  log "skipping report (--no-report)"
+if [[ $NO_COLLECT -eq 1 ]]; then
+  log "skipping collect/score/report (--no-collect)"
 else
-  "$PYTHON" pipeline/make_report.py --runs "$RUNS_DIR" --results "$RESULTS_DIR" \
-    || warn "report step reported an error"
+  "$PYTHON" pipeline/score_fits.py --runs "$RUNS_DIR" --results "$RESULTS_DIR" \
+    || warn "scorer reported an error"
+  if [[ $NO_REPORT -eq 1 ]]; then
+    log "skipping report (--no-report)"
+  else
+    "$PYTHON" pipeline/make_report.py --runs "$RUNS_DIR" --results "$RESULTS_DIR" \
+      || warn "report step reported an error"
+  fi
 fi
 log "done.  raw runs: $RUNS_DIR   collected: $RESULTS_DIR   report: $RESULTS_DIR/report.html"
