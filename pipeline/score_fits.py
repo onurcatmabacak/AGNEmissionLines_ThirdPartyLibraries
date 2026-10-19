@@ -410,12 +410,68 @@ def parse_fantasy(out: Path, tag: str):
         "NII6583_na": ("NII6585", "narrow"), "NII6548_na": ("NII6548", "narrow"),
         "SII6716_na": ("SII6718", "narrow"), "SII6732_na": ("SII6732", "narrow"),
     }
+    # ---- Monte-Carlo uncertainty propagation -------------------------------
+    # fantasy's monte_carlo() writes one row per mock refit to
+    # my_sdss_pars.csv.  An integrated line flux ~ amplitude x sigma(FWHM), so
+    # propagate the fractional scatter of the underlying amplitude and FWHM.
+    # Components whose amplitude is tied/shared reuse the parent's fractional
+    # error (documented in mc_map below).
+    mc_path = out / "my_sdss_pars.csv"
+    mc = {}
+    if mc_path.exists():
+        try:
+            with mc_path.open() as fh:
+                hdr = [h.strip() for h in fh.readline().rstrip("\n").split(",")]
+                mcarr = np.genfromtxt(fh, delimiter=",", comments=None)
+            if mcarr.ndim == 1:
+                mcarr = mcarr[None, :]
+            mc = {name: mcarr[:, i] for i, name in enumerate(hdr) if name}
+        except Exception:  # noqa: BLE001
+            mc = {}
+
+    def _relerr(ampl_col, fwhm_col=None):
+        a = mc.get(ampl_col)
+        if a is None:
+            return np.nan
+        a = np.asarray(a, float)
+        a = a[np.isfinite(a)]
+        if a.size < 2 or np.nanmean(a) == 0:
+            return np.nan
+        ra = np.nanstd(a, ddof=1) / abs(np.nanmean(a))
+        rf = 0.0
+        if fwhm_col:
+            f = mc.get(fwhm_col)
+            if f is not None:
+                f = np.asarray(f, float)
+                f = f[np.isfinite(f)]
+                if f.size > 1 and np.nanmean(f) != 0:
+                    rf = np.nanstd(f, ddof=1) / abs(np.nanmean(f))
+        return math.sqrt(ra ** 2 + rf ** 2) if math.isfinite(ra) else np.nan
+
+    # model component -> (MC amplitude column, MC FWHM column)
+    mc_map = {
+        "OIIIb_na": ("OIIIb5007_na.ampl", "OIIIb5007_na.fwhm"),
+        "OIIIa_na": ("OIIIb5007_na.ampl", "OIIIb5007_na.fwhm"),  # tied doublet
+        "hbeta_br": ("HBeta4863_br.ampl", "HBeta4863_br.fwhm"),
+        "hbeta_na": ("HBeta4863_na.ampl", "OIIIb5007_na.fwhm"),
+        "halpha_br": ("HAlpha6565_br.ampl", "HBeta4863_br.fwhm"),
+        "halpha_na": ("HBeta4863_na.ampl", "OIIIb5007_na.fwhm"),  # tied narrow H
+        "NII6583_na": ("NII6583_na.ampl", "OIIIb5007_na.fwhm"),
+        "NII6548_na": ("NII6583_na.ampl", "OIIIb5007_na.fwhm"),   # fixed doublet ratio
+        "SII6716_na": ("SII6716_na.ampl", "OIIIb5007_na.fwhm"),
+        "SII6732_na": ("SII6732_na.ampl", "OIIIb5007_na.fwhm"),
+    }
+
     rows = []
     for name, (line, comp) in cmap.items():
         a = get(name)
-        if a is not None:
-            rows.append(_rec(tag, "fantasy_agn", line, comp,
-                             flux=_integrate(wave, np.asarray(a, float), line, comp)))
+        if a is None:
+            continue
+        flux = _integrate(wave, np.asarray(a, float), line, comp)
+        ampl_col, fwhm_col = mc_map.get(name, (None, None))
+        rel = _relerr(ampl_col, fwhm_col) if ampl_col else np.nan
+        flux_err = abs(flux) * rel if (math.isfinite(flux) and math.isfinite(rel)) else np.nan
+        rows.append(_rec(tag, "fantasy_agn", line, comp, flux=flux, flux_err=flux_err))
     return score, rows
 
 
