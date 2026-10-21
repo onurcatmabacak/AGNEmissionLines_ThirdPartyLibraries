@@ -1,0 +1,24 @@
+# PyQSOFit UV line fitting (Mg II, C III], C IV, Ly-alpha)
+# Build context is the repo root:
+#   docker build -f pyqsofit_uv/dockerfile -t pyqsofit_uv .
+FROM python:3.12-slim
+
+ENV PYTHONUNBUFFERED=1 \
+    MPLBACKEND=Agg \
+    PYTHONPATH=/app/pyqsofit/PyQSOFit/src
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+      gcc g++ gfortran libgomp1 && \
+    rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+COPY pyqsofit_uv/requirements.txt /app/requirements.txt
+RUN pip install --no-cache-dir -r /app/requirements.txt
+
+COPY pyqsofit/PyQSOFit /app/pyqsofit/PyQSOFit
+COPY configs/pyqsofit/uv/main.py /app/run/main.py
+COPY pyqsofit/PyQSOFit/src/pyqsofit/pca /app/run/pca
+WORKDIR /app/run
+RUN mkdir -p /app/input /app/output && chmod 777 /app/run /app/output
+
+CMD ["sh", "-c", "cp /app/input/spectrum.fits .; python main.py; rc=$?; cp *.fits *.pdf *.csv /app/output/ 2>/dev/null || true; exit $rc"]
