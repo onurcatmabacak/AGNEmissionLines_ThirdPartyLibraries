@@ -11,8 +11,10 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 DOCKER="${DOCKER:-docker}"
 # Tools with a Dockerfile; image name -> source directory (case-sensitive!)
-DOCKER_TOOLS=(badass fantasy_agn gelato gleam)
-declare -A TOOL_SRC=( [badass]=badass [fantasy_agn]=fantasy_agn [gelato]=Gelato [gleam]=Gleam )
+DOCKER_TOOLS=(badass fantasy_agn gelato gleam ir_linefit)
+declare -A TOOL_SRC=( [badass]=badass [fantasy_agn]=fantasy_agn [gelato]=Gelato [gleam]=Gleam [ir_linefit]=pipeline_ir )
+# ir_linefit needs the repo root as context (it copies pipeline_ir/).
+declare -A TOOL_CTX=( [ir_linefit]="$ROOT" )
 
 if ! command -v "${DOCKER%% *}" >/dev/null 2>&1; then
   echo "ERROR: '${DOCKER}' not found." >&2
@@ -29,7 +31,8 @@ for tool in "${tools[@]}"; do
   df="$ROOT/$srcdir/dockerfile"
   [ -f "$df" ] || { echo "skip $tool (no $srcdir/dockerfile)"; continue; }
   echo "==> building image '$tool' from $df"
-  if ! $DOCKER build --network=host -t "$tool" -f "$df" "$ROOT/$srcdir"; then
+  ctx="${TOOL_CTX[$tool]:-$ROOT/$srcdir}"
+  if ! $DOCKER build --network=host -t "$tool" -f "$df" "$ctx"; then
     echo "!! build failed: $tool" >&2
     failed+=("$tool")
   fi
