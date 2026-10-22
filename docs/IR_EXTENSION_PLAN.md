@@ -1,6 +1,7 @@
 # Plan: IR AGN Emission-Line Analysis (NIR, MIR, FIR)
 
-**Status:** v9, after the two-expert final verification (both verdict "sound", zero critical/major) plus the host–AGN/SED/torus addition. Planning only; no code, fits or repo changes.
+**Status:** v9 design baseline, after the two-expert final verification (both verdict "sound", zero critical/major) plus the host–AGN/SED/torus addition.  Implementation pilots now exist; see the v10 implementation note immediately below.  The design sections below are unchanged.
+**Implementation status (v10, October 2026):** `pipeline_ir`/`ir_linefit` (generic NIR/MIR/FIR line slice), `pyqsofit_uv`, `ppxf_host`, `nir_linefit`, `pahfit_mir`, `fir_linefit`, `crossband`, and the first P5a SED/torus pilot `cigale_sed` are in the repository as Docker tools with committed test results.  `cigale_sed` fits the five z>0.5 eFEDS QSOs with SDSS+WISE photometry and BC03+DL2014+SKIRTOR; two fits are excellent, two acceptable, one is a flagged optical outlier.  It is a pilot: AGNfitter-RX and PROSPECTOR-AGN are not yet implemented, the photometric errors are nominal, and no X-ray/radio constraints enter.  The P5a gate is therefore **not** claimed as passed by this pilot.
 **Scope:** extend the optical five-tool factory to IR lines: z, coverage routing, per-object search, scoring, comparison, figures. SED/torus is P5.
 **Thesis:** v7's primitives survive; v8 applies the final verification corrections. It keeps the z pad dimensional with catalogue-outlier rejection, recovers BADASS posterior errors from the production `par_table`, routes ALMA per band/SPW over 316-8570 um, convolves with real ILS kernels, states achievable scatter, serializes P3/P4, and records the per-family DOF and calibration contracts.
 
@@ -246,6 +247,7 @@ SED/torus keys (v2): `agn_fraction`, `L_torus`, `L_AGN`, `M_star`, `SFR`, `dust_
 - Schedule serial P3/P4 to week 56; optical v2 in P2.
 - Appendix D: Br-alpha at z=0.312 is `no_coverage`; Br-gamma covered.
 - v9: added G5 (host–AGN separation) and G6 (SED/torus companion: CIGALE/X-CIGALE, AGNfitter-RX, PROSPECTOR-AGN), §3.6, §5.6, P5a, host/SED validation, risks, open decisions, schema keys. SED is a companion and never gates P1–P4.
+- v10: implementation-status note; P5a CIGALE pilot (`cigale_sed`) on five z>0.5 eFEDS QSOs with SDSS+WISE; results and caveats in `cigale_sed/README.md` and `results_ir/sed_zgt05/`.  The design/gates are unchanged; AGNfitter-RX, PROSPECTOR-AGN and X-ray/radio SED constraints remain open.
 ## v8 final-verification corrections
 
 Both the senior software engineer and the professor astronomer returned verdict **sound** with **zero critical/major** gaps. The following minor factual corrections and specification additions are incorporated here (factual fixes are also applied in the body).
