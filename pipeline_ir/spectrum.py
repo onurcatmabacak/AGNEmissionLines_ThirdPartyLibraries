@@ -159,7 +159,7 @@ def read_sdss(path: str | Path, z_override: float | None = None,
 
 def _infer_band(wave_um, mask, instrument: str) -> str:
     inst = (instrument or "").upper()
-    if "APOGEE" in inst:
+    if "APOGEE" in inst or "NIRSPEC" in inst or "NIRISS" in inst:
         return "nir"
     if "MIRI" in inst or "IRS" in inst or "MIPS" in inst:
         return "mir"
@@ -176,8 +176,61 @@ def _infer_band(wave_um, mask, instrument: str) -> str:
     return "fir"
 
 
+
+def read_jwst_x1d(path: str | Path, z_override: float | None = None,
+                  band: str | None = None) -> Spectrum:
+    """JWST/NIRSpec (and NIRISS/MIRI) x1d EXTRACT1D table -> Spectrum.
+
+    FLUX is in Jy; convert to the pipeline's 1e-17 erg s-1 cm-2 A-1.
+    """
+    from astropy.io import fits
+    path = Path(path)
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        with fits.open(path, memmap=False) as hdul:
+            tab = hdul["EXTRACT1D"]
+            d = tab.data
+            wave_um = np.asarray(d["WAVELENGTH"], float)
+            flux_jy = np.asarray(d["FLUX"], float)
+            err_jy = np.asarray(d["FLUX_ERROR"], float)
+            dq = np.asarray(d["DQ"], float) if "DQ" in d.columns.names else np.zeros_like(wave_um)
+            lam_a = wave_um * 1e4
+            # Jy -> erg s-1 cm-2 A-1  (f_lambda = f_nu * c / lambda^2)
+            conv = 1e-23 * 2.99792458e18 / np.where(lam_a > 0, lam_a ** 2, np.nan)
+            flux = flux_jy * conv / 1e-17
+            err = err_jy * conv / 1e-17
+            hdr = hdul[0].header
+            z = hdr.get("Z", hdr.get("REDSHIFT", np.nan))
+            if not np.isfinite(z):
+                z = 0.0
+            if z_override is not None:
+                z = float(z_override)
+            target = str(hdr.get("TARGNAME", "") or path.stem).replace(" ", "_")
+            inst = str(hdr.get("INSTRUME", "NIRSPEC"))
+            objid = target
+            ra = hdr.get("RA_REF", np.nan)
+            dec = hdr.get("DEC_REF", np.nan)
+    mask = np.isfinite(wave_um) & np.isfinite(flux) & np.isfinite(err) & (err > 0) & (dq == 0)
+    if band is None:
+        band = _infer_band(wave_um, mask, inst)
+    return Spectrum(wave_um=wave_um, flux=flux, error=err, mask=mask, z=float(z),
+                    z_err=float(hdr.get("Z_ERR", np.nan)) if "hdr" in locals() else np.nan,
+                    band=band, instrument=inst, object_id=objid,
+                    flux_unit="1e-17 erg s-1 cm-2 A-1", native_flux_unit="Jy",
+                    ra=ra, dec=dec,
+                    meta={"path": str(path), "source": "JWST x1d", "target": target,
+                          "dq_flagged": int(np.sum(dq != 0))})
+
+
 def read_spectrum(path: str | Path, **kw) -> Spectrum:
-    """Adapter dispatch.  SDSS-style FITS for now; more adapters later."""
+    """Adapter dispatch: JWST x1d if EXTRACT1D is present, else SDSS-style."""
+    from astropy.io import fits
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        with fits.open(path, memmap=False) as hdul:
+            names = [h.name for h in hdul]
+    if "EXTRACT1D" in names:
+        return read_jwst_x1d(path, **kw)
     return read_sdss(path, **kw)
 
 
