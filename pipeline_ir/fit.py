@@ -60,10 +60,17 @@ def _build_components(group: list, z: float, res_um: float) -> list[Component]:
         ln = cov.line
         c = ln.rest_um * (1 + z)
         sig_res = max(res_um, _sigma_from_kms(c, 120.0))
-        # narrow component
-        comps.append(Component(ln.name, ln, c, max(sig_res, _sigma_from_kms(c, 250.0)),
-                               max(0.5 * sig_res, _sigma_from_kms(c, 80.0)),
-                               _sigma_from_kms(c, 1500.0)))
+        # narrow component; FIR lines are often unresolved, so keep the width
+        # near the instrumental resolution instead of letting it collapse.
+        if c > 30.0:
+            sig0 = sig_res
+            sig_lo = 0.8 * sig_res
+            sig_hi = 1.5 * sig_res
+        else:
+            sig0 = max(sig_res, _sigma_from_kms(c, 250.0))
+            sig_lo = max(0.5 * sig_res, _sigma_from_kms(c, 80.0))
+            sig_hi = _sigma_from_kms(c, 1500.0)
+        comps.append(Component(ln.name, ln, c, sig0, sig_lo, sig_hi))
     # broad components for H-alpha / H-beta / Pa-alpha / Pa-beta / Br-gamma
     # first slice: broad/narrow decomposition for H-alpha/H-beta only
     broad_names = {"Halpha6563", "Hbeta4861", "MgII2798", "CIV1549", "CIII1908", "Lyalpha1216", "NV1240", "SiIV1397", "OVI1034"}
@@ -125,7 +132,13 @@ def fit_group(spec: Spectrum, group: list, z: float) -> tuple[list[Measurement],
     free_amp = [i for i, c in enumerate(comps) if c.amp_tie is None]
     free_ctr = [i for i, c in enumerate(comps) if c.center_tie is None]
     free_sig = [i for i, c in enumerate(comps) if c.sigma_tie is None]
-    p0, lo, hi = [cont0, 0.0], [-10 * abs(cont0) - 10 * noise, -10 * abs(cont0) / span - 10 * noise / span], [10 * abs(cont0) + 10 * noise, 10 * abs(cont0) / span + 10 * noise / span]
+    # FIR lines: keep the local continuum nearly flat, otherwise a free slope
+    # absorbs the (often unresolved) line.
+    fir_window = all(c.center > 30.0 for c in comps)
+    b_lim = 1e-3 if fir_window else max(10 * abs(cont0) / span, 10 * noise / span)
+    p0, lo, hi = ([cont0, 0.0],
+                  [-10 * abs(cont0) - 10 * noise, -b_lim],
+                  [10 * abs(cont0) + 10 * noise, b_lim])
     for i in free_amp:
         c = comps[i]
         peak = max(float(np.max(y - cont0)), noise)

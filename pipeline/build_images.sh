@@ -11,10 +11,10 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 DOCKER="${DOCKER:-docker}"
 # Tools with a Dockerfile; image name -> source directory (case-sensitive!)
-DOCKER_TOOLS=(badass fantasy_agn gelato gleam ir_linefit pyqsofit_uv ppxf_host nir_linefit pahfit_mir)
-declare -A TOOL_SRC=( [badass]=badass [fantasy_agn]=fantasy_agn [gelato]=Gelato [gleam]=Gleam [ir_linefit]=pipeline_ir [pyqsofit_uv]=pyqsofit_uv [ppxf_host]=ppxf_host [nir_linefit]=nir_linefit [pahfit_mir]=pahfit_mir )
+DOCKER_TOOLS=(badass fantasy_agn gelato gleam ir_linefit pyqsofit_uv ppxf_host nir_linefit pahfit_mir fir_linefit)
+declare -A TOOL_SRC=( [badass]=badass [fantasy_agn]=fantasy_agn [gelato]=Gelato [gleam]=Gleam [ir_linefit]=pipeline_ir [pyqsofit_uv]=pyqsofit_uv [ppxf_host]=ppxf_host [nir_linefit]=nir_linefit [pahfit_mir]=pahfit_mir [fir_linefit]=fir_linefit )
 # ir_linefit needs the repo root as context (it copies pipeline_ir/).
-declare -A TOOL_CTX=( [ir_linefit]="$ROOT" [pyqsofit_uv]="$ROOT" [ppxf_host]="$ROOT" [nir_linefit]="$ROOT" [pahfit_mir]="$ROOT" )
+declare -A TOOL_CTX=( [ir_linefit]="$ROOT" [pyqsofit_uv]="$ROOT" [ppxf_host]="$ROOT" [nir_linefit]="$ROOT" [pahfit_mir]="$ROOT" [fir_linefit]="$ROOT" )
 
 if ! command -v "${DOCKER%% *}" >/dev/null 2>&1; then
   echo "ERROR: '${DOCKER}' not found." >&2
