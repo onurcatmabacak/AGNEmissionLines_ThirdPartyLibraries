@@ -1,0 +1,14 @@
+# pPXF host-AGN decomposition with eMILES templates
+# Build context is the repo root:
+#   docker build -f ppxf_host/dockerfile -t ppxf_host .
+FROM python:3.12-slim
+ENV PYTHONUNBUFFERED=1 MPLBACKEND=Agg
+RUN apt-get update && apt-get install -y --no-install-recommends \
+      gcc g++ gfortran libgomp1 && rm -rf /var/lib/apt/lists/*
+WORKDIR /app
+COPY ppxf_host/requirements.txt /app/requirements.txt
+RUN pip install --no-cache-dir -r /app/requirements.txt
+COPY ppxf_host/templates /app/templates
+COPY ppxf_host/run_ppxf.py /app/run_ppxf.py
+RUN mkdir -p /app/input /app/output && chmod 777 /app/output
+ENTRYPOINT ["python", "/app/run_ppxf.py", "--templates", "/app/templates/eMILES"]
