@@ -13,6 +13,9 @@ broad-band SED code is not a line fitter.
 | `cafe_line` | LMFIT covariance + multivariate-normal MC (200 draws) | no | `cafe_uncertainties.csv`, `cafe_uncertainty.png` |
 | `s3fit_line` | least-squares + mock-spectrum MC (`num_mocks`) | no | `s3fit_mc.png`, MC flux/FWHM distributions |
 | `gandalf_line` | GANDALF/MPFIT covariance (`FOR_ERRORS`) | no | `gandalf_lines.csv`, error/covariance figure |
+| `pyqsofitspec_line` | parametric bootstrap of line+continuum refits | no | bootstrap distributions/corner |
+| `qgfit` | continuum `emcee`; line LSQ covariance | yes (continuum) | `qgfit_mcmc_summary.csv`, corner |
+| `sheap_line` | JAX optimisation + 50-draw covariance MC | no | `sheap_mc_samples.csv`, uncertainty |
 | `galspec_line` | emcee (`MCMC_Fit`); dynesty optional | yes (default) | `galspec_uncertainty.*`, `galspec_corner.*` |
 | `ir_linefit` / `nir_linefit` / `fir_linefit` | `least_squares`/`curve_fit` covariance | no | per-line `flux_err`, `fwhm_err` |
 | `ppxf_host` | pPXF formal errors | no | `sigma_err_kms`, host error |
@@ -45,9 +48,12 @@ per-realization line fluxes.  This is labelled MC, not MCMC.
 |---|---|---:|---|---|
 | PyQSOFit | `04592649654` | 100 | MC error-array resampling | `outputs/04592649654_z_0.5874/pyqsofit/mc/pyqsofit_mc.png` |
 | S3Fit | `04592649654` | 3 | mock spectra (fast demo) | `outputs/04592649654_z_0.5874/s3fit_line/s3fit_mc.png` |
+| GalSpec | `04592649654` | 2000 saved MCMC samples | `emcee` on reduced Hβ/[O III] | `outputs/04592649654_z_0.5874/galspec_line/galspec_corner.png` |
+| PyQSOFitSpec | `04592649654` | 10 | parametric bootstrap | `outputs/04592649654_z_0.5874/pyqsofitspec_line/pyqsofitspec_bootstrap.png` |
+| QGfit | `04592649654` | short continuum MCMC | `emcee` continuum; LSQ lines | `outputs/04592649654_z_0.5874/qgfit/qgfit_uncertainty.png` |
+| SHEAP | `04592649654` | 50 | JAX + covariance MC (not MCMC) | `outputs/04592649654_z_0.5874/sheap_line/sheap_uncertainty.png` |
 | CAFE | PDS 456 | 200 | LMFIT covariance multivariate normal | `outputs/PDS456_z_0.1840/cafe_line/cafe_uncertainty.png` |
 | GANDALF | `04592649654` | formal errors | GDL/MPFIT `FOR_ERRORS=1` | `outputs/04592649654_z_0.5874/gandalf_line/gandalf_uncertainty.png` |
-| GalSpec | `04592649654` | emcee 48x4000 | short production chain | `outputs/04592649654_z_0.5874/galspec_line/galspec_corner.png` |
 | PAHFIT | PDS 456 short, NGC 4151, VV114 | 100 each | bootstrap/covariance | `outputs/pahfit_mc_comparison.png` |
 | AGNfitter | 5 QSOs | nested sampling | `ultranest` | `outputs/<source>/agnfitter_sed/OUTPUT/.../SED_manyrealizations...pdf` |
 | CIGALE | 5 QSOs × 2 tori | Bayesian `pdf_analysis` | posterior grid | `outputs/<source>/cigale_sed/*/sed_fit.png` |
@@ -55,5 +61,6 @@ per-realization line fluxes.  This is labelled MC, not MCMC.
 `docs/line_tool_comparison.png` combines the line ratios measured by PyQSOFit,
 S3Fit, GANDALF and PAHFIT; `docs/line_ratio_scatter.csv` reports the
 inter-tool log scatter.  For 04592649654, the three optical tools give
-Hβ/[O III] 5007 = 1.96 (PyQSOFit), 1.83 (S3Fit), 2.07 (GANDALF), with
-log-scatter 0.05 dex.
+Hβ/[O III] 5007 now spans 1.83–4.00 across seven tools; the median is 2.11
+and the full log-scatter is 0.33 dex.  The three best-tested optical tools
+(PyQSOFit/S3Fit/GANDALF) remain within 0.05 dex.

@@ -28,11 +28,11 @@ def canon(name: str) -> str:
     s = re.sub(r"[^a-z0-9]+", "", str(name).lower())
     aliases = {
         "hb": "hbeta", "hbeta": "hbeta", "hbeta4861": "hbeta", "hbbr": "hbeta", "hbna": "hbeta",
-        "hbeta": "hbeta", "hβ": "hbeta", "h-beta": "hbeta",
+        "hbeta": "hbeta", "hβ": "hbeta", "h-beta": "hbeta", "hbeta": "hbeta",
         "ha": "halpha", "halpha": "halpha", "halpha6563": "halpha", "habr": "halpha", "hana": "halpha",
         "h-alpha": "halpha", "hα": "halpha",
         "oiii5007": "oiii5007", "oiii5007c": "oiii5007", "oiii5007w": "oiii5007",
-        "oiii5008": "oiii5007", "oiii4960": "oiii4959",
+        "oiii5008": "oiii5007", "oiii4960": "oiii4959", "oiii5007": "oiii5007",
         "oiii4959": "oiii4959", "nii6585": "nii6585", "nii6548": "nii6548",
         "neiii15555": "neiii", "neiii": "neiii", "neii12814": "neii", "neii": "neii",
         "siii18713": "siii187", "siii187": "siii187", "siii33480": "siii335", "siii335": "siii335",
@@ -146,6 +146,10 @@ def load():
             "s3fit_line": ("s3fit_lines.csv", "s3fit_line.csv"),
             "cafe_line": ("cafe_lines.csv", "cafe_line.csv"),
             "gandalf_line": ("gandalf_lines.csv", "gandalf_line.csv"),
+            "galspec_line": ("galspec_lines.csv",),
+            "pyqsofitspec_line": ("pyqsofitspec_lines.csv",),
+            "qgfit": ("qgfit_lines.csv",),
+            "sheap_line": ("sheap_lines.csv",),
             "pahfit_mir": ("pahfit_lines.csv",),
         }.items():
             for n in names:

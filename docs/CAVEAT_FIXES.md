@@ -38,6 +38,19 @@
 * **PyQSOFit MCMC** is implemented upstream but the line-complex `emcee`
   initialization fails its condition-number check on this source.  The
   committed uncertainty figure is a 100-realization MC, explicitly not MCMC.
+* **GalSpec** was run on a reduced Hβ/[O III] window, not the full
+  UV/optical continuum; its total Hβ (3237) and [O III] 5007 (1619) are close
+  to PyQSOFit/GANDALF, but the narrow/broad split is model-dependent.
+* **PyQSOFitSpec** uses a 10-realisation bootstrap; its Hβ total is 3439,
+  about 18% above GANDALF/S3Fit.  The bootstrap errors are statistical only.
+* **QGfit** uses a short continuum MCMC and least-squares line errors; its
+  Hβ/[O III] = 2.50, at the upper edge of the optical-tool spread.
+* **SHEAP** gives Hβ/[O III] = 4.00; it is retained as an experimental branch,
+  not a default scientific recommendation.
+* **Official SDSS DAPs** (MaNGA/LVM) require IFU cubes and are excluded from
+  this single-fiber sample; **AMARU**, **ELFO**, **AGNdecompose**, **pyspeckit**
+  and **HEASOFT** are excluded for the reasons in
+  `docs/OFFICIAL_PIPELINES_AND_XRAY.md`.
 * **PAHFIT** formal covariance/χ² errors are much smaller than the residuals
   (χ²_ν 557 PDS short, 304 NGC 4151); they are statistical only and do not
   include the dominant model mismatch.

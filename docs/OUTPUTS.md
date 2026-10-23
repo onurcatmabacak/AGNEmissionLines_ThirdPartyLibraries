@@ -27,6 +27,10 @@ Tools and expected files:
 | `pahfit_mir` | `pahfit_fit.png/pdf`, `pahfit_features.csv`, `pahfit_lines.csv`, `pahfit_output.ecsv`, `pahfit_summary.json`, MC products; PDS 456 has `short/`, `long/`, `both/`, `short_covariance/` |
 | `cafe_line` | `cafe_fit.png/pdf`, `cafe_lines.csv`, `cafe_key_lines.csv`, `cafe_pah.csv`, `cafe_uncertainties.csv`, `cafe_uncertainty.png`, `run.json` |
 | `s3fit_line` | `s3fit_fit.png`, `s3fit_mc.png`, `s3fit_lines.csv`, `s3fit_output.npz`, `pyqsofit_comparison.csv`, `run.json` |
+| `galspec_line` | `galspec_lines.csv`, `galspec_fit.png/pdf`, `galspec_corner.png/pdf`, `galspec_uncertainty.png/pdf`, `galspec_mcmc.npz`, `run.json` |
+| `pyqsofitspec_line` | `pyqsofitspec_lines.csv`, `pyqsofitspec_bootstrap.png/pdf`, `pyqsofitspec_corner.png/pdf`, `pyqsofitspec_out.csv`, `run.json` |
+| `qgfit` | `qgfit_lines.csv`, `qgfit_fit.png/pdf`, `qgfit_uncertainty.png/pdf`, `qgfit_mcmc_summary.csv`, `run.json` |
+| `sheap_line` | `sheap_lines.csv`, `sheap_fit.png/pdf`, `sheap_uncertainty.png/pdf`, `sheap_mc_samples.csv`, `run.json` |
 | `galspec_line` | `galspec_lines.csv`, `galspec_fit.png/pdf`, `galspec_uncertainty.png/pdf`, `galspec_corner.png/pdf`, `galspec_model.csv`, `galspec_mcmc.npz`, `galspec_comparison.csv`, `config.effective.json`, `run.json` |
 | `fir_linefit` | `*.fir_lines.csv`, `*.fir_fit.png/pdf`, `*.fir_summary.json` |
 | `crossband` | `crossband_ratios.csv`, `crossband_summary.json`, `crossband_ratios.png/pdf` |

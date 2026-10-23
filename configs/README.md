@@ -2,7 +2,8 @@
 
 Central, reviewable configuration for every production tool.  Each tool has a
 `configs/<tool>/<variant>/` directory.  New line-fit tools (`cafe_line`,
-`s3fit_line`, `gandalf_line`, `galspec_line`) consume these files directly through `--config`;
+`s3fit_line`, `gandalf_line`, `galspec_line`, `pyqsofitspec_line`, `qgfit`,
+`sheap_line`) consume these files directly through `--config`;
 older tools use the same values as their documented defaults and their code
 contains the executable implementation.
 
@@ -64,6 +65,9 @@ configs/
   s3fit_line/default/...
   gandalf_line/default/...
   galspec_line/default/config.json
+  pyqsofitspec_line/default/config.json
+  qgfit/default/config.json
+  sheap_line/default/config.json
   crossband/default/config.json
   ppxf_host/default/config.json
   cigale_sed/{skirtor2016,fritz2006}/config.json

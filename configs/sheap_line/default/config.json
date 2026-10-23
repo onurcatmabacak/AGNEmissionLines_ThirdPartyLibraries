@@ -1,0 +1,22 @@
+{
+  "_comment": "SHEAP 0.0.11 JAX fit of the H-beta/[O III] 4959,5007 region. The committed demonstration run uses CPU JAX, Adam for 1000 steps, and 50 covariance Monte-Carlo draws. SHEAP is not an MCMC code; see Tools/sheap_line/README.md.",
+  "z": null,
+  "mask_and_mask": true,
+  "sheap": {
+    "region_rest": [4600.0, 5150.0],
+    "n_broad": 1,
+    "n_narrow": 1,
+    "fe_mode": "None",
+    "continuum_profile": "brokenpowerlaw",
+    "add_balmer_continuum": false,
+    "add_balmerhighorder_continuum": false,
+    "num_steps": 1000,
+    "learning_rate": 0.01,
+    "method": "adam",
+    "profile": "gaussian",
+    "covariance_error": true,
+    "montecarlo_samples": 50,
+    "seed": 42
+  },
+  "reference_tools": ["pyqsofit_uv", "gandalf_line", "s3fit_line"]
+}

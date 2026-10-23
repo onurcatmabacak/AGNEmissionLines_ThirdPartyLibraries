@@ -37,8 +37,8 @@ def choose(goal: str, z: float, wmin: float, wmax: float, instrument: str = "") 
     if goal in ("lines", "both"):
         # UV/optical coverage
         if rest_max >= 0.10 and rest_min <= 1.0:
-            names += ["pyqsofit_uv"]
-            reasons.append("rest-frame UV/optical broad lines: PyQSOFit")
+            names += ["pyqsofit_uv", "pyqsofitspec_line", "galspec_line", "qgfit", "sheap_line"]
+            reasons.append("rest-frame UV/optical broad lines: PyQSOFit/PyQSOFitSpec/GalSpec/QGfit/SHEAP")
             names += ["ir_linefit"]
             reasons.append("generic local-Gaussian optical/UV line check")
         if rest_min < 1.1 and rest_max > 0.35:

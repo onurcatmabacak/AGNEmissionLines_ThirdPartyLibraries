@@ -16,7 +16,10 @@ CAFE, S3Fit, GANDALF, PAHFIT and the generic Gaussian fitters operate on
 | `cafe_line` | line | NIR–MIR | stellar/dust/AGN continua + PAH + H/atomic/molecular lines | LMFIT covariance + MC |
 | `s3fit_line` | line | UV–NIR | simultaneous spectrum + photometric SED, AGN/Fe II + multi-component lines | mock-spectrum MC |
 | `gandalf_line` | line | optical–NIR | pPXF stellar continuum + simultaneous Gaussian gas | MPFIT covariance/bootstrap |
-| `galspec_line` | line | optical | reduced H-beta/[O III] window + Fe II, GalSpec Astropy Gaussians | emcee posterior (dynesty optional) |
+| `galspec_line` | line | optical–NIR | Astropy continuum + Gaussian lines; reduced Hβ/[O III] window | `emcee` MCMC / dynesty / LSQ covariance |
+| `pyqsofitspec_line` | line | UV–optical | PyQSOFitSpec skew-normal components + Fe II/Balmer | parametric bootstrap |
+| `qgfit` | line | UV–optical | AGN power law + Fe II + host + multi-component lines | continuum MCMC; LSQ line errors |
+| `sheap_line` | line | UV–optical | SHEAP SPAF/AGN decomposition, BH mass | JAX optimisation + covariance MC |
 | `pahfit_mir` | line | MIR | PAH Drude profiles + dust continuum + gas Gaussians | least-squares + MC |
 | `fir_linefit` | line | FIR | local continuum + Gaussian forbidden lines | covariance |
 | `ppxf_host` | host | optical–NIR | stellar templates + AGN power law, emission masked | pPXF formal errors |
@@ -51,6 +54,59 @@ kinematics; `FOR_ERRORS` enables MPFIT uncertainties.  It requires IDL (or a
 working GDL compatibility layer), the IDL Astronomy Library, MPFIT and stellar
 templates.  The implementation documents whether native GDL or a pPXF-gas
 fallback was used; the method is never mislabelled.
+
+### Official SDSS / IFU and X-ray exclusions
+
+- **MaNGA DAP** and **LVM-DAP** require MaNGA/LVM IFU cubes and their DRP
+  products; they cannot be applied to single-fiber SDSS spectra.  They are
+  excluded from this matrix.  A future `manga_dap` adapter would need a MaNGA
+  cube, redshift, and the DRP `LOGRSS`/`LOGMAP` products.
+- The **SDSS spectroscopic pipeline** (`idlspec2d`) is a data-reduction
+  pipeline; DR18 spectra are already reduced.  It does not replace a line fit.
+- **AMARU** public v0.1 is not the updated version and needs external
+  EMILES/Fe II/Balmer templates; it is excluded until those are public.
+- **ELFO** and **AGNdecompose** are IFS/2-D image tools, not 1D AGN
+  emission-line fitters; excluded.
+- **pyspeckit** is a general line-fitting toolkit; it is redundant with the
+  existing GLEAM/BADASS/local-Gaussian/PyQSOFit stack.
+- **HEASOFT** is X-ray data reduction, not optical line fitting; see the
+  HEASOFT section below.
+
+### HEASOFT (X-ray)
+
+The paper's HEASOFT use is Swift/XRT+UVOT reduction (`xrtpipeline`,
+`xrtproducts`, `uvotimsum`, `uvotsource`) and Einstein Probe `FXTDAS/fxtchain`.
+It is a separate X-ray branch, not an optical emission-line tool.  A proper
+integration needs:
+
+```bash
+# inside a HEASOFT/HEASoftPy container with CALDB
+xrtpipeline indir=... outdir=... steminputs=...
+xrtproducts infile=... outdir=... regionfile=...
+uvotimsum infile=... outfile=...
+uvotsource image=... srcreg=... bkgreg=...
+```
+
+No X-ray event/spectrum data are in this repository, so HEASOFT is not added to
+the line-tool matrix.  When X-ray data exist, add a separate `heasoft_xray`
+Docker tool and a `route_analysis` branch; do not mix X-ray calibration with
+optical line fitting.
+
+### GalSpec / PyQSOFitSpec / QGfit / SHEAP
+
+These four community 1-D codes were added and run on the real
+`04592649654` SDSS spectrum:
+
+| tool | fitted region/model | result |
+|---|---|---|
+| `galspec_line` | reduced Hβ/[O III] window, Fe II + Gaussian components | emcee MCMC, 2000 saved samples; Hβ/[O III] = 1.85 |
+| `pyqsofitspec_line` | UV/optical Fe II/Balmer + skew-normal lines | 10-fit parametric bootstrap; Hβ/[O III] = 2.11 |
+| `qgfit` | AGN power law + Fe II + host + line complexes | short continuum MCMC; Hβ/[O III] = 2.50 |
+| `sheap_line` | Hβ/[O III] SPAF/JAX model | 50-draw covariance MC; Hβ/[O III] = 4.00, flagged experimental |
+
+GalSpec and PyQSOFitSpec are adopted as production alternatives.  QGfit is
+kept with a caveat about its broader model.  SHEAP is kept as an experimental
+branch, not part of the default scientific recommendation.
 
 ### PAHFIT
 

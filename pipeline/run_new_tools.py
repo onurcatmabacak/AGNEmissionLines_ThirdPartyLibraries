@@ -41,7 +41,8 @@ SPITZER_IRS = ",".join([
 ])
 ALL_TOOLS = ("ir_linefit", "pyqsofit_uv", "pyqsofitspec_line", "ppxf_host", "gandalf_line",
              "nir_linefit", "pahfit_mir", "fir_linefit", "cafe_line", "crossband",
-             "cigale_sed", "agnfitter_sed", "s3fit_line", "galspec_line")
+             "cigale_sed", "agnfitter_sed", "s3fit_line", "galspec_line",
+             "qgfit", "sheap_line")
 
 
 def log(msg: str):
@@ -122,6 +123,24 @@ def tool_galspec(src: dict, out: Path, logp: Path, config: str | None = None,
         cmd += ["--config", config]
     if sampler:
         cmd += ["--sampler", sampler]
+    return run(cmd, logp)
+
+
+def tool_qgfit(src: dict, out: Path, logp: Path) -> int:
+    """Run QGfit on the canonical source directory."""
+    cmd = [str(ROOT / "Pipelines" / "run_qgfit_docker.sh"),
+           str(Path(src["_path"])), str(out)]
+    if src.get("z") is not None:
+        cmd += ["--z", str(src["z"])]
+    return run(cmd, logp)
+
+
+def tool_sheap(src: dict, out: Path, logp: Path) -> int:
+    """Run SHEAP on the canonical source directory (CPU JAX)."""
+    cmd = [str(ROOT / "Pipelines" / "run_sheap_line_docker.sh"),
+           str(Path(src["_path"])), str(out)]
+    if src.get("z") is not None:
+        cmd += ["--z", str(src["z"])]
     return run(cmd, logp)
 
 
@@ -361,6 +380,8 @@ def main(argv=None):
                                                      args.galspec_config,
                                                      args.galspec_sampler),
                 "cafe_line": lambda: tool_cafe(src, out, logp),
+                "qgfit": lambda: tool_qgfit(src, out, logp),
+                "sheap_line": lambda: tool_sheap(src, out, logp),
                 "nir_linefit": lambda: tool_nir(src, out, logp),
                 "pahfit_mir": lambda: tool_pahfit(src, out, logp),
                 "fir_linefit": lambda: tool_fir(src, out, logp),

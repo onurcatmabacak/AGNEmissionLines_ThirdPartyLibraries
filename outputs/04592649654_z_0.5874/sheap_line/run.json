@@ -1,0 +1,369 @@
+{
+  "tool": "sheap_line",
+  "method": "sheap_jax_adam",
+  "native_code": "SHEAP 0.0.11 (PyPI), AGPL-3.0",
+  "versions": {
+    "python": "3.12.15",
+    "sheap": "0.0.11",
+    "jax": "0.4.38",
+    "jaxlib": "0.4.38",
+    "numpy": "2.2.6",
+    "scipy": "1.18.1",
+    "pandas": "3.1.0",
+    "astropy": "8.0.2",
+    "matplotlib": "3.11.2"
+  },
+  "jax_devices": [
+    "TFRT_CPU_0"
+  ],
+  "accelerator": "CPU (JAX_PLATFORMS=cpu)",
+  "input": {
+    "file": "/app/input/raw/spec-00000-59345-04592649654.fits",
+    "z": 0.58741307,
+    "ra": 142.43091,
+    "dec": 0.69092798,
+    "n_pixels_total": 4648,
+    "n_pixels_used": 4621,
+    "wave_obs_range_A": [
+      3566.9742678444672,
+      10334.747480679587
+    ],
+    "wave_rest_range_A": [
+      2247.03597019298,
+      6510.433658379534
+    ],
+    "flux_unit": "1e-17 erg s-1 cm-2 A-1",
+    "bunit_header": "1E-17ERG/CM^2/S/ANG",
+    "mask_and_mask": true
+  },
+  "config_file": "/app/config/config.json",
+  "model": {
+    "region_rest_A": [
+      4600.0,
+      5150.0
+    ],
+    "n_broad": 1,
+    "n_narrow": 1,
+    "fe_mode": "None",
+    "continuum_profile": "brokenpowerlaw",
+    "add_balmer_continuum": false,
+    "add_balmerhighorder_continuum": false,
+    "line_profile": "gaussian"
+  },
+  "fit": {
+    "optimizer": "adam",
+    "num_steps": 1000,
+    "learning_rate": 0.01,
+    "covariance_error": true,
+    "chi2_red": 46.02994155883789,
+    "n_params": 13
+  },
+  "statistical_mode": {
+    "method": "covariance Monte-Carlo draws",
+    "n_samples": 50,
+    "seed": 42,
+    "mcmc": false,
+    "note": "SHEAP's 'montecarlo' sampler draws from the fit covariance.  It is not an MCMC posterior.",
+    "derived_quantiles": {
+      "Hbeta_total_1e17": {
+        "median": 3204.464855712836,
+        "err_1sigma": 41.20670613304992,
+        "q16": 3174.5209360625654,
+        "q84": 3256.9343483286652,
+        "n_samples": 50
+      },
+      "OIII5007_1e17": {
+        "median": 816.4242796583117,
+        "err_1sigma": 16.903405995930825,
+        "q16": 797.9442259952942,
+        "q84": 831.7510379871559,
+        "n_samples": 50
+      },
+      "Hbeta_OIII5007": {
+        "median": 3.9465929894052816,
+        "err_1sigma": 0.1224997412998341,
+        "q16": 3.812985297076825,
+        "q84": 4.057984779676493,
+        "n_samples": 50
+      }
+    }
+  },
+  "line_fit": {
+    "n_rows": 9,
+    "n_detected": 9,
+    "Hbeta_total_1e17": 3256.2985234867947,
+    "Hbeta_broad_1e17": 2481.5247138086443,
+    "OIII5007_total_1e17": 814.3571994298441,
+    "Hbeta_OIII5007": 3.9986120657699438,
+    "Hbeta_OIII5007_err": 0.0972064104612401,
+    "Hbeta_broad_fwhm_kms": 8018.8544921875
+  },
+  "comparison": {
+    "sheap_hbeta_oiii5007": 3.9986120657699438,
+    "sheap_hbeta_oiii5007_err": 0.0972064104612401,
+    "references": [
+      {
+        "line": "Hbeta",
+        "sheap_1e17": 3256.2985234867947,
+        "sheap_err_1e17": 41.206706133049764,
+        "reference_tool": "pyqsofit_uv",
+        "reference_1e17": 2905.1457395793796,
+        "reference_err_1e17": null,
+        "ratio_sheap_over_reference": 1.120872691212475,
+        "notes": "SHEAP fluxes are observed-frame cgs / 1e-17; reference values are the siblings' published tables"
+      },
+      {
+        "line": "OIII5007",
+        "sheap_1e17": 814.3571994298441,
+        "sheap_err_1e17": 16.903405995930854,
+        "reference_tool": "pyqsofit_uv",
+        "reference_1e17": 1479.5236561575302,
+        "reference_err_1e17": null,
+        "ratio_sheap_over_reference": 0.5504185053348931,
+        "notes": "SHEAP fluxes are observed-frame cgs / 1e-17; reference values are the siblings' published tables"
+      },
+      {
+        "line": "Hbeta",
+        "sheap_1e17": 3256.2985234867947,
+        "sheap_err_1e17": 41.206706133049764,
+        "reference_tool": "gandalf_line",
+        "reference_1e17": 2950.82227,
+        "reference_err_1e17": 33.28174370095971,
+        "ratio_sheap_over_reference": 1.1035224169860947,
+        "notes": "SHEAP fluxes are observed-frame cgs / 1e-17; reference values are the siblings' published tables"
+      },
+      {
+        "line": "OIII5007",
+        "sheap_1e17": 814.3571994298441,
+        "sheap_err_1e17": 16.903405995930854,
+        "reference_tool": "gandalf_line",
+        "reference_1e17": 1422.7398,
+        "reference_err_1e17": 11.8482139,
+        "ratio_sheap_over_reference": 0.5723866018437412,
+        "notes": "SHEAP fluxes are observed-frame cgs / 1e-17; reference values are the siblings' published tables"
+      },
+      {
+        "line": "Hbeta",
+        "sheap_1e17": 3256.2985234867947,
+        "sheap_err_1e17": 41.206706133049764,
+        "reference_tool": "s3fit_line",
+        "reference_1e17": 2761.0497076372567,
+        "reference_err_1e17": 4.053878985850624,
+        "ratio_sheap_over_reference": 1.1793697572628428,
+        "notes": "SHEAP fluxes are observed-frame cgs / 1e-17; reference values are the siblings' published tables"
+      },
+      {
+        "line": "OIII5007",
+        "sheap_1e17": 814.3571994298441,
+        "sheap_err_1e17": 16.903405995930854,
+        "reference_tool": "s3fit_line",
+        "reference_1e17": 1506.5459025928951,
+        "reference_err_1e17": 9.177676947431515,
+        "ratio_sheap_over_reference": 0.5405458924472631,
+        "notes": "SHEAP fluxes are observed-frame cgs / 1e-17; reference values are the siblings' published tables"
+      }
+    ],
+    "ratios": [
+      {
+        "ratio": "Hbeta/OIII5007",
+        "tool": "sheap_line",
+        "value": 3.9986120657699438,
+        "err": 0.0972064104612401
+      },
+      {
+        "ratio": "Hbeta/OIII5007",
+        "tool": "pyqsofit_uv",
+        "value": 1.963568292733035,
+        "err": null
+      },
+      {
+        "ratio": "Hbeta/OIII5007",
+        "tool": "gandalf_line",
+        "value": 2.0740421192968665,
+        "err": 0.029078243192035218
+      },
+      {
+        "ratio": "Hbeta/OIII5007",
+        "tool": "s3fit_line",
+        "value": 1.8327020125209943,
+        "err": 0.01148426779085545
+      }
+    ]
+  },
+  "runtime": {
+    "total_sec": 57.96443557739258
+  },
+  "scope": {
+    "accelerator": "CPU; GPU not used",
+    "galactic_dereddening": false,
+    "fe_ii": "None",
+    "host_galaxy": false,
+    "balmer_continuum": false,
+    "region": "H-beta + [O III] 4959/5007 only",
+    "fit_quality_note": "For this luminous QSO SHEAP's H-beta/[O III] fit has a high reduced chi2 and broad H-beta is much wider than in PyQSOFit/GANDALF/S3Fit. The result is reported as a real SHEAP fit, not as a preferred measurement."
+  },
+  "line_measurements": [
+    {
+      "line": "HeIId",
+      "sheap_line": "HeIId",
+      "component": "narrow",
+      "lambda_rest": 4685.630859375,
+      "flux_1e17": 25.139792836950203,
+      "flux_err_1e17": 1.6923244521943481,
+      "flux_erg_s_cm2": 2.5139792836950204e-16,
+      "flux_err_erg_s_cm2": 1.6923244521943482e-17,
+      "fwhm_kms": 592.180419921875,
+      "fwhm_err_kms": 0.1774153864231306,
+      "velocity_kms": -5.0634295541883665,
+      "amplitude": null,
+      "snr": 14.855185011569594,
+      "detected": true,
+      "method": "sheap_jax_adam",
+      "notes": "SHEAP SPAF Gaussian; flux in cgs observed-frame convention; 1-sigma from 50 covariance Monte-Carlo draws (not MCMC)"
+    },
+    {
+      "line": "HeIId",
+      "sheap_line": "HeIId",
+      "component": "broad",
+      "lambda_rest": 4715.0517578125,
+      "flux_1e17": 8.159473630826477,
+      "flux_err_1e17": 0.20073878908346054,
+      "flux_erg_s_cm2": 8.159473630826478e-17,
+      "flux_err_erg_s_cm2": 2.0073878908346056e-18,
+      "fwhm_kms": 8018.85400390625,
+      "fwhm_err_kms": 275.7070947718553,
+      "velocity_kms": 1877.290249855422,
+      "amplitude": null,
+      "snr": 40.64721954377257,
+      "detected": true,
+      "method": "sheap_jax_adam",
+      "notes": "SHEAP SPAF Gaussian; flux in cgs observed-frame convention; 1-sigma from 50 covariance Monte-Carlo draws (not MCMC)"
+    },
+    {
+      "line": "Hbeta",
+      "sheap_line": "Hbeta",
+      "component": "narrow",
+      "lambda_rest": 4861.25048828125,
+      "flux_1e17": 774.7738096781502,
+      "flux_err_1e17": 19.966248887536608,
+      "flux_erg_s_cm2": 7.747738096781503e-15,
+      "flux_err_erg_s_cm2": 1.996624888753661e-16,
+      "fwhm_kms": 592.180419921875,
+      "fwhm_err_kms": 0.17741522010557595,
+      "velocity_kms": -5.088396737628193,
+      "amplitude": null,
+      "snr": 38.804174687103185,
+      "detected": true,
+      "method": "sheap_jax_adam",
+      "notes": "SHEAP SPAF Gaussian; flux in cgs observed-frame convention; 1-sigma from 50 covariance Monte-Carlo draws (not MCMC)"
+    },
+    {
+      "line": "Hbeta",
+      "sheap_line": "Hbeta",
+      "component": "broad",
+      "lambda_rest": 4891.7744140625,
+      "flux_1e17": 2481.5247138086443,
+      "flux_err_1e17": 42.185316860659135,
+      "flux_erg_s_cm2": 2.4815247138086444e-14,
+      "flux_err_erg_s_cm2": 4.2185316860659136e-16,
+      "fwhm_kms": 8018.8544921875,
+      "fwhm_err_kms": 275.7071584210012,
+      "velocity_kms": 1877.2847584793763,
+      "amplitude": null,
+      "snr": 58.824370621780155,
+      "detected": true,
+      "method": "sheap_jax_adam",
+      "notes": "SHEAP SPAF Gaussian; flux in cgs observed-frame convention; 1-sigma from 50 covariance Monte-Carlo draws (not MCMC)"
+    },
+    {
+      "line": "Hbeta",
+      "sheap_line": "Hbeta+Hbeta",
+      "component": "total",
+      "lambda_rest": 4891.7744140625,
+      "flux_1e17": 3256.2985234867947,
+      "flux_err_1e17": 41.206706133049764,
+      "flux_erg_s_cm2": 3.256298523486795e-14,
+      "flux_err_erg_s_cm2": 4.120670613304977e-16,
+      "fwhm_kms": 6251.819767728056,
+      "fwhm_err_kms": null,
+      "velocity_kms": null,
+      "amplitude": null,
+      "snr": 79.02350925533177,
+      "detected": true,
+      "method": "sheap_jax_adam",
+      "notes": "sum of SHEAP components; MC errors propagated on the sum"
+    },
+    {
+      "line": "OIII4959",
+      "sheap_line": "OIIIb",
+      "component": "narrow",
+      "lambda_rest": 4958.81201171875,
+      "flux_1e17": 241.96958662985924,
+      "flux_err_1e17": 5.022499725834049,
+      "flux_erg_s_cm2": 2.4196958662985927e-15,
+      "flux_err_erg_s_cm2": 5.022499725834049e-17,
+      "fwhm_kms": 592.180419921875,
+      "fwhm_err_kms": 0.1774134253535344,
+      "velocity_kms": -5.077552196920797,
+      "amplitude": null,
+      "snr": 48.177122914561664,
+      "detected": true,
+      "method": "sheap_jax_adam",
+      "notes": "SHEAP SPAF Gaussian; flux in cgs observed-frame convention; 1-sigma from 50 covariance Monte-Carlo draws (not MCMC)"
+    },
+    {
+      "line": "OIII4959",
+      "sheap_line": "OIIIb",
+      "component": "total",
+      "lambda_rest": 4958.81201171875,
+      "flux_1e17": 241.96958662985924,
+      "flux_err_1e17": 5.022499725834049,
+      "flux_erg_s_cm2": 2.4196958662985927e-15,
+      "flux_err_erg_s_cm2": 5.022499725834049e-17,
+      "fwhm_kms": 592.180419921875,
+      "fwhm_err_kms": null,
+      "velocity_kms": null,
+      "amplitude": null,
+      "snr": 48.177122914561664,
+      "detected": true,
+      "method": "sheap_jax_adam",
+      "notes": "sum of SHEAP components; MC errors propagated on the sum"
+    },
+    {
+      "line": "OIII5007",
+      "sheap_line": "OIIIc",
+      "component": "narrow",
+      "lambda_rest": 5006.71826171875,
+      "flux_1e17": 814.3571994298441,
+      "flux_err_1e17": 16.903405995930854,
+      "flux_erg_s_cm2": 8.143571994298441e-15,
+      "flux_err_erg_s_cm2": 1.6903405995930855e-16,
+      "fwhm_kms": 592.180419921875,
+      "fwhm_err_kms": 0.17741456049056742,
+      "velocity_kms": -5.073876008808048,
+      "amplitude": null,
+      "snr": 48.177107005882945,
+      "detected": true,
+      "method": "sheap_jax_adam",
+      "notes": "SHEAP SPAF Gaussian; flux in cgs observed-frame convention; 1-sigma from 50 covariance Monte-Carlo draws (not MCMC)"
+    },
+    {
+      "line": "OIII5007",
+      "sheap_line": "OIIIc",
+      "component": "total",
+      "lambda_rest": 5006.71826171875,
+      "flux_1e17": 814.3571994298441,
+      "flux_err_1e17": 16.903405995930854,
+      "flux_erg_s_cm2": 8.143571994298441e-15,
+      "flux_err_erg_s_cm2": 1.6903405995930855e-16,
+      "fwhm_kms": 592.180419921875,
+      "fwhm_err_kms": null,
+      "velocity_kms": null,
+      "amplitude": null,
+      "snr": 48.177107005882945,
+      "detected": true,
+      "method": "sheap_jax_adam",
+      "notes": "sum of SHEAP components; MC errors propagated on the sum"
+    }
+  ]
+}

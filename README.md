@@ -19,13 +19,15 @@ work/                   ignored generated inputs/logs
 ```
 
 `Tools/` contains: `badass`, `fantasy_agn`, `Gelato`, `Gleam`, `pyqsofit`,
-`sculptor`, `pipeline_ir`, `pyqsofit_uv`, `ppxf_host`, `gandalf_line`,
-`cafe_line`, `s3fit_line`, `galspec_line`, `nir_linefit`, `pahfit_mir`, `fir_linefit`,
-`crossband`, `cigale_sed`, `agnfitter_sed`.
+`sculptor`, `pipeline_ir`, `pyqsofit_uv`, `pyqsofitspec_line`, `ppxf_host`,
+`gandalf_line`, `cafe_line`, `s3fit_line`, `galspec_line`, `qgfit`,
+`sheap_line`, `nir_linefit`, `pahfit_mir`, `fir_linefit`, `crossband`,
+`cigale_sed`, `agnfitter_sed`.
 
 CIGALE and AGNfitter are **SED/torus** codes; they do not measure individual
-lines.  Use `pyqsofit_uv`, `cafe_line`, `s3fit_line`, `gandalf_line`, `galspec_line`,
-`pahfit_mir`, `nir_linefit` or `ir_linefit` for line fluxes and kinematics.
+lines.  Use `pyqsofit_uv`, `pyqsofitspec_line`, `cafe_line`, `s3fit_line`,
+`gandalf_line`, `galspec_line`, `qgfit`, `sheap_line`, `pahfit_mir`,
+`nir_linefit` or `ir_linefit` for line fluxes and kinematics.
 
 ## Quick start
 
@@ -48,7 +50,7 @@ under `work/prepared/`.
 
 | source group | tools |
 |---|---|
-| SDSS z>0.5 QSOs (5) | `ir_linefit`, `pyqsofit_uv`, `ppxf_host`, `gandalf_line`, `s3fit_line`, `galspec_line`, `cigale_sed`, `agnfitter_sed` |
+| SDSS z>0.5 QSOs (5) | `ir_linefit`, `pyqsofit_uv`, `pyqsofitspec_line`, `ppxf_host`, `gandalf_line`, `s3fit_line`, `galspec_line`, `qgfit`, `sheap_line`, `cigale_sed`, `agnfitter_sed` |
 | J0100+2802 | `nir_linefit` (pipeline, 3×3, PSF), `ir_linefit` |
 | VV114 / PDS 456 | `pahfit_mir`, `cafe_line` (PDS), `ir_linefit` |
 | NGC 1068 / NGC 253 / NGC 4151 | `pahfit_mir`, `fir_linefit`, `ir_linefit`; cross-band for NGC 253/4151 |
@@ -65,6 +67,7 @@ under `work/prepared/`.
 * `docs/CAVEAT_FIXES.md` — what was fixed and what remains.
 * `docs/LINE_FITTING_TOOLS.md` — line-fitting tools vs SED fitting.
 * `docs/MCMC_AND_STATISTICS.md` — MC, nested sampling and covariance modes.
+* `docs/OFFICIAL_PIPELINES_AND_XRAY.md` — official SDSS DAP/HEASOFT exclusions and integration plan.
 * `docs/line_tool_comparison.png` — cross-tool line-ratio comparison.
 * `docs/line_ratio_scatter.csv` — inter-tool scatter and bootstrap intervals.
 
