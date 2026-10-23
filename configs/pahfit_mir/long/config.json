@@ -1,0 +1,59 @@
+{
+  "schema_version": 1,
+  "input": {
+    "instrument": [
+      "jwst.miri.mrs.ch1.A",
+      "jwst.miri.mrs.ch1.B",
+      "jwst.miri.mrs.ch1.C",
+      "jwst.miri.mrs.ch2.A",
+      "jwst.miri.mrs.ch2.B",
+      "jwst.miri.mrs.ch2.C",
+      "jwst.miri.mrs.ch3.A",
+      "jwst.miri.mrs.ch3.B",
+      "jwst.miri.mrs.ch3.C",
+      "jwst.miri.mrs.ch4.A",
+      "jwst.miri.mrs.ch4.B",
+      "jwst.miri.mrs.ch4.C"
+    ],
+    "segment": "long",
+    "s1d": false,
+    "tbl": false,
+    "smooth_um": 0.05,
+    "min_wave": 5.0,
+    "max_wave": 28.0,
+    "aperture_arcsec2": 0.04
+  },
+  "fit": {
+    "maxiter": 1000,
+    "passes": 1,
+    "no_guess": false,
+    "init_from": "seed/pahfit_output.ecsv",
+    "normalize": null
+  },
+  "monte_carlo": {
+    "enabled": false,
+    "samples": 100,
+    "method": "auto",
+    "seed": 12347,
+    "rcond": 1e-10,
+    "maxiter": 500,
+    "bootstrap_mode": "parametric",
+    "scale": "none",
+    "save_samples": true
+  },
+  "name": "long",
+  "description": "PDS 456 MIRI long segment: 0.05 um bin, rest 5-28 um, warm-started from the pipeline seed fit.",
+  "warm_start": {
+    "mode": "pipeline_seed",
+    "from_variant": "long",
+    "seed_args": [
+      "--segment",
+      "long",
+      "--smooth-um",
+      "0.05",
+      "--max-wave",
+      "18.0"
+    ],
+    "note": "pipeline/run_new_tools.py runs the seed fit and copies its ECSV to <output>/seed/."
+  }
+}

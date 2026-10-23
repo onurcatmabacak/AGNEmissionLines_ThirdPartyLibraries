@@ -3,6 +3,7 @@
 #   bash Pipelines/run_pahfit_mir_docker.sh <input-dir> <output-dir> <z>
 set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+REPO_ROOT="$(cd "$ROOT/.." && pwd)"
 IN="${1:?usage: run_pahfit_mir_docker.sh <input-dir> <output-dir> <z>}"
 OUT="${2:?usage: run_pahfit_mir_docker.sh <input-dir> <output-dir> <z>}"
 Z="${3:?usage: run_pahfit_mir_docker.sh <input-dir> <output-dir> <z> [extra args...]}"
@@ -13,4 +14,5 @@ exec docker run --rm \
   -e MPLCONFIGDIR=/tmp/mpl \
   -v "$(realpath "$IN")":/app/input:ro \
   -v "$(realpath "$OUT")":/app/output \
+  -v "$REPO_ROOT/configs/pahfit_mir":/app/configs/pahfit_mir:ro \
   pahfit_mir --input /app/input --output /app/output --z "$Z" "$@"

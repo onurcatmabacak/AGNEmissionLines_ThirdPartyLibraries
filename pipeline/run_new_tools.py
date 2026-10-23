@@ -116,6 +116,14 @@ def tool_nir(src: dict, out: Path, logp: Path) -> int:
     return rc
 
 
+def _pahfit_config_arg(name: str) -> list[str]:
+    """Pass a variant config into the container when the file exists."""
+    host = ROOT / "configs" / "pahfit_mir" / name / "config.json"
+    if host.exists():
+        return ["--config", f"/app/configs/pahfit_mir/{name}/config.json"]
+    return []
+
+
 def tool_pahfit(src: dict, out: Path, logp: Path) -> int:
     raw = Path(src["_path"]) / "raw"
     variants = src.get("pahfit_variants")
@@ -138,7 +146,7 @@ def tool_pahfit(src: dict, out: Path, logp: Path) -> int:
                 if src_ecsv.exists():
                     (seed_dir / "pahfit_output.ecsv").write_bytes(src_ecsv.read_bytes())
             cmd = [str(ROOT / "Pipelines" / "run_pahfit_mir_docker.sh"), str(raw), str(sub),
-                   str(src["z"]), *v.get("args", [])]
+                   str(src["z"]), *_pahfit_config_arg(v["name"]), *v.get("args", [])]
             if src.get("kind") == "jwst_miri":
                 cmd += ["--instrument", MIRI_ALL]
             if v.get("init_from"):
@@ -151,7 +159,7 @@ def tool_pahfit(src: dict, out: Path, logp: Path) -> int:
     if src.get("kind") == "jwst_miri":
         args += ["--instrument", MIRI_ALL]
     return run([str(ROOT / "Pipelines" / "run_pahfit_mir_docker.sh"), str(raw), str(out),
-                str(src["z"]), *args], logp)
+                str(src["z"]), *_pahfit_config_arg("default"), *args], logp)
 
 
 def tool_fir(src: dict, out: Path, logp: Path) -> int:

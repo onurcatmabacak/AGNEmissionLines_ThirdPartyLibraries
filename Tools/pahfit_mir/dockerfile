@@ -10,5 +10,6 @@ RUN git clone https://github.com/PAHFIT/pahfit /app/pahfit
 RUN pip install --no-cache-dir setuptools_scm "specutils>=1.0" "dust_extinction"
 RUN SETUPTOOLS_SCM_PRETEND_VERSION=2.0 pip install --no-cache-dir /app/pahfit
 COPY Tools/pahfit_mir/run_pahfit.py /app/run_pahfit.py
+COPY configs/pahfit_mir /app/configs/pahfit_mir
 RUN mkdir -p /app/input /app/output && chmod 777 /app/output
 ENTRYPOINT ["python", "/app/run_pahfit.py"]
