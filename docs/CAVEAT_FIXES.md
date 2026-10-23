@@ -24,10 +24,10 @@
   it is a starburst stress test, not the AGN pass gate.
 * **C III] broad** remains blend-limited; the broad component is real, but the
   narrow/C III] comparison is not a clean one-number test.
-* **PROSPECTOR-AGN** is not integrated.  The public `bd-j/prospector` main branch
-  has the AGN BBB/torus components, but requires FSPS (~2.3 GB); with only eight
-  bands the non-parametric host is unconstrained.  AGNfitter-RX + CIGALE supply
-  the current model-family spread.
+* **PROSPECTOR-AGN** is assessed but not integrated: public `main` needs FSPS
+  (~2.3 GB) and the eight-band host is unconstrained.  See
+  `docs/PROSPECTOR_ASSESSMENT.md`; CIGALE + AGNfitter-RX supply the model-family
+  spread.
 * **NIR** extraction is PSF-weighted r=3, not a full wavelength-dependent PSF
   fit or a joint background model.
 * CIGALE/AGNfitter remain photometry-only; no X-ray/radio constraints.
