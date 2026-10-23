@@ -20,7 +20,7 @@ Outputs:
 | CIGALE vs AGNfitter | five QSOs, best CIGALE family by χ²_ν | paired Wilcoxon/t-test on log L_AGN, log M*, AGN fraction; Spearman correlation | Model-family scatter is the dominant systematic; no single-family claim. |
 | FIR recovery | four synthetic lines | recovered/truth median and bootstrap 16–84 % CI | median 0.983 and CI 0.941–1.064; OI/OIII/CII near truth, NII 347±67 vs 300. |
 | Cross-band consistency | 13 real+synthetic ratios | fraction within broad priors; binomial test vs 0.5 | The 0.5 null is only a reference, not a physical model; priors are broad. |
-| PAHFIT stability | eight fits | rms_rel and stable flag | 7/8 stable; only NGC 253 is flagged. |
+| PAHFIT stability | eleven segments/fits | rms_rel and stable flag | 10/11 stable; only NGC 253 is flagged; PDS short 0.0088, long 0.118, both 0.105, NGC 4151 0.031. |
 
 The comparison figure is **not** a replacement for the per-object fit figures;
 it is a compact summary of bias, scatter, recovery and stability.

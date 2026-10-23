@@ -40,7 +40,7 @@ SPITZER_IRS = ",".join([
     "spitzer.irs.ll.2", "spitzer.irs.ll.1",
 ])
 ALL_TOOLS = ("ir_linefit", "pyqsofit_uv", "ppxf_host", "gandalf_line",
-             "nir_linefit", "pahfit_mir", "fir_linefit", "crossband",
+             "nir_linefit", "pahfit_mir", "fir_linefit", "cafe_line", "crossband",
              "cigale_sed", "agnfitter_sed", "s3fit_line")
 
 
@@ -98,6 +98,17 @@ def tool_ppxf(src: dict, out: Path, logp: Path) -> int:
 def tool_gandalf(src: dict, out: Path, logp: Path) -> int:
     inp = prep_pyqsofit(src)
     return run([str(ROOT / "Pipelines" / "run_gandalf_line_docker.sh"), str(inp), str(out), str(src["key"])], logp)
+
+
+def tool_cafe(src: dict, out: Path, logp: Path) -> int:
+    inp = Path(src["_path"]) / "raw"
+    if not list(inp.glob("*_x1d.fits")):
+        return _skip("no JWST x1d for CAFE")
+    cmd = [str(ROOT / "Pipelines" / "run_cafe_line_docker.sh"),
+           str(inp), str(out), str(src["z"]),
+           "--max-wave", "27.8", "--no-outlier-clip",
+           "--mc-samples", "200", "--mc-seed", "20250101"]
+    return run(cmd, logp)
 
 
 def tool_nir(src: dict, out: Path, logp: Path) -> int:
@@ -310,6 +321,7 @@ def main(argv=None):
                 "pyqsofit_uv": lambda: tool_pyqsofit(src, out, logp),
                 "ppxf_host": lambda: tool_ppxf(src, out, logp),
                 "gandalf_line": lambda: tool_gandalf(src, out, logp),
+                "cafe_line": lambda: tool_cafe(src, out, logp),
                 "nir_linefit": lambda: tool_nir(src, out, logp),
                 "pahfit_mir": lambda: tool_pahfit(src, out, logp),
                 "fir_linefit": lambda: tool_fir(src, out, logp),

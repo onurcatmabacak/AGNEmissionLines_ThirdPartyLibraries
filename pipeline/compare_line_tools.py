@@ -28,8 +28,11 @@ def canon(name: str) -> str:
     s = re.sub(r"[^a-z0-9]+", "", str(name).lower())
     aliases = {
         "hb": "hbeta", "hbeta": "hbeta", "hbeta4861": "hbeta", "hbbr": "hbeta", "hbna": "hbeta",
+        "hbeta": "hbeta", "hβ": "hbeta", "h-beta": "hbeta",
         "ha": "halpha", "halpha": "halpha", "halpha6563": "halpha", "habr": "halpha", "hana": "halpha",
+        "h-alpha": "halpha", "hα": "halpha",
         "oiii5007": "oiii5007", "oiii5007c": "oiii5007", "oiii5007w": "oiii5007",
+        "oiii5008": "oiii5007", "oiii4960": "oiii4959",
         "oiii4959": "oiii4959", "nii6585": "nii6585", "nii6548": "nii6548",
         "neiii15555": "neiii", "neiii": "neiii", "neii12814": "neii", "neii": "neii",
         "siii18713": "siii187", "siii187": "siii187", "siii33480": "siii335", "siii335": "siii335",
@@ -114,11 +117,18 @@ def read_standard(path: Path, source: str, tool: str, rows):
     """S3Fit/CAFE/GANDALF compact tables: line,component,flux[,err],fwhm_kms."""
     with path.open() as fh:
         for r in csv.DictReader(fh):
-            flux = _f(r.get("flux")) if "flux" in r else _f(r.get("flux_1e17"))
-            err = _f(r.get("flux_err")) if "flux_err" in r else _f(r.get("flux_error"))
+            def pick(*keys):
+                for key in keys:
+                    if key in r and r[key] not in ("", "nan", "None"):
+                        return _f(r[key])
+                return None
+
+            flux = pick("flux", "flux_1e17", "flux_int_erg_s_cm2", "flux_observed")
+            err = pick("flux_err", "flux_err_1e17", "flux_int_err_w_m2", "flux_int_err_erg_s_cm2", "flux_error")
+            fwhm = pick("fwhm_kms", "fwhm", "sigma_kms")
             add(rows, source, tool, r.get("line") or r.get("name"),
                 r.get("component") or r.get("comp") or "total",
-                flux, err, _f(r.get("fwhm_kms") or r.get("fwhm")), _f(r.get("snr")))
+                flux, err, fwhm, pick("snr", "snr_int"))
 
 
 def load():
@@ -210,15 +220,23 @@ def main(argv=None):
 
     labels = sorted({r["ratio"] for r in rr})
     sources = sorted({r["source"] for r in rr})
-    fig, axes = plt.subplots(len(labels), 1, figsize=(11, 2.4 * len(labels)), squeeze=False)
-    for ax, label in zip(axes[:, 0], labels):
-        sub = [r for r in rr if r["ratio"] == label]
+    groups = []
+    for label in labels:
+        sub = [r for r in rr if r["ratio"] == label
+               and 0.02 <= r["value"] <= 50.0]
+        if sub:
+            groups.append((label, sub))
+    fig, axes = plt.subplots(len(groups), 1,
+                             figsize=(11, max(2.6, 2.4 * len(groups))),
+                             squeeze=False)
+    for ax, (label, sub) in zip(axes[:, 0], groups):
         y = np.arange(len(sub))[::-1]
         for yi, r in zip(y, sub):
-            ax.errorbar(r["value"], yi, xerr=r["err"] if r["err"] and np.isfinite(r["err"]) else None,
+            ax.errorbar(r["value"], yi,
+                        xerr=r["err"] if r["err"] and np.isfinite(r["err"]) and r["err"] > 0 else None,
                         fmt="o", ms=5, capsize=2)
         ax.set_yticks(y)
-        ax.set_yticklabels([f"{r['source'].split('_z_')[0]}  {r['tool']}" for r in sub], fontsize=7)
+        ax.set_yticklabels([f"{r['source'].split('_z_')[0]}  {r['tool']}" for r in sub], fontsize=8)
         ax.set_xscale("log")
         ax.set_xlabel(label)
         ax.grid(axis="x", ls=":", alpha=0.5)
@@ -235,11 +253,16 @@ def main(argv=None):
             vals = [r["value"] for r in rr if r["ratio"] == label and r["source"] == source]
             if len(vals) >= 2:
                 vals = np.asarray(vals, float)
+                rng = np.random.default_rng(42)
+                boots = [float(np.median(rng.choice(vals, vals.size, replace=True)))
+                         for _ in range(1000)]
                 summary.append(dict(source=source, ratio=label, n=len(vals),
                                     median=float(np.median(vals)),
+                                    ci16=float(np.percentile(boots, 16)),
+                                    ci84=float(np.percentile(boots, 84)),
                                     log_scatter=float(np.std(np.log(vals)))))
     with (args.output / "line_ratio_scatter.csv").open("w", newline="") as fh:
-        w = csv.DictWriter(fh, fieldnames=["source", "ratio", "n", "median", "log_scatter"])
+        w = csv.DictWriter(fh, fieldnames=["source", "ratio", "n", "median", "ci16", "ci84", "log_scatter"])
         w.writeheader(); w.writerows(summary)
     print(f"read {len(rows)} line measurements, {len(rr)} ratios, {len(summary)} multi-tool groups")
     return 0

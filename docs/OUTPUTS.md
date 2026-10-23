@@ -9,10 +9,11 @@ outputs/
       ... files ...
 ```
 
-There are no flat result directories for the new tools.  `results_ir/`,
-`runs_ir_zgt05/`, and the old `input_*` directories have been retired; the
-legacy optical v1 `results/`, `runs/`, `figures*/` and `results_uncertainties/`
-trees are deliberately left in place and are not part of the new layout.
+There are no flat result directories for the new tools.  The old `results_ir/`,
+`runs_ir_zgt05/`, `input_*`, `results/`, `runs/`, `figures*/`,
+`results_uncertainties/`, and `statistical confirmation/` trees were migrated
+into `outputs/` (20 optical production sources + the new-tool sources) and
+deleted.  `docs/legacy_optical/` retains only aggregate legacy tables.
 
 Tools and expected files:
 
@@ -23,11 +24,14 @@ Tools and expected files:
 | `ppxf_host` | `ppxf_fit.png/pdf`, `ppxf_model.csv`, `ppxf_result.fits`, `ppxf_summary.json` |
 | `gandalf_line` | `gandalf_lines.csv`, `gandalf_fit.png/pdf`, `gandalf_uncertainty.png/pdf`, `gandalf_fit.fits`, `gandalf_input.fits`, `gandalf_model.csv`, `run.json` |
 | `nir_linefit` | route/measurements/figure for the NIR spectrum |
-| `pahfit_mir` | `pahfit_fit.png/pdf`, `pahfit_features.csv`, `pahfit_output.ecsv`, `pahfit_summary.json`; PDS 456 has `short/`, `long/`, `both/` |
+| `pahfit_mir` | `pahfit_fit.png/pdf`, `pahfit_features.csv`, `pahfit_lines.csv`, `pahfit_output.ecsv`, `pahfit_summary.json`, MC products; PDS 456 has `short/`, `long/`, `both/`, `short_covariance/` |
+| `cafe_line` | `cafe_fit.png/pdf`, `cafe_lines.csv`, `cafe_key_lines.csv`, `cafe_pah.csv`, `cafe_uncertainties.csv`, `cafe_uncertainty.png`, `run.json` |
+| `s3fit_line` | `s3fit_fit.png`, `s3fit_mc.png`, `s3fit_lines.csv`, `s3fit_output.npz`, `pyqsofit_comparison.csv`, `run.json` |
 | `fir_linefit` | `*.fir_lines.csv`, `*.fir_fit.png/pdf`, `*.fir_summary.json` |
 | `crossband` | `crossband_ratios.csv`, `crossband_summary.json`, `crossband_ratios.png/pdf` |
 | `cigale_sed` | `model_family.csv`, `model_family_spread.json`, and `skirtor2016/` + `fritz2006/` subdirectories with CIGALE outputs |
 | `agnfitter_sed` | `agnfitter_summary.csv`, `sed_summary.json`, `parameter_outvalues`, `SED_manyrealizations` PDF |
+| `pyqsofit_uv` (MC) | `mc/pyqsofit_mc_samples.csv`, `mc/pyqsofit_mc_summary.csv`, `mc/pyqsofit_mc.png` |
 
 Run the matrix with:
 

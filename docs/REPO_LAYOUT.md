@@ -9,20 +9,19 @@ outputs/                 canonical results
 Pipelines/               shell entry points (new tools + archived optical)
 pipeline/                Python orchestration, layout helpers, input preparation
 Tools/                   Dockerized tool source and Dockerfiles
-pipeline_ir/             generic IR line router/fitter
-pyqsofit_uv/ ppxf_host/  UV/host tool images
-Tools/gandalf_line/      native GANDALF v1.5 under GDL
-nir_linefit/ pahfit_mir/ NIR/MIR tool images
-fir_linefit/ crossband/  FIR/ratio tool images
-Tools/cigale_sed/        CIGALE SED/torus image
-Tools/agnfitter_sed/     AGNfitter-rx SED image
+  pipeline_ir/           generic IR line router/fitter
+  pyqsofit_uv/ ppxf_host/ UV/host tool images
+  gandalf_line/          native GANDALF v1.5 under GDL
+  cafe_line/ s3fit_line/ NIR/MIR/optical spectrum+SED line tools
+  nir_linefit/ pahfit_mir/ fir_linefit/ crossband/
+  cigale_sed/ agnfitter_sed/
 ```
 
 `work/prepared/` and `work/logs/` are generated and ignored.  The legacy
 optical v1 trees (`results/`, `runs/`, `figures/`, `figures_main/`,
 `results_uncertainties/`, `runs_uncertainties/`, `statistical confirmation/`)
-are retained for the original five-tool analysis and are not written by the new
-runner.
+were migrated to `outputs/` and removed from the root; aggregate legacy tables
+are in `docs/legacy_optical/`.
 
 The old path names `input_zgt05/`, `input_nir/`, `input_mir*/`, `input_fir/`,
 `input_crossband/`, `input_sed/`, `results_ir/`, and `runs_ir_zgt05/` are
