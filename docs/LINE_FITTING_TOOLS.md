@@ -16,6 +16,7 @@ CAFE, S3Fit, GANDALF, PAHFIT and the generic Gaussian fitters operate on
 | `cafe_line` | line | NIR–MIR | stellar/dust/AGN continua + PAH + H/atomic/molecular lines | LMFIT covariance + MC |
 | `s3fit_line` | line | UV–NIR | simultaneous spectrum + photometric SED, AGN/Fe II + multi-component lines | mock-spectrum MC |
 | `gandalf_line` | line | optical–NIR | pPXF stellar continuum + simultaneous Gaussian gas | MPFIT covariance/bootstrap |
+| `galspec_line` | line | optical | reduced H-beta/[O III] window + Fe II, GalSpec Astropy Gaussians | emcee posterior (dynesty optional) |
 | `pahfit_mir` | line | MIR | PAH Drude profiles + dust continuum + gas Gaussians | least-squares + MC |
 | `fir_linefit` | line | FIR | local continuum + Gaussian forbidden lines | covariance |
 | `ppxf_host` | host | optical–NIR | stellar templates + AGN power law, emission masked | pPXF formal errors |

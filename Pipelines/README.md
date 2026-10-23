@@ -13,6 +13,7 @@ Pipelines/
   run_pyqsofitspec_line_docker.sh  # PyQSOFitSpec bootstrap line fit
   run_cafe_line_docker.sh      # CAFE NIRSpec/MIRI decomposition
   run_s3fit_line_docker.sh     # S3Fit spectrum+SED line fit
+  run_galspec_line_docker.sh   # GalSpec reduced H-beta/[O III] line fit
   legacy_optical/              # archived optical-v1 drivers
 ```
 

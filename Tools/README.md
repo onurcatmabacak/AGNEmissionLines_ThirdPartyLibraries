@@ -17,6 +17,7 @@ Dockerized fitting engines and their Dockerfiles.  See `Pipelines/build_images.s
 | `pahfit_mir/` | `pahfit_mir` (PAH/dust/gas + MC) |
 | `cafe_line/` | `cafe_line` (CAFE NIRSpec/MIRI decomposition + covariance MC) |
 | `s3fit_line/` | `s3fit_line` (S3Fit spectrum+SED + mock-spectrum MC) |
+| `galspec_line/` | `galspec_line` (GalSpec reduced H-beta/[O III] + emcee/dynesty) |
 | `fir_linefit/` | `fir_linefit` |
 | `crossband/` | `crossband` |
 | `cigale_sed/` | `cigale_sed` |

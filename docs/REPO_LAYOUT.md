@@ -12,7 +12,7 @@ Tools/                   Dockerized tool source and Dockerfiles
   pipeline_ir/           generic IR line router/fitter
   pyqsofit_uv/ ppxf_host/ UV/host tool images
   gandalf_line/          native GANDALF v1.5 under GDL
-  cafe_line/ s3fit_line/ NIR/MIR/optical spectrum+SED line tools
+  cafe_line/ s3fit_line/ galspec_line/ NIR/MIR/optical spectrum+SED line tools
   nir_linefit/ pahfit_mir/ fir_linefit/ crossband/
   cigale_sed/ agnfitter_sed/
 ```

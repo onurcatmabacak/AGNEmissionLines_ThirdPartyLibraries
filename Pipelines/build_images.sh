@@ -11,10 +11,10 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 DOCKER="${DOCKER:-docker}"
 # Tools with a Dockerfile; image name -> source directory (case-sensitive!)
-DOCKER_TOOLS=(badass fantasy_agn gelato gleam ir_linefit pyqsofit_uv pyqsofitspec_line ppxf_host gandalf_line nir_linefit pahfit_mir fir_linefit cafe_line crossband cigale_sed agnfitter_sed s3fit_line)
-declare -A TOOL_SRC=( [badass]=Tools/badass [fantasy_agn]=Tools/fantasy_agn [gelato]=Tools/Gelato [gleam]=Tools/Gleam [ir_linefit]=Tools/pipeline_ir [pyqsofit_uv]=Tools/pyqsofit_uv [pyqsofitspec_line]=Tools/pyqsofitspec_line [ppxf_host]=Tools/ppxf_host [gandalf_line]=Tools/gandalf_line [nir_linefit]=Tools/nir_linefit [pahfit_mir]=Tools/pahfit_mir [fir_linefit]=Tools/fir_linefit [cafe_line]=Tools/cafe_line [crossband]=Tools/crossband [cigale_sed]=Tools/cigale_sed [agnfitter_sed]=Tools/agnfitter_sed [s3fit_line]=Tools/s3fit_line )
+DOCKER_TOOLS=(badass fantasy_agn gelato gleam ir_linefit pyqsofit_uv pyqsofitspec_line ppxf_host gandalf_line nir_linefit pahfit_mir fir_linefit cafe_line crossband cigale_sed agnfitter_sed s3fit_line galspec_line)
+declare -A TOOL_SRC=( [badass]=Tools/badass [fantasy_agn]=Tools/fantasy_agn [gelato]=Tools/Gelato [gleam]=Tools/Gleam [ir_linefit]=Tools/pipeline_ir [pyqsofit_uv]=Tools/pyqsofit_uv [pyqsofitspec_line]=Tools/pyqsofitspec_line [ppxf_host]=Tools/ppxf_host [gandalf_line]=Tools/gandalf_line [nir_linefit]=Tools/nir_linefit [pahfit_mir]=Tools/pahfit_mir [fir_linefit]=Tools/fir_linefit [cafe_line]=Tools/cafe_line [crossband]=Tools/crossband [cigale_sed]=Tools/cigale_sed [agnfitter_sed]=Tools/agnfitter_sed [s3fit_line]=Tools/s3fit_line [galspec_line]=Tools/galspec_line )
 # These tools need the repo root as context (they copy repo-level code/configs).
-declare -A TOOL_CTX=( [ir_linefit]="$ROOT" [pyqsofit_uv]="$ROOT" [pyqsofitspec_line]="$ROOT" [ppxf_host]="$ROOT" [gandalf_line]="$ROOT" [nir_linefit]="$ROOT" [pahfit_mir]="$ROOT" [fir_linefit]="$ROOT" [cafe_line]="$ROOT" [crossband]="$ROOT" [cigale_sed]="$ROOT" [agnfitter_sed]="$ROOT" [s3fit_line]="$ROOT" )
+declare -A TOOL_CTX=( [ir_linefit]="$ROOT" [pyqsofit_uv]="$ROOT" [pyqsofitspec_line]="$ROOT" [ppxf_host]="$ROOT" [gandalf_line]="$ROOT" [nir_linefit]="$ROOT" [pahfit_mir]="$ROOT" [fir_linefit]="$ROOT" [cafe_line]="$ROOT" [crossband]="$ROOT" [cigale_sed]="$ROOT" [agnfitter_sed]="$ROOT" [s3fit_line]="$ROOT" [galspec_line]="$ROOT" )
 
 if ! command -v "${DOCKER%% *}" >/dev/null 2>&1; then
   echo "ERROR: '${DOCKER}' not found." >&2
