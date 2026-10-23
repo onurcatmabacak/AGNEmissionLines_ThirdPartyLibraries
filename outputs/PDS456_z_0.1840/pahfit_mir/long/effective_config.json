@@ -1,0 +1,43 @@
+{
+  "config_file": "/app/configs/pahfit_mir/long/config.json",
+  "config_name": "long",
+  "input": {
+    "mode": "x1d",
+    "instrument": "jwst.miri.mrs.ch1.A,jwst.miri.mrs.ch1.B,jwst.miri.mrs.ch1.C,jwst.miri.mrs.ch2.A,jwst.miri.mrs.ch2.B,jwst.miri.mrs.ch2.C,jwst.miri.mrs.ch3.A,jwst.miri.mrs.ch3.B,jwst.miri.mrs.ch3.C,jwst.miri.mrs.ch4.A,jwst.miri.mrs.ch4.B,jwst.miri.mrs.ch4.C",
+    "segment": "long",
+    "s1d": false,
+    "tbl": false,
+    "aperture_arcsec2": 0.04,
+    "min_wave_um": 5.0,
+    "max_wave_um": 28.0
+  },
+  "preprocess": {
+    "smooth_um": 0.05
+  },
+  "fit": {
+    "maxiter": 1000,
+    "passes": 1,
+    "no_guess": false,
+    "init_from": "/app/output/seed/pahfit_output.ecsv",
+    "normalize": false,
+    "flux_scale": 1.0
+  },
+  "monte_carlo": {
+    "enabled": false,
+    "samples": 0,
+    "method": "auto",
+    "seed": 12347,
+    "rcond": 1e-10,
+    "maxiter": 500,
+    "bootstrap_mode": "parametric",
+    "scale": "none",
+    "save_samples": true
+  },
+  "metadata": {
+    "z": 0.184,
+    "wave_min_um": 15.432361125946045,
+    "wave_max_um": 27.978845596313477,
+    "n_pixels": 125,
+    "flux_unit": "MJy/sr"
+  }
+}
