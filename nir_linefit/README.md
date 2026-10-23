@@ -10,16 +10,29 @@ bash pipeline/build_images.sh nir_linefit
 .venv/bin/python pipeline/run_new_tools.py --only J0100p2802_z_6.3270 --tools nir_linefit --force
 ```
 
-Input: `inputs/J0100p2802_z_6.3270/raw/*_x1d.fits` (or another x1d/SDSS-style
-spectrum).  Output: `outputs/<source>/nir_linefit/`.
+The runner now produces both the public pipeline x1d fit
+(`outputs/.../nir_linefit/`) and a **QSO-centred 3×3 IFU extraction**
+(`outputs/.../nir_linefit/centered/`).
 
-The adapter handles NIRSpec `FLUX` [Jy] and MIRI `SURF_BRIGHT` [MJy/sr]; DQ≠0
-pixels are masked.  Undetected Hβ, [O III], [N II], narrow Hα and [S II]
-components are written as finite 3σ upper limits; the broad Hα is detected in
-J0100+2802 (S/N≈3.4, FWHM≈10,100 km/s).
+## QSO-centred cube extraction
+
+`pipeline/extract_nir_aperture.py` fetches the public JWST/NIRSpec `s3d` cube
+(MAST obsid 196672516), finds the target coordinates in the cube WCS, and
+writes an `EXTRACT1D` table with a 3×3 spaxel aperture.  The raw 186 MB cube is
+not committed; the 107 KB derived table is
+`inputs/J0100p2802_z_6.3270/derived/centered_3x3_x1d.fits`.
+
+The centred extraction detects:
+
+* broad Hα at S/N≈25, FWHM≈10,000 km/s;
+* narrow Hα and [N II] 6548/6585;
+* broad Hβ at S/N≈3.
+
+The pipeline x1d extraction detects broad Hα only at S/N≈3.4.  The centred
+spectrum also gives finite 3σ limits for the remaining components.
 
 ## Remaining limitations
 
-* One IFU extraction only; a QSO-centred aperture may recover Hβ/[O III].
+* The cube extraction is 3×3; a full PSF/aperture optimisation is not performed.
 * No telluric/PAH/AGN-continuum model; the generic local continuum is used.
 * The 4.1 µm absorption/gap is a data-quality feature, not a line.

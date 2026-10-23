@@ -11,7 +11,8 @@ pipeline_ir/             generic IR line router/fitter
 pyqsofit_uv/ ppxf_host/  UV/host tool images
 nir_linefit/ pahfit_mir/ NIR/MIR tool images
 fir_linefit/ crossband/  FIR/ratio tool images
-cigale_sed/              SED/torus image and configuration
+cigale_sed/              CIGALE SED/torus image
+agnfitter_sed/           AGNfitter-rx SED image
 ```
 
 `work/prepared/` and `work/logs/` are generated and ignored.  The legacy

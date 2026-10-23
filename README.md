@@ -36,7 +36,7 @@ The NIR/MIR/FIR/SED tools use a source-keyed layout and a single runner:
 
 ```bash
 bash run_new_tools.sh --list
-bash run_new_tools.sh --tools ir_linefit pyqsofit_uv ppxf_host nir_linefit   pahfit_mir fir_linefit crossband cigale_sed --cigale-models skirtor2016,fritz2006
+bash run_new_tools.sh --tools ir_linefit pyqsofit_uv ppxf_host nir_linefit   pahfit_mir fir_linefit crossband cigale_sed agnfitter_sed --cigale-models skirtor2016,fritz2006
 ```
 
 Inputs: `inputs/<source>_z_<redshift>/raw/`; outputs:

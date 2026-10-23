@@ -22,14 +22,17 @@ Herschel/PACS HPDP spectra from the ESA HSA:
 * **NGC 1068** (`hpacs1342191153...`): [OI] 63 µm detected.
 * **NGC 253** (`hpacs1342199414/1342210652...`): [OI] 63, [OIII] 88,
   [OI] 145 and [CII] 158 detected.
+* **NGC 4151** (`hpacs1342198305...`): [OIII] 88, [NII] 122, [OI] 145 and
+  [CII] 158 detected.
 
 Synthetic PACS-like spectrum (30–300 µm, z=0.5): [OI] 63 is recovered at
 ~498 (truth 500) after widening the line window; [OIII] 88 and [CII] 158 are
 recovered within ~10–20 %.  The remaining low-S/N [NII] 122 bias is
 documented, not hidden.
 
-`--joint --tie-width` is available as an experimental global continuum +
-all-line fit; the default per-line fit remains the validated path.
+The per-line local-continuum fit is the validated path; a tied-width
+experiment was tested and rejected because it did not improve the low-S/N
+recovery.
 
 ## Remaining limitations
 

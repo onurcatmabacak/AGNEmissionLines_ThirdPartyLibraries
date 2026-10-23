@@ -3,9 +3,10 @@
 
 The eFEDS SPALL catalogue provides SDSS AB magnitudes (u,g,r,i,z; the u value
 is a -9.99999 sentinel in every object) and WISE Vega magnitudes (W1-W4), but
-no magnitude-error columns.  We adopt nominal errors: 0.05 mag for SDSS and
-0.125 mag for WISE (a conservative choice for WISE).  Fluxes are written in
-mJy with CIGALE filter names.
+no MAGERR columns.  Real errors are taken from SPECTROFLUX_IVAR (SDSS) and a
+matched AllWISE source; the cache is
+`inputs/catalogs/photometry_errors.json`.  Nominal 0.05/0.125 mag errors are
+only fallbacks.  Fluxes are written in mJy with CIGALE filter names.
 
 Usage:
     .venv/bin/python pipeline/build_photometry.py
@@ -15,6 +16,7 @@ from __future__ import annotations
 
 import argparse
 import csv
+import json
 import sys
 from pathlib import Path
 
@@ -46,8 +48,12 @@ def main() -> int:
     ap.add_argument("--out-root", default="inputs")
     ap.add_argument("--sdss-err-mag", type=float, default=0.05)
     ap.add_argument("--wise-err-mag", type=float, default=0.125)
+    ap.add_argument("--error-cache", default="inputs/catalogs/photometry_errors.json")
     args = ap.parse_args()
 
+    cache = {}
+    if Path(args.error_cache).exists():
+        cache = json.loads(Path(args.error_cache).read_text())
     paths = sorted(Path(args.dir).glob("*/raw/spec-*.fits"))
     if not paths:
         paths = sorted(Path(args.dir).rglob("*.fits"))
@@ -64,14 +70,19 @@ def main() -> int:
             obj_id = str(np.asarray(sp["CATALOGID"]).ravel()[0]).strip()
         # MAG = [u,g,r,i,z]; u is the -9.99999 sentinel in this dataset.
         sdss_flux = [mag_to_mjy(float(mags[i]), SDSS_AB_ZERO_JY) for i in range(1, 5)]
-        sdss_err = [err_mjy(f, args.sdss_err_mag) for f in sdss_flux]
         wise_flux = [mag_to_mjy(float(wmag[i]), WISE_ZERO_JY[i]) for i in range(4)]
-        wise_err = [err_mjy(f, args.wise_err_mag) for f in wise_flux]
+        sdss_id = path.stem.split("-")[-1]
+        key = source_key(sdss_id, z)
+        ec = cache.get(key, {})
+        sdss_magerr = ec.get("sdss_magerr", [np.nan] * 4)
+        wise_magerr = ec.get("wise_magerr", [np.nan] * 4)
+        sdss_err = [err_mjy(f, sdss_magerr[i] if np.isfinite(sdss_magerr[i]) else args.sdss_err_mag)
+                    for i, f in enumerate(sdss_flux)]
+        wise_err = [err_mjy(f, wise_magerr[i] if np.isfinite(wise_magerr[i]) else args.wise_err_mag)
+                    for i, f in enumerate(wise_flux)]
         row = [obj_id, f"{z:.8f}"] + [f"{v:.12g}" for v in sdss_flux + wise_flux] \
             + [f"{v:.12g}" for v in sdss_err + wise_err]
         rows.append(row)
-        sdss_id = path.stem.split("-")[-1]
-        key = source_key(sdss_id, z)
         out = Path(args.out_root) / key / "photometry" / "photometry.txt"
         out.parent.mkdir(parents=True, exist_ok=True)
         header = ["id", "redshift"] + list(SDSS_NAMES) + list(WISE_NAMES) \

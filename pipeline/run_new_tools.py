@@ -40,7 +40,8 @@ SPITZER_IRS = ",".join([
     "spitzer.irs.ll.2", "spitzer.irs.ll.1",
 ])
 ALL_TOOLS = ("ir_linefit", "pyqsofit_uv", "ppxf_host", "nir_linefit",
-             "pahfit_mir", "fir_linefit", "crossband", "cigale_sed")
+             "pahfit_mir", "fir_linefit", "crossband", "cigale_sed",
+             "agnfitter_sed")
 
 
 def log(msg: str):
@@ -96,7 +97,13 @@ def tool_ppxf(src: dict, out: Path, logp: Path) -> int:
 
 def tool_nir(src: dict, out: Path, logp: Path) -> int:
     raw = Path(src["_path"]) / "raw"
-    return run([str(ROOT / "run_nir_linefit_docker.sh"), str(raw), str(out), str(src["z"])], logp)
+    rc = run([str(ROOT / "run_nir_linefit_docker.sh"), str(raw), str(out), str(src["z"])], logp)
+    centered = source_files(src, "centered")
+    if centered:
+        sub = out / "centered"
+        rc |= run([str(ROOT / "run_nir_linefit_docker.sh"), str(centered[0].parent),
+                   str(sub), str(src["z"])], logp.with_name(logp.stem + "_centered.log"))
+    return rc
 
 
 def tool_pahfit(src: dict, out: Path, logp: Path) -> int:
@@ -113,7 +120,7 @@ def tool_pahfit(src: dict, out: Path, logp: Path) -> int:
             rc |= run(cmd, logp.with_name(logp.stem + f"_{v['name']}.log"))
         return rc
     args = list(src.get("pahfit_args", []))
-    if src.get("kind") in ("spitzer_irs", "spitzer_irs+herschel_hifi"):
+    if "spitzer_irs" in str(src.get("kind", "")):
         args = ["--tbl", "--smooth-um", "0.1", "--instrument", SPITZER_IRS]
     if src.get("kind") == "jwst_miri":
         args += ["--instrument", MIRI_ALL]
@@ -153,6 +160,13 @@ def tool_crossband(src: dict, out: Path, logp: Path) -> int:
     if not paths:
         return _skip("no crossband input")
     return run([str(ROOT / "run_crossband_docker.sh"), str(paths[0]), str(out)], logp)
+
+
+def tool_agnfitter(src: dict, out: Path, logp: Path) -> int:
+    inp = Path(src["_path"]) / "photometry"
+    if not (inp / "photometry.txt").exists():
+        return _skip("no photometry")
+    return run([str(ROOT / "run_agnfitter_sed_docker.sh"), str(inp), str(out)], logp)
 
 
 def tool_cigale(src: dict, out: Path, logp: Path, models: list[str]) -> int:
@@ -245,6 +259,7 @@ def main(argv=None):
                 "crossband": lambda: tool_crossband(src, out, logp),
                 "cigale_sed": lambda: tool_cigale(src, out, logp,
                                                    [x.strip() for x in args.cigale_models.split(",") if x.strip()]),
+                "agnfitter_sed": lambda: tool_agnfitter(src, out, logp),
             }[tool]
             try:
                 r = fn()

@@ -26,6 +26,7 @@ Tools and expected files:
 | `fir_linefit` | `*.fir_lines.csv`, `*.fir_fit.png/pdf`, `*.fir_summary.json` |
 | `crossband` | `crossband_ratios.csv`, `crossband_summary.json`, `crossband_ratios.png/pdf` |
 | `cigale_sed` | `model_family.csv`, `model_family_spread.json`, and `skirtor2016/` + `fritz2006/` subdirectories with CIGALE outputs |
+| `agnfitter_sed` | `agnfitter_summary.csv`, `sed_summary.json`, `parameter_outvalues`, `SED_manyrealizations` PDF |
 
 Run the matrix with:
 

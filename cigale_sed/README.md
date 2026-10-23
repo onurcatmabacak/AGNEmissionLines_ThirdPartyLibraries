@@ -37,23 +37,21 @@ outputs/<source>/cigale_sed/
 
 | source | z | SKIRTOR χ²_ν | Fritz χ²_ν | SKIRTOR frac_AGN | Fritz frac_AGN | note |
 |---|---:|---:|---:|---:|---:|---|
-| 04545014975 | 1.129 | 1.56 | 1.43 | 0.10 | 0.50 | both good |
-| 04570952937 | 0.990 | 2.55 | 0.63 | 0.10 | 0.50 | Fritz preferred |
-| 04592566733 | 1.830 | 0.19 | 3.10 | 0.90 | 0.90 | SKIRTOR preferred |
-| 04592649654 | 0.587 | 6.45 | 1.87 | 0.10 | 0.50 | SKIRTOR WISE-flagged |
-| 04592933676 | 0.651 | 9.95 | 0.38 | 0.10 | 0.90 | SKIRTOR WISE-flagged; Fritz solves it |
+| 04545014975 | 1.129 | 2.65 | 1.80 | 0.10 | 0.50 | both acceptable |
+| 04570952937 | 0.990 | 3.96 | 0.92 | 0.10 | 0.50 | Fritz preferred |
+| 04592566733 | 1.830 | 0.25 | 4.00 | 0.90 | 0.90 | SKIRTOR preferred |
+| 04592649654 | 0.587 | 10.90 | 3.69 | 0.10 | 0.50 | SKIRTOR WISE-flagged |
+| 04592933676 | 0.651 | 19.22 | 0.72 | 0.10 | 0.90 | SKIRTOR WISE-flagged; Fritz solves it |
 
 The model-family spread is recorded in `model_family_spread.json`; no single
 family is presented as the unique answer.  The previously flagged outlier is
-well fitted by Fritz (χ²_ν 0.38), so it is a family-dependent result rather
+well fitted by Fritz (χ²_ν 0.72), so it is a family-dependent result rather
 than a data failure.
 
 ## Remaining limitations
 
-* No AGNfitter-RX or PROSPECTOR-AGN; CIGALE now has two families, not a full
-  ensemble.
-* No real SDSS/WISE magnitude errors in SPALL; nominal 0.05/0.125 mag errors
-  are documented and CIGALE adds a 10 % floor.
-* No X-ray/radio constraints; torus parameters remain prior-dominated for
+* **AGNfitter-rx is now the independent second SED engine** (see
+  `agnfitter_sed/`); PROSPECTOR-AGN is not integrated.  CIGALE still has no
+  X-ray/radio constraints, so torus parameters remain prior-dominated for
   low-AGN-fraction objects.
 * CIGALE is cloned at build time; the image is large (~10.4 GB).
