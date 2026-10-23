@@ -179,9 +179,11 @@ def _infer_band(wave_um, mask, instrument: str) -> str:
 
 def read_jwst_x1d(path: str | Path, z_override: float | None = None,
                   band: str | None = None) -> Spectrum:
-    """JWST/NIRSpec (and NIRISS/MIRI) x1d EXTRACT1D table -> Spectrum.
+    """JWST/NIRSpec or MIRI x1d EXTRACT1D table -> Spectrum.
 
-    FLUX is in Jy; convert to the pipeline's 1e-17 erg s-1 cm-2 A-1.
+    NIRSpec x1d uses FLUX/FLUX_ERROR in Jy.  MIRI x1d uses
+    SURF_BRIGHT/SB_ERROR in MJy/sr.  The native unit is retained in the
+    Spectrum; the generic fitter does not assume a physical unit.
     """
     from astropy.io import fits
     path = Path(path)
@@ -190,15 +192,26 @@ def read_jwst_x1d(path: str | Path, z_override: float | None = None,
         with fits.open(path, memmap=False) as hdul:
             tab = hdul["EXTRACT1D"]
             d = tab.data
+            names = set(d.columns.names)
             wave_um = np.asarray(d["WAVELENGTH"], float)
-            flux_jy = np.asarray(d["FLUX"], float)
-            err_jy = np.asarray(d["FLUX_ERROR"], float)
-            dq = np.asarray(d["DQ"], float) if "DQ" in d.columns.names else np.zeros_like(wave_um)
-            lam_a = wave_um * 1e4
-            # Jy -> erg s-1 cm-2 A-1  (f_lambda = f_nu * c / lambda^2)
-            conv = 1e-23 * 2.99792458e18 / np.where(lam_a > 0, lam_a ** 2, np.nan)
-            flux = flux_jy * conv / 1e-17
-            err = err_jy * conv / 1e-17
+            if "FLUX" in names:
+                native = np.asarray(d["FLUX"], float)
+                native_err = np.asarray(d["FLUX_ERROR"], float)
+                native_unit = "Jy"
+                lam_a = wave_um * 1e4
+                conv = 1e-23 * 2.99792458e18 / np.where(lam_a > 0, lam_a ** 2, np.nan)
+                flux = native * conv / 1e-17
+                err = native_err * conv / 1e-17
+                flux_unit = "1e-17 erg s-1 cm-2 A-1"
+            elif "SURF_BRIGHT" in names:
+                native = np.asarray(d["SURF_BRIGHT"], float)
+                native_err = np.asarray(d["SB_ERROR"], float)
+                native_unit = str(tab.header.get("TUNIT2", "MJy/sr"))
+                flux, err = native, native_err
+                flux_unit = native_unit
+            else:
+                raise ValueError(f"EXTRACT1D has neither FLUX nor SURF_BRIGHT: {sorted(names)}")
+            dq = np.asarray(d["DQ"], float) if "DQ" in names else np.zeros_like(wave_um)
             hdr = hdul[0].header
             z = hdr.get("Z", hdr.get("REDSHIFT", np.nan))
             if not np.isfinite(z):
@@ -207,32 +220,202 @@ def read_jwst_x1d(path: str | Path, z_override: float | None = None,
                 z = float(z_override)
             target = str(hdr.get("TARGNAME", "") or path.stem).replace(" ", "_")
             inst = str(hdr.get("INSTRUME", "NIRSPEC"))
-            objid = target
             ra = hdr.get("RA_REF", np.nan)
             dec = hdr.get("DEC_REF", np.nan)
     mask = np.isfinite(wave_um) & np.isfinite(flux) & np.isfinite(err) & (err > 0) & (dq == 0)
     if band is None:
         band = _infer_band(wave_um, mask, inst)
     return Spectrum(wave_um=wave_um, flux=flux, error=err, mask=mask, z=float(z),
-                    z_err=float(hdr.get("Z_ERR", np.nan)) if "hdr" in locals() else np.nan,
-                    band=band, instrument=inst, object_id=objid,
-                    flux_unit="1e-17 erg s-1 cm-2 A-1", native_flux_unit="Jy",
+                    z_err=float(hdr.get("Z_ERR", np.nan)),
+                    band=band, instrument=inst, object_id=target,
+                    flux_unit=flux_unit, native_flux_unit=native_unit,
                     ra=ra, dec=dec,
                     meta={"path": str(path), "source": "JWST x1d", "target": target,
                           "dq_flagged": int(np.sum(dq != 0))})
 
 
-def read_spectrum(path: str | Path, **kw) -> Spectrum:
-    """Adapter dispatch: JWST x1d if EXTRACT1D is present, else SDSS-style."""
+def _robust_scalar_error(y: np.ndarray) -> float:
+    """Noise estimate for spectra without an error column."""
+    y = np.asarray(y, float)
+    d = np.diff(y[np.isfinite(y)])
+    if d.size < 5:
+        return float("nan")
+    mad = np.nanmedian(np.abs(d - np.nanmedian(d)))
+    val = 1.4826 * mad / np.sqrt(2.0)
+    return float(val) if np.isfinite(val) and val > 0 else float("nan")
+
+
+def read_hifi_hpdp(path: str | Path, z_override: float | None = None,
+                   band: str | None = None) -> Spectrum:
+    """Herschel/HIFI HPDP spectrum (flux [K], wave [GHz]) -> Spectrum.
+
+    The HPDP products store antenna temperature in K and frequency in GHz.  We
+    retain that native unit and fit the line shape; absolute line fluxes require
+    the HIFI beam/Jy-K calibration, which is deliberately not invented here.
+    """
     from astropy.io import fits
+    path = Path(path)
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        with fits.open(path, memmap=False) as hdul:
+            tab = None
+            for hdu in hdul:
+                if getattr(hdu, "columns", None) is not None:
+                    names = {c.lower() for c in hdu.columns.names}
+                    if {"flux", "wave"} <= names:
+                        tab = hdu
+                        break
+            if tab is None:
+                raise ValueError("HIFI FITS has no FLUX/WAVE table")
+            d = tab.data
+            cols = {c.lower(): c for c in d.columns.names}
+            flux_k = np.asarray(d[cols["flux"]], float)
+            freq_ghz = np.asarray(d[cols["wave"]], float)
+            hdr = hdul[0].header
+            obj = str(hdr.get("OBJECT", path.stem)).strip().replace(" ", "_")
+            inst = str(hdr.get("INSTRUME", "HIFI"))
+            ra = hdr.get("RA", np.nan)
+            dec = hdr.get("DEC", np.nan)
+    wave_um = 299792.458 / np.where(freq_ghz > 0, freq_ghz, np.nan)
+    noise = _robust_scalar_error(flux_k)
+    err = np.full_like(flux_k, noise if np.isfinite(noise) else np.nan)
+    mask = np.isfinite(wave_um) & np.isfinite(flux_k) & np.isfinite(err) & (err > 0)
+    z = 0.0 if z_override is None else float(z_override)
+    return Spectrum(wave_um=wave_um, flux=flux_k, error=err, mask=mask, z=z,
+                    band=band or "fir", instrument=inst, object_id=obj,
+                    flux_unit="K (antenna temperature)", native_flux_unit="K",
+                    ra=ra, dec=dec,
+                    meta={"path": str(path), "source": "Herschel/HIFI HPDP",
+                          "noise_estimate_K": noise})
+
+
+def read_s1d(path: str | Path, z_override: float | None = None,
+             band: str | None = None) -> Spectrum:
+    """PAHFIT/MIRI MRS s1d table (wavelength, flux, uncertainty)."""
+    from astropy.io import fits
+    path = Path(path)
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        with fits.open(path, memmap=False) as hdul:
+            tab = hdul[1] if len(hdul) > 1 else hdul[0]
+            d = tab.data
+            cols = {c.lower(): c for c in d.columns.names}
+            w = np.asarray(d[cols["wavelength"]], float)
+            f = np.asarray(d[cols["flux"]], float)
+            e = np.asarray(d[cols.get("uncertainty", "error")], float)
+            hdr = hdul[0].header
+            obj = str(hdr.get("OBJECT", path.stem)).strip().replace(" ", "_")
+            ra = hdr.get("RA", np.nan)
+            dec = hdr.get("DEC", np.nan)
+    # PAHFIT s1d wavelengths are microns.
+    mask = np.isfinite(w) & np.isfinite(f) & np.isfinite(e) & (e > 0)
+    z = 0.0 if z_override is None else float(z_override)
+    return Spectrum(wave_um=w, flux=f, error=e, mask=mask, z=z,
+                    band=band or "mir", instrument="MIRI MRS (s1d)",
+                    object_id=obj, flux_unit="MJy/sr", native_flux_unit="MJy/sr",
+                    ra=ra, dec=dec,
+                    meta={"path": str(path), "source": "PAHFIT s1d"})
+
+
+def read_pacs(path: str | Path, z_override: float | None = None,
+             band: str | None = None) -> Spectrum:
+    """Herschel/PACS HPDP extracted spectrum (wave [um], flux [Jy])."""
+    from astropy.io import fits
+    path = Path(path)
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        with fits.open(path, memmap=False) as hdul:
+            tab = hdul["spectra"] if "spectra" in hdul else hdul[1]
+            d = tab.data
+            cols = {c.lower(): c for c in d.columns.names}
+            w = np.asarray(d[cols["wave"]], float)
+            fcol = None
+            for c in ("pointSourceScaledFlux&", "pointSourceScaledFlux",
+                      "pointSourceFlux&", "pointSourceFlux", "centralFlux"):
+                if c.lower() in cols:
+                    fcol = cols[c.lower()]
+                    break
+            if fcol is None:
+                raise ValueError("PACS spectrum has no point-source flux column")
+            ecol = None
+            for c in ("pointSourceScaledError&", "pointSourceScaledError",
+                      "pointSourceError&", "pointSourceError", "centralError"):
+                if c.lower() in cols:
+                    ecol = cols[c.lower()]
+                    break
+            f = np.asarray(d[fcol], float)
+            e = np.asarray(d[ecol], float) if ecol else np.full_like(f, np.nan)
+            hdr = hdul[0].header
+            obj = str(hdr.get("OBJECT", path.stem)).strip().replace(" ", "_")
+            ra = hdr.get("RA", np.nan)
+            dec = hdr.get("DEC", np.nan)
+    mask = np.isfinite(w) & np.isfinite(f) & np.isfinite(e) & (e > 0)
+    z = 0.0 if z_override is None else float(z_override)
+    return Spectrum(wave_um=w, flux=f, error=e, mask=mask, z=z,
+                    band=band or "fir", instrument="PACS",
+                    object_id=obj, flux_unit="Jy", native_flux_unit="Jy",
+                    ra=ra, dec=dec,
+                    meta={"path": str(path), "source": "Herschel/PACS HPDP"})
+
+
+def read_spitzer_irs_tbl(path: str | Path, z_override: float | None = None,
+                          band: str | None = None) -> Spectrum:
+    """Spitzer IRS Enhanced IPAC table -> Spectrum (Jy -> cgs f_lambda)."""
+    from astropy.table import Table
+    path = Path(path)
+    try:
+        t = Table.read(path, format="ascii.ipac")
+    except Exception:
+        t = Table.read(path, format="ascii")
+    names = {c.lower(): c for c in t.colnames}
+    w = np.asarray(t[names["wavelength"]], float)
+    fjy = np.asarray(t[names["flux_density"]], float)
+    ejy = np.asarray(t[names.get("error", "flux_density_err")], float)
+    if "bit-flag" in names:
+        good = np.asarray(t[names["bit-flag"]]) == 0
+    else:
+        good = np.ones_like(w, dtype=bool)
+    lam_a = w * 1e4
+    conv = 1e-23 * 2.99792458e18 / np.where(lam_a > 0, lam_a ** 2, np.nan)
+    flux = fjy * conv / 1e-17
+    err = ejy * conv / 1e-17
+    mask = good & np.isfinite(w) & np.isfinite(flux) & np.isfinite(err) & (err > 0)
+    obj = str(t.meta.get("OBJECT", path.stem)).strip(" '\"")
+    z = 0.0 if z_override is None else float(z_override)
+    return Spectrum(wave_um=w, flux=flux, error=err, mask=mask, z=z,
+                    band=band or "mir", instrument="Spitzer IRS",
+                    object_id=obj, flux_unit="1e-17 erg s-1 cm-2 A-1",
+                    native_flux_unit="Jy",
+                    meta={"path": str(path), "source": "Spitzer IRS Enhanced"})
+
+
+
+def read_spectrum(path: str | Path, **kw) -> Spectrum:
+    """Adapter dispatch for all supported spectra."""
+    from astropy.io import fits
+    path = Path(path)
+    if path.suffix.lower() in (".tbl", ".dat"):
+        return read_spitzer_irs_tbl(path, **kw)
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
         with fits.open(path, memmap=False) as hdul:
             names = [h.name for h in hdul]
-    if "EXTRACT1D" in names:
-        return read_jwst_x1d(path, **kw)
+            if "EXTRACT1D" in names:
+                return read_jwst_x1d(path, **kw)
+            # PACS HPDP: WAVE [um] + pointSource*/centralFlux [Jy]
+            for hdu in hdul:
+                if getattr(hdu, "columns", None) is None:
+                    continue
+                cols = {c.lower() for c in hdu.columns.names}
+                if "wave" in cols and any(c.startswith(("pointsourcescaledflux", "pointsourceflux", "centralflux"))
+                                           for c in cols):
+                    return read_pacs(path, **kw)
+                hdr = hdul[0].header
+                if {"flux", "wave"} <= cols and str(hdr.get("WAVEUNIT", "")).upper() == "GHZ":
+                    return read_hifi_hpdp(path, **kw)
+                if {"wavelength", "flux"} <= cols and "uncertainty" in cols:
+                    return read_s1d(path, **kw)
     return read_sdss(path, **kw)
-
 
 def zline_table(path: str | Path):
     """SDSS ZLINE measurements (validation only)."""

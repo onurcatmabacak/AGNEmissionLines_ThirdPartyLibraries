@@ -262,7 +262,12 @@ path_out = "./"
 
 # Required
 wavelength, flux, error, z = load_spectrum('spectrum.fits')
-error = 0.02 * flux
+# Use the calibrated error array from the prepared spectrum.  The old
+# unconditional 0.02*flux floor made every pixel S/N=50 and biased the
+# broad UV complexes.  An optional floor is available for experiments.
+_floor = float(os.environ.get("PYQSOFIT_ERR_FLOOR", "0"))
+if _floor > 0:
+    error = np.maximum(error, _floor * flux)
 # Per-object redshift: take it from the FITS header (the original analysis had
 # this hardcoded to 0.348 for its single target). PYQSOFIT_Z overrides it.
 z = float(os.environ.get("PYQSOFIT_Z", z))
@@ -299,7 +304,7 @@ q_mle.Fit(name='result',  # customize the name of given targets. Default: plate-
           wave_mask=None,  # 2-D array, mask the given range(s)
 
           # host decomposition parameters (Galaxy PCA templates are staged as ./pca)
-          decompose_host=True,  # If True, the host galaxy-QSO decomposition will be applied
+          decompose_host=(os.environ.get("PYQSOFIT_HOST", "0") == "1"),  # UV fit is host-free; pPXF handles the host
           host_prior=True, # prior-informed decomposition; without it 6/10 fits rejected the host (negative flux)
           host_prior_scale=0.2, # scale of prior panelty. Usually, 0.2 works fine for SDSS spectra. Adjust it smaller if you find the prior affect the fitting results too much.
 
@@ -494,3 +499,27 @@ print("EW (A)", np.round(ew, 1))
 print("Peak (A)", np.round(peak, 1))
 print("Area (10^(-17) erg/s/cm^2)", np.round(area, 1))
 print("SNR", np.round(snr, 1))
+
+# Compact per-line table for cross-tool comparison.  Both broad and narrow
+# components are recorded; the narrow C III]/Mg II areas are the quantities
+# directly comparable to SDSS ZLINE.
+try:
+    import csv as _csv
+    _recs = []
+    for _name in ("MgII_br", "MgII_na", "CIII_br", "CIII_na",
+                  "CIV_br", "CIV_na", "Lya_br", "Lya_na",
+                  "Hb_br", "Hb_na", "OIII5007w", "OIII5007c"):
+        _comp = "broad" if _name.endswith("_br") or _name.endswith("w") else "narrow"
+        try:
+            _fwhm, _sigma, _ew, _peak, _area, _snr = q_mle.line_prop_from_name(_name, _comp)
+            _recs.append({"line": _name, "component": _comp,
+                          "area_1e17": float(_area), "fwhm_kms": float(_fwhm),
+                          "snr": float(_snr)})
+        except Exception:
+            continue
+    with open("pyqsofit_lines.csv", "w", newline="") as _fh:
+        _w = _csv.DictWriter(_fh, fieldnames=["line", "component", "area_1e17", "fwhm_kms", "snr"])
+        _w.writeheader(); _w.writerows(_recs)
+    print("wrote pyqsofit_lines.csv")
+except Exception as _e:
+    print("could not write pyqsofit_lines.csv:", _e)

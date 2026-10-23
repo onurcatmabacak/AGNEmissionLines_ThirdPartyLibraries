@@ -30,6 +30,21 @@ bash pipeline/build_images.sh          # build the badass/fantasy_agn/gelato/gle
 current shell lacks the docker group, so a fresh login is only needed for the
 group to apply everywhere.
 
+### IR/UV/SED extension (new tools)
+
+The NIR/MIR/FIR/SED tools use a source-keyed layout and a single runner:
+
+```bash
+bash run_new_tools.sh --list
+bash run_new_tools.sh --tools ir_linefit pyqsofit_uv ppxf_host nir_linefit   pahfit_mir fir_linefit crossband cigale_sed --cigale-models skirtor2016,fritz2006
+```
+
+Inputs: `inputs/<source>_z_<redshift>/raw/`; outputs:
+`outputs/<source>_z_<redshift>/<tool>/`.  See `inputs/README.md`,
+`docs/OUTPUTS.md`, `docs/REPO_LAYOUT.md` and `docs/CAVEAT_FIXES.md`.
+The original optical five-tool workflow below is unchanged and still uses
+`input/`, `runs/` and `results/`.
+
 ### Workflow A — automatic best fit per object (recommended)
 
 Drop spectra into `input/` and run one command:

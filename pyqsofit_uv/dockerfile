@@ -21,4 +21,4 @@ COPY pyqsofit/PyQSOFit/src/pyqsofit/pca /app/run/pca
 WORKDIR /app/run
 RUN mkdir -p /app/input /app/output && chmod 777 /app/run /app/output
 
-CMD ["sh", "-c", "cp /app/input/spectrum.fits .; python main.py; rc=$?; cp *.fits *.pdf *.csv /app/output/ 2>/dev/null || true; exit $rc"]
+CMD ["sh", "-c", "cp /app/input/spectrum.fits .; python main.py; rc=$?; cp *.fits *.pdf *.csv /app/output/ 2>/dev/null || true; rm -f /app/output/spectrum.fits; exit $rc"]

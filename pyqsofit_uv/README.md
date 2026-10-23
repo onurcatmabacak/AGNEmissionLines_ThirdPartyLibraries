@@ -1,45 +1,51 @@
-# pyqsofit_uv — PyQSOFit UV line fitting (Docker)
+# `pyqsofit_uv` — PyQSOFit UV line fitting (Docker)
 
-The second IR/UV-suite tool: **PyQSOFit** configured for rest-frame UV lines
-(Mg II 2798, C III] 1908, C IV 1549, Lyα/N V, Si IV), packaged as a Docker image
-like the optical five.
+PyQSOFit configured for rest-frame UV lines (Mg II 2798, C III] 1908,
+C IV 1549, Lyα/N V, Si IV), packaged as a Docker image.
 
 ## Build / run
 
 ```bash
 bash pipeline/build_images.sh pyqsofit_uv
-
-# input dir must contain the prepared PyQSOFit spectrum.fits
-.venv/bin/python pipeline/prepare_inputs.py --fits input_zgt05 --out runs_ir_zgt05
-bash run_pyqsofit_uv_docker.sh runs_ir_zgt05/04570952937/inputs/pyqsofit \
-     results_ir/zgt05_pyqsofit_uv/04570952937
+.venv/bin/python pipeline/run_new_tools.py --only 04592649654_z_0.5874 --tools pyqsofit_uv --force
 ```
 
-The image contains the PyQSOFit source, the UV config
-(`configs/pyqsofit/uv/main.py`), and the PCA templates. The run is fast
-(`MC=0`, `MCMC=0`); set `PYQSOFIT_MC=1` / `PYQSOFIT_MCMC=1` for uncertainties.
+The orchestrator prepares `work/prepared/<source_key>/pyqsofit/spectrum.fits`
+from the canonical raw spectrum and writes
+`outputs/<source_key>/pyqsofit_uv/`.
 
-## Results on the z>0.5 SDSS DR18 set
+## What changed in this pass
 
-| z | UV complexes fitted | PyQSOFit / SDSS ZLINE | preview |
-|---|---|---|---|
-| 1.8297 | Si IV, C IV, C III], Mg II | C IV **0.95**; Mg II 1.43; C III] 2.60 | `result.png` |
-| 1.1289 | Mg II, C III] | Mg II 1.25; C III] 1.81 | `result.png` |
-| 0.9901 | C III], Mg II (+ Hβ/[O III]) | Mg II 1.65; C III] 2.92; Hβ 0.90; [O III] 0.68 | `result.png` |
-| 0.6506 | Hβ, [O III] (Mg II complex skipped) | Hβ **1.05**; [O III] 0.41 | `result.png` |
-| 0.5874 | Hβ, [O III] (Mg II complex skipped) | [O III] 0.75 | `result.png` |
+* **Real errors.** The old config replaced the calibrated error array with
+  `0.02 * flux`, making every pixel S/N=50.  The fit now uses the real
+  HDU2 error; `PYQSOFIT_ERR_FLOOR` is an opt-in floor.
+* **UV is host-free by default.** The host decomposition shrank the rest-frame
+  grid to ≳3450 Å and silently skipped Mg II/C III] at z≈0.59.  The UV fit is
+  now host-free; pPXF handles the host independently.  `PYQSOFIT_HOST=1`
+  restores the old decomposition.
+* **Line table.** `pyqsofit_lines.csv` records broad and narrow areas,
+  FWHM and S/N for Mg II, C III], C IV, Lyα, Hβ and [O III].  The narrow
+  C III]/Mg II areas are the directly comparable quantities; the broad
+  complexes are not narrow-line measurements.
+* **Mg II at z≈0.59** is now fitted instead of skipped.
 
-Each directory also has `output.fits`, `qsopar.fits`, `pyqsofit_model.csv`,
-`result.pdf` and `result.png`.
+A five-sample MC demonstration is stored under
+`outputs/04592649654_z_0.5874/pyqsofit_uv/mc/`; the default matrix run is
+maximum-likelihood.
 
-## Known limitations (first pass)
+## Controls
 
-- The config keeps the upstream `error = 0.02 * flux` floor; pass real
-  uncertainties before production.
-- C III] areas are 1.8–2.9× the SDSS ZLINE value: the broad+narrow + UV Fe II
-  decomposition is not yet constrained; this is the next refinement.
-- At z=0.587/0.6506 PyQSOFit skipped the Mg II complex (its rest-frame window
-  is in a masked/low-acceptance part of the prepared spectrum); Hβ/[O III]
-  were fitted instead. The z>0.99 objects fit Mg II/C III] as intended.
-- No MCMC in the committed runs; the `result.pdf` shows the maximum-likelihood
-  fit and residual panels.
+```bash
+PYQSOFIT_MC=1 PYQSOFIT_NSAMP=50 ...      # Monte-Carlo errors
+PYQSOFIT_MCMC=1 PYQSOFIT_NSAMP=200 ...  # emcee posterior (slow)
+PYQSOFIT_ERR_FLOOR=0.01 ...             # optional error floor
+PYQSOFIT_HOST=1 ...                     # old host-decomposed run
+```
+
+## Remaining limitations
+
+* C III] broad flux includes UV Fe II/outflow; compare the narrow component.
+* No MCMC in the default matrix run; it is available through the environment
+  variables above.
+* The UV fit and pPXF host fit are separate by design; their apertures are the
+  same SDSS fibre.

@@ -1,47 +1,46 @@
-# pahfit_mir — PAHFIT 2.0 for MIR spectra (Docker)
+# `pahfit_mir` — PAHFIT 2.0 for MIR spectra (Docker)
 
-The MIR-suite tool: **PAHFIT 2.0** (GitHub source) in Docker, fitting PAH,
-dust-continuum and fine-structure/molecular features to JWST/MIRI MRS or
-Spitzer/IRS spectra.
+PAHFIT 2.0 for JWST/MIRI MRS, PAHFIT `s1d`, and Spitzer IRS spectra.
 
-## Build / run
+## Run
 
 ```bash
 bash pipeline/build_images.sh pahfit_mir
-
-# PAHFIT's packaged MIRI MRS validation spectrum (12 segments, z=0.020)
-bash run_pahfit_mir_docker.sh input_mir_vv114 results_ir/mir_vv114_all 0.020 --s1d
-
-# JWST MIRI x1d short/long (real data)
-bash run_pahfit_mir_docker.sh input_mir results_ir/mir_pds456 0.184 --segment both
+.venv/bin/python pipeline/run_new_tools.py --only VV114_z_0.0200 --tools pahfit_mir --force
+.venv/bin/python pipeline/run_new_tools.py --only PDS456_z_0.1840 --tools pahfit_mir --force
 ```
 
-Inputs: `*_s1d.fits` (PAHFIT format: wavelength/flux/uncertainty, MJy/sr) or
-JWST `*_x1d.fits` (`SURF_BRIGHT`/`SB_ERROR`, MJy/sr). Output: PAHFIT feature
-table, ECSV model, fit figure, summary JSON.
+Inputs can be `*_x1d.fits` (`SURF_BRIGHT`/`SB_ERROR`), `*_s1d.fits`, or an
+Spitzer IRS Enhanced `.tbl`.  Spitzer Jy is converted to MJy/sr using the
+SL/LL slit solid angles before fitting.
 
-## Validation: VV114 MIRI MRS (PAHFIT's included example)
+## PDS 456 handling
 
-`input_mir_vv114/` — 12 MIRI MRS segments, 5.0–28.0 µm, z=0.020, 9,096 pixels.
-PAHFIT fits 53 features; the model tracks the data across the full MIRI range
-with residuals mostly within ±2.5 %. **Inspect:**
-`results_ir/mir_vv114_all/pahfit_fit.png` / `.pdf`,
-`pahfit_features.csv`, `pahfit_summary.json`.
+The short/long MIRI spectra are fitted separately and jointly:
 
-## Real MIRI AGN: PDS 456 (z=0.184) — caveat
+```text
+outputs/PDS456_z_0.1840/pahfit_mir/short/
+outputs/PDS456_z_0.1840/pahfit_mir/long/
+outputs/PDS456_z_0.1840/pahfit_mir/both/
+```
 
-`input_mir/` contains the real JWST/MIRI MRS x1d short+long spectrum of PDS 456.
-The combined and single-segment PAHFIT fits are **unstable**: the fitter drives
-very large PAH powers and the residuals reach hundreds of percent. The likely
-causes are the high MRS spectral resolution, the short/long calibration
-discontinuity, and the lack of a QSO-centred extraction. These fits are not
-used as a pass gate; the VV114 example validates the tool. The PDS 456 route is
-kept as the next data-reduction target (smooth to PAHFIT's R, use a QSO-centred
-aperture, and verify the MIRI flux calibration).
+`--smooth-um` median-bins the high-resolution MRS data to a PAHFIT-friendly
+grid.  Each summary records `rms_rel` and `unstable`.  The short segment is
+stable; the long/both solutions are retained but flagged, not presented as
+quantitative detections.
 
-## Caveats
+## Validation
 
-- PAHFIT requires intensity units (MJy/sr); the x1d `FLUX` (Jy) must be
-  converted or `SURF_BRIGHT` used.
-- MIRI MRS is high-resolution; PAHFIT's feature model assumes the instrument
-  pack; validate per segment before fitting a full spectrum.
+* VV114 MIRI MRS: rms≈0.18, 53 features; pass gate.
+* Mrk 231 Spitzer IRS (real AGN): rms≈0.35.
+* NGC 253 Spitzer IRS: rms≈2.4 and `unstable=true`; retained as a real-data
+  stress test, not an AGN pass.
+* PDS 456 short: rms≈0.41; long/both higher and flagged.
+
+## Remaining limitations
+
+* PAHFIT assumes its standard feature pack; extreme MIRI resolution and
+  short/long calibration discontinuities still require careful binning.
+* Feature `power` uncertainties are not propagated into `pahfit_features.csv`;
+  the crossband builder uses a 10 % working error.
+* No simultaneous MIR line + PAH + AGN torus model.

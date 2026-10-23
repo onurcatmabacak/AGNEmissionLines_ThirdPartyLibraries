@@ -68,7 +68,8 @@ def main(argv=None):
     p.add_argument("--input", required=True, type=Path, help="prepared spectrum.fits")
     p.add_argument("--output", required=True, type=Path)
     p.add_argument("--templates", type=Path, default=Path("/app/templates/eMILES"))
-    p.add_argument("--degree", type=int, default=10)
+    p.add_argument("--degree", type=int, default=5)
+    p.add_argument("--mask-kms", type=float, default=2500.0)
     args = p.parse_args(argv)
     args.output.mkdir(parents=True, exist_ok=True)
 
@@ -80,7 +81,7 @@ def main(argv=None):
     # mask emission lines and bad pixels (rest frame, +/- 2000 km/s)
     mask = np.isfinite(wave_rest) & np.isfinite(flux_rest) & np.isfinite(err_rest) & (err_rest > 0)
     for lam in EMISSION:
-        d = lam * 2000.0 / C_KMS
+        d = lam * args.mask_kms / C_KMS
         mask &= ~((wave_rest > lam - d) & (wave_rest < lam + d))
     if mask.sum() < 200:
         raise SystemExit(f"only {mask.sum()} good continuum pixels")
@@ -88,19 +89,27 @@ def main(argv=None):
     w0, w1 = float(wave_rest[mask].min()), float(wave_rest[mask].max())
     log_flux, log_wave, velscale = ppxf_util.log_rebin([w0, w1], flux_rest, velscale=None)
     log_err, _, _ = ppxf_util.log_rebin([w0, w1], err_rest, velscale=velscale)
+    if log_err.size != log_flux.size:
+        log_err = np.interp(np.exp(log_wave), wave_rest, err_rest)
     # templates on the spectrum's rest grid, then the same log grid
     tmpl_lin = load_templates(args.templates, wave_rest)
+    # Rebin each template to the same log grid as the spectrum.  If the
+    # template's rest coverage is shorter than the spectrum, log_rebin returns
+    # a shorter array; resample it onto the spectrum's log grid instead of
+    # silently discarding it.
     tmpl_log = []
     for j in range(tmpl_lin.shape[1]):
         ly, _, _ = ppxf_util.log_rebin([w0, w1], tmpl_lin[:, j], velscale=velscale)
-        if ly.size == log_flux.size:
-            tmpl_log.append(ly)
+        if ly.size != log_flux.size:
+            lw = np.linspace(np.log(w0), np.log(w1), ly.size)
+            ly = np.interp(log_wave, lw, ly)
+        tmpl_log.append(ly)
     templates = np.array(tmpl_log).T
     # pPXF fit: stellar templates + additive polynomial (AGN continuum)
     # map the rest-frame mask onto the log grid and pass it as goodpixels
     goodpix = np.where(np.interp(np.exp(log_wave), wave_rest, mask.astype(float)) > 0.5)[0]
     pp = ppxf(templates, log_flux, log_err, velscale, start=[100.0, 100.0],
-              goodpixels=goodpix, degree=5, mdegree=-1, quiet=True)
+              goodpixels=goodpix, degree=args.degree, mdegree=-1, quiet=True)
     weights = pp.weights
     stellar = templates.dot(weights)
     poly = pp.apoly if pp.apoly is not None else np.zeros_like(stellar)
@@ -136,15 +145,55 @@ def main(argv=None):
         ]),
     ])
     hdu.writeto(out / "ppxf_result.fits", overwrite=True)
+    # Propagate the pPXF template-weight errors into the host fraction when
+    # available; otherwise report a conservative 2 % floor.
+    host_err = float("nan")
+    try:
+        pe = np.asarray(pp.error, float).ravel()
+        w = np.asarray(weights, float).ravel()
+        if pe.size == w.size + 2:
+            we = pe[2:]
+        elif pe.size == w.size:
+            we = pe
+        else:
+            we = None
+        if we is not None and win.sum():
+            se = np.sqrt(np.nansum((templates[:, :we.size] * we) ** 2, axis=1))
+            host_err = float(np.nansum(se[win]) / denom)
+    except Exception:
+        pass
+    if not np.isfinite(host_err):
+        host_err = 0.02
+    host_upper = float(host_frac + 3.0 * max(host_err, 0.02)) if np.isfinite(host_frac) else float("nan")
+    sigma = float(pp.sol[1]) if len(pp.sol) > 1 else float("nan")
+    reasons = []
+    if not np.isfinite(host_frac) or host_frac < 0.02:
+        reasons.append("host_fraction_at_or_below_floor")
+    if not np.isfinite(sigma) or sigma <= 101.0:
+        reasons.append("sigma_at_start")
+    if np.isfinite(sigma) and sigma >= 999.0:
+        reasons.append("sigma_at_upper")
+    if hi <= 4000.0 or wave_log.max() < 4100.0:
+        reasons.append("no_4000A_break")
+    if chi2 > 50:
+        reasons.append("high_chi2")
+    reliable = not reasons
     summary = {"z": z, "chi2_red": chi2,
                "n_templates": int(templates.shape[1]),
                "host_fraction": host_frac,
+               "host_fraction_err": host_err,
+               "host_fraction_upper_limit": host_upper,
+               "host_fraction_reliable": reliable,
+               "reliability_reasons": reasons,
                "host_window_A": [lo, hi],
-               "degree": 5, "velscale_kms": float(velscale)}
+               "degree": args.degree, "mask_kms": args.mask_kms,
+               "velscale_kms": float(velscale),
+               "sigma_kms": sigma,
+               "sigma_reliable": bool(np.isfinite(sigma) and 101.0 < sigma < 999.0)}
     try:
-        summary["sigma_kms"] = float(pp.sol[1])
+        summary["sigma_err_kms"] = float(np.asarray(pp.error).ravel()[1])
     except Exception:
-        summary["sigma_kms"] = float("nan")
+        summary["sigma_err_kms"] = float("nan")
     (out / "ppxf_summary.json").write_text(json.dumps(summary, indent=2, default=float))
 
     fig, (a1, a2) = plt.subplots(2, 1, figsize=(12, 7), sharex=True,
@@ -154,7 +203,8 @@ def main(argv=None):
     a1.plot(wave_log, stellar, color="C0", lw=1.2, label="stellar host")
     a1.plot(wave_log, poly, color="C1", lw=1.0, ls="--", label="AGN polynomial")
     a1.set_ylabel("flux (1e-17)")
-    a1.set_title(f"pPXF host decomposition  z={z:.4f}  chi2_red={chi2:.2f}  host(4-5k)={host_frac:.3f}")
+    a1.set_title(f"pPXF host decomposition  z={z:.4f}  chi2_red={chi2:.2f}  "
+                 f"host({lo:.0f}-{hi:.0f}A)={host_frac:.3f}  reliable={reliable}")
     a1.legend(fontsize=8, frameon=False)
     a2.plot(wave_log, resid, color="0.3", lw=0.7)
     a2.axhline(0, color="k", lw=0.5)
@@ -164,7 +214,8 @@ def main(argv=None):
     fig.savefig(out / "ppxf_fit.png", dpi=140, bbox_inches="tight")
     fig.savefig(out / "ppxf_fit.pdf", bbox_inches="tight")
     plt.close(fig)
-    print(f"[ppxf] z={z:.4f} chi2_red={chi2:.2f} host_frac={host_frac:.3f} -> {out}")
+    print(f"[ppxf] z={z:.4f} chi2_red={chi2:.2f} host_frac={host_frac:.3f} "
+          f"reliable={reliable} reasons={reasons} -> {out}")
     return 0
 
 

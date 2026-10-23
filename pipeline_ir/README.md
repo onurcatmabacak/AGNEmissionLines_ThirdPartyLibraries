@@ -1,95 +1,57 @@
-# pipeline_ir — IR emission-line slice
+# `pipeline_ir` / `ir_linefit` — generic IR line router and fitter
 
-This is the **first vertical slice** of `docs/IR_EXTENSION_PLAN.md`: the P0/P1
-foundations for NIR/MIR/FIR AGN emission-line analysis.  It is additive; the
-existing optical pipeline is untouched.
+The generic local-Gaussian line fitter used by the NIR/MIR/FIR suite.  It is
+the fallback/cross-check tool; the specialised tools (`nir_linefit`,
+`pahfit_mir`, `fir_linefit`) remain the primary models for their bands.
 
-## What is implemented
+## Layout
 
-| piece | file | status |
-|---|---|---|
-| line registry (42 optical/NIR/MIR/FIR lines) | `lines.py` | done |
-| SDSS DR18 eFEDS/BOSS FITS adapter (ivar, z, z_err, masks) | `spectrum.py` | done |
-| coverage/router: `λ_rest=λ_obs/(1+z)`, per-line coverage, observed-band suite selection, refusals | `router.py` | done |
-| local continuum + Gaussian line fitter with doublet ratios and tied narrow-line kinematics | `fit.py` | done |
-| CLI: route, fit, JSON/CSV + figure per object | `run.py` | done |
-| synthetic NIR/MIR/FIR line generator | `synthetic.py` | done |
-| self-test (real SDSS DR18 + synthetic IR) | `selftest.py` | done |
-
-## Usage
+Inputs are canonical source directories; results are source-keyed:
 
 ```bash
-# route only
-.venv/bin/python -m pipeline_ir.run --fits input/spec-*.fits --out results_ir/demo --dry-run
-
-# route + fit
-.venv/bin/python -m pipeline_ir.run --fits input/spec-00000-59345-04492075003.fits \
-    --out results_ir/demo
-
-# self-test
-.venv/bin/python -m pipeline_ir.selftest
+bash run_ir.sh --fits inputs/04592649654_z_0.5874/raw/spec-00000-59345-04592649654.fits \
+  --z 0.58741307 --out outputs/04592649654_z_0.5874/ir_linefit
 ```
 
-Outputs per object: `<stem>.route.json`, `<stem>.measurements.csv`,
-`<stem>.fit.pdf/png`.
-
-## Test results (SDSS DR18 eFEDS)
-
-Three real DR18 spectra were routed and fitted.  Example (z=0.2693):
-
-| line | fit flux (1e-17) | SDSS ZLINE area | ratio |
-|---|---:|---:|---:|
-| Hα (narrow+broad) | 3123 | 3069 | 1.02 |
-| Hβ | 627 | 587 | 1.07 |
-| [O III] 5007 | 212 | 234 | 0.91 |
-
-Synthetic NIR/MIR/FIR injections are recovered to ~1–5 % in flux and ~1–7 % in
-FWHM at S/N≈50, R=2000.
-
-## z > 0.5 SDSS DR18 test
-
-`input_zgt05/` contains five SDSS DR18 eFEDS QSOs downloaded for this test
-(z = 0.5874, 0.6506, 0.9901, 1.1289, 1.8297; QSO BROADLINE; median S/N 51–70).
-The router correctly moves from optical lines at z≈0.6–1.0 to rest-frame UV
-lines at z>1, and correctly refuses Hα for all five (observed Hα > 1.03 µm).
-
-| z | routed suites | main detections | ZLINE comparison |
-|---|---|---|---|
-| 0.5874 | optical, uv | Mg II, [O II], [Ne III], [O III] | O III 0.75 (diagnostic) |
-| 0.6506 | optical, uv | Mg II, Hβ, [O III] | Hβ **1.05**, O III 0.41 (diagnostic) |
-| 0.9901 | optical, uv | Mg II, C III], Hβ, [O III] | Hβ **0.90**, O III **0.68** |
-| 1.1289 | optical, uv | Mg II, C III] | Mg II 1.43, C III] 1.35 (diagnostic) |
-| 1.8297 | uv | C IV, C III], Mg II | C IV **1.28**; Mg II 3.57 (diagnostic) |
-
-Checks marked **bold** are pass gates; the two diagnostics are blend/systematic
-limited (Hβ broad wing affecting [O III] at z=0.65; UV Fe II/continuum blending
-affecting broad Mg II at z=1.83).  These are exactly the effects the plan's
-host/Fe II/UV-continuum work is meant to remove.
-
-Run:
+The orchestrator does this automatically:
 
 ```bash
-bash run_ir.sh --input-dir input_zgt05 --out results_ir/zgt05
-.venv/bin/python -m pipeline_ir.selftest   # now 60/60 checks
+.venv/bin/python pipeline/run_new_tools.py --tools ir_linefit
 ```
 
-## Limitations (deliberate, first slice)
+Per spectrum it writes `<object>.route.json`, `<object>.measurements.csv`,
+`<object>.fit.png/pdf` and, for every undetected component, a finite 3σ
+`flux_limit`.
 
-- The **generic `local_gaussian` fitter** is used for every band; the plan's
-  tool wrappers (BADASS-NIR, PAHFIT, CAFE, pyspeckit/CLASS/CASA) are not wired
-  yet.
-- Broad/narrow decomposition is implemented only for Hα/Hβ; NIR/MIR/FIR lines
-  are single Gaussians in this slice.
-- No telluric/PAH/fringe/background modelling yet; no PAH features; no upper
-  limit survival analysis beyond a 3σ integrated-flux limit.
-- No SED/torus companion yet (CIGALE/X-CIGALE, AGNfitter-RX, PROSPECTOR-AGN).
-- No optical-tool regression in the new path yet; the existing optical
-  `run_pipeline.sh` is unchanged.
+## Adapters
 
-## Next slices (from the plan)
+`pipeline_ir/spectrum.py` now dispatches:
 
-1. Wire BADASS/PyQSOFit NIR line lists and host decomposition (pPXF/STARLIGHT).
-2. Add PAHFIT/CAFE for MIR and pyspeckit/CLASS/CASA for FIR behind the same
-   `ToolPlugin` interface.
-3. Add the per-object candidate search/scorer and the provenance schema.
-4. Add the SED/torus companion and the host/SED comparison.
+* SDSS DR18 eFEDS/BOSS `COADD`;
+* JWST/NIRSpec `EXTRACT1D` `FLUX` [Jy] and JWST/MIRI `SURF_BRIGHT` [MJy/sr];
+* PAHFIT/MIRI `*_s1d.fits` [MJy/sr];
+* Spitzer IRS Enhanced IPAC `.tbl` [Jy -> cgs fλ];
+* Herschel/PACS HPDP `hpacs...POC_*.fits(.gz)` [Jy];
+* Herschel/HIFI HPDP [K, GHz], retained as antenna temperature.
+
+The output JSON/CSV record `instrument`, `flux_unit` and
+`native_flux_unit`; the fitter never guesses a unit.
+
+## Validation
+
+* Real SDSS z>0.5 sample: Hβ and [O III] agree with SDSS ZLINE at the
+  10–30 % level (blends are flagged in the route JSON).
+* Real JWST/NIRSpec J0100+2802: broad Hα detected at 4.81 µm.
+* Real PACS NGC 1068 [OI] 63 µm and NGC 253 [OI]/[OIII]/[OI]/[CII] lines
+  are recovered with the FIR tool.
+* Synthetic NIR/MIR/FIR injections recover flux to a few percent and FWHM
+  to a few percent at high S/N.
+
+## Remaining limitations
+
+* No telluric/PAH/fringe/background model; use the specialised tools.
+* Broad/narrow decomposition is Hα/Hβ only.
+* FIR line-flux biases at low S/N remain; the dedicated FIR tool is the
+  quantitative path.
+* The router is coverage/segment based; it does not magically create
+  coverage for a line outside the spectrum.

@@ -1,0 +1,55 @@
+{
+  "catalog": "JWST/MIRI MRS",
+  "files": {
+    "spectra": [
+      "raw/jw02547001001_02101_00001_mirifulong_x1d.fits",
+      "raw/jw02547001001_02101_00001_mirifushort_x1d.fits"
+    ]
+  },
+  "key": "PDS456_z_0.1840",
+  "kind": "jwst_miri",
+  "name": "PDS456",
+  "notes": "PDS 456 real MIRI MRS short+long x1d; PAHFIT needs segment/smoothing checks",
+  "pahfit_args": [
+    "--segment",
+    "short"
+  ],
+  "pahfit_variants": [
+    {
+      "args": [
+        "--segment",
+        "short",
+        "--smooth-um",
+        "0.05"
+      ],
+      "name": "short"
+    },
+    {
+      "args": [
+        "--segment",
+        "long",
+        "--smooth-um",
+        "0.05",
+        "--max-wave",
+        "28.0"
+      ],
+      "name": "long"
+    },
+    {
+      "args": [
+        "--segment",
+        "both",
+        "--smooth-um",
+        "0.10",
+        "--max-wave",
+        "28.0"
+      ],
+      "name": "both"
+    }
+  ],
+  "tools": [
+    "pahfit_mir",
+    "ir_linefit"
+  ],
+  "z": 0.184
+}

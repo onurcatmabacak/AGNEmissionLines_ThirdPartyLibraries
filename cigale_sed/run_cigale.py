@@ -35,10 +35,14 @@ def main():
     # template and let genconf add the module parameter sections.
     call(["-c", str(cfg_path), "init"])
     cfg = ConfigObj(str(cfg_path), encoding="utf-8")
-    cfg["data_file"] = "/app/input/photometry.txt"
+    data_file = Path("/app/input/photometry.txt")
+    cfg["data_file"] = str(data_file)
     cfg["parameters_file"] = ""
+    agn_model = os.environ.get("CIGALE_AGN_MODEL", "skirtor2016")
+    if agn_model not in ("skirtor2016", "fritz2006"):
+        raise SystemExit(f"unsupported CIGALE_AGN_MODEL={agn_model}")
     cfg["sed_modules"] = ["sfhdelayed", "bc03", "dustatt_modified_starburst",
-                          "dl2014", "skirtor2016", "redshifting"]
+                          "dl2014", agn_model, "redshifting"]
     cfg["analysis_method"] = "pdf_analysis"
     cfg["cores"] = "4"
     cfg.write()
@@ -92,9 +96,27 @@ def main():
             "temperature": [100.0],
             "emissivity": [1.6],
         },
+        "fritz2006": {
+            "r_ratio": [60.0],
+            "tau": [1.0, 3.0],
+            "beta": [-0.5],
+            "gamma": [4.0],
+            "opening_angle": [100.0],
+            "psy": [30.1, 70.1],
+            "disk_type": 1,
+            "delta": [-0.36],
+            "fracAGN": [0.1, 0.5, 0.9, 0.99],
+            "law": [0],
+            "EBV": [0.03],
+            "temperature": [100.0],
+            "emissivity": [1.6],
+        },
     }
     cfg = ConfigObj(str(cfg_path), encoding="utf-8")
     for module, params in grid.items():
+        if module not in (agn_model, "sfhdelayed", "bc03",
+                          "dustatt_modified_starburst", "dl2014"):
+            continue
         for key, value in params.items():
             cfg["sed_modules_params"][module][key] = value
     cfg["analysis_params"]["save_best_sed"] = True
@@ -102,7 +124,7 @@ def main():
     print("=== generated pcigale.ini sections ===")
     print(Path(cfg_path).read_text()[:4000])
     call(["-c", str(cfg_path), "run"])
-    plot_results(work)
+    plot_results(work, agn_model)
     return 0
 
 
@@ -125,7 +147,7 @@ def _f(row, key):
         return float("nan")
 
 
-def plot_results(work: Path):
+def plot_results(work: Path, agn_model: str = "skirtor2016"):
     """Plot observed photometry versus the CIGALE best-fit band fluxes."""
     obs = Table.read(work / "out" / "observations.fits")
     res = Table.read(work / "out" / "results.fits")
@@ -144,7 +166,7 @@ def plot_results(work: Path):
         ax.plot(x, ymod, "s", ms=5, color="C1", label="CIGALE best", zorder=4)
         ax.set_xscale("log")
         ax.set_yscale("log")
-        ax.set_xlabel("observed wavelength ($\mu$m)")
+        ax.set_xlabel(r"observed wavelength ($\mu$m)")
         ax.set_ylabel("flux density (mJy)")
         ax.grid(True, which="both", alpha=0.25)
         ax.set_title(
@@ -154,8 +176,16 @@ def plot_results(work: Path):
         )
         if i == 0:
             ax.legend(fontsize=8)
+        chi = {}
+        for b in bands:
+            err = _f(obs[i], b + "_err")
+            if np.isfinite(err) and err > 0:
+                chi[b] = ((_f(obs[i], b) - _f(res[i], "best." + b)) / err) ** 2
+        chi_opt = float(sum(chi.get(b, 0.0) for b in bands if b.startswith("sloan.")))
+        chi_wise = float(sum(chi.get(b, 0.0) for b in bands if b.startswith("wise.")))
         rows.append({
             "id": str(obs["id"][i]),
+            "agn_model": agn_model,
             "redshift": float(obs["redshift"][i]),
             "chi2": _f(res[i], "best.chi_square"),
             "reduced_chi2": _f(res[i], "best.reduced_chi_square"),
@@ -167,6 +197,9 @@ def plot_results(work: Path):
             "dust_luminosity_W": _f(res[i], "best.dust.luminosity"),
             "m_star_Msun": _f(res[i], "best.stellar.m_star"),
             "sfr_Msun_per_yr": _f(res[i], "best.sfh.sfr"),
+            "chi2_optical": chi_opt,
+            "chi2_wise": chi_wise,
+            "wise_outlier": bool(np.isfinite(chi_wise) and chi_wise > 3.0 * 4),
         })
     for ax in axes[len(obs):]:
         ax.axis("off")

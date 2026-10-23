@@ -29,7 +29,7 @@ def _figure(spec: Spectrum, rt: Route, rows: list[Measurement], out: Path):
                         f"{r.line}\n{r.component}", rotation=90, fontsize=6,
                         ha="right", va="top", color="C3")
     ax.set_xlabel("observed wavelength (um)")
-    ax.set_ylabel("flux (1e-17 erg s-1 cm-2 A-1)")
+    ax.set_ylabel(f"flux ({spec.flux_unit})")
     ax.set_title(f"{spec.object_id}  z={spec.z:.4f}  band={spec.band}  suites={','.join(rt.suites) or '-'}")
     ax.legend(loc="upper right", fontsize=8, frameon=False)
     fig.tight_layout()
@@ -45,6 +45,8 @@ def run_one(path: Path, outdir: Path, z=None, band=None, dry=False):
     stem = outdir / spec.object_id
     (stem.with_suffix(".route.json")).write_text(json.dumps({
         "object_id": spec.object_id, "z": spec.z, "band": spec.band,
+        "instrument": spec.instrument, "flux_unit": spec.flux_unit,
+        "native_flux_unit": spec.native_flux_unit,
         "status": rt.status, "suites": rt.suites, "resolution": rt.resolution,
         "wave_min_um": rt.wave_min, "wave_max_um": rt.wave_max,
         "reasons": rt.reasons,
@@ -64,11 +66,12 @@ def run_one(path: Path, outdir: Path, z=None, band=None, dry=False):
     csvp = stem.with_suffix(".measurements.csv")
     with csvp.open("w", newline="") as fh:
         w = csv.writer(fh)
-        w.writerow(["object_id", "z", "band", "line", "component", "flux_1e17",
+        w.writerow(["object_id", "z", "band", "flux_unit", "line", "component", "flux_1e17",
                     "flux_err", "flux_limit", "fwhm_kms", "fwhm_err", "center_um",
                     "ew_a", "snr", "detected", "status", "chi2_red", "n_pix"])
         for r in rows:
-            w.writerow([spec.object_id, spec.z, spec.band, r.line, r.component,
+            w.writerow([spec.object_id, spec.z, spec.band, spec.flux_unit,
+                        r.line, r.component,
                         r.flux, r.flux_err, r.flux_limit, r.fwhm_kms, r.fwhm_err,
                         r.center_um, r.ew_a, r.snr, int(r.detected), r.status,
                         r.chi2_red, r.n_pix])
@@ -90,7 +93,7 @@ def main(argv=None):
     args = p.parse_args(argv)
     files = [Path(f) for f in args.fits]
     if args.input_dir:
-        files += sorted(args.input_dir.glob("*.fits"))
+        files += sorted(args.input_dir.glob("*.fits")) + sorted(args.input_dir.glob("*.tbl"))
     if args.limit:
         files = files[:args.limit]
     if not files:

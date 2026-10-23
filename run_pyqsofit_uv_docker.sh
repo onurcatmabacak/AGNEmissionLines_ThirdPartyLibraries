@@ -9,6 +9,11 @@ mkdir -p "$OUT"
 exec docker run --rm \
   --user "$(id -u):$(id -g)" \
   -e MPLCONFIGDIR=/tmp/mpl \
+  -e PYQSOFIT_MC="${PYQSOFIT_MC:-0}" \
+  -e PYQSOFIT_MCMC="${PYQSOFIT_MCMC:-0}" \
+  -e PYQSOFIT_NSAMP="${PYQSOFIT_NSAMP:-50}" \
+  -e PYQSOFIT_ERR_FLOOR="${PYQSOFIT_ERR_FLOOR:-0}" \
+  -e PYQSOFIT_HOST="${PYQSOFIT_HOST:-0}" \
   -v "$(realpath "$IN")":/app/input:ro \
   -v "$(realpath "$OUT")":/app/output \
   pyqsofit_uv

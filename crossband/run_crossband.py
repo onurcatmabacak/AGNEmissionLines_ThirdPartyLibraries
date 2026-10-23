@@ -15,6 +15,8 @@ RATIOS = [
     ("OIII88/OIII5007", ["OIII88356", "OIII88", "[OIII]88"], ["OIII5007", "[OIII]5007"], (0.1, 2.0), "PDR/AGN"),
     ("NeIII/NeII", ["NeIII15555", "NeIII", "[NeIII]15.6"], ["NeII12814", "NeII", "[NeII]12.8"], (0.1, 5.0), "ionization"),
     ("SIII18.7/SIII33.5", ["SIII18713", "SIII18.7", "[SIII]18.7"], ["SIII33480", "SIII33.5", "[SIII]33.5"], (0.5, 5.0), "density/PDR"),
+    ("CII158/OI63", ["CII157741", "CII158", "[CII]158"], ["OI63184", "OI63", "[OI]63"], (1.0, 20.0), "PDR/AGN FIR"),
+    ("CII158/NII122", ["CII157741", "CII158", "[CII]158"], ["NII121898", "NII122", "[NII]122"], (1.0, 20.0), "PDR FIR"),
 ]
 
 
@@ -57,7 +59,8 @@ def main(argv=None):
             err = abs(ratio) * np.sqrt((num[1] / num[0]) ** 2 + (den[1] / den[0]) ** 2) if num[0] and num[1] >= 0 and den[1] >= 0 else np.nan
             rows.append({"object": obj, "ratio": name, "value": ratio, "err": err,
                          "expected_low": lo, "expected_high": hi, "note": note,
-                         "consistent": bool(np.isfinite(err) and lo <= ratio <= hi)})
+                         "consistent": bool(np.isfinite(err)
+                                            and lo * (1 - 1e-6) <= ratio <= hi * (1 + 1e-6))})
     out = args.output / "crossband_ratios.csv"
     with out.open("w", newline="") as fh:
         w = csv.DictWriter(fh, fieldnames=list(rows[0]) if rows else ["object", "ratio"])
