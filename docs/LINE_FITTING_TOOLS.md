@@ -16,6 +16,7 @@ CAFE, S3Fit, GANDALF, PAHFIT and the generic Gaussian fitters operate on
 | `cafe_line` | line | NIR–MIR | stellar/dust/AGN continua + PAH + H/atomic/molecular lines | LMFIT covariance + MC |
 | `s3fit_line` | line | UV–NIR | simultaneous spectrum + photometric SED, AGN/Fe II + multi-component lines | mock-spectrum MC |
 | `gandalf_line` | line | optical–NIR | pPXF stellar continuum + simultaneous Gaussian gas | MPFIT covariance/bootstrap |
+| `sdss_zline` | **official product** | optical | BOSS `speclinefit` narrow-line measurements from the `ZLINE` HDU | pipeline errors |
 | `galspec_line` | line | optical–NIR | Astropy continuum + Gaussian lines; reduced Hβ/[O III] window | `emcee` MCMC / dynesty / LSQ covariance |
 | `pyqsofitspec_line` | line | UV–optical | PyQSOFitSpec skew-normal components + Fe II/Balmer | parametric bootstrap |
 | `qgfit` | line | UV–optical | AGN power law + Fe II + host + multi-component lines | continuum MCMC; LSQ line errors |
@@ -57,12 +58,14 @@ fallback was used; the method is never mislabelled.
 
 ### Official SDSS / IFU and X-ray exclusions
 
-- **MaNGA DAP** and **LVM-DAP** require MaNGA/LVM IFU cubes and their DRP
-  products; they cannot be applied to single-fiber SDSS spectra.  They are
-  excluded from this matrix.  A future `manga_dap` adapter would need a MaNGA
-  cube, redshift, and the DRP `LOGRSS`/`LOGMAP` products.
-- The **SDSS spectroscopic pipeline** (`idlspec2d`) is a data-reduction
-  pipeline; DR18 spectra are already reduced.  It does not replace a line fit.
+- **MaNGA DAP** and **LVM-DAP** are IFU-survey pipelines.  The MaNGA low-level
+  `Sasuke.fit` path can consume one spectrum, but its line database has only
+  narrow multiplet-tied Gaussians (no broad lines/Fe II/Balmer continuum), so
+  it is a less capable duplicate of the existing fitters.  LVM's row-stacked
+  degenerate case loses the LVM science products.  Both are excluded.
+- The **SDSS spectroscopic pipeline** (`idlspec2d`) reduced these spectra; its
+  official **`ZLINE`** product is used directly as the `sdss_zline` anchor.
+  Re-running the IDL reduction is unnecessary.
 - **AMARU** public v0.1 is not the updated version and needs external
   EMILES/Fe II/Balmer templates; it is excluded until those are public.
 - **ELFO** and **AGNdecompose** are IFS/2-D image tools, not 1D AGN

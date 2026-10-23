@@ -16,6 +16,7 @@ from collections import defaultdict
 from pathlib import Path
 
 import numpy as np
+from astropy.io import fits
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
@@ -131,6 +132,50 @@ def read_standard(path: Path, source: str, tool: str, rows):
                 flux, err, fwhm, pick("snr", "snr_int"))
 
 
+def read_zline(path: Path, source: str, rows):
+    """Read the official SDSS ``ZLINE`` HDU and keep only covered lines.
+
+    ZLINE is the SDSS spectroscopic pipeline's own line-fit product.  The
+    H-alpha line is often at/beyond the red edge of these z~0.6 spectra, so a
+    rest-wavelength lookup is not enough; check the observed coverage first.
+    """
+    with fits.open(path, memmap=False) as hdul:
+        names = [h.name for h in hdul]
+        if "ZLINE" not in names:
+            return
+        # observed coverage from COADD/LOGLAM (or any table with LOGLAM)
+        lo = hi = None
+        for hdu in hdul:
+            if getattr(hdu, "columns", None) is None:
+                continue
+            cols = {c.lower() for c in hdu.columns.names}
+            if "loglam" in cols:
+                lam = 10.0 ** np.asarray(hdu.data["LOGLAM"], float)
+                lam = lam[np.isfinite(lam) & (lam > 0)]
+                if lam.size:
+                    lo, hi = float(lam.min()), float(lam.max())
+                    break
+        z = float(hdul[0].header.get("Z", 0.0))
+        d = hdul["ZLINE"].data
+        name_map = {
+            "H_beta": "hbeta", "[O_III] 5007": "oiii5007",
+            "[O_III] 4959": "oiii4959", "H_alpha": "halpha",
+            "[N_II] 6583": "nii6585", "[N_II] 6584": "nii6585",
+            "Mg_II 2799": "mgii", "Mg_II 2800": "mgii",
+        }
+        for i in range(len(d)):
+            ln = str(d["LINENAME"][i]).strip()
+            rest = float(d["LINEWAVE"][i])
+            area = float(d["LINEAREA"][i])
+            err = float(d["LINEAREA_ERR"][i])
+            sigma = float(d["LINESIGMA"][i])
+            if area <= 0 or err <= 0 or sigma <= 0:
+                continue
+            if lo is not None and not (lo <= rest * (1 + z) <= hi):
+                continue
+            add(rows, source, "sdss_zline", name_map.get(ln, ln), "total",
+                area, err, 2.354820045 * sigma)
+
 def load():
     rows = []
     for src in sorted(OUT.glob("*_z_*")):
@@ -142,6 +187,11 @@ def load():
             read_pyqsofit(p, source, rows)
         for p in (src / "ir_linefit").glob("*.measurements.csv"):
             read_ir(p, source, rows)
+        for spec in (ROOT / "inputs" / source / "raw").glob("spec-*.fits"):
+            try:
+                read_zline(spec, source, rows)
+            except Exception:
+                pass
         for tool, names in {
             "s3fit_line": ("s3fit_lines.csv", "s3fit_line.csv"),
             "cafe_line": ("cafe_lines.csv", "cafe_line.csv"),

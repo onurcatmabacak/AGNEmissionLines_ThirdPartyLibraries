@@ -9,9 +9,9 @@ event files.
 
 | code | type / input | verdict | reason / next step |
 |---|---|---|---|
-| **MaNGA DAP** (`sdss-mangadap` 4.5.0) | official SDSS IFU DAP; MaNGA `LOGRSS`/`LOGMAP` cubes | **exclude** | It cannot operate on single-fiber spectra. Add a `manga_dap` adapter only when a MaNGA cube + DRP products are ingested. |
-| **LVM-DAP** (`sdss/lvmdap`, pyPipe3D/pyFIT3D) | official SDSS-V LVM IFU DAP | **exclude** | LVM IFU data products required; no LVM input here. |
-| **SDSS spectroscopic pipeline** (`idlspec2d`) | data reduction (spectro1d/2d) | **exclude** | DR18 spectra are already reduced; this is not an emission-line fitter. |
+| **MaNGA DAP** (`sdss-mangadap` 4.5.0) | official SDSS IFU DAP; MaNGA `LOGRSS`/`LOGMAP` cubes | **exclude for production** | The survey path requires MaNGA datacubes. A documented low-level `Sasuke.fit` adapter can fit one spectrum, but its models are single-Gaussian/multiplet-tied narrow lines with no broad lines, Fe II or Balmer continuum; it would cost ~2 GB and duplicate `ir_linefit` with less AGN physics. Revisit only if MaNGA cubes are added. |
+| **LVM-DAP** (`sdss/lvmdap`, pyPipe3D/pyFIT3D) | official SDSS-V LVM IFU DAP | **exclude** | LVM IFU data products required; a row-stacked single spectrum is technically readable but all LVM binning/map products and the science case disappear. |
+| **SDSS spectroscopic pipeline** (`idlspec2d`) | data reduction + `speclinefit` | **exclude code; use product** | The spectra are already RUN2D v6_0_4 products. Their `ZLINE` HDU is the official line-fit product and is now included as the `sdss_zline` anchor in the comparison. The reduction code itself is not needed. |
 | **GalSpec** | community 1-D AGN/galaxy line fit | **implemented** | `galspec_line`; emcee MCMC on reduced Hβ/[O III] window; real SDSS fit. |
 | **PyQSOFitSpec** | community 1-D QSO line fit | **implemented** | `pyqsofitspec_line`; skew-normal profiles + 10-fit parametric bootstrap. |
 | **QGfit** | community 1-D AGN/host/Fe II line fit | **implemented** | `qgfit`; real SDSS fit; short continuum MCMC and LSQ line errors. |
@@ -22,19 +22,27 @@ event files.
 | **pyspeckit** | general 1-D line fitting | **exclude** | Redundant with GLEAM/BADASS/local-Gaussian/PyQSOFit; no AGN-specific advantage. |
 | **HEASOFT** | X-ray data reduction/analysis | **exclude from line matrix** | X-ray branch; no event/spectrum inputs here. See below. |
 
-## Official SDSS pipelines: why not used
+## Official SDSS pipelines: what is and is not usable
 
-`sdss-mangadap` is the MaNGA Data Analysis Pipeline.  Its `EmissionLineFit`
-machinery expects MaNGA DRP `LOGRSS`/`LOGMAP` data with the MaNGA WCS and
-instrument dispersion.  A single-fiber SDSS spectrum has no IFU dimensions and
-no MaNGA DRP provenance, so running it would require inventing an IFU axis.
+`sdss-mangadap` is the MaNGA Data Analysis Pipeline.  Its survey path requires
+`SpatiallyBinnedSpectra`/MaNGA datacubes.  The upstream documentation also
+provides a low-level *fit one spectrum* path (`Sasuke.fit`), which can consume
+the DR18 `COADD` arrays if a BOSS LSF (`obj_sres`) is synthesized.  It is still
+excluded: the DAP line database contains single-Gaussian, multiplet-tied
+narrow lines, with no broad-line, Fe II or Balmer-continuum components — the
+dominant physics in these QSOs.  A 1-D adapter would be a less capable duplicate
+of `ir_linefit`/`pyqsofit_uv` at ~2 GB image cost.
 
 `lvmdap` is the SDSS-V Local Volume Mapper DAP built on `pyPipe3D`/`pyFIT3D`.
-It likewise expects LVM IFU cubes and LVM-specific calibration.
+It expects LVM IFU cubes; a row-stacked spectrum is technically readable but
+the LVM binning, maps and calibration are meaningless.
 
-`idlspec2d` is the SDSS spectroscopic **data-reduction** pipeline (spectro2d,
-spectro1d, and their IDL/Python wrappers).  It produces calibrated spectra; it
-does not replace a physical AGN emission-line decomposition.
+`idlspec2d` is the SDSS BOSS data-reduction pipeline.  Its `pro/spec1d/speclinefit.pro`
+produces the `ZLINE` HDU found in our `spec-*.fits` files.  We do **not** re-run
+the IDL reduction; we use the already-produced **`ZLINE`** measurements as the
+official SDSS anchor in `pipeline/compare_line_tools.py`.  For `04592649654`,
+ZLINE gives Hβ/[O III] 5007 = **1.57 ± 0.014**, compared with 1.83–4.00 from
+the independent fitters.
 
 If a MaNGA/LVM branch is added later, the correct design is:
 
