@@ -14,7 +14,7 @@ The two families are deliberately separate:
 | family | tools | output |
 |---|---|---|
 | Broad-band SED / torus | `cigale_sed`, `agnfitter_sed` | stellar mass, AGN fraction, torus luminosity, model-family spread |
-| Spectral line fitting | `pyqsofit_uv`, `pyqsofitspec_line`, `ir_linefit`, `nir_linefit`, `fir_linefit`, `pahfit_mir`, `cafe_line`, `s3fit_line`, `gandalf_line`, `galspec_line`, `crossband` | line flux, FWHM, velocity, equivalent width, ratios |
+| Spectral line fitting | `pyqsofit_uv`, `pyqsofitspec_line`, `ir_linefit`, `nir_linefit`, `fir_linefit`, `pahfit_mir`, `cafe_line`, `s3fit_line`, `gandalf_line`, `galspec_line`, `qgfit`, `sheap_line`, `crossband` | line flux, FWHM, velocity, equivalent width, ratios |
 | Host/continuum decomposition | `ppxf_host` | stellar velocity dispersion, host fraction |
 
 `gandalf_line/default/` is a complete tool configuration rather than a tuning
@@ -43,6 +43,8 @@ the broad-band SED with templates.
 | `cafe_line` | LMFIT covariance + post-fit multivariate-normal MC |
 | `s3fit_line` | least-squares + mock-spectrum Monte Carlo (`num_mocks`) |
 | `galspec_line` | `emcee` posterior (GalSpec `MCMC_Fit`); optional `dynesty` nested sampling; LSQ covariance for auxiliary windows |
+| `qgfit` | short continuum `emcee` MCMC; line LSQ covariance |
+| `sheap_line` | JAX optimisation + covariance MC (not MCMC) |
 | `gandalf_line` | native MPFIT covariance/`FOR_ERRORS`; fallback bootstrap if GDL unavailable |
 | `ir_linefit`/`nir_linefit`/`fir_linefit` | covariance from `least_squares`/`curve_fit` |
 | `ppxf_host` | pPXF formal errors |
