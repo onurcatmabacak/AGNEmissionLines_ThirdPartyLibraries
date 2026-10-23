@@ -41,7 +41,7 @@ SPITZER_IRS = ",".join([
 ])
 ALL_TOOLS = ("ir_linefit", "pyqsofit_uv", "ppxf_host", "gandalf_line",
              "nir_linefit", "pahfit_mir", "fir_linefit", "crossband",
-             "cigale_sed", "agnfitter_sed")
+             "cigale_sed", "agnfitter_sed", "s3fit_line")
 
 
 def log(msg: str):
@@ -203,6 +203,22 @@ def tool_agnfitter(src: dict, out: Path, logp: Path) -> int:
     return run([str(ROOT / "Pipelines" / "run_agnfitter_sed_docker.sh"), str(inp), str(out)], logp)
 
 
+def tool_s3fit(src: dict, out: Path, logp: Path, config: str | None = None,
+               n_mocks: int | None = None, mode: str | None = None) -> int:
+    cmd = [str(ROOT / "Pipelines" / "run_s3fit_line_docker.sh"),
+           str(Path(src["_path"])), str(out)]
+    if src.get("z") is not None:
+        cmd += ["--z", str(src["z"])]
+    if config:
+        cmd += ["--config", config]
+    if n_mocks is not None:
+        cmd += ["--n-mocks", str(n_mocks)]
+    if mode:
+        cmd += ["--mode", mode]
+    # The runner auto-mounts the sibling pyqsofit_uv output when available.
+    return run(cmd, logp)
+
+
 def tool_cigale(src: dict, out: Path, logp: Path, models: list[str]) -> int:
     inp = Path(src["_path"]) / "photometry"
     if not (inp / "photometry.txt").exists():
@@ -256,6 +272,12 @@ def main(argv=None):
     p.add_argument("--dry-run", action="store_true")
     p.add_argument("--cigale-models", default="skirtor2016",
                    help="comma-separated CIGALE AGN models")
+    p.add_argument("--s3fit-config", default=None,
+                   help="S3Fit config directory (default: configs/s3fit_line/default)")
+    p.add_argument("--s3fit-n-mocks", type=int, default=None,
+                   help="S3Fit Monte-Carlo mock spectra (default from fit_config.json: 10)")
+    p.add_argument("--s3fit-mode", choices=("spec+sed", "spec"), default=None,
+                   help="S3Fit fitting mode (default from fit_config.json)")
     args = p.parse_args(argv)
     if args.list:
         for s in iter_sources():
@@ -295,6 +317,9 @@ def main(argv=None):
                 "cigale_sed": lambda: tool_cigale(src, out, logp,
                                                    [x.strip() for x in args.cigale_models.split(",") if x.strip()]),
                 "agnfitter_sed": lambda: tool_agnfitter(src, out, logp),
+                "s3fit_line": lambda: tool_s3fit(src, out, logp,
+                                                 args.s3fit_config, args.s3fit_n_mocks,
+                                                 args.s3fit_mode),
             }[tool]
             try:
                 r = fn()
