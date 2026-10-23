@@ -195,6 +195,8 @@ def ratios(rows):
             fa, ea = ta
             fb, eb = tb
             val = fa / fb
+            if not (0.02 <= val <= 50.0):
+                continue
             err = abs(val) * math.sqrt((ea / fa) ** 2 + (eb / fb) ** 2) if fa and eb >= 0 else None
             out.append(dict(source=source, tool=tool, ratio=label, value=val, err=err))
     return out
