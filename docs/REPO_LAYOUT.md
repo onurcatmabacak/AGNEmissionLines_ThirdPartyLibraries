@@ -11,6 +11,7 @@ pipeline/                Python orchestration, layout helpers, input preparation
 Tools/                   Dockerized tool source and Dockerfiles
 pipeline_ir/             generic IR line router/fitter
 pyqsofit_uv/ ppxf_host/  UV/host tool images
+Tools/gandalf_line/      native GANDALF v1.5 under GDL
 nir_linefit/ pahfit_mir/ NIR/MIR tool images
 fir_linefit/ crossband/  FIR/ratio tool images
 Tools/cigale_sed/        CIGALE SED/torus image

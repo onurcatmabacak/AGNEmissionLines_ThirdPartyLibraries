@@ -11,6 +11,7 @@ Dockerized fitting engines and their Dockerfiles.  See `Pipelines/build_images.s
 | `pipeline_ir/` | `ir_linefit` |
 | `pyqsofit_uv/` | `pyqsofit_uv` |
 | `ppxf_host/` | `ppxf_host` |
+| `gandalf_line/` | `gandalf_line` (native GANDALF v1.5 under GDL) |
 | `nir_linefit/` | `nir_linefit` |
 | `pahfit_mir/` | `pahfit_mir` |
 | `fir_linefit/` | `fir_linefit` |

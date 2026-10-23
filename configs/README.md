@@ -16,6 +16,14 @@ The two families are deliberately separate:
 | Spectral line fitting | `pyqsofit_uv`, `ir_linefit`, `nir_linefit`, `fir_linefit`, `pahfit_mir`, `cafe_line`, `s3fit_line`, `gandalf_line`, `crossband` | line flux, FWHM, velocity, equivalent width, ratios |
 | Host/continuum decomposition | `ppxf_host` | stellar velocity dispersion, host fraction |
 
+`gandalf_line/default/` is a complete tool configuration rather than a tuning
+variant: it contains the GANDALF emission-line setup and the fit controls
+(`config.json`). See `configs/gandalf_line/README.md`.
+
+Legacy `pipeline/auto_tune.py` (wrapper `analyze.sh`) generated variants under
+`configs/<tool>/auto_<tool>_<knob values>/`; those search artifacts were removed
+during the layout cleanup.
+
 CIGALE/AGNfitter must **not** be described as emission-line fitters; they fit
 the broad-band SED with templates.
 

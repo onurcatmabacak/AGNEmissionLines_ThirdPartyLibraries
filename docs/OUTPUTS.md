@@ -21,6 +21,7 @@ Tools and expected files:
 | `ir_linefit` | `*.route.json`, `*.measurements.csv`, `*.fit.png/pdf` |
 | `pyqsofit_uv` | `result.png/pdf`, `output.fits`, `qsopar.fits`, `pyqsofit_model.csv`, `pyqsofit_lines.csv` |
 | `ppxf_host` | `ppxf_fit.png/pdf`, `ppxf_model.csv`, `ppxf_result.fits`, `ppxf_summary.json` |
+| `gandalf_line` | `gandalf_lines.csv`, `gandalf_fit.png/pdf`, `gandalf_uncertainty.png/pdf`, `gandalf_fit.fits`, `gandalf_input.fits`, `gandalf_model.csv`, `run.json` |
 | `nir_linefit` | route/measurements/figure for the NIR spectrum |
 | `pahfit_mir` | `pahfit_fit.png/pdf`, `pahfit_features.csv`, `pahfit_output.ecsv`, `pahfit_summary.json`; PDS 456 has `short/`, `long/`, `both/` |
 | `fir_linefit` | `*.fir_lines.csv`, `*.fir_fit.png/pdf`, `*.fir_summary.json` |

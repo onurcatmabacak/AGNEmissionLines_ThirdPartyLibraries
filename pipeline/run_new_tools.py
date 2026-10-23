@@ -39,9 +39,9 @@ SPITZER_IRS = ",".join([
     "spitzer.irs.sl.2", "spitzer.irs.sl.1",
     "spitzer.irs.ll.2", "spitzer.irs.ll.1",
 ])
-ALL_TOOLS = ("ir_linefit", "pyqsofit_uv", "ppxf_host", "nir_linefit",
-             "pahfit_mir", "fir_linefit", "crossband", "cigale_sed",
-             "agnfitter_sed")
+ALL_TOOLS = ("ir_linefit", "pyqsofit_uv", "ppxf_host", "gandalf_line",
+             "nir_linefit", "pahfit_mir", "fir_linefit", "crossband",
+             "cigale_sed", "agnfitter_sed")
 
 
 def log(msg: str):
@@ -93,6 +93,11 @@ def tool_pyqsofit(src: dict, out: Path, logp: Path) -> int:
 def tool_ppxf(src: dict, out: Path, logp: Path) -> int:
     inp = prep_pyqsofit(src)
     return run([str(ROOT / "Pipelines" / "run_ppxf_host_docker.sh"), str(inp), str(out)], logp)
+
+
+def tool_gandalf(src: dict, out: Path, logp: Path) -> int:
+    inp = prep_pyqsofit(src)
+    return run([str(ROOT / "Pipelines" / "run_gandalf_line_docker.sh"), str(inp), str(out), str(src["key"])], logp)
 
 
 def tool_nir(src: dict, out: Path, logp: Path) -> int:
@@ -274,6 +279,7 @@ def main(argv=None):
                 "ir_linefit": lambda: tool_ir(src, out, logp),
                 "pyqsofit_uv": lambda: tool_pyqsofit(src, out, logp),
                 "ppxf_host": lambda: tool_ppxf(src, out, logp),
+                "gandalf_line": lambda: tool_gandalf(src, out, logp),
                 "nir_linefit": lambda: tool_nir(src, out, logp),
                 "pahfit_mir": lambda: tool_pahfit(src, out, logp),
                 "fir_linefit": lambda: tool_fir(src, out, logp),
