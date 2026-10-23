@@ -2,7 +2,7 @@
 
 Central, reviewable configuration for every production tool.  Each tool has a
 `configs/<tool>/<variant>/` directory.  New line-fit tools (`cafe_line`,
-`s3fit_line`, `gandalf_line`) consume these files directly through `--config`;
+`s3fit_line`, `gandalf_line`, `galspec_line`) consume these files directly through `--config`;
 older tools use the same values as their documented defaults and their code
 contains the executable implementation.
 
@@ -13,12 +13,15 @@ The two families are deliberately separate:
 | family | tools | output |
 |---|---|---|
 | Broad-band SED / torus | `cigale_sed`, `agnfitter_sed` | stellar mass, AGN fraction, torus luminosity, model-family spread |
-| Spectral line fitting | `pyqsofit_uv`, `ir_linefit`, `nir_linefit`, `fir_linefit`, `pahfit_mir`, `cafe_line`, `s3fit_line`, `gandalf_line`, `crossband` | line flux, FWHM, velocity, equivalent width, ratios |
+| Spectral line fitting | `pyqsofit_uv`, `ir_linefit`, `nir_linefit`, `fir_linefit`, `pahfit_mir`, `cafe_line`, `s3fit_line`, `gandalf_line`, `galspec_line`, `crossband` | line flux, FWHM, velocity, equivalent width, ratios |
 | Host/continuum decomposition | `ppxf_host` | stellar velocity dispersion, host fraction |
 
 `gandalf_line/default/` is a complete tool configuration rather than a tuning
 variant: it contains the GANDALF emission-line setup and the fit controls
 (`config.json`). See `configs/gandalf_line/README.md`.
+`galspec_line/default/` is likewise a complete configuration: main/aux windows,
+continuum and Fe II, Gaussian component bounds, fitter, error floor and
+emcee/dynesty controls. See `configs/galspec_line/README.md`.
 
 Legacy `pipeline/auto_tune.py` (wrapper `analyze.sh`) generated variants under
 `configs/<tool>/auto_<tool>_<knob values>/`; those search artifacts were removed
@@ -37,6 +40,7 @@ the broad-band SED with templates.
 | `pahfit_mir` | least-squares; MC uncertainty/refit option |
 | `cafe_line` | LMFIT covariance + post-fit multivariate-normal MC |
 | `s3fit_line` | least-squares + mock-spectrum Monte Carlo (`num_mocks`) |
+| `galspec_line` | `emcee` posterior (GalSpec `MCMC_Fit`); optional `dynesty` nested sampling; LSQ covariance for auxiliary windows |
 | `gandalf_line` | native MPFIT covariance/`FOR_ERRORS`; fallback bootstrap if GDL unavailable |
 | `ir_linefit`/`nir_linefit`/`fir_linefit` | covariance from `least_squares`/`curve_fit` |
 | `ppxf_host` | pPXF formal errors |
@@ -57,6 +61,7 @@ configs/
   cafe_line/default/...
   s3fit_line/default/...
   gandalf_line/default/...
+  galspec_line/default/config.json
   crossband/default/config.json
   ppxf_host/default/config.json
   cigale_sed/{skirtor2016,fritz2006}/config.json

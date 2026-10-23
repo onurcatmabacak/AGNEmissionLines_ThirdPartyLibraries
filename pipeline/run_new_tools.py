@@ -41,7 +41,7 @@ SPITZER_IRS = ",".join([
 ])
 ALL_TOOLS = ("ir_linefit", "pyqsofit_uv", "ppxf_host", "gandalf_line",
              "nir_linefit", "pahfit_mir", "fir_linefit", "cafe_line", "crossband",
-             "cigale_sed", "agnfitter_sed", "s3fit_line")
+             "cigale_sed", "agnfitter_sed", "s3fit_line", "galspec_line")
 
 
 def log(msg: str):
@@ -98,6 +98,19 @@ def tool_ppxf(src: dict, out: Path, logp: Path) -> int:
 def tool_gandalf(src: dict, out: Path, logp: Path) -> int:
     inp = prep_pyqsofit(src)
     return run([str(ROOT / "Pipelines" / "run_gandalf_line_docker.sh"), str(inp), str(out), str(src["key"])], logp)
+
+
+def tool_galspec(src: dict, out: Path, logp: Path, config: str | None = None,
+                 sampler: str | None = None) -> int:
+    cmd = [str(ROOT / "Pipelines" / "run_galspec_line_docker.sh"),
+           str(Path(src["_path"])), str(out), "--object", str(src["key"])]
+    if src.get("z") is not None:
+        cmd += ["--z", str(src["z"])]
+    if config:
+        cmd += ["--config", config]
+    if sampler:
+        cmd += ["--sampler", sampler]
+    return run(cmd, logp)
 
 
 def tool_cafe(src: dict, out: Path, logp: Path) -> int:
@@ -289,6 +302,10 @@ def main(argv=None):
                    help="S3Fit Monte-Carlo mock spectra (default from fit_config.json: 10)")
     p.add_argument("--s3fit-mode", choices=("spec+sed", "spec"), default=None,
                    help="S3Fit fitting mode (default from fit_config.json)")
+    p.add_argument("--galspec-config", default=None,
+                   help="GalSpec config directory (default: configs/galspec_line/default)")
+    p.add_argument("--galspec-sampler", choices=("mcmc", "nested", "lsq"), default=None,
+                   help="GalSpec sampling mode override")
     args = p.parse_args(argv)
     if args.list:
         for s in iter_sources():
@@ -321,6 +338,9 @@ def main(argv=None):
                 "pyqsofit_uv": lambda: tool_pyqsofit(src, out, logp),
                 "ppxf_host": lambda: tool_ppxf(src, out, logp),
                 "gandalf_line": lambda: tool_gandalf(src, out, logp),
+                "galspec_line": lambda: tool_galspec(src, out, logp,
+                                                     args.galspec_config,
+                                                     args.galspec_sampler),
                 "cafe_line": lambda: tool_cafe(src, out, logp),
                 "nir_linefit": lambda: tool_nir(src, out, logp),
                 "pahfit_mir": lambda: tool_pahfit(src, out, logp),

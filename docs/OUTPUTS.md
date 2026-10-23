@@ -27,6 +27,7 @@ Tools and expected files:
 | `pahfit_mir` | `pahfit_fit.png/pdf`, `pahfit_features.csv`, `pahfit_lines.csv`, `pahfit_output.ecsv`, `pahfit_summary.json`, MC products; PDS 456 has `short/`, `long/`, `both/`, `short_covariance/` |
 | `cafe_line` | `cafe_fit.png/pdf`, `cafe_lines.csv`, `cafe_key_lines.csv`, `cafe_pah.csv`, `cafe_uncertainties.csv`, `cafe_uncertainty.png`, `run.json` |
 | `s3fit_line` | `s3fit_fit.png`, `s3fit_mc.png`, `s3fit_lines.csv`, `s3fit_output.npz`, `pyqsofit_comparison.csv`, `run.json` |
+| `galspec_line` | `galspec_lines.csv`, `galspec_fit.png/pdf`, `galspec_uncertainty.png/pdf`, `galspec_corner.png/pdf`, `galspec_model.csv`, `galspec_mcmc.npz`, `galspec_comparison.csv`, `config.effective.json`, `run.json` |
 | `fir_linefit` | `*.fir_lines.csv`, `*.fir_fit.png/pdf`, `*.fir_summary.json` |
 | `crossband` | `crossband_ratios.csv`, `crossband_summary.json`, `crossband_ratios.png/pdf` |
 | `cigale_sed` | `model_family.csv`, `model_family_spread.json`, and `skirtor2016/` + `fritz2006/` subdirectories with CIGALE outputs |
