@@ -10,6 +10,7 @@ Dockerized fitting engines and their Dockerfiles.  See `Pipelines/build_images.s
 | `Gleam/` | `gleam` |
 | `pipeline_ir/` | `ir_linefit` |
 | `pyqsofit_uv/` | `pyqsofit_uv` |
+| `pyqsofitspec_line/` | `pyqsofitspec_line` (PyQSOFitSpec skew-normal + parametric bootstrap) |
 | `ppxf_host/` | `ppxf_host` |
 | `gandalf_line/` | `gandalf_line` (native GANDALF v1.5 under GDL) |
 | `nir_linefit/` | `nir_linefit` |

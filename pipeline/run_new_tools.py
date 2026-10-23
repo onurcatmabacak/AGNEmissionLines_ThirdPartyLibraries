@@ -39,7 +39,7 @@ SPITZER_IRS = ",".join([
     "spitzer.irs.sl.2", "spitzer.irs.sl.1",
     "spitzer.irs.ll.2", "spitzer.irs.ll.1",
 ])
-ALL_TOOLS = ("ir_linefit", "pyqsofit_uv", "ppxf_host", "gandalf_line",
+ALL_TOOLS = ("ir_linefit", "pyqsofit_uv", "pyqsofitspec_line", "ppxf_host", "gandalf_line",
              "nir_linefit", "pahfit_mir", "fir_linefit", "cafe_line", "crossband",
              "cigale_sed", "agnfitter_sed", "s3fit_line")
 
@@ -88,6 +88,18 @@ def tool_ir(src: dict, out: Path, logp: Path) -> int:
 def tool_pyqsofit(src: dict, out: Path, logp: Path) -> int:
     inp = prep_pyqsofit(src)
     return run([str(ROOT / "Pipelines" / "run_pyqsofit_uv_docker.sh"), str(inp), str(out)], logp)
+
+
+def tool_pyqsofitspec(src: dict, out: Path, logp: Path, nboot: int | None = None,
+                      config: str | None = None) -> int:
+    """PyQSOFitSpec bootstrap line fit (skew-normal profiles) on the prepared spectrum."""
+    inp = prep_pyqsofit(src)
+    cmd = [str(ROOT / "Pipelines" / "run_pyqsofitspec_line_docker.sh"),
+           str(inp), str(out), "--name", str(src["name"]), "--z", str(src["z"])]
+    cmd += ["--config", config or str(ROOT / "configs" / "pyqsofitspec_line" / "default")]
+    if nboot is not None:
+        cmd += ["--nboot", str(nboot)]
+    return run(cmd, logp)
 
 
 def tool_ppxf(src: dict, out: Path, logp: Path) -> int:
@@ -283,6 +295,10 @@ def main(argv=None):
     p.add_argument("--dry-run", action="store_true")
     p.add_argument("--cigale-models", default="skirtor2016",
                    help="comma-separated CIGALE AGN models")
+    p.add_argument("--pyqsofitspec-config", default=None,
+                   help="PyQSOFitSpec config directory (default: configs/pyqsofitspec_line/default)")
+    p.add_argument("--pyqsofitspec-nboot", type=int, default=None,
+                   help="PyQSOFitSpec bootstrap realisations (default from config.json: 10)")
     p.add_argument("--s3fit-config", default=None,
                    help="S3Fit config directory (default: configs/s3fit_line/default)")
     p.add_argument("--s3fit-n-mocks", type=int, default=None,
@@ -319,6 +335,9 @@ def main(argv=None):
             fn = {
                 "ir_linefit": lambda: tool_ir(src, out, logp),
                 "pyqsofit_uv": lambda: tool_pyqsofit(src, out, logp),
+                "pyqsofitspec_line": lambda: tool_pyqsofitspec(src, out, logp,
+                                                               args.pyqsofitspec_nboot,
+                                                               args.pyqsofitspec_config),
                 "ppxf_host": lambda: tool_ppxf(src, out, logp),
                 "gandalf_line": lambda: tool_gandalf(src, out, logp),
                 "cafe_line": lambda: tool_cafe(src, out, logp),
