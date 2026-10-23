@@ -43,7 +43,7 @@ per-realization line fluxes.  This is labelled MC, not MCMC.
 | tool | run | realizations | method | figure |
 |---|---|---:|---|---|
 | PyQSOFit | `04592649654` | 100 | MC error-array resampling | `outputs/04592649654_z_0.5874/pyqsofit/mc/pyqsofit_mc.png` |
-| S3Fit | `04592649654` | 3 (10-run queued as `s3fit_line/mc10`) | mock spectra | `outputs/04592649654_z_0.5874/s3fit_line/s3fit_mc.png` |
+| S3Fit | `04592649654` | 3 | mock spectra (fast demo) | `outputs/04592649654_z_0.5874/s3fit_line/s3fit_mc.png` |
 | CAFE | PDS 456 | 200 | LMFIT covariance multivariate normal | `outputs/PDS456_z_0.1840/cafe_line/cafe_uncertainty.png` |
 | GANDALF | `04592649654` | formal errors | GDL/MPFIT `FOR_ERRORS=1` | `outputs/04592649654_z_0.5874/gandalf_line/gandalf_uncertainty.png` |
 | PAHFIT | PDS 456 short, NGC 4151, VV114 | 100 each | bootstrap/covariance | `outputs/pahfit_mc_comparison.png` |
