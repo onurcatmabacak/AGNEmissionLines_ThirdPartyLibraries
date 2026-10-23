@@ -13,7 +13,7 @@ The two families are deliberately separate:
 | family | tools | output |
 |---|---|---|
 | Broad-band SED / torus | `cigale_sed`, `agnfitter_sed` | stellar mass, AGN fraction, torus luminosity, model-family spread |
-| Spectral line fitting | `pyqsofit_uv`, `ir_linefit`, `nir_linefit`, `fir_linefit`, `pahfit_mir`, `cafe_line`, `s3fit_line`, `gandalf_line`, `crossband` | line flux, FWHM, velocity, equivalent width, ratios |
+| Spectral line fitting | `pyqsofit_uv`, `pyqsofitspec_line`, `ir_linefit`, `nir_linefit`, `fir_linefit`, `pahfit_mir`, `cafe_line`, `s3fit_line`, `gandalf_line`, `crossband` | line flux, FWHM, velocity, equivalent width, ratios |
 | Host/continuum decomposition | `ppxf_host` | stellar velocity dispersion, host fraction |
 
 `gandalf_line/default/` is a complete tool configuration rather than a tuning
@@ -32,6 +32,7 @@ the broad-band SED with templates.
 | tool | statistical method |
 |---|---|
 | `pyqsofit_uv` | covariance; optional MC resampling and `emcee` MCMC (`PYQSOFIT_MC`, `PYQSOFIT_MCMC`) |
+| `pyqsofitspec_line` | parametric bootstrap: `flux + N(0, err)` refit, mean/std over `nboot_fit` (no covariance/MC inside a fit) |
 | `agnfitter_sed` | `ultranest` nested sampling (Bayesian posterior) |
 | `cigale_sed` | `pdf_analysis` Bayesian likelihood/posterior; not MCMC |
 | `pahfit_mir` | least-squares; MC uncertainty/refit option |
@@ -48,6 +49,7 @@ the broad-band SED with templates.
 configs/
   pyqsofit/uv/main.py              # executable
   pyqsofit/uv/config.json          # effective settings snapshot
+  pyqsofitspec_line/default/config.json  # executable line table + bootstrap controls
   badass/{best,nbasin20}/main.py
   ...
   ir_linefit/default/config.json
