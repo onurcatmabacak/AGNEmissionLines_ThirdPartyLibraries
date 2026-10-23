@@ -27,6 +27,67 @@ The runner accepts `--config DIR` (default `configs/s3fit_line/default`),
 the output directory, it is mounted read-only automatically and
 `pyqsofit_comparison.csv` is produced.
 
+## Committed demonstration run (fast mode)
+
+The committed output is
+
+```text
+outputs/04592649654_z_0.5874/s3fit_line/
+```
+
+and was produced with the **`configs/s3fit_line/smoke/`** configuration, not
+the full default `spec+sed` configuration:
+
+```bash
+bash Pipelines/run_s3fit_line_docker.sh \
+  inputs/04592649654_z_0.5874 outputs/04592649654_z_0.5874/s3fit_line \
+  --config configs/s3fit_line/smoke --n-mocks 3 --threads 3
+```
+
+Measured on the 8-core host:
+
+| quantity | value |
+|---|---:|
+| image size | 730 MB |
+| wall time, whole command | 15m 45.8 s |
+| `main_fit()` wall time | 936.95 s |
+| original-data attempts | 3 (161.5 + 237.6 + 168.6 s); last accepted |
+| MC wall time (3 mocks, 3 threads) | 369.3 s |
+| MC loop-time sum | 996.6 s |
+| reduced chi2, original | 4.761 |
+| reduced chi2, mocks | 3.445 +/- 0.074 (3 loops) |
+| detected total lines (S/N >= 3) | 13 / 14 |
+| H-beta total flux | 2.761e-14 erg s-1 cm-2 |
+| [O III] 5007 total flux | 1.507e-14 erg s-1 cm-2 |
+| H-beta / PyQSOFit | 0.950 |
+| [O III] 5007 / PyQSOFit | 1.018 |
+| Mg II 2796+2804 / PyQSOFit | 0.697 |
+
+The 3-mock MC is intentionally small; the histogram figure is a demonstration
+of the machinery, not a converged uncertainty distribution.
+
+**Exactly what was disabled/reduced for this run** (all recorded in
+`run.json` -> `scope`):
+
+* `mode: spec` — **the photometric spectrum+SED step was not run**; this is a
+  pure-spectrum line fit.
+* `torus.enable: false` — SKIRTOR torus disabled.
+* No host-galaxy stellar SSP term (the normal QSO mode).
+* H-alpha, [N II] 6548/6585, [S II] 6718/6733 removed from the fast line list
+  because they are outside the SDSS coverage of both validation targets
+  (z=0.587: rest ~2250-6510 A; z=0.990: rest ~1790-5230 A).
+* `if_run_init_annealing: false` — dual-annealing global search disabled.
+* `nlfit_ntry_max: 1` — one nonlinear try per stage.
+* `accept_chi_sq: 10` — prevents the 3x recycle triggered by chi2 > 3.
+* `n_mocks: 3`, `threads: 3` — not the default 10 mocks.
+
+The **default** `configs/s3fit_line/default/` config still describes the full
+AGN+Fe II+Balmer+torus+lines, spectrum+SED, 10-mock fit.  It is much slower:
+the first pure-spectrum loop with the default controls took 1161 s and was
+recycled 3 times (19m 29s for one 0-mock fit), so the full spec+SED 10-mock
+mode was not attempted within the smoke-test budget.  Do not treat the
+committed `smoke` run as that full fit.
+
 ## Inputs
 
 * `inputs/<source>_z_<z>/raw/spec-*.fits` — SDSS DR18 `COADD` table
@@ -121,11 +182,14 @@ parameters is written instead.  Set `"save_native_pickle": true` or pass
 
 ```text
 configs/s3fit_line/default/
-  fit_config.json       mode, n_mocks, fitting controls, photometry calibration
-  model_config.json     mods (agn/torus/line) + root_info
+  fit_config.json       full spec+sed, 10 mocks, annealing on
+  model_config.json     agn/torus/line registry
   agn_config.json       powerlaw + Fe II + Balmer continuum components
   torus_config.json     SKIRTOR dust component
   line_config.json      NLR and BLR components + line lists
+
+configs/s3fit_line/smoke/
+  same files, with the documented fast pure-spectrum reductions listed above
 ```
 
 `model_config.json` may reference the component JSON files by name; the

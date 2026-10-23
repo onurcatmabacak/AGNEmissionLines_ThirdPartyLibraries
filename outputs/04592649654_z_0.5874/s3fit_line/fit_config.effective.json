@@ -1,0 +1,57 @@
+{
+  "mode": "spec",
+  "n_mocks": 3,
+  "seed": 42,
+  "threads": 3,
+  "spec_wave_medium": "vacuum",
+  "spec_flux_unit": "erg s-1 cm-2 angstrom-1",
+  "phot_flux_unit": "mJy",
+  "phot_trans_dir": "filters",
+  "sed_wave_num": 3000,
+  "spec_valid_range": [
+    [
+      3650.0,
+      10300.0,
+      "angstrom",
+      "obs"
+    ]
+  ],
+  "spec_invalid_range": null,
+  "phot_calib_b": null,
+  "fit_space": "log",
+  "examine_result": true,
+  "accept_chi_sq": 10.0,
+  "nlfit_ntry_max": 1,
+  "nllsq_max_nfev": 5000,
+  "conv_nbin_max": 5,
+  "if_run_init_annealing": false,
+  "da_niter_max": 10,
+  "perturb_scale": 0.02,
+  "use_pyneb": false,
+  "save_native_pickle": false,
+  "native_pickle_max_mb": 25,
+  "mc_plot_lines": [
+    "H-beta",
+    "[O III]:5008",
+    "H-gamma"
+  ],
+  "_comment": "FAST SMOKE/LINE MODE. Pure spectrum only: no photometric SED step, torus disabled, dual-annealing global search disabled, one nonlinear try, accept_chi_sq=10 to prevent 3x recycle. H-alpha/[N II]/[S II] removed because they are outside the SDSS coverage of both validation targets. This is a documented scope/control reduction, not a full spec+SED fit.",
+  "comparison_lines": {
+    "H-beta": [
+      "Hb_br",
+      "Hb_na"
+    ],
+    "OIII5007": [
+      "OIII5007w",
+      "OIII5007c"
+    ],
+    "MgII": [
+      "MgII_br",
+      "MgII_na"
+    ],
+    "CIII": [
+      "CIII_br",
+      "CIII_na"
+    ]
+  }
+}

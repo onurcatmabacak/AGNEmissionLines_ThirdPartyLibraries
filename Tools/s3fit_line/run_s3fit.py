@@ -423,18 +423,28 @@ def read_photometry(path: Path) -> dict[str, tuple[float, float, float]]:
 # ---------------------------------------------------------------------------
 
 def loop_times(log_lines: list[str]) -> dict:
+    """Parse S3Fit loop timings, separating original-data retries from mocks.
+
+    A loop-0 refit caused by ``accept_chi_sq`` appears as another ``Loop 1/N``
+    entry, so the final loop-1 entry is the accepted original fit.  Mock loops
+    run in parallel when threads > 1; both the sum of their wall times and the
+    wall time of the whole MC block are reported.
+    """
     out = []
     for msg in log_lines:
         m = re.search(r"Loop\s+(\d+)/(\d+)\s+ends,\s+chi_sq\s*=\s*([0-9.eE+-]+)\s+([0-9.]+)s", msg)
         if m:
             out.append({"loop": int(m.group(1)), "n_loops": int(m.group(2)),
                         "chi_sq": float(m.group(3)), "seconds": float(m.group(4))})
-    original = out[0]["seconds"] if out else None
-    mc = sum(x["seconds"] for x in out[1:]) if len(out) > 1 else 0.0 if out else None
+    original = [x for x in out if x["loop"] == 1]
+    mocks = [x for x in out if x["loop"] > 1]
     return {
         "loops": out,
-        "original_fit_seconds": original,
-        "mc_fit_seconds": mc,
+        "original_attempts": len(original),
+        "original_attempts_seconds": sum(x["seconds"] for x in original) if original else None,
+        "original_fit_seconds": original[-1]["seconds"] if original else None,
+        "mc_fit_seconds_sum_threads": sum(x["seconds"] for x in mocks) if mocks else 0.0,
+        "mc_fit_seconds_wall": None,  # filled in main from total runtime
     }
 
 
@@ -795,24 +805,19 @@ def compare_pyqsofit(pyq_dir: Path | None, line_rows: list[dict],
     pyq = read_pyqsofit_lines(src)
     by_line_comp = {(r["line"], r["component"]): r for r in line_rows}
     mapping = {
-        "H-beta": {"pyq_broad": "Hb_br", "pyq_narrow": "Hb_na", "s3_broad": "BLR", "s3_narrow": "NLR"},
-        "OIII5007": {"pyq_broad": "OIII5007w", "pyq_narrow": "OIII5007c", "s3_broad": "BLR", "s3_narrow": "NLR"},
-        "MgII": {"pyq_broad": "MgII_br", "pyq_narrow": "MgII_na", "s3_broad": "BLR", "s3_narrow": "NLR"},
-        "CIII": {"pyq_broad": "CIII_br", "pyq_narrow": "CIII_na", "s3_broad": "BLR", "s3_narrow": "NLR"},
-    }
-    s3_line_map = {
-        "H-beta": "H-beta",
-        "OIII5007": "[O III]:5008",
-        "MgII": "Mg II]:2804",
-        "CIII": "C III]:1909",
+        "H-beta": {"pyq_broad": "Hb_br", "pyq_narrow": "Hb_na",
+                   "s3_lines": ["H-beta"]},
+        "OIII5007": {"pyq_broad": "OIII5007w", "pyq_narrow": "OIII5007c",
+                     "s3_lines": ["[O III]:5008"]},
+        "MgII": {"pyq_broad": "MgII_br", "pyq_narrow": "MgII_na",
+                 "s3_lines": ["Mg II]:2796", "Mg II]:2804"]},
+        "CIII": {"pyq_broad": "CIII_br", "pyq_narrow": "CIII_na",
+                 "s3_lines": ["C III]:1909"]},
     }
 
     rows = []
     for label, m in mapping.items():
-        s3name = s3_line_map[label]
-        total = by_line_comp.get((s3name, "total"))
-        if total is None:
-            continue
+        s3_lines = m["s3_lines"]
         pyq_b = pyq.get((m["pyq_broad"], "broad"))
         pyq_n = pyq.get((m["pyq_narrow"], "narrow"))
         pyq_total = None
@@ -821,32 +826,48 @@ def compare_pyqsofit(pyq_dir: Path | None, line_rows: list[dict],
         if pyq_total is None or not np.isfinite(pyq_total) or pyq_total <= 0:
             continue
 
-        def add(component_s3, component_pyq, s3row, pyqrow):
-            if s3row is None or pyqrow is None:
+        def add(component_s3, component_pyq, s3rows, pyqrow, note_extra=""):
+            s3rows = [r for r in s3rows if r is not None]
+            if not s3rows or pyqrow is None:
                 return
-            s3flux = float(s3row["flux_erg_s_cm2"])
+            s3flux = sum(float(r["flux_erg_s_cm2"]) for r in s3rows)
+            s3err = float(np.sqrt(sum(float(r.get("flux_err_erg_s_cm2") or 0.0) ** 2
+                                      for r in s3rows)))
             pflux = float(pyqrow["area_1e17"]) * 1e-17
             if not np.isfinite(s3flux) or pflux <= 0:
                 return
             raw = s3flux / spec_calib_ratio if spec_calib_ratio else s3flux
+            note = ("ratio_rawspec = (S3Fit flux / spec_calib_ratio) / PyQSOFit; "
+                    "no silent normalization change")
+            if note_extra:
+                note += "; " + note_extra
             rows.append({
                 "source": source,
                 "line": label,
                 "component_s3fit": component_s3,
                 "component_pyqsofit": component_pyq,
                 "s3fit_flux_erg_s_cm2": s3flux,
-                "s3fit_flux_err_erg_s_cm2": float(s3row.get("flux_err_erg_s_cm2") or 0),
+                "s3fit_flux_err_erg_s_cm2": s3err,
                 "pyqsofit_flux_erg_s_cm2": pflux,
                 "ratio_fitted": s3flux / pflux,
                 "ratio_rawspec": raw / pflux,
                 "difference_rawspec_erg_s_cm2": raw - pflux,
                 "spec_calib_ratio": spec_calib_ratio,
-                "note": "ratio_rawspec = (S3Fit flux / spec_calib_ratio) / PyQSOFit; no silent normalization change",
+                "note": note,
             })
 
-        add("total", "total", total, {"area_1e17": pyq_total / 1e-17})
-        add(m["s3_broad"], "broad", by_line_comp.get((s3name, m["s3_broad"])), pyq_b)
-        add(m["s3_narrow"], "narrow", by_line_comp.get((s3name, m["s3_narrow"])), pyq_n)
+        total_rows = [by_line_comp.get((name, "total")) for name in s3_lines]
+        add("total", "total", total_rows, {"area_1e17": pyq_total / 1e-17})
+        broad_rows = [by_line_comp.get((name, "BLR")) for name in s3_lines]
+        narrow_rows = [by_line_comp.get((name, "NLR")) for name in s3_lines]
+        note_comp = ""
+        if label == "OIII5007":
+            note_comp = ("S3Fit BLR line list excludes [O III]; the S3Fit NLR value "
+                         "contains the whole 5007 line while PyQSOFit splits wing+core")
+        elif label == "MgII":
+            note_comp = "S3Fit sums Mg II 2796+2804; PyQSOFit Mg II is a blended doublet"
+        add("BLR", "broad", broad_rows, pyq_b, note_comp)
+        add("NLR", "narrow", narrow_rows, pyq_n, note_comp)
 
     fields = [
         "source", "line", "component_s3fit", "component_pyqsofit",
@@ -874,9 +895,12 @@ def compare_pyqsofit(pyq_dir: Path | None, line_rows: list[dict],
             }
             for r in rows if r["component_s3fit"] == "total"
         },
+        "notes": {
+            "MgII": "S3Fit total is 2796+2804; PyQSOFit MgII is a blended doublet.",
+            "OIII5007": "S3Fit NLR contains the whole 5007 line; PyQSOFit splits wing+core.",
+        },
     }
     return summary
-
 
 # ---------------------------------------------------------------------------
 # main
@@ -1222,7 +1246,17 @@ def main(argv=None) -> int:
     dump_json(output_dir / "model_config.json", model_config)
     dump_json(output_dir / "fit_config.effective.json", fit_cfg)
 
+    used_line_names = [str(x) for x in ff.model_dict["line"]["spec_mod"].linename_n]
+    line_list_note = "H-alpha is present in the fitted line list"
+    if "H-alpha" not in used_line_names:
+        line_list_note = ("H-alpha/[N II]/[S II] are absent from this run's line list "
+                          "because they are outside the SDSS coverage of the validation targets")
+
     times = loop_times(getattr(ff, "log_message", []))
+    if times["original_attempts_seconds"] is not None:
+        times["mc_fit_seconds_wall"] = max(
+            0.0, runtime - times["original_attempts_seconds"]
+        ) if int(fit_cfg.get("n_mocks", 0)) > 0 else 0.0
     detections = [r for r in line_rows if r["component"] == "total" and r["detected"]]
     run = {
         "tool": "s3fit_line",
@@ -1237,6 +1271,7 @@ def main(argv=None) -> int:
             "source_dir": str(input_dir),
             "spectrum": str(spec_path),
             "photometry": str(phot_path) if phot_path else None,
+            "photometry_used": bool(getattr(ff, "have_phot", False)),
             "photometry_bands": phot_names,
             "n_spec_pixels": int(len(wave)),
             "n_spec_masked": n_bad,
@@ -1257,7 +1292,11 @@ def main(argv=None) -> int:
             "dual_annealing": bool(fit_cfg.get("if_run_init_annealing", True)),
             "nlfit_ntry_max": int(fit_cfg.get("nlfit_ntry_max", 3)),
             "accept_chi_sq": float(fit_cfg.get("accept_chi_sq", 3.0)),
-            "line_list_note": "H-alpha/[N II]/[S II] removed from the fast line list because they are outside the SDSS coverage of both validation targets",
+            "line_list_note": line_list_note,
+            "n_mocks_used": int(fit_cfg["n_mocks"]),
+            "mc_threads": int(fit_cfg["threads"]),
+            "note": ("pure-spectrum fallback; photometric SED step not run" if mode == "spec"
+                     else "joint spectrum + photometric SED fit"),
         },
         "fit": {
             "n_mocks": int(fit_cfg["n_mocks"]),
@@ -1289,8 +1328,12 @@ def main(argv=None) -> int:
         "chi2": chi2,
         "runtime": {
             "total_sec": runtime,
+            "original_attempts": times["original_attempts"],
+            "original_attempts_sec": times["original_attempts_seconds"],
             "original_fit_sec": times["original_fit_seconds"],
-            "mc_fit_sec": times["mc_fit_seconds"],
+            "mc_fit_sec": times["mc_fit_seconds_wall"],
+            "mc_fit_sec_sum_threads": times["mc_fit_seconds_sum_threads"],
+            "mc_threads": int(fit_cfg["threads"]),
             "loop_times": times["loops"],
         },
         "line_detections": detections,
