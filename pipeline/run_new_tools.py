@@ -193,7 +193,9 @@ def tool_agnfitter(src: dict, out: Path, logp: Path) -> int:
 def tool_s3fit(src: dict, out: Path, logp: Path, config: str | None = None,
                n_mocks: int | None = None, mode: str | None = None) -> int:
     cmd = [str(ROOT / "Pipelines" / "run_s3fit_line_docker.sh"),
-           str(Path(src["_path"])), str(out), str(src["z"])]
+           str(Path(src["_path"])), str(out)]
+    if src.get("z") is not None:
+        cmd += ["--z", str(src["z"])]
     if config:
         cmd += ["--config", config]
     if n_mocks is not None:

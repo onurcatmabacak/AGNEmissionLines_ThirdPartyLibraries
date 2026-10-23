@@ -20,7 +20,7 @@ DOCKER="${DOCKER:-docker}"
 IMAGE="${S3FIT_IMAGE:-s3fit_line}"
 
 usage() {
-  sed -n '2,20p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//'
+  sed -n '2,15p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//'
 }
 
 IN=""
@@ -46,7 +46,10 @@ while [ $# -gt 0 ]; do
     --)             shift; break ;;
     -*)             echo "unknown option: $1" >&2; usage >&2; exit 2 ;;
     *)
-      if [ -z "$IN" ]; then IN="$1"; elif [ -z "$OUT" ]; then OUT="$1"; else
+      if [ -z "$IN" ]; then IN="$1"
+      elif [ -z "$OUT" ]; then OUT="$1"
+      elif [ -z "$Z" ]; then Z="$1"
+      else
         echo "unexpected argument: $1" >&2; usage >&2; exit 2
       fi
       shift ;;

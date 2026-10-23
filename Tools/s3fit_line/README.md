@@ -9,8 +9,12 @@ of **Monte-Carlo mock spectra** generated and refitted `num_mocks` times.
 
 ```bash
 bash Pipelines/build_images.sh s3fit_line
+# fast demonstrated mode (3 mocks, pure spectrum):
 .venv/bin/python pipeline/run_new_tools.py --only 04592649654_z_0.5874 \
-  --tools s3fit_line --s3fit-n-mocks 10 --force
+  --tools s3fit_line --s3fit-config configs/s3fit_line/smoke \
+  --s3fit-n-mocks 3 --force
+# full mode (default config: spec+sed, 10 mocks) is much slower and was NOT run here:
+#   ... --tools s3fit_line --s3fit-n-mocks 10
 ```
 
 or directly:
@@ -64,7 +68,9 @@ Measured on the 8-core host:
 | Mg II 2796+2804 / PyQSOFit | 0.697 |
 
 The 3-mock MC is intentionally small; the histogram figure is a demonstration
-of the machinery, not a converged uncertainty distribution.
+of the machinery, not a converged uncertainty distribution.  A second target
+(`04570952937_z_0.9901`) was not run within this time cap; the same runner and
+`smoke` config apply unchanged.
 
 **Exactly what was disabled/reduced for this run** (all recorded in
 `run.json` -> `scope`):
