@@ -1,0 +1,57 @@
+{
+  "_comment": "Effective config snapshot for the generic local-Gaussian IR line fitter (Tools/pipeline_ir).",
+  "tool": "ir_linefit",
+  "engine": "local_gaussian",
+  "image": "ir_linefit",
+  "input_roles": [
+    "spectrum",
+    "spectra",
+    "mir_table",
+    "pacs"
+  ],
+  "line_suites": {
+    "uv": [
+      0.1034,
+      0.1908
+    ],
+    "optical": [
+      0.3727,
+      0.9532
+    ],
+    "nir": [
+      1.0833,
+      4.0523
+    ],
+    "mir": [
+      6.9854,
+      34.815
+    ],
+    "fir": [
+      57.317,
+      157.741
+    ]
+  },
+  "fit": {
+    "continuum": "local linear",
+    "profile": "Gaussian",
+    "window_half_sigma": 5.0,
+    "min_window_velocity_kms": 900.0,
+    "narrow_sigma_min_kms": 80.0,
+    "narrow_sigma_max_kms": 1500.0,
+    "broad_sigma_min_kms": 700.0,
+    "broad_sigma_max_kms": 12000.0,
+    "tie_narrow_kinematics_within_blend": true,
+    "tie_doublet_ratios": true,
+    "fir_flat_continuum": true
+  },
+  "uncertainty": {
+    "mode": "covariance from scipy least_squares",
+    "mcmc": false
+  },
+  "outputs": [
+    "line_measurements.csv",
+    "fit_summary.json",
+    "*.png",
+    "route.json"
+  ]
+}

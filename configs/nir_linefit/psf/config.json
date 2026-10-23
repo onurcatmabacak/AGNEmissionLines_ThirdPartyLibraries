@@ -1,0 +1,22 @@
+{
+  "_comment": "PSF-weighted r=3 aperture extraction is the primary NIR product.",
+  "tool": "nir_linefit",
+  "variant": "psf",
+  "extraction": {
+    "method": "PSF-weighted circular aperture",
+    "radius_spaxels": 3.0,
+    "psf_sigma_spaxels": 1.0,
+    "background": "local annulus",
+    "wcs": "celestial WCS/PC matrix",
+    "centroid": "auto from 9x9 line-free median"
+  },
+  "uncertainty": {
+    "mode": "propagated x1d errors + covariance",
+    "mcmc": false
+  },
+  "outputs": [
+    "centered_psf_x1d.fits",
+    "line_measurements.csv",
+    "fit_summary.json"
+  ]
+}

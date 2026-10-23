@@ -1,0 +1,165 @@
+{
+  "_comment": "CIGALE 2025.1 SED/torus config, SKIRTOR family.",
+  "tool": "cigale_sed",
+  "model": "skirtor2016",
+  "engine": "CIGALE pdf_analysis (Bayesian)",
+  "sed_modules": [
+    "sfhdelayed",
+    "bc03",
+    "dustatt_modified_starburst",
+    "dl2014",
+    "skirtor2016",
+    "redshifting"
+  ],
+  "bands": [
+    "sloan.sdss.g",
+    "sloan.sdss.r",
+    "sloan.sdss.i",
+    "sloan.sdss.z",
+    "wise.W1",
+    "wise.W2",
+    "wise.W3",
+    "wise.W4"
+  ],
+  "grid": {
+    "sfhdelayed": {
+      "tau_main": [
+        1000.0,
+        3000.0
+      ],
+      "age_main": [
+        2000,
+        5000,
+        10000
+      ],
+      "tau_burst": [
+        50.0
+      ],
+      "age_burst": [
+        20
+      ],
+      "f_burst": [
+        0.0,
+        0.1,
+        0.3
+      ]
+    },
+    "bc03": {
+      "imf": 0,
+      "metallicity": [
+        0.008,
+        0.02
+      ],
+      "separation_age": 10
+    },
+    "dustatt_modified_starburst": {
+      "E_BV_lines": [
+        0.0,
+        0.05,
+        0.1,
+        0.3,
+        0.6,
+        1.0
+      ],
+      "E_BV_factor": [
+        0.44
+      ],
+      "uv_bump_wavelength": [
+        217.5
+      ],
+      "uv_bump_width": [
+        35.0
+      ],
+      "uv_bump_amplitude": [
+        0.0,
+        1.0
+      ],
+      "powerlaw_slope": [
+        0.0
+      ],
+      "Ext_law_emission_lines": [
+        1
+      ],
+      "Rv": [
+        3.1
+      ]
+    },
+    "dl2014": {
+      "qpah": [
+        1.0,
+        2.5,
+        4.0
+      ],
+      "umin": [
+        1.0,
+        5.0,
+        10.0
+      ],
+      "alpha": [
+        2.0
+      ],
+      "gamma": [
+        0.1
+      ]
+    },
+    "skirtor2016": {
+      "t": [
+        3,
+        7,
+        11
+      ],
+      "pl": [
+        1.0
+      ],
+      "q": [
+        1.0
+      ],
+      "oa": [
+        40
+      ],
+      "R": [
+        20
+      ],
+      "Mcl": [
+        0.97
+      ],
+      "i": [
+        30
+      ],
+      "disk_type": 1,
+      "fracAGN": [
+        0.1,
+        0.3,
+        0.5,
+        0.7,
+        0.9,
+        0.99
+      ],
+      "law": [
+        0
+      ],
+      "EBV": [
+        0.0,
+        0.03,
+        0.1
+      ],
+      "temperature": [
+        100.0
+      ],
+      "emissivity": [
+        1.6
+      ]
+    }
+  },
+  "uncertainty": {
+    "mode": "CIGALE pdf_analysis posterior; no MCMC",
+    "mcmc": false
+  },
+  "outputs": [
+    "sed_fit.png",
+    "sed_summary.csv",
+    "pcigale.ini",
+    "pcigale.ini.spec",
+    "out/"
+  ]
+}

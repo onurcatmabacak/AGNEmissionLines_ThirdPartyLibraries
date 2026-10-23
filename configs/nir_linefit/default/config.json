@@ -1,0 +1,29 @@
+{
+  "_comment": "NIRSpec/JWST x1d adapter using the generic local-Gaussian fitter.",
+  "tool": "nir_linefit",
+  "engine": "local_gaussian",
+  "image": "nir_linefit",
+  "extraction": "pipeline x1d (default); QSO-centred 3x3 and PSF r=3 are separate variants",
+  "fit": {
+    "broad_components": [
+      "Halpha6563",
+      "Hbeta4861",
+      "Palpha18756",
+      "Pabeta12822",
+      "Brgamma21661"
+    ],
+    "narrow_sigma_max_kms": 1500.0,
+    "broad_sigma_min_kms": 700.0,
+    "broad_sigma_max_kms": 12000.0
+  },
+  "uncertainty": {
+    "mode": "covariance",
+    "mcmc": false
+  },
+  "outputs": [
+    "line_measurements.csv",
+    "fit_summary.json",
+    "*.png",
+    "route.json"
+  ]
+}

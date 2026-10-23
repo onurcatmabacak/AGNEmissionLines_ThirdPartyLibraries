@@ -1,0 +1,51 @@
+{
+  "_comment": "Effective PyQSOFit UV/optical config; the executable is configs/pyqsofit/uv/main.py.",
+  "tool": "pyqsofit_uv",
+  "engine": "PyQSOFit least-squares + optional MC/MCMC",
+  "bands": [
+    "MgII",
+    "CIII]",
+    "CIV",
+    "Lyalpha",
+    "NV",
+    "SiIV",
+    "OVI"
+  ],
+  "fit": {
+    "CIII_broad_maxsig": 0.008,
+    "Hbeta_broad_maxsig": 0.02,
+    "CIII_satellites": [
+      "SiIII1892",
+      "AlIII1857",
+      "SiII1816",
+      "FeII1787",
+      "NIII1750"
+    ],
+    "Fe_flux_range_added": [
+      1705,
+      1730,
+      1950,
+      1975
+    ],
+    "rej_abs_conti": true,
+    "rej_abs_line": true
+  },
+  "uncertainty": {
+    "mode": "covariance by default; optional MC resampling and emcee MCMC",
+    "env": {
+      "PYQSOFIT_MC": "0",
+      "PYQSOFIT_MCMC": "0",
+      "PYQSOFIT_NMC": "100",
+      "PYQSOFIT_NBURN": "20",
+      "PYQSOFIT_NTHIN": "10"
+    },
+    "mcmc": true
+  },
+  "outputs": [
+    "pyqsofit_lines.csv",
+    "result.fits",
+    "result.png",
+    "mc/",
+    "mcmc/"
+  ]
+}

@@ -515,6 +515,59 @@ print("Peak (A)", np.round(peak, 1))
 print("Area (10^(-17) erg/s/cm^2)", np.round(area, 1))
 print("SNR", np.round(snr, 1))
 
+# Statistical uncertainty visualization.  PyQSOFit's MC/MCMC samples are held
+# in memory; write compact per-realization line fluxes so the uncertainty is
+# inspectable instead of only being collapsed into a single error bar.
+try:
+    if (getattr(q_mle, "MC", False) or getattr(q_mle, "MCMC", False)) and len(getattr(q_mle, "gauss_result_all", [])):
+        import csv as _csv
+        import numpy as _np
+        _mc_lines = [("Hb_br", "broad"), ("Hb_na", "narrow"),
+                     ("OIII5007w", "broad"), ("OIII5007c", "narrow"),
+                     ("MgII_br", "broad"), ("MgII_na", "narrow")]
+        _mc_rows = []
+        for _i in range(len(q_mle.gauss_result_all)):
+            for _nm, _ct in _mc_lines:
+                try:
+                    _f, _s, _e, _p, _a, _sn = q_mle.line_prop_from_name(_nm, _ct, sample_index=_i)
+                    _mc_rows.append({"sample": _i, "line": _nm, "component": _ct,
+                                     "area_1e17": float(_a), "fwhm_kms": float(_f),
+                                     "snr": float(_sn)})
+                except Exception:
+                    pass
+        if _mc_rows:
+            with open("pyqsofit_mc_samples.csv", "w", newline="") as _fh:
+                _w = _csv.DictWriter(_fh, fieldnames=list(_mc_rows[0]))
+                _w.writeheader(); _w.writerows(_mc_rows)
+            _sum = []
+            for _nm, _ct in _mc_lines:
+                _v = _np.array([_r["area_1e17"] for _r in _mc_rows
+                                if _r["line"] == _nm and _r["component"] == _ct], float)
+                if _v.size:
+                    _sum.append({"line": _nm, "component": _ct, "n": int(_v.size),
+                                 "median": float(_np.nanmedian(_v)),
+                                 "p16": float(_np.nanpercentile(_v, 16)),
+                                 "p84": float(_np.nanpercentile(_v, 84))})
+            with open("pyqsofit_mc_summary.csv", "w", newline="") as _fh:
+                _w = _csv.DictWriter(_fh, fieldnames=list(_sum[0])); _w.writeheader(); _w.writerows(_sum)
+            _fig, _axs = plt.subplots(1, 3, figsize=(11, 3.2))
+            for _ax, (_nm, _ct) in zip(_axs, _mc_lines[:3]):
+                _v = _np.array([_r["area_1e17"] for _r in _mc_rows
+                                if _r["line"] == _nm and _r["component"] == _ct], float)
+                _v = _v[_np.isfinite(_v)]
+                if _v.size:
+                    _ax.hist(_v, bins=min(20, max(5, _v.size // 5)), color="C0", alpha=0.75)
+                    _ax.axvline(_np.median(_v), color="C3", lw=1)
+                    _ax.set_title(f"{_nm} ({_ct})")
+                    _ax.set_xlabel("area (1e-17 erg/s/cm2)")
+            _fig.suptitle("PyQSOFit Monte Carlo realizations")
+            _fig.tight_layout()
+            _fig.savefig("pyqsofit_mc.png", dpi=140)
+            _fig.savefig("pyqsofit_mc.pdf"); plt.close(_fig)
+            print("wrote pyqsofit_mc_samples.csv / pyqsofit_mc_summary.csv / pyqsofit_mc.png")
+except Exception as _e:
+    print("could not write PyQSOFit MC products:", _e)
+
 # Compact per-line table for cross-tool comparison.  Both broad and narrow
 # components are recorded; the narrow C III]/Mg II areas are the quantities
 # directly comparable to SDSS ZLINE.

@@ -1,47 +1,59 @@
-# Config variants (tuning grid)
+# Tool configurations
 
-Each subdirectory holds one tunable artifact for a tool. `run_pipeline.sh` picks
-it up when you pass `--variant <tool>=<name>` (or set `VARIANTS="tool=name,..."`):
+Central, reviewable configuration for every production tool.  Each tool has a
+`configs/<tool>/<variant>/` directory.  New line-fit tools (`cafe_line`,
+`s3fit_line`, `gandalf_line`) consume these files directly through `--config`;
+older tools use the same values as their documented defaults and their code
+contains the executable implementation.
 
-| tool | file it replaces | what to change |
-|------|------------------|----------------|
-| `pyqsofit` | `main.py` | error floor, line priors, continuum windows |
-| `badass` | `main.py` | fit options, component options, line bounds |
-| `fantasy_agn` | `main.py` | fitting window, amplitude/FWHM/velocity bounds, model |
-| `gelato` | `my_sdss.json` | FThresh, line regions, flags, ties |
-| `gleam` | `gleamconfig.yaml` | resolution, SN_limit, tolerance, cont_width |
+## SED vs spectrum decomposition
 
-A variant only has to differ in the one block you are exploring; copy the current
-file and edit it.
+The two families are deliberately separate:
 
-`pipeline/auto_tune.py` (wrapper `analyze.sh`) **generates** variants under
-`configs/<tool>/auto_<tool>_<knob values>/` automatically and then picks the best
-one by the common reduced χ². Those directories are search artifacts; the winner
-is written to `work/auto_tune/best_configs.json` and used for the final run.
+| family | tools | output |
+|---|---|---|
+| Broad-band SED / torus | `cigale_sed`, `agnfitter_sed` | stellar mass, AGN fraction, torus luminosity, model-family spread |
+| Spectral line fitting | `pyqsofit_uv`, `ir_linefit`, `nir_linefit`, `fir_linefit`, `pahfit_mir`, `cafe_line`, `s3fit_line`, `gandalf_line`, `crossband` | line flux, FWHM, velocity, equivalent width, ratios |
+| Host/continuum decomposition | `ppxf_host` | stellar velocity dispersion, host fraction |
 
-## Included examples
+CIGALE/AGNfitter must **not** be described as emission-line fitters; they fit
+the broad-band SED with templates.
 
-| variant | change | purpose |
-|---------|--------|---------|
-| `pyqsofit/err02` | error = 2 % of flux | baseline (matches the default) |
-| `pyqsofit/err05` | error = 5 % of flux | documented fix for over-tight errors |
-| `badass/nbasin20` | `BADASS_NBASINHOP` default 20 | more basinhopping, better minimum |
-| `fantasy_agn/broadwin` | `min_fwhm_br = 400` | let broad lines go narrower |
-| `gelato/fthresh80` | `FThresh = 0.80` | accept extra components more readily |
-| `gleam/res6`, `gleam/res10` | SDSS resolution 6 / 10 Å | instrument-profile sensitivity |
+## Uncertainty / sampling modes
 
-## Running a sweep
+| tool | statistical method |
+|---|---|
+| `pyqsofit_uv` | covariance; optional MC resampling and `emcee` MCMC (`PYQSOFIT_MC`, `PYQSOFIT_MCMC`) |
+| `agnfitter_sed` | `ultranest` nested sampling (Bayesian posterior) |
+| `cigale_sed` | `pdf_analysis` Bayesian likelihood/posterior; not MCMC |
+| `pahfit_mir` | least-squares; MC uncertainty/refit option |
+| `cafe_line` | LMFIT covariance + post-fit multivariate-normal MC |
+| `s3fit_line` | least-squares + mock-spectrum Monte Carlo (`num_mocks`) |
+| `gandalf_line` | native MPFIT covariance/`FOR_ERRORS`; fallback bootstrap if GDL unavailable |
+| `ir_linefit`/`nir_linefit`/`fir_linefit` | covariance from `least_squares`/`curve_fit` |
+| `ppxf_host` | pPXF formal errors |
+| `crossband` | analytic ratio error propagation |
 
-```bash
-# one labelled run per variant (results/<label>/, runs/<label>/)
-for v in err02 err05; do
-  bash run_pipeline.sh --tools pyqsofit --variant pyqsofit=$v --label pq_$v
-done
+## Layout
 
-# rank them by reduced chi-square
-.venv/bin/python pipeline/compare_variants.py --results results
-# -> results/variants.html  /  results/variants.md
+```
+configs/
+  pyqsofit/uv/main.py              # executable
+  pyqsofit/uv/config.json          # effective settings snapshot
+  badass/{best,nbasin20}/main.py
+  ...
+  ir_linefit/default/config.json
+  nir_linefit/{default,psf}/config.json
+  fir_linefit/default/config.json
+  pahfit_mir/{default,short,long,both}/config.json
+  cafe_line/default/...
+  s3fit_line/default/...
+  gandalf_line/default/...
+  crossband/default/config.json
+  ppxf_host/default/config.json
+  cigale_sed/{skirtor2016,fritz2006}/config.json
+  agnfitter_sed/default/config.json
 ```
 
-`compare_variants.py` merges every `results/*/scores.csv` plus the default
-`results/scores.csv` and highlights the lowest-chi-square variant per row.
+Legacy optical variants and auto-tuning winners remain under the existing
+`configs/<tool>/` directories.
