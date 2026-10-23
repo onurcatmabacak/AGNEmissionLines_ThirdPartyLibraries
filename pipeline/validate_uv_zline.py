@@ -12,8 +12,9 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-if str(ROOT) not in sys.path:
-    sys.path.insert(0, str(ROOT))
+for p in (ROOT, ROOT / "Tools"):
+    if str(p) not in sys.path:
+        sys.path.insert(0, str(p))
 from pipeline_ir.spectrum import zline_table  # noqa: E402
 from pipeline.io_layout import iter_sources, output_dir, source_files  # noqa: E402
 

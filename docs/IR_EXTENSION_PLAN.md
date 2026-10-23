@@ -248,8 +248,9 @@ SED/torus keys (v2): `agn_fraction`, `L_torus`, `L_AGN`, `M_star`, `SFR`, `dust_
 - Schedule serial P3/P4 to week 56; optical v2 in P2.
 - Appendix D: Br-alpha at z=0.312 is `no_coverage`; Br-gamma covered.
 - v9: added G5 (host–AGN separation) and G6 (SED/torus companion: CIGALE/X-CIGALE, AGNfitter-RX, PROSPECTOR-AGN), §3.6, §5.6, P5a, host/SED validation, risks, open decisions, schema keys. SED is a companion and never gates P1–P4.
+- v12: tools moved to `Tools/`, runners to `Pipelines/`, optical production results migrated to `outputs/<object>_z_<z>/<tool>/`; CIGALE real errors, AGNfitter-rx, PDS/FIR/NGC 4151/NIR extraction fixes, and statistical comparison figure.
 - v11: source-keyed layout and single runner; real PACS/HIFI/Spitzer IRS adapters; real NGC 253 MIR+FIR and NGC 1068 FIR tests; PyQSOFit real errors/host-free UV; pPXF reliability/upper limits; PDS 456 segment/quality handling; CIGALE two torus families and WISE diagnostics.  See `docs/CAVEAT_FIXES.md`.
-- v10: implementation-status note; P5a CIGALE pilot (`cigale_sed`) on five z>0.5 eFEDS QSOs with SDSS+WISE; results and caveats in `cigale_sed/README.md` and `results_ir/sed_zgt05/`.  The design/gates are unchanged; AGNfitter-RX, PROSPECTOR-AGN and X-ray/radio SED constraints remain open.
+- v10: implementation-status note; P5a CIGALE pilot (`cigale_sed`) on five z>0.5 eFEDS QSOs with SDSS+WISE; results and caveats in `cigale_sed/README.md` and `outputs/<source>_z_<z>/cigale_sed/`.  The design/gates are unchanged; AGNfitter-RX, PROSPECTOR-AGN and X-ray/radio SED constraints remain open.
 ## v8 final-verification corrections
 
 Both the senior software engineer and the professor astronomer returned verdict **sound** with **zero critical/major** gaps. The following minor factual corrections and specification additions are incorporated here (factual fixes are also applied in the body).

@@ -85,7 +85,7 @@ line_priors = np.rec.array([
     # [SII] ratio is density-dependent -> leave it free (findex 0).
     (6718.29, 'Ha', 6400, 6800, 'SII6718', 1, 0.0, 0.0, 1e10, 1e-3, 2.3e-4, 0.0012, 5e-3, 1, 1, 0, 0.001, 1),
     (6732.67, 'Ha', 6400, 6800, 'SII6732', 1, 0.0, 0.0, 1e10, 1e-3, 2.3e-4, 0.0012, 5e-3, 1, 1, 0, 0.001, 1),
-    (4862.68, 'Hb', 4640, 5100, 'Hb_br', 2, 0.0, 0.0, 1e10, 5e-3, 0.0015, 0.05, 0.01, 0, 0, 0, 0.01, 1),
+    (4862.68, 'Hb', 4640, 5100, 'Hb_br', 2, 0.0, 0.0, 1e10, 5e-3, 0.0015, 0.02, 0.01, 0, 0, 0, 0.01, 1),
     (4862.68, 'Hb', 4640, 5100, 'Hb_na', 1, 0.0, 0.0, 1e10, 1e-3, 2.3e-4, 0.0012, 0.01, 1, 1, 0, 0.002, 1),
     # The [OIII] 4959/5007 doublet shares velocity (vindex), width (windex) and a
     # fixed flux ratio (findex 3 for narrow, 4 for outflow; fvalue 0.33 / 1.0).
@@ -107,7 +107,7 @@ line_priors = np.rec.array([
     (2798.75, 'MgII', 2700, 2900, 'MgII_br', 2, 0.0, 0.0, 1e10, 5e-3, 0.0015, 0.05, 0.015, 0, 0, 0, 0.05, 1),
     (2798.75, 'MgII', 2700, 2900, 'MgII_na', 1, 0.0, 0.0, 1e10, 1e-3, 5e-4, 0.0012, 0.01, 1, 1, 0, 0.002, 1),
 
-    (1908.73, 'CIII', 1700, 1970, 'CIII_br', 2, 0.0, 0.0, 1e10, 5e-3, 0.0015, 0.015, 0.015, 99, 0, 0, 0.01, 1),
+    (1908.73, 'CIII', 1700, 1970, 'CIII_br', 2, 0.0, 0.0, 1e10, 5e-3, 0.0015, 0.008, 0.015, 99, 0, 0, 0.01, 1),
     (1908.73, 'CIII', 1700, 1970, 'CIII_na',   1, 0.0, 0.0, 1e10, 1e-3, 5e-4,  0.0012, 0.01,  1, 1, 0, 0.002, 1),
     # Satellites in the C III] complex.  Leaving these out made the broad
     # C III] component absorb Si III]/Al III/Si II/Fe II flux and inflated the
@@ -181,7 +181,8 @@ conti_windows = np.rec.array([
     (1350., 1360.),
     (1445., 1465.),
     (1690., 1705.),
-    (1770., 1810.),
+    (1705., 1730.),
+    (1950., 1975.),
     (1970., 2400.),
     (2480., 2675.),
     (2925., 3400.),
@@ -279,6 +280,12 @@ if _floor > 0:
 # Per-object redshift: take it from the FITS header (the original analysis had
 # this hardcoded to 0.348 for its single target). PYQSOFIT_Z overrides it.
 z = float(os.environ.get("PYQSOFIT_Z", z))
+# Drop priors whose observed wavelength is outside the prepared spectrum.
+_wmin = float(np.nanmin(wavelength.value))
+_wmax = float(np.nanmax(wavelength.value))
+for _row in line_priors:
+    if not (_wmin < float(_row['lambda']) * (1 + z) < _wmax):
+        _row['vary'] = 0
 print(wavelength, flux, error, z)
 
 # # Optional
@@ -333,7 +340,7 @@ q_mle.Fit(name='result',  # customize the name of given targets. Default: plate-
 
           # emission line fit parameters
           linefit=True,  # If True, the emission line will be fitted
-          rej_abs_line=False, # If True, it will iterately reject 3 sigma outlier absorption pixels in the emission lines
+          rej_abs_line=True, # If True, it will iterately reject 3 sigma outlier absorption pixels in the emission lines
 
           # fitting method selection
           # PYQSOFIT_MC=1 turns on Monte-Carlo resampling for parameter/flux

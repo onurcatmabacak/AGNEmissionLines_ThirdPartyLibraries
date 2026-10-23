@@ -82,27 +82,32 @@ def tool_ir(src: dict, out: Path, logp: Path) -> int:
         return _skip("no spectrum")
     cmd = [sys.executable, "-m", "pipeline_ir.run", "--fits", *[str(p) for p in paths],
            "--z", str(src["z"]), "--out", str(out)]
-    return run(cmd, logp)
+    return run(cmd, logp, env={"PYTHONPATH": f"{ROOT / 'Tools'}:{ROOT}"})
 
 
 def tool_pyqsofit(src: dict, out: Path, logp: Path) -> int:
     inp = prep_pyqsofit(src)
-    return run([str(ROOT / "run_pyqsofit_uv_docker.sh"), str(inp), str(out)], logp)
+    return run([str(ROOT / "Pipelines" / "run_pyqsofit_uv_docker.sh"), str(inp), str(out)], logp)
 
 
 def tool_ppxf(src: dict, out: Path, logp: Path) -> int:
     inp = prep_pyqsofit(src)
-    return run([str(ROOT / "run_ppxf_host_docker.sh"), str(inp), str(out)], logp)
+    return run([str(ROOT / "Pipelines" / "run_ppxf_host_docker.sh"), str(inp), str(out)], logp)
 
 
 def tool_nir(src: dict, out: Path, logp: Path) -> int:
     raw = Path(src["_path"]) / "raw"
-    rc = run([str(ROOT / "run_nir_linefit_docker.sh"), str(raw), str(out), str(src["z"])], logp)
+    rc = run([str(ROOT / "Pipelines" / "run_nir_linefit_docker.sh"), str(raw), str(out), str(src["z"])], logp)
     centered = source_files(src, "centered")
     if centered:
         sub = out / "centered"
-        rc |= run([str(ROOT / "run_nir_linefit_docker.sh"), str(centered[0].parent),
+        rc |= run([str(ROOT / "Pipelines" / "run_nir_linefit_docker.sh"), str(centered[0].parent),
                    str(sub), str(src["z"])], logp.with_name(logp.stem + "_centered.log"))
+    psf = source_files(src, "centered_psf")
+    if psf:
+        sub = out / "psf"
+        rc |= run([str(ROOT / "Pipelines" / "run_nir_linefit_docker.sh"), str(psf[0].parent),
+                   str(sub), str(src["z"])], logp.with_name(logp.stem + "_psf.log"))
     return rc
 
 
@@ -113,10 +118,26 @@ def tool_pahfit(src: dict, out: Path, logp: Path) -> int:
         rc = 0
         for v in variants:
             sub = out / v["name"]
-            cmd = [str(ROOT / "run_pahfit_mir_docker.sh"), str(raw), str(sub),
+            # Optional seed fit, then warm-start the full fit from its ECSV.
+            if v.get("seed_args"):
+                seed = sub / "seed"
+                cmd = [str(ROOT / "Pipelines" / "run_pahfit_mir_docker.sh"), str(raw), str(seed),
+                       str(src["z"]), *v.get("seed_args", [])]
+                if src.get("kind") == "jwst_miri":
+                    cmd += ["--instrument", MIRI_ALL]
+                rc |= run(cmd, logp.with_name(logp.stem + f"_{v['name']}_seed.log"))
+            if v.get("seed_from"):
+                seed_dir = sub / "seed"
+                seed_dir.mkdir(parents=True, exist_ok=True)
+                src_ecsv = out / v["seed_from"] / "pahfit_output.ecsv"
+                if src_ecsv.exists():
+                    (seed_dir / "pahfit_output.ecsv").write_bytes(src_ecsv.read_bytes())
+            cmd = [str(ROOT / "Pipelines" / "run_pahfit_mir_docker.sh"), str(raw), str(sub),
                    str(src["z"]), *v.get("args", [])]
             if src.get("kind") == "jwst_miri":
                 cmd += ["--instrument", MIRI_ALL]
+            if v.get("init_from"):
+                cmd += ["--init-from", "/app/output/" + v["init_from"]]
             rc |= run(cmd, logp.with_name(logp.stem + f"_{v['name']}.log"))
         return rc
     args = list(src.get("pahfit_args", []))
@@ -124,7 +145,7 @@ def tool_pahfit(src: dict, out: Path, logp: Path) -> int:
         args = ["--tbl", "--smooth-um", "0.1", "--instrument", SPITZER_IRS]
     if src.get("kind") == "jwst_miri":
         args += ["--instrument", MIRI_ALL]
-    return run([str(ROOT / "run_pahfit_mir_docker.sh"), str(raw), str(out),
+    return run([str(ROOT / "Pipelines" / "run_pahfit_mir_docker.sh"), str(raw), str(out),
                 str(src["z"]), *args], logp)
 
 
@@ -144,7 +165,7 @@ def tool_fir(src: dict, out: Path, logp: Path) -> int:
         target = spec[0]
     else:
         return _skip("no FIR spectrum")
-    return run([str(ROOT / "run_fir_linefit_docker.sh"), str(target), str(out), str(src["z"])], logp)
+    return run([str(ROOT / "Pipelines" / "run_fir_linefit_docker.sh"), str(target), str(out), str(src["z"])], logp)
 
 
 def tool_crossband(src: dict, out: Path, logp: Path) -> int:
@@ -159,14 +180,14 @@ def tool_crossband(src: dict, out: Path, logp: Path) -> int:
             paths = [candidate]
     if not paths:
         return _skip("no crossband input")
-    return run([str(ROOT / "run_crossband_docker.sh"), str(paths[0]), str(out)], logp)
+    return run([str(ROOT / "Pipelines" / "run_crossband_docker.sh"), str(paths[0]), str(out)], logp)
 
 
 def tool_agnfitter(src: dict, out: Path, logp: Path) -> int:
     inp = Path(src["_path"]) / "photometry"
     if not (inp / "photometry.txt").exists():
         return _skip("no photometry")
-    return run([str(ROOT / "run_agnfitter_sed_docker.sh"), str(inp), str(out)], logp)
+    return run([str(ROOT / "Pipelines" / "run_agnfitter_sed_docker.sh"), str(inp), str(out)], logp)
 
 
 def tool_cigale(src: dict, out: Path, logp: Path, models: list[str]) -> int:
@@ -176,7 +197,7 @@ def tool_cigale(src: dict, out: Path, logp: Path, models: list[str]) -> int:
     rc = 0
     for model in models:
         sub = out / model
-        rc |= run([str(ROOT / "run_cigale_sed_docker.sh"), str(inp), str(sub)],
+        rc |= run([str(ROOT / "Pipelines" / "run_cigale_sed_docker.sh"), str(inp), str(sub)],
                   logp.with_name(logp.stem + f"_{model}.log"),
                   env={"CIGALE_AGN_MODEL": model})
     # Aggregate the model-family spread from the per-model summaries.

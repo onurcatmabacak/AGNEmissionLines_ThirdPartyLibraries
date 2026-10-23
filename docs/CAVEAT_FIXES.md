@@ -1,48 +1,33 @@
-# Caveat fixes and validation matrix
+# Caveat fixes and residual limitations
 
-This pass addresses the remaining limitations with data/model changes, not just
-notes.  All new tools use the source-keyed layout (`inputs/`, `outputs/`).
+## Solved or materially improved
 
-## Layout
-
-* One raw payload per source in `inputs/<source>_z_<z>/raw/`, described by
-  `source.json`.
-* Tool-native copies are generated under `work/prepared/<source_key>/`; they
-  are not committed.
-* Every result is under `outputs/<source_key>/<tool>/`.
-* Legacy optical-v1 `results/`, `runs/`, `figures*/` etc. are untouched.
-* `pipeline/run_new_tools.py` is the single orchestrator; logs go to
-  `work/logs/`.
-
-## Caveat → fix → validation
-
-| caveat | implementation | test |
+| limitation | fix | current validation |
 |---|---|---|
-| FIR validation was synthetic only | `read_pacs`/`read_hifi_hpdp` adapters; real PACS products from the ESA HSA | NGC 1068 [OI]63; NGC 253 [OI]63/[OIII]88/[OI]145/[CII]158; NGC 4151 [OIII]88/[NII]122/[OI]145/[CII]158 |
-| FIR low-S/N bias | Widened the default window to 8 resolution elements; fixed the initial-width bound that rejected broad lines | Synthetic [OI]63 improved 445→498 (truth 500); low-S/N [NII]/[CII] still show a ~20 % Gaussian-width bias (documented) |
-| PDS 456 PAHFIT unstable | Segment short/long/both, median binning, channel-specific MIRI instrument lists, `rms_rel`/`unstable` flags | Short is stable (rms 0.41); long/both are explicitly flagged (0.84/2.05) and are not used quantitatively |
-| PAHFIT only validated on VV114 | Spitzer IRS `.tbl` adapter, Jy→MJy/sr slit conversion, real Mrk 231/NGC 253/NGC 4151 fits | VV114 rms 0.18; Mrk 231 0.35; NGC 4151 0.60 (flagged); NGC 253 2.4 (flagged) |
-| PyQSOFit used 2 % flux floor and dropped UV lines | Calibrated errors by default; host-free UV fit; `PYQSOFIT_HOST=1` restores host decomposition | Mg II recovered at z=0.587; `pyqsofit_lines.csv` records broad and narrow components |
-| PyQSOFit C III] high vs SDSS ZLINE | Added Si III]/Al III/Si II/Fe II/N III satellites; tightened C III] broad-width prior; report broad and narrow separately | Total C III]/ZLINE drops from 1.5–2.9 to ~1.45–2.0; narrow C III] remains 0.005–0.06 of ZLINE; broad component still includes Fe II/outflow |
-| pPXF host unconstrained at high z | Template interpolation fix; host errors/upper limits; reliability reasons; 4000 Å-break and σ-bound flags | z=0.587 host 0.109 reliable; z=0.651 host 0.127 but σ at 1000 km/s flagged; z≥0.99 upper limits |
-| NIR single extraction | Public JWST `s3d` cube + QSO-centred 3×3 extraction (`pipeline/extract_nir_aperture.py`); raw cube not committed, derived table committed | Centred: broad Hα S/N≈25 (pipeline x1d S/N≈3.4), narrow Hα/[N II], broad Hβ S/N≈3 |
-| Generic IR had no real adapters | MIRI SURF_BRIGHT, PACS, HIFI, Spitzer IRS, PAHFIT s1d adapters; unit metadata | All real data ingest without unit guessing |
-| Cross-band synthetic only | Real NGC 253 MIR+FIR and real AGN NGC 4151 MIR+FIR catalogues; [CII]/[OI] and [CII]/[NII] ratios | NGC 253 3/3; NGC 4151 [CII]/[NII]=12.2 (consistent); [NeIII]/[NeII]=0.059 is retained/flagged |
-| CIGALE one torus family | Added `fritz2006`; `model_family.csv` and spread | 04592933676: SKIRTOR χ²_ν=19.2 (WISE-flagged) vs Fritz 0.72 |
-| CIGALE photometric errors nominal | Real SDSS `SPECTROFLUX_IVAR` errors and matched AllWISE errors cached in `inputs/catalogs/photometry_errors.json`; nominal fallback only | CIGALE rerun with real errors; fit quality is lower but no longer artificially optimistic |
-| No AGNfitter-RX | Added `agnfitter_sed` Docker image using public AGNfitter 2.0 (AGNfitter-rx release); 8-band fit, ultranest, compact summary | All five SDSS QSOs fitted; `agnfitter_summary.csv` and SED realization PDF |
-| Mrk 231 PACS has no standard FIR line | Removed FIR from Mrk 231; moved real AGN FIR+MIR validation to NGC 4151 | NGC 4151 real 4-line FIR detection and MIR fit |
-| NGC 253 is a starburst, not an AGN | Added real Seyfert 1 NGC 4151 (Spitzer IRS + PACS) as the AGN cross-band test | NGC 4151 [CII]/[NII]=12.17 consistent; [NeIII]/[NeII] flagged |
+| PDS 456 PAHFIT long/both unstable | Fixed the `(1+z)` residual normalization; added `--init-from`; seeded long from a 15.4–18 µm fit and both from short; corrected the instrument metadata | short/long/both rms = 0.261/0.118/0.105; all stable; full 6.5–28.6 µm data still has missing sub-bands |
+| FIR low-S/N bias | Use local pixel spacing near each line, not the global 30–300 µm spacing; two-pass S/N-weighted velocity-width tie for S/N<5 lines | synthetic OI63 498/500, OIII88 911/1000, NII122 347±67/300, CII158 1942±153/2000; median recovered/truth 0.983 (p=0.88) |
+| C III] broad excess | Added satellites; C III] maxsig 0.015→0.008; Hβ 0.05→0.02; extra Fe II-free continuum windows; reject out-of-coverage and absorption outliers | C III] total/ZLINE = 1.33, 1.76, 1.29; narrow is separately reported and is not a reliable independent flux |
+| NGC 4151 PAHFIT unstable | The IRS table is point-source calibrated; divide all orders by **one common aperture solid angle**, not different SL/LL slit areas | rms 0.65→0.065; stable; [Ne III]/[Ne II]=2.32 (replaces the spurious 0.059); [C II]/[N II]=12.17; S IV/Ne II=0.99 |
+| NIR single/decentred extraction | Use cube WCS/PC matrix, auto centroid, PSF-weighted r=3 aperture, annulus background, propagated errors | PSF extraction: broad Hα S/N≈34, FWHM≈10,100 km/s; broad Hβ S/N≈4; 3×3 and pipeline retained for regression |
+| Cross-band synthetic only | Real NGC 253 and real AGN NGC 4151 MIR+FIR; S IV/Ne II same-slit ratio | 15/15 ratios within broad priors in the current matrix |
+| CIGALE nominal errors | Real SDSS `SPECTROFLUX_IVAR` and matched AllWISE errors | CIGALE rerun with real errors; no invented errors |
+| No AGNfitter-RX | Public AGNfitter 2.0/AGNfitter-rx image, 8 bands, ultranest | 5/5 QSOs; compact medians/posteriors |
+| Mrk 231 PACS no standard FIR line | Removed the non-informative PACS/FIR entry | Mrk 231 remains a real MIR-only AGN test |
+| NGC 253 starburst cross-band | Added real Seyfert 1 NGC 4151 | NGC 4151 now the AGN cross-band validation |
 
-## Remaining limitations
+## Residual limitations
 
-* PDS 456 long/both PAHFIT remains data-limited (MRS calibration/short-long
-  gap) and is flagged; only the short segment is quantitative.
-* The FIR Gaussian flux still has a ~20 % low bias for the lowest-S/N synthetic
-  lines; a model-independent aperture did not improve it, so it is not used.
-* C III] broad remains blended with Fe II/outflow; narrow C III] is the
-  comparable quantity, not the broad total.
-* PROSPECTOR-AGN is still not integrated; **AGNfitter-RX** now is.
-* NGC 4151 PAHFIT is flagged unstable (rms 0.60); its FIR and CII/NII ratio are
-  the reliable parts of the cross-band test.
-* The NIR extraction is 3×3, not a full PSF/aperture optimisation.
+* **PDS 456** x1d files contain only four MRS sub-bands; 56 % of 6.5–28.6 µm is
+  absent.  The fit is stable but gap-limited; full short/medium data are needed
+  for a complete MIR census.
+* **NGC 253 PAHFIT** is still flagged (rms≈11.5 after the common-aperture fix);
+  it is a starburst stress test, not the AGN pass gate.
+* **C III] broad** remains blend-limited; the broad component is real, but the
+  narrow/C III] comparison is not a clean one-number test.
+* **PROSPECTOR-AGN** is not integrated.  The public `bd-j/prospector` main branch
+  has the AGN BBB/torus components, but requires FSPS (~2.3 GB); with only eight
+  bands the non-parametric host is unconstrained.  AGNfitter-RX + CIGALE supply
+  the current model-family spread.
+* **NIR** extraction is PSF-weighted r=3, not a full wavelength-dependent PSF
+  fit or a joint background model.
+* CIGALE/AGNfitter remain photometry-only; no X-ray/radio constraints.

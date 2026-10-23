@@ -1,0 +1,14 @@
+# PAHFIT 2.0 for JWST/MIRI MRS spectra
+# Build context is the repo root:
+#   docker build -f pahfit_mir/dockerfile -t pahfit_mir .
+FROM python:3.12-slim
+ENV PYTHONUNBUFFERED=1 MPLBACKEND=Agg
+RUN apt-get update && apt-get install -y --no-install-recommends \
+      gcc g++ gfortran libgomp1 git && rm -rf /var/lib/apt/lists/*
+WORKDIR /app
+RUN git clone https://github.com/PAHFIT/pahfit /app/pahfit
+RUN pip install --no-cache-dir setuptools_scm "specutils>=1.0" "dust_extinction"
+RUN SETUPTOOLS_SCM_PRETEND_VERSION=2.0 pip install --no-cache-dir /app/pahfit
+COPY Tools/pahfit_mir/run_pahfit.py /app/run_pahfit.py
+RUN mkdir -p /app/input /app/output && chmod 777 /app/output
+ENTRYPOINT ["python", "/app/run_pahfit.py"]

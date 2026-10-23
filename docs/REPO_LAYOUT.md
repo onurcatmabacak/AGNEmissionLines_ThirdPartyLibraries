@@ -6,13 +6,15 @@ inputs/                  canonical source store (one raw copy per source)
   <source>_z_<z>/        source.json + raw/ [+ photometry/]
 outputs/                 canonical results
   <source>_z_<z>/<tool>/ files for one source and one tool
-pipeline/                orchestration, layout helpers, input preparation
+Pipelines/               shell entry points (new tools + archived optical)
+pipeline/                Python orchestration, layout helpers, input preparation
+Tools/                   Dockerized tool source and Dockerfiles
 pipeline_ir/             generic IR line router/fitter
 pyqsofit_uv/ ppxf_host/  UV/host tool images
 nir_linefit/ pahfit_mir/ NIR/MIR tool images
 fir_linefit/ crossband/  FIR/ratio tool images
-cigale_sed/              CIGALE SED/torus image
-agnfitter_sed/           AGNfitter-rx SED image
+Tools/cigale_sed/        CIGALE SED/torus image
+Tools/agnfitter_sed/     AGNfitter-rx SED image
 ```
 
 `work/prepared/` and `work/logs/` are generated and ignored.  The legacy

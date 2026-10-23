@@ -1,0 +1,11 @@
+# NIR (JWST/NIRSpec, APOGEE-style) emission-line tool: pipeline_ir router+fitter
+# Build context is the repo root:
+#   docker build -f nir_linefit/dockerfile -t nir_linefit .
+FROM python:3.12-slim
+ENV PYTHONUNBUFFERED=1 MPLBACKEND=Agg
+WORKDIR /app
+COPY Tools/pipeline_ir/requirements.txt /app/requirements.txt
+RUN pip install --no-cache-dir -r /app/requirements.txt
+COPY Tools/pipeline_ir /app/pipeline_ir
+RUN mkdir -p /app/input /app/output && chmod 777 /app/output
+ENTRYPOINT ["python", "-m", "pipeline_ir.run"]

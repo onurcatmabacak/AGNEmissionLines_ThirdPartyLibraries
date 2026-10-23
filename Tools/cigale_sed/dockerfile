@@ -1,0 +1,16 @@
+# CIGALE SED/torus fit (minimal DB: bc03, dl2014, skirtor2016)
+# Build context is the repo root:
+#   docker build -f cigale_sed/dockerfile -t cigale_sed .
+FROM python:3.11-slim
+ENV PYTHONUNBUFFERED=1 MPLBACKEND=Agg
+RUN apt-get update && apt-get install -y --no-install-recommends \
+      git git-lfs gcc g++ gfortran libgomp1 && rm -rf /var/lib/apt/lists/*
+WORKDIR /app
+RUN git clone --depth 1 https://gitlab.lam.fr/cigale/cigale.git /app/cigale
+RUN cd /app/cigale && git lfs install && git lfs pull
+RUN pip install --no-cache-dir "numpy==1.26.4" "scipy==1.15.1" "matplotlib==3.11.1" "astropy==7.0.1" configobj rich importlib_resources
+RUN cd /app/cigale && PYTHONPATH=/app/cigale python -c "from database_builder import build_filters, build_bc2003, build_dl2014, build_nebular, build_skirtor2016, build_fritz2006; build_filters(); build_bc2003('lr', 13700); build_dl2014(); build_nebular(); build_skirtor2016(); build_fritz2006()"
+COPY Tools/cigale_sed/run_cigale.py /app/run_cigale.py
+ENV PYTHONPATH=/app/cigale
+RUN mkdir -p /app/input /app/run /app/output && chmod 777 /app/run /app/output
+ENTRYPOINT ["python", "/app/run_cigale.py"]
