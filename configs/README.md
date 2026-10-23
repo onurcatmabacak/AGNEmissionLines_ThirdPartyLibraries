@@ -14,6 +14,10 @@ it up when you pass `--variant <tool>=<name>` (or set `VARIANTS="tool=name,..."`
 A variant only has to differ in the one block you are exploring; copy the current
 file and edit it.
 
+`gandalf_line/default/` is a complete tool configuration rather than a tuning
+variant: it contains the GANDALF emission-line setup and the fit controls
+(`config.json`). See `configs/gandalf_line/README.md`.
+
 `pipeline/auto_tune.py` (wrapper `analyze.sh`) **generates** variants under
 `configs/<tool>/auto_<tool>_<knob values>/` automatically and then picks the best
 one by the common reduced χ². Those directories are search artifacts; the winner

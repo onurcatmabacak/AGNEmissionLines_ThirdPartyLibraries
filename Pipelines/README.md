@@ -8,6 +8,7 @@ Pipelines/
   run_new_tools.sh             # NIR/MIR/FIR/UV/SED matrix
   run_ir.sh                    # generic IR fitter (host Python)
   run_*_docker.sh              # individual tool runners
+  run_gandalf_line_docker.sh   # native GANDALF v1.5 (GDL) line fit
   legacy_optical/              # archived optical-v1 drivers
 ```
 
