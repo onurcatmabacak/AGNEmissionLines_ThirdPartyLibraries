@@ -21,8 +21,12 @@ Outputs:
 | FIR recovery | four synthetic lines | recovered/truth median and bootstrap 16–84 % CI | median 0.983 and CI 0.941–1.064; OI/OIII/CII near truth, NII 347±67 vs 300. |
 | Cross-band consistency | 13 real+synthetic ratios | fraction within broad priors; binomial test vs 0.5 | The 0.5 null is only a reference, not a physical model; priors are broad. |
 | PAHFIT stability | eleven segments/fits | rms_rel and stable flag | 10/11 stable; only NGC 253 is flagged; PDS short 0.0088, long 0.118, both 0.105, NGC 4151 0.031. |
+| Cross-tool line ratios | PyQSOFit, S3Fit, GANDALF, PAHFIT | per-source median, 1000-sample bootstrap CI, log scatter | 04592649654 Hβ/[O III] 5007 = 1.96/1.83/2.07 (median 1.96, 0.05 dex); 04570952937 and 04592933676 show larger PyQSOFit-vs-IR scatter. |
 
 The comparison figure is **not** a replacement for the per-object fit figures;
 it is a compact summary of bias, scatter, recovery and stability.
 
 A separate `docs/nir_extraction_comparison.png` compares the pipeline x1d, QSO-centred 3x3 and PSF r=3 Hα detections.
+`docs/line_tool_comparison.png` and `docs/line_ratio_scatter.csv` compare line
+ratios across PyQSOFit/S3Fit/GANDALF/PAHFIT; `docs/MCMC_AND_STATISTICS.md`
+records which codes use MCMC, nested sampling, bootstrap or covariance.

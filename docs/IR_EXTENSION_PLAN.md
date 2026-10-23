@@ -271,3 +271,24 @@ Both the senior software engineer and the professor astronomer returned verdict 
 - **Appendix D.** The illustrative plan uses `synthetic_g235h` and `z_quality B` because Pa-alpha + Br-gamma are one species; add He I 2.0587 or [Fe II] 1.644 in G235H to make it A.
 - **Corrected measured facts.** NIRSpec gratings R 500-2700 (prism 30-330); [O IV] IRS LH 17/20 (18/20 with 37.2 um); 8/20 (9/20 on the alternative Z solution) Z-Z_NOQSO; observed 3601.6-10358.6 A; production `par_table` 194-214 rows with 293/293 `std_dev`; 1204 `results/at_*` dirs.
 - **Legacy ratios.** Do not use legacy quadrature ratios for kinematically tied doublets as anchored diagnostics; keep 4959/5007 out of the penalty when tied.
+
+## v13 — line-fitting extension (CAFE, S3Fit, GANDALF, PAHFIT statistics)
+
+The SED/torus branch is explicitly separate from spectral line fitting:
+
+- `cafe_line` decomposes JWST NIRSpec/MIRI spectra into dust/stellar/AGN
+  continua, PAHs and Gaussian lines.  PDS 456 real MIRI x1d test: rms 0.038,
+  covariance MC (200 draws); four MRS sub-bands only.
+- `s3fit_line` fits spectrum + photometric SED with AGN power law/Fe II and
+  multi-component lines; real SDSS `04592649654` test, χ²_ν=4.76, mock-spectrum
+  MC.
+- `gandalf_line` is native GANDALF v1.5 under GDL (pPXF stellar + simultaneous
+  gas templates); real SDSS `04592649654` test, Hβ/[O III] 5007 measured with
+  MPFIT errors; pPXF stellar kinematics were rejected and a fixed 300 km/s
+  stellar LOSVD is flagged.
+- `pahfit_mir` now exposes covariance/bootstrap MC and compact line tables.
+
+CIGALE and AGNfitter remain **SED-only** and are not used as line fitters.
+`docs/LINE_FITTING_TOOLS.md` and `docs/MCMC_AND_STATISTICS.md` record the
+decision matrix and uncertainty methods.  Configurations for every tool are
+under `configs/<tool>/`.
