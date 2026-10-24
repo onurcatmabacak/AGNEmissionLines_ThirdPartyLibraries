@@ -3,7 +3,7 @@
 ## Provenance
 
 * Upstream: `https://github.com/rudolffu/qsofitmore`, commit `4c5f6e497b306aaf50b502a8e4b27ed9dfe89421`, version `1.2.2`, GPL-3.0.
-* Image: `qsofitmore_line` (size `1501705246` bytes), Python `3.12.15`, lmfit `1.3.2`.
+* Image: `qsofitmore_line` (size `1501705328` bytes; code-identical production run used 1501705246 bytes), Python `3.12.15`, lmfit `1.3.2`.
 * Input: `/app/input/spec-00000-59345-04592649654.fits` (SHA256 `f608fba96439bfdb1f768c05f88051f3f964e06040f3119906aca12aa7b092c6`), calibrated SDSS errors from `1/sqrt(IVAR)`; no error floor.
 * Redshift `0.58741307`; observed `3567.0–10334.7 Å`; rest-frame `2247.0–6510.4 Å`.
 * Galactic extinction: SFD98 (Schlegel, Finkbeiner & Davis 1998; DOI `10.7910/DVN/EWCNL5`) E(B-V) = `0.04944` mag, Fitzpatrick (1999) R_V=3.1.
@@ -42,10 +42,10 @@ qsofitmore 1.2.2 has no emcee/MCMC sampler. Its native uncertainty mode is the l
 | Mg II total | 2540.8 | 209.4 | 2059 | ok |
 | Hγ total | 1406.9 | 37.2 | 1891 | ok |
 
-* **Hβ/[O III] 5007 = 2.044** (MC median 2.030, 16–84% 1.960–2.103).  Hβ total 16–84% 2895–3089; Mg II total 16–84% 2133–2603 (bimodal; see above).
+* **Hβ/[O III] 5007 = 2.044 ± 0.102** (MC median 2.030, 16–84% 1.960–2.103).  Hβ total 16–84% 2895–3089; Mg II total 16–84% 2133–2603 (bimodal; see above).
 * Hβ complex χ²_r = `17.91`; Mg II χ²_r = `1.38`; [O II] χ²_r = `3.98`. These are diagnostics, not goodness-of-fit gates; the Hβ complex is the hardest because the Fe II/Balmer model and the broad profile are not a complete physical description.
 * Fe II band fluxes (from the V09 template): Fe_w2250_w2700_flux=6087.3, Fe_w4434_w4684_flux=736.4, Fe_w5100_w5600_flux=924.9.
-* Balmer continuum normalisation `0.000`; high-order Balmer normalisation `493.3`.
+* Balmer continuum normalisation `8.28e-8`; high-order Balmer normalisation `493.3`.
 
 ## Cross-tool check
 
