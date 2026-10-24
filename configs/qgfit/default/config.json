@@ -1,10 +1,13 @@
 {
-  "_comment": "QGfit 1.0.0 continuum + emission-line fit for the SDSS QSO sample. Wavelengths are rest-frame angstrom; fluxes use the SDSS 1e-17 erg s-1 cm-2 A-1 unit. The committed demonstration run uses a short continuum MCMC (40 walkers x 100 steps) and least-squares line covariance; see Tools/qgfit/README.md.",
+  "_comment": "QGfit 1.0.0 fast demonstration configuration: short continuum MCMC (40 walkers x 100 steps) and least-squares line errors. For the production run use configs/qgfit/production/config.json (100x1500 continuum MCMC + per-complex line MCMC); see configs/qgfit/README.md.",
   "z": null,
   "mask_and_mask": true,
   "qgfit": {
     "do_deredden": false,
-    "wave_range": [1275.0, 8150.0],
+    "wave_range": [
+      1275.0,
+      8150.0
+    ],
     "conti_pl": true,
     "conti_fe_uv": true,
     "conti_fe_op": true,
@@ -31,7 +34,17 @@
     "tie_width": true,
     "tie_shift": true,
     "tie_flux": true,
-    "comp_plot": ["Ha", "Hb", "Hd", "He", "Hr", "MgII", "CIII", "CIV", "Lya"],
+    "comp_plot": [
+      "Ha",
+      "Hb",
+      "Hd",
+      "He",
+      "Hr",
+      "MgII",
+      "CIII",
+      "CIV",
+      "Lya"
+    ],
     "plot": false,
     "plot_line": true,
     "plot_conti_mcmc_corner": true,
@@ -39,5 +52,11 @@
     "verbose_conti": true,
     "verbose_line": false
   },
-  "reference_tools": ["pyqsofit_uv", "gandalf_line", "s3fit_line"]
+  "reference_tools": [
+    "pyqsofit_uv",
+    "gandalf_line",
+    "s3fit_line",
+    "galspec_line",
+    "pyqsofitspec_line"
+  ]
 }

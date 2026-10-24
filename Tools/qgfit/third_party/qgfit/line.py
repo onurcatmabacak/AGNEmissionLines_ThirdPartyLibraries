@@ -305,10 +305,13 @@ class LineFit():
         method = 'leastsq'
         redchi2 = out_leastsq.redchi
         params = out_leastsq.params.copy()
+        # Upstream bug: ``out`` was only assigned when check_kmpfit or
+        # check_nelder was enabled, so an LSQ-only line fit raised
+        # UnboundLocalError.  Default to the least-squares result.
+        out = out_leastsq
         # NOTE: if leastsq finds a local minima, fit with nelder
         # --- check chi2 ---
         if (self.config['check_nelder']) | (self.config['check_kmpfit']):
-            out = out_leastsq
             if self.config['check_kmpfit']:
                 if redchi2 > line_redchi_limit:
                     # ------ kmpfit here -----

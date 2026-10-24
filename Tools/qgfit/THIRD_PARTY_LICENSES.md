@@ -18,6 +18,22 @@ image, confirm the licence with the QGfit authors.
 
 Citation: Yang et al. (2024), arXiv:2408.16183.
 
+### Local patches to the vendored source
+
+The vendored copy contains three small functional fixes (no change to the
+likelihood or fitting algorithm):
+
+* `qgfit/fitter.py::run_fit_conti` and
+  `qgfit/line.py::run_fit_line_one` now initialise `out = out_leastsq` before
+  the optional KMPFIT/Nelder block.  Upstream left `out` unbound when both
+  `check_kmpfit` and `check_nelder` were false, so an LSQ-only run raised
+  `UnboundLocalError` at the return statement.
+* `qgfit/prop.py::cal_prop` now reads the continuum chain only when
+  `save_conti_chains` is true *and* the `mcmc` block exists.  Upstream raised
+  `KeyError('mcmc')` for `conti_mcmc=False` with `save_conti_chains=True`.
+
+The patches are marked with comments in the source.
+
 ## QGfit template data
 
 `third_party/qgfit/template/fe_uv.txt`, `fe_op.txt`,

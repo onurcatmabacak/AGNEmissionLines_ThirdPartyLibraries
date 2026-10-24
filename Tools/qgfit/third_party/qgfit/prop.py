@@ -8,7 +8,12 @@ def cal_prop(obj):
     pars_set = conti['pars_set']
     config = obj['config']
     conti_wave = np.array(config['conti_wave'], dtype=np.float32)
-    if config['save_conti_chains']:
+    # ``prop=True`` can be used without a continuum MCMC; only read the chain
+    # when it was actually saved.  Upstream assumed the two flags always
+    # agreed and raised KeyError('mcmc') for conti_mcmc=False with
+    # save_conti_chains=True.
+    has_chain = bool(config['save_conti_chains']) and 'mcmc' in conti
+    if has_chain:
         flatchain = obj['conti']['mcmc']['flatchain']
         nf = len(flatchain)
     prop = []
@@ -22,7 +27,7 @@ def cal_prop(obj):
                 conti_wave[k] * config['flux_lum_scale'] * \
                 config['flux_factor'])
             # 
-            if config['save_conti_chains']:
+            if has_chain:
                 tparr = np.zeros(nf)
                 for t in range(nf):
                     pars_chain = flatchain.iloc[t].to_dict()

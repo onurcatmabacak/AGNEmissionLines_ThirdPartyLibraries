@@ -122,8 +122,12 @@ class QGfitObj():
         redchi2 = out_leastsq.redchi
         params = out_leastsq.params.copy()
         method = 'leastsq'
+        # Upstream bug: when both check_kmpfit and check_nelder are False the
+        # local ``out`` was never assigned and the function raised
+        # UnboundLocalError at ``return out``.  Keep the least-squares result
+        # as the default so LSQ-only runs work.
+        out = out_leastsq
         if (self.config['check_nelder']) | (self.config['check_kmpfit']):
-            out = out_leastsq
             if self.config['check_kmpfit']:
                 if redchi2 > conti_redchi_limit:
                     # ------ kmpfit here -----

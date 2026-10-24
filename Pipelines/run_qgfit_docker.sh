@@ -7,7 +7,8 @@
 #   --config DIR       config directory (default: configs/qgfit/default)
 #   --z Z              override systemic redshift
 #   --reference DIR    directory of sibling tool outputs (default: auto-detect
-#                      pyqsofit_uv, gandalf_line and s3fit_line next to OUT)
+#                      pyqsofit_uv, gandalf_line, s3fit_line, galspec_line and
+#                      pyqsofitspec_line next to OUT)
 #   --name NAME        QGfit output stem (default: qgfit)
 #   --sfd-dir DIR      mount a directory with sfdmap FITS files at /opt/sfd
 #
@@ -86,7 +87,7 @@ fi
 if [ -z "$REF" ]; then
   mkdir -p "$(dirname "$OUT")"
   ref_mounted=0
-  for tool in pyqsofit_uv gandalf_line s3fit_line; do
+  for tool in pyqsofit_uv gandalf_line s3fit_line galspec_line pyqsofitspec_line; do
     cand="$(dirname "$OUT")/$tool"
     if [ -d "$cand" ]; then
       MOUNTS+=(-v "$(realpath "$cand")":/app/reference/$tool:ro)
