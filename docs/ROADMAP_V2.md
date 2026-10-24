@@ -184,7 +184,7 @@ With `nH` free and the official background model, the production fit gives
 Delta chi2 = **17.83 (4.22 sigma)**.  The value depends strongly on the
 continuum/background treatment: a soft-blackbody continuum reaches 53.91
 (7.34 sigma), while a fixed-`nH` (continuum-value) conservative fit gives 11.94
-(3.46 sigma).  The detection is significant in every variant (3.5-9.5 sigma),
+(3.46 sigma).  The detection is significant in every variant (3.5-9.6 sigma),
 but the exact Delta chi2 is not a robust headline number.  The production
 choice is the free-`nH` baseline because it is the statistically adequate
 continuum description (`chi2/dof = 1.83` before the line, 1.50 after), whereas

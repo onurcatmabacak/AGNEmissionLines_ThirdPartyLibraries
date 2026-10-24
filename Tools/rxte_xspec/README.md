@@ -141,7 +141,7 @@ is absorbing continuum residuals.  It is reported as a diagnostic, not the
 production measurement.  The production free-`nH` fit gives 17.83 on a
 chi2/dof = 1.83 baseline; a soft-excess continuum reaches 53.91; a fixed
 (continuum-value) N_H conservative fit gives 11.94.  The detection is
-significant in every variant (3.5-9.5 sigma), but the exact Delta chi2 is
+significant in every variant (3.5-9.6 sigma), but the exact Delta chi2 is
 continuum/background-dependent.  The statistic choice is not the explanation:
 with the same model and background, `pgstat` gives 17.84 and `cstat` gives
 17.84, identical to `chi` within 0.01.  This is the honest PCA systematics
