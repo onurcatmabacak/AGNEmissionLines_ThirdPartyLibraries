@@ -1,15 +1,16 @@
 #!/usr/bin/env bash
-# Run the GalSpec reduced H-beta/[O III] line fit in the galspec_line image.
+# Run the GalSpec full-continuum QSO emission-line fit in the galspec_line image.
 #
 #   bash Pipelines/run_galspec_line_docker.sh <source-dir> <output-dir> [options]
 #
 # Options:
-#   --config DIR       config directory or JSON file (default: configs/galspec_line/default)
+#   --config DIR       config directory or JSON file (default: configs/galspec_line/default,
+#                      which selects the full-continuum model)
 #   --sampler MODE     mcmc (default), nested (dynesty) or lsq
 #   --z Z              override systemic redshift
 #   --object KEY       provenance label (source key)
-#   --mcmc-steps N     override emcee steps
-#   --nwalkers N       override emcee walkers
+#   --mcmc-steps N     override emcee steps (full production: 4000)
+#   --nwalkers N       override emcee walkers (full production: 80, auto-raised to 2*ndim+2)
 #   --nburn N          override emcee burn-in
 #   --seed N           random seed
 #

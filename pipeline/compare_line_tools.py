@@ -70,7 +70,7 @@ def add(rows, source, tool, line, comp, flux, err, fwhm, snr=None):
     if not line:
         return
     comp = str(comp or "").lower()
-    if comp in ("blr", "broad") or "broad" in comp:
+    if comp in ("blr", "broad", "wing") or "broad" in comp or "wing" in comp:
         comp = "broad"
     elif comp in ("nlr", "narrow") or "narrow" in comp:
         comp = "narrow"

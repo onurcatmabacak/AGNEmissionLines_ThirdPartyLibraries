@@ -17,7 +17,7 @@ CAFE, S3Fit, GANDALF, PAHFIT and the generic Gaussian fitters operate on
 | `s3fit_line` | line | UV–NIR | simultaneous spectrum + photometric SED, AGN/Fe II + multi-component lines | mock-spectrum MC |
 | `gandalf_line` | line | optical–NIR | pPXF stellar continuum + simultaneous Gaussian gas | MPFIT covariance/bootstrap |
 | `sdss_zline` | **official product** | optical | BOSS `speclinefit` narrow-line measurements from the `ZLINE` HDU | pipeline errors |
-| `galspec_line` | line | optical–NIR | Astropy continuum + Gaussian lines; reduced Hβ/[O III] window | `emcee` MCMC / dynesty / LSQ covariance |
+| `galspec_line` | line | optical–NIR | full-continuum polynomial + Fe II + Gaussian lines (2280–6460 A rest) | `emcee` MCMC (production) / dynesty / LSQ start |
 | `pyqsofitspec_line` | line | UV–optical | PyQSOFitSpec skew-normal components + Fe II/Balmer | parametric bootstrap |
 | `qgfit` | line | UV–optical | AGN power law + Fe II + host + multi-component lines | continuum MCMC; LSQ line errors |
 | `sheap_line` | line | UV–optical | SHEAP SPAF/AGN decomposition, BH mass | JAX optimisation + parametric-bootstrap MC |
@@ -102,9 +102,9 @@ These four community 1-D codes were added and run on the real
 
 | tool | fitted region/model | result |
 |---|---|---|
-| `galspec_line` | reduced Hβ/[O III] window, Fe II + Gaussian components | emcee MCMC, 2000 saved samples; Hβ/[O III] = 2.00 |
-| `pyqsofitspec_line` | UV/optical Fe II/Balmer + skew-normal lines | 10-fit parametric bootstrap; Hβ/[O III] = 2.11 |
-| `qgfit` | AGN power law + Fe II + host + line complexes | short continuum MCMC; Hβ/[O III] = 2.50 |
+| `galspec_line` | full-continuum global model, Fe II + Gaussian components | emcee MCMC, 37,334 saved samples; Hβ/[O III] = 2.21 (not 50-tau converged) |
+| `pyqsofitspec_line` | UV/optical Fe II/Balmer + skew-normal lines | 53/55 valid parametric-bootstrap fits; Hβ/[O III] = 2.11 |
+| `qgfit` | AGN power law + Fe II + host + line complexes | long continuum MCMC, LSQ lines; Hβ/[O III] = 2.50 |
 | `sheap_line` | Hβ/[O III] SPAF/JAX model, 4450-5450 Å, Fe II + 2 narrow components | 50-draw parametric bootstrap; Hβ/[O III] = 2.02, χ²_ν = 2.9; production |
 
 GalSpec and PyQSOFitSpec are adopted as production alternatives.  QGfit is

@@ -1,6 +1,7 @@
 {
-  "schema_version": 1,
-  "description": "GalSpec reduced H-beta/[O III] 4959,5007 line fit for an SDSS QSO spectrum.  Continuum + Fe II template + two-component H-beta + [O III] core/wing; emcee posterior for the main window, linear-covariance LSQ for auxiliary narrow-line windows.",
+  "schema_version": 2,
+  "model_mode": "full",
+  "description": "Production GalSpec full-continuum + emission-line model for an SDSS QSO.  Global rest-frame polynomial continuum, park2022 Fe II template, one kinematic component per narrow-line group, broad Balmer and Mg II components, all Balmer lines available in the SDSS coverage, [O II] 3726/3729, [Ne III] 3869/3967, [O III] 4363/4959/5007 with a broad wing, [Ne V] 3426, He II 4686, [S II] 4068/4076, [O I] 6300/6363 and [S III] 6312.  emcee samples the full model; auxiliary windows are no longer fitted separately.",
   "input": {
     "redshift": "auto",
     "flux_unit": "auto",
@@ -9,7 +10,9 @@
     "deredden": false,
     "mask_and_mask": true,
     "min_wavelength_angstrom": null,
-    "max_wavelength_angstrom": null
+    "max_wavelength_angstrom": null,
+    "rest_min_wavelength_angstrom": 2280.0,
+    "rest_max_wavelength_angstrom": 6460.0
   },
   "instrument": {
     "resolution_source": "wresl",
@@ -17,19 +20,10 @@
     "subtract_from_fwhm": true
   },
   "continuum": {
-    "main_model": "linear",
-    "sidebands": [
-      [
-        4720.0,
-        4780.0
-      ],
-      [
-        5110.0,
-        5150.0
-      ]
-    ],
-    "slope_pad": 0.05,
-    "intercept_pad": 50.0,
+    "main_model": "polynomial",
+    "polynomial_degree": 4,
+    "polynomial_x0": 4350.0,
+    "polynomial_xscale": 1200.0,
     "feii": {
       "enabled": true,
       "template": "park2022",
@@ -38,11 +32,11 @@
       "dv0": 0.0,
       "amplitude_bounds": [
         0.0,
-        300.0
+        120.0
       ],
       "sigma_bounds": [
-        400.0,
-        4000.0
+        500.0,
+        5000.0
       ],
       "dv_bounds": [
         -2000.0,
@@ -50,262 +44,597 @@
       ]
     }
   },
-  "main_window": {
-    "name": "hb_oiii",
-    "rest": [
-      4720.0,
-      5150.0
-    ],
-    "lines": [
-      {
-        "name": "Hbeta",
-        "wave": 4861.333,
-        "component_labels": [
-          "narrow",
-          "broad"
-        ],
-        "profile_window": [
-          4780.0,
-          4945.0
-        ],
-        "total": true,
-        "components": [
-          {
-            "label": "narrow",
-            "sigma0": 400.0,
-            "sigma_bounds": [
-              100.0,
-              700.0
-            ],
-            "amp0_frac": 0.5,
-            "amplitude_bounds": [
-              0.0,
-              300.0
-            ],
-            "dv_bounds": [
-              -1000.0,
-              1000.0
-            ]
-          },
-          {
-            "label": "broad",
-            "sigma0": 1800.0,
-            "sigma_bounds": [
-              700.0,
-              5000.0
-            ],
-            "amp0_frac": 0.5,
-            "amplitude_bounds": [
-              0.0,
-              300.0
-            ],
-            "dv_bounds": [
-              -1500.0,
-              1500.0
-            ]
-          }
-        ]
-      },
-      {
-        "name": "OIII_5007",
-        "wave": 5006.843,
-        "component_labels": [
-          "narrow",
-          "wing"
-        ],
-        "profile_window": [
-          4960.0,
-          5055.0
-        ],
-        "total": true,
-        "components": [
-          {
-            "label": "narrow",
-            "sigma0": 300.0,
-            "sigma_bounds": [
-              100.0,
-              600.0
-            ],
-            "amp0_frac": 1.0,
-            "amplitude_bounds": [
-              0.0,
-              300.0
-            ],
-            "dv_bounds": [
-              -1500.0,
-              1500.0
-            ]
-          },
-          {
-            "label": "wing",
-            "sigma0": 700.0,
-            "sigma_bounds": [
-              400.0,
-              4000.0
-            ],
-            "amp0_frac": 0.2,
-            "amplitude_bounds": [
-              0.0,
-              300.0
-            ],
-            "dv_bounds": [
-              -2000.0,
-              1500.0
-            ]
-          }
-        ]
-      },
-      {
-        "name": "OIII_4959",
-        "wave": 4958.911,
-        "tie_to": "OIII_5007",
-        "amplitude_ratio": 2.98,
-        "component_labels": [
-          "narrow",
-          "wing"
-        ],
-        "profile_window": [
-          4930.0,
-          4985.0
-        ],
-        "total": true,
-        "components": [
-          {
-            "label": "narrow"
-          },
-          {
-            "label": "wing"
-          }
-        ]
-      }
-    ]
+  "kinematics": {
+    "narrow": {
+      "sigma0": 400.0,
+      "sigma_bounds": [
+        120.0,
+        900.0
+      ],
+      "dv0": 0.0,
+      "dv_bounds": [
+        -700.0,
+        700.0
+      ]
+    },
+    "oiii": {
+      "sigma0": 350.0,
+      "sigma_bounds": [
+        120.0,
+        900.0
+      ],
+      "dv0": -80.0,
+      "dv_bounds": [
+        -1000.0,
+        500.0
+      ]
+    },
+    "oiii_wing": {
+      "sigma0": 800.0,
+      "sigma_bounds": [
+        400.0,
+        4000.0
+      ],
+      "dv0": -500.0,
+      "dv_bounds": [
+        -2000.0,
+        1000.0
+      ]
+    },
+    "broad_balmer": {
+      "sigma0": 2000.0,
+      "sigma_bounds": [
+        700.0,
+        3500.0
+      ],
+      "dv0": 0.0,
+      "dv_bounds": [
+        -2000.0,
+        2000.0
+      ]
+    },
+    "mgii": {
+      "sigma0": 1600.0,
+      "sigma_bounds": [
+        500.0,
+        3000.0
+      ],
+      "dv0": 0.0,
+      "dv_bounds": [
+        -2000.0,
+        2000.0
+      ]
+    }
   },
-  "aux_windows": [
+  "lines": [
     {
-      "name": "oii_doublet",
-      "rest": [
-        3650.0,
-        3800.0
+      "name": "Hbeta",
+      "wave": 4861.333,
+      "profile_window": [
+        4780.0,
+        4945.0
       ],
-      "sidebands": [
-        [
-          3650.0,
-          3680.0
-        ],
-        [
-          3770.0,
-          3800.0
-        ]
-      ],
-      "component_label": "narrow",
-      "lines": [
+      "components": [
         {
-          "name": "OII_3726",
-          "wave": 3726.032,
-          "sigma0": 300.0,
-          "sigma_bounds": [
-            80.0,
-            900.0
-          ],
-          "kinematic_ref": null
+          "label": "narrow",
+          "kind": "narrow",
+          "amp0": 45.0,
+          "amplitude_bounds": [
+            0.0,
+            300.0
+          ]
         },
         {
-          "name": "OII_3728",
-          "wave": 3728.815,
-          "sigma0": 300.0,
-          "sigma_bounds": [
-            80.0,
-            900.0
-          ],
-          "kinematic_ref": "OII_3726_narrow"
+          "label": "broad",
+          "kind": "broad_balmer",
+          "amp0": 20.0,
+          "amplitude_bounds": [
+            0.0,
+            300.0
+          ]
         }
-      ]
+      ],
+      "total": true
     },
     {
-      "name": "neiii_doublet",
-      "rest": [
-        3820.0,
-        4020.0
+      "name": "OIII_5007",
+      "wave": 5006.843,
+      "profile_window": [
+        4960.0,
+        5055.0
       ],
-      "sidebands": [
-        [
-          3820.0,
-          3860.0
-        ],
-        [
-          3975.0,
-          4020.0
-        ]
-      ],
-      "component_label": "narrow",
-      "lines": [
+      "components": [
         {
-          "name": "NeIII_3869",
-          "wave": 3868.76,
-          "sigma0": 300.0,
-          "sigma_bounds": [
-            80.0,
-            900.0
-          ],
-          "kinematic_ref": null
+          "label": "narrow",
+          "kind": "oiii",
+          "amp0": 60.0,
+          "amplitude_bounds": [
+            0.0,
+            300.0
+          ]
         },
         {
-          "name": "NeIII_3967",
-          "wave": 3967.47,
-          "sigma0": 300.0,
-          "sigma_bounds": [
-            80.0,
-            900.0
-          ],
-          "kinematic_ref": "NeIII_3869_narrow"
+          "label": "wing",
+          "kind": "oiii_wing",
+          "amp0": 14.0,
+          "amplitude_bounds": [
+            0.0,
+            300.0
+          ]
         }
-      ]
+      ],
+      "total": true
     },
     {
-      "name": "sii_doublet",
-      "rest": [
-        4040.0,
-        4095.0
+      "name": "MgII_2796",
+      "wave": 2796.352,
+      "profile_window": [
+        2735.0,
+        2865.0
       ],
-      "sidebands": [
-        [
-          4040.0,
-          4058.0
-        ],
-        [
-          4085.0,
-          4095.0
-        ]
-      ],
-      "component_label": "narrow",
-      "lines": [
+      "components": [
         {
-          "name": "SII_4068",
-          "wave": 4068.6,
-          "sigma0": 300.0,
-          "sigma_bounds": [
-            80.0,
-            900.0
-          ],
-          "kinematic_ref": null
+          "label": "broad",
+          "kind": "mgii",
+          "amp0": 120.0,
+          "amplitude_bounds": [
+            0.0,
+            400.0
+          ]
+        }
+      ],
+      "total": true
+    },
+    {
+      "name": "Hgamma",
+      "wave": 4340.471,
+      "profile_window": [
+        4300.0,
+        4380.0
+      ],
+      "components": [
+        {
+          "label": "narrow",
+          "kind": "narrow",
+          "amp0": 12.0,
+          "amplitude_bounds": [
+            0.0,
+            200.0
+          ]
         },
         {
-          "name": "SII_4076",
-          "wave": 4076.349,
-          "sigma0": 300.0,
-          "sigma_bounds": [
-            80.0,
-            900.0
-          ],
-          "kinematic_ref": "SII_4068_narrow"
+          "label": "broad",
+          "kind": "broad_balmer",
+          "amp0": 10.0,
+          "amplitude_bounds": [
+            0.0,
+            200.0
+          ]
         }
-      ]
+      ],
+      "total": true
+    },
+    {
+      "name": "Hdelta",
+      "wave": 4101.742,
+      "profile_window": [
+        4065.0,
+        4140.0
+      ],
+      "components": [
+        {
+          "label": "narrow",
+          "kind": "narrow",
+          "amp0": 6.0,
+          "amplitude_bounds": [
+            0.0,
+            150.0
+          ]
+        },
+        {
+          "label": "broad",
+          "kind": "broad_balmer",
+          "amp0": 4.0,
+          "amplitude_bounds": [
+            0.0,
+            150.0
+          ]
+        }
+      ],
+      "total": true
+    },
+    {
+      "name": "Hepsilon",
+      "wave": 3970.079,
+      "profile_window": [
+        3950.0,
+        3990.0
+      ],
+      "components": [
+        {
+          "label": "narrow",
+          "kind": "narrow",
+          "amp0": 4.0,
+          "amplitude_bounds": [
+            0.0,
+            150.0
+          ]
+        }
+      ],
+      "total": true
+    },
+    {
+      "name": "H8",
+      "wave": 3889.064,
+      "profile_window": [
+        3870.0,
+        3908.0
+      ],
+      "components": [
+        {
+          "label": "narrow",
+          "kind": "narrow",
+          "tie_amplitude_to": "Hepsilon_narrow",
+          "amplitude_ratio": 1.515
+        }
+      ],
+      "total": true
+    },
+    {
+      "name": "H9",
+      "wave": 3835.391,
+      "profile_window": [
+        3817.0,
+        3854.0
+      ],
+      "components": [
+        {
+          "label": "narrow",
+          "kind": "narrow",
+          "tie_amplitude_to": "Hepsilon_narrow",
+          "amplitude_ratio": 2.17
+        }
+      ],
+      "total": true
+    },
+    {
+      "name": "H10",
+      "wave": 3797.904,
+      "profile_window": [
+        3780.0,
+        3816.0
+      ],
+      "components": [
+        {
+          "label": "narrow",
+          "kind": "narrow",
+          "tie_amplitude_to": "Hepsilon_narrow",
+          "amplitude_ratio": 3.03
+        }
+      ],
+      "total": true
+    },
+    {
+      "name": "H11",
+      "wave": 3770.63,
+      "profile_window": [
+        3753.0,
+        3788.0
+      ],
+      "components": [
+        {
+          "label": "narrow",
+          "kind": "narrow",
+          "tie_amplitude_to": "Hepsilon_narrow",
+          "amplitude_ratio": 4.0
+        }
+      ],
+      "total": true
+    },
+    {
+      "name": "H12",
+      "wave": 3750.15,
+      "profile_window": [
+        3733.0,
+        3767.0
+      ],
+      "components": [
+        {
+          "label": "narrow",
+          "kind": "narrow",
+          "tie_amplitude_to": "Hepsilon_narrow",
+          "amplitude_ratio": 5.0
+        }
+      ],
+      "total": true
+    },
+    {
+      "name": "OII_3726",
+      "wave": 3726.032,
+      "profile_window": [
+        3700.0,
+        3755.0
+      ],
+      "components": [
+        {
+          "label": "narrow",
+          "kind": "narrow",
+          "amp0": 8.0,
+          "amplitude_bounds": [
+            0.0,
+            200.0
+          ]
+        }
+      ],
+      "total": false
+    },
+    {
+      "name": "OII_3728",
+      "wave": 3728.815,
+      "profile_window": [
+        3700.0,
+        3755.0
+      ],
+      "components": [
+        {
+          "label": "narrow",
+          "kind": "narrow",
+          "amp0": 10.0,
+          "amplitude_bounds": [
+            0.0,
+            200.0
+          ]
+        }
+      ],
+      "total": false
+    },
+    {
+      "name": "NeIII_3869",
+      "wave": 3868.76,
+      "profile_window": [
+        3845.0,
+        3890.0
+      ],
+      "components": [
+        {
+          "label": "narrow",
+          "kind": "narrow",
+          "amp0": 7.0,
+          "amplitude_bounds": [
+            0.0,
+            150.0
+          ]
+        }
+      ],
+      "total": false
+    },
+    {
+      "name": "NeIII_3967",
+      "wave": 3967.47,
+      "profile_window": [
+        3948.0,
+        3988.0
+      ],
+      "components": [
+        {
+          "label": "narrow",
+          "kind": "narrow",
+          "amp0": 2.0,
+          "amplitude_bounds": [
+            0.0,
+            100.0
+          ]
+        }
+      ],
+      "total": false
+    },
+    {
+      "name": "SII_4068",
+      "wave": 4068.6,
+      "profile_window": [
+        4050.0,
+        4080.0
+      ],
+      "components": [
+        {
+          "label": "narrow",
+          "kind": "narrow",
+          "amp0": 3.0,
+          "amplitude_bounds": [
+            0.0,
+            100.0
+          ]
+        }
+      ],
+      "total": false
+    },
+    {
+      "name": "SII_4076",
+      "wave": 4076.349,
+      "profile_window": [
+        4062.0,
+        4092.0
+      ],
+      "components": [
+        {
+          "label": "narrow",
+          "kind": "narrow",
+          "amp0": 2.0,
+          "amplitude_bounds": [
+            0.0,
+            100.0
+          ]
+        }
+      ],
+      "total": false
+    },
+    {
+      "name": "OIII_4363",
+      "wave": 4363.21,
+      "profile_window": [
+        4345.0,
+        4382.0
+      ],
+      "components": [
+        {
+          "label": "narrow",
+          "kind": "oiii",
+          "amp0": 2.0,
+          "amplitude_bounds": [
+            0.0,
+            100.0
+          ]
+        }
+      ],
+      "total": false
+    },
+    {
+      "name": "HeII_4686",
+      "wave": 4685.71,
+      "profile_window": [
+        4660.0,
+        4712.0
+      ],
+      "components": [
+        {
+          "label": "narrow",
+          "kind": "narrow",
+          "amp0": 2.0,
+          "amplitude_bounds": [
+            0.0,
+            100.0
+          ]
+        }
+      ],
+      "total": false
+    },
+    {
+      "name": "NeV_3426",
+      "wave": 3425.868,
+      "profile_window": [
+        3405.0,
+        3448.0
+      ],
+      "components": [
+        {
+          "label": "narrow",
+          "kind": "narrow",
+          "amp0": 2.0,
+          "amplitude_bounds": [
+            0.0,
+            100.0
+          ]
+        }
+      ],
+      "total": false
+    },
+    {
+      "name": "OIII_4959",
+      "wave": 4958.911,
+      "profile_window": [
+        4930.0,
+        4985.0
+      ],
+      "components": [
+        {
+          "label": "narrow",
+          "kind": "oiii",
+          "tie_amplitude_to": "OIII_5007_narrow",
+          "amplitude_ratio": 2.98
+        },
+        {
+          "label": "wing",
+          "kind": "oiii_wing",
+          "tie_amplitude_to": "OIII_5007_wing",
+          "amplitude_ratio": 2.98
+        }
+      ],
+      "total": true
+    },
+    {
+      "name": "MgII_2804",
+      "wave": 2803.531,
+      "profile_window": [
+        2735.0,
+        2870.0
+      ],
+      "components": [
+        {
+          "label": "broad",
+          "kind": "mgii",
+          "tie_amplitude_to": "MgII_2796_broad",
+          "amplitude_ratio": 1.0
+        }
+      ],
+      "total": true
+    },
+    {
+      "name": "OI_6300",
+      "wave": 6300.304,
+      "profile_window": [
+        6275.0,
+        6325.0
+      ],
+      "components": [
+        {
+          "label": "narrow",
+          "kind": "narrow",
+          "amp0": 2.0,
+          "amplitude_bounds": [
+            0.0,
+            100.0
+          ]
+        }
+      ],
+      "total": false
+    },
+    {
+      "name": "OI_6363",
+      "wave": 6363.776,
+      "profile_window": [
+        6340.0,
+        6390.0
+      ],
+      "components": [
+        {
+          "label": "narrow",
+          "kind": "narrow",
+          "tie_amplitude_to": "OI_6300_narrow",
+          "amplitude_ratio": 3.05
+        }
+      ],
+      "total": false
+    },
+    {
+      "name": "SIII_6312",
+      "wave": 6312.06,
+      "profile_window": [
+        6290.0,
+        6335.0
+      ],
+      "components": [
+        {
+          "label": "narrow",
+          "kind": "narrow",
+          "amp0": 1.0,
+          "amplitude_bounds": [
+            0.0,
+            80.0
+          ]
+        }
+      ],
+      "total": false
     }
   ],
   "coverage_lines": [
     {
       "name": "Halpha",
       "wave": 6562.819,
+      "component": "narrow"
+    },
+    {
+      "name": "NII_6548",
+      "wave": 6548.05,
       "component": "narrow"
     },
     {
@@ -326,7 +655,7 @@
   ],
   "fitter": {
     "name": "trf",
-    "maxiter": 5000,
+    "maxiter": 3000,
     "loss": "linear"
   },
   "errors": {
@@ -336,14 +665,17 @@
   },
   "mcmc": {
     "enabled": true,
-    "nwalkers": 48,
+    "nwalkers": 80,
     "nsteps": 4000,
-    "nburn": 1500,
-    "thin": 5,
+    "nburn": 1200,
+    "thin": 1,
     "seed": 42,
-    "initial_jitter_frac": 0.03,
-    "max_samples_for_derived": 2000,
-    "progress": false
+    "initial_jitter_frac": 0.02,
+    "max_samples_for_derived": 4000,
+    "max_mcmc_samples_saved": 40000,
+    "autocorr_tol": 0.0,
+    "progress": false,
+    "ncores": 1
   },
   "nested": {
     "enabled": false,
@@ -360,14 +692,15 @@
     "dpi": 150,
     "save_pdf": true,
     "save_mcmc_samples": true,
-    "max_mcmc_samples_saved": 2000
+    "max_mcmc_samples_saved": 40000
   },
   "_effective": {
     "input_path": "/app/input/raw/spec-00000-59345-04592649654.fits",
     "output_path": "/app/output",
     "object": "04592649654_z_0.5874",
     "config_path": "/app/config/config.json",
-    "sampler": "emcee_mcmc",
-    "z": 0.5874130725860596
+    "sampler": "emcee_mcmc_full",
+    "z": 0.5874130725860596,
+    "model_mode": "full"
   }
 }

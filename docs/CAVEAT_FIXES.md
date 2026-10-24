@@ -38,9 +38,13 @@
 * **PyQSOFit MCMC** is implemented upstream but the line-complex `emcee`
   initialization fails its condition-number check on this source.  The
   committed uncertainty figure is a 100-realization MC, explicitly not MCMC.
-* **GalSpec** was run on a reduced Hβ/[O III] window, not the full
-  UV/optical continuum; its total Hβ (3237) and [O III] 5007 (1619) are close
-  to PyQSOFit/GANDALF, but the narrow/broad split is model-dependent.
+* **GalSpec** now uses the full 2280–6460 A rest-frame model (global
+  polynomial continuum + Fe II + Balmer/[O II]/[Ne III]/[O III] lines), not
+  the reduced 4720–5150 A window.  The full MCMC run gives Hβ total 3718 and
+  [O III] 5007 total 1681 (ratio 2.21); the narrow/broad split remains
+  model-dependent.  The chain is 80 walkers × 4000 steps with
+  `tau_max=342.6`, `nsteps/tau_max=11.7`, saved posterior 37,334 samples; it
+  is a real full-model posterior but not a 50-tau publication chain.
 * **PyQSOFitSpec** uses a 10-realisation bootstrap; its Hβ total is 3439,
   about 18% above GANDALF/S3Fit.  The bootstrap errors are statistical only.
 * **QGfit** uses a short continuum MCMC and least-squares line errors; its
