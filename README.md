@@ -37,7 +37,7 @@ bash Pipelines/run_new_tools.sh --list
 bash Pipelines/run_new_tools.sh --cigale-models skirtor2016,fritz2006
 ```
 
-The matrix runner writes only to:
+All **20 Docker images** build successfully (`Pipelines/build_images.sh`).  The matrix runner writes only to:
 
 ```text
 outputs/<source_name>_z_<redshift>/<tool_name>/...
@@ -72,7 +72,7 @@ The production matrix uses real data only:
 | **PyQSOFitSpec** | `04592649654` | full Fe II/Balmer + skew-normal lines, 55 bootstrap draws | 53 valid; Hβ 3439, [O III] 1631, ratio **2.11** |
 | **QGfit** | `04592649654` | long continuum MCMC + line complexes | 2334 s; Hβ/[O III] **2.50**; line errors LSQ |
 | **SHEAP** | `04592649654` | Hβ/[O III] SPAF/JAX, 50 bootstrap draws | Hβ/[O III] **2.02**, χ²ν 2.9 |
-| **PyQSOFit** | `04592649654` | 100-realization MC (`mcmc/`); MCMC diagnostic | MC failures fixed; MCMC cap documented |
+| **PyQSOFit** | `04592649654` | 100-realization MC (`mc/`); fixed `emcee` initialization | MCMC fit completes; sample persistence fixed in `mcmc_fixed/` |
 | **SDSS ZLINE** | five SDSS QSOs | official `ZLINE` HDU | 045926 ratio **1.57** |
 
 The cross-tool 04592649654 Hβ/[O III] 5007 values are:
@@ -109,9 +109,8 @@ median 2.05, log-scatter 0.13 dex
 * `docs/LINE_FITTING_TOOLS.md` — line-fitting tools vs SED fitting.
 * `docs/MCMC_AND_STATISTICS.md` — MC, nested sampling and covariance modes.
 * `docs/OFFICIAL_PIPELINES_AND_XRAY.md` — official SDSS DAP/HEASOFT exclusions and integration plan.
-* `docs/line_tool_comparison.png` — cross-tool line-ratio comparison.
-* `docs/line_ratio_scatter.csv` — inter-tool scatter and bootstrap intervals.
 * `docs/line_tool_comparison.png` — official ZLINE + eight independent fitters.
+* `docs/line_ratio_scatter.csv` — inter-tool scatter and bootstrap intervals.
 * `docs/SHEAP_ASSESSMENT.md` — SHEAP repair and quality gates.
 * `docs/GANDALF_ASSESSMENT.md` — low-z GDL/pPXF validation.
 

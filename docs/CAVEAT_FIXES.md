@@ -4,10 +4,10 @@
 
 | limitation | fix | current validation |
 |---|---|---|
-| PDS 456 PAHFIT long/both unstable | Fixed the `(1+z)` residual normalization; added `--init-from`; seeded long from a 15.4–18 µm fit and both from short; corrected the instrument metadata | short/long/both rms = 0.0088/0.118/0.105; all stable; the short fit now uses the internal median normalization and its χ²_ν=557 is still dominated by model mismatch; full 6.5–28.6 µm data still has missing sub-bands |
+| PDS 456 PAHFIT long/both unstable | Fixed the `(1+z)` residual normalization; added `--init-from`; seeded long from a 15.4–18 µm fit and both from short; corrected the instrument metadata | short/long/both rms = 0.0088/0.017/0.038; all stable; the short fit now uses the internal median normalization and its χ²_ν=557 is still dominated by model mismatch; full 6.5–28.6 µm data still has missing sub-bands |
 | FIR low-S/N bias | Use local pixel spacing near each line, not the global 30–300 µm spacing; two-pass S/N-weighted velocity-width tie for S/N<5 lines | synthetic OI63 498/500, OIII88 911/1000, NII122 347±67/300, CII158 1942±153/2000; median recovered/truth 0.983 (p=0.88) |
 | C III] broad excess | Added satellites; C III] maxsig 0.015→0.008; Hβ 0.05→0.02; extra Fe II-free continuum windows; reject out-of-coverage and absorption outliers | C III] total/ZLINE = 1.33, 1.76, 1.29; narrow is separately reported and is not a reliable independent flux |
-| NGC 4151 PAHFIT unstable | The IRS table is point-source calibrated; divide all orders by **one common aperture solid angle**, not different SL/LL slit areas | rms 0.65→0.031; stable; [Ne III]/[Ne II]=2.32 (replaces the spurious 0.059); [C II]/[N II]=12.17; S IV/Ne II=0.99; the PAHFIT feature table gives a related 3.39 Ne III/Ne II ratio |
+| NGC 4151 PAHFIT unstable | The IRS table is point-source calibrated; divide all orders by **one common aperture solid angle**, not different SL/LL slit areas | rms 0.031; stable; [Ne III]/[Ne II]=2.32 (replaces the spurious 0.059); [C II]/[N II]=12.17; S IV/Ne II=0.99; the PAHFIT feature table gives a related 3.39 Ne III/Ne II ratio |
 | NIR single/decentred extraction | Use cube WCS/PC matrix, auto centroid, PSF-weighted r=3 aperture, annulus background, propagated errors | PSF extraction: broad Hα S/N≈34, FWHM≈10,100 km/s; broad Hβ S/N≈4; 3×3 and pipeline retained for regression |
 | Cross-band synthetic only | Real NGC 253 and real AGN NGC 4151 MIR+FIR; S IV/Ne II same-slit ratio | 15/15 ratios within broad priors in the current matrix |
 | CIGALE nominal errors | Real SDSS `SPECTROFLUX_IVAR` and matched AllWISE errors | CIGALE rerun with real errors; no invented errors |
@@ -20,7 +20,7 @@
 * **PDS 456** x1d files contain only four MRS sub-bands; 56 % of 6.5–28.6 µm is
   absent.  The fit is stable but gap-limited; full short/medium data are needed
   for a complete MIR census.
-* **NGC 253 PAHFIT** is still flagged (rms≈11.5 after the common-aperture fix);
+* **NGC 253 PAHFIT** is still flagged (rms≈0.25 after the full PAHFIT production fixes);
   it is a starburst stress test, not the AGN pass gate.
 * **C III] broad** remains blend-limited; the broad component is real, but the
   narrow/C III] comparison is not a clean one-number test.
@@ -58,6 +58,12 @@
   this single-fiber sample; **AMARU**, **ELFO**, **AGNdecompose**, **pyspeckit**
   and **HEASOFT** are excluded for the reasons in
   `docs/OFFICIAL_PIPELINES_AND_XRAY.md`.
+* **Production matrix (2026-10-24):** CAFE VV114 rms 0.143/χ²ν 2.68;
+  S3Fit spec+sed 10 mocks χ²ν 1.035; GANDALF low-z pPXF accepted
+  (V=72.5, σ=79.9 km/s); PAHFIT PDS short/long/both **0.0088/0.017/0.038**,
+  NGC 4151 0.031, NGC 253 0.25; GalSpec full 39-parameter MCMC (37,334 saved
+  samples, Hβ/[O III]=2.21); PyQSOFitSpec 53/55 bootstrap (2.11); QGfit long
+  continuum MCMC (2.50); SHEAP repaired (2.02); SDSS ZLINE 1.57.
 * **PAHFIT** formal covariance/χ² errors are much smaller than the residuals
   (χ²_ν 557 PDS short, 304 NGC 4151); they are statistical only and do not
   include the dominant model mismatch.

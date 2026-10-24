@@ -153,9 +153,13 @@ def tool_cafe(src: dict, out: Path, logp: Path) -> int:
     if not list(inp.glob("*_x1d.fits")):
         return _skip("no JWST x1d for CAFE")
     cmd = [str(ROOT / "Pipelines" / "run_cafe_line_docker.sh"),
-           str(inp), str(out), str(src["z"]),
-           "--max-wave", "27.8", "--no-outlier-clip",
-           "--mc-samples", "200", "--mc-seed", "20250101"]
+           str(inp), str(out), str(src["z"])]
+    extra = list(src.get("cafe_args", []))
+    if extra:
+        cmd += extra
+    else:
+        cmd += ["--max-wave", "27.8", "--no-outlier-clip",
+                "--mc-samples", "200", "--mc-seed", "20250101"]
     return run(cmd, logp)
 
 
