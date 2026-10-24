@@ -1,7 +1,7 @@
 {
   "tool": "rxte_xspec",
   "tool_version": "1.0.0",
-  "created_utc": "2026-10-24T14:19:34Z",
+  "created_utc": "2026-10-24T14:21:24Z",
   "source": {
     "name": "3C 120",
     "key": "3C120_z_0.0330",
@@ -119,8 +119,8 @@
   },
   "container": {
     "image": "rxte_xspec",
-    "image_size_bytes": 4346169613,
-    "repo_commit": "5c839de4e2f23ae5dfc32fb3bb22a71c995e0df1",
+    "image_size_bytes": 4346170410,
+    "repo_commit": "2a140556c72aee5ac26e9a45bc8a5d74285b1e44",
     "base_image": "xmm_xspec:latest"
   },
   "config": {
@@ -169,7 +169,9 @@
     "notes": "Production model: tbabs*(zpowerlw+zgauss) in 3-20 keV observed frame. Fe K-alpha rest energy 6.4 keV, narrow-core sigma fixed to 50 eV. The 3-10 keV fit is the line-band cross-check; free-width and free-centroid fits in that band are diagnostics. N_H is free in the production fit; a conservative variant freezes it to the continuum-only value. b2.pha is the official PCA background model.",
     "soft_excess_check": true,
     "seed_bb_kT_keV": 0.2,
-    "seed_bb_norm": 0.0001
+    "seed_bb_norm": 0.0001,
+    "galactic_nH_1e22": 0.024,
+    "galactic_nH_note": "Approximate Galactic cold column toward 3C 120 (LAB/Dickey & Lockman, ~2.4e20 cm^-2). Used only for the diagnostic N_H-frozen variant that explains the larger Delta chi2 quote; the production fit leaves N_H free."
   },
   "statistic_crosscheck": {
     "pgstat": {
@@ -446,6 +448,125 @@
         "upper_limit_90_flux": 5.069823976189839e-13,
         "upper_limit_90_ew_rest_keV": 0.08803894882194287,
         "continuum_photon_flux_at_line": 0.000580133555559114
+      }
+    },
+    "baseline_3_20_galactic_nH": {
+      "fit_id": "baseline_3_20_galactic_nH",
+      "band_keV": [
+        3.0,
+        20.0
+      ],
+      "model": "tbabs*(zpowerlw)",
+      "line": false,
+      "free_sigma": false,
+      "free_energy": false,
+      "nH_fixed": true,
+      "soft_excess": false,
+      "chi2": 198.44650198419853,
+      "dof": 50,
+      "rchi2": 3.9689300396839706,
+      "statistic": "chi",
+      "nH": [
+        0.024,
+        0.0
+      ],
+      "gamma": [
+        1.6848679746337567,
+        0.00962630525559608
+      ],
+      "pl_norm": [
+        0.011982099181899573,
+        0.00021948632399811818
+      ],
+      "group_chi2": 198.446502,
+      "group_bins": 52,
+      "line_metrics": null
+    },
+    "line_3_20_galactic_nH": {
+      "fit_id": "line_3_20_galactic_nH",
+      "band_keV": [
+        3.0,
+        20.0
+      ],
+      "model": "tbabs*(zpowerlw + zgauss)",
+      "line": true,
+      "free_sigma": false,
+      "free_energy": false,
+      "nH_fixed": true,
+      "soft_excess": false,
+      "chi2": 109.11210948991143,
+      "dof": 49,
+      "rchi2": 2.22677774469207,
+      "statistic": "chi",
+      "nH": [
+        0.024,
+        0.0
+      ],
+      "gamma": [
+        1.6858752573699627,
+        0.009835094839188466
+      ],
+      "pl_norm": [
+        0.011752096994479268,
+        0.00022130018019325044
+      ],
+      "group_chi2": 109.1121095,
+      "group_bins": 52,
+      "line_params": {
+        "energy_rest_keV": [
+          6.4,
+          0.0
+        ],
+        "sigma_keV": [
+          0.05,
+          0.0
+        ],
+        "norm_photons_cm2_s": [
+          8.83541518124505e-05,
+          9.348022701229393e-06
+        ],
+        "redshift": 0.033
+      },
+      "line_component": 3,
+      "eqwidth_obs_keV": [
+        0.1661528382,
+        0.0,
+        0.0
+      ],
+      "delta_chi2": 89.3343924942871,
+      "delta_dof": 1,
+      "significance_sigma": 9.451687282929283,
+      "detected": true,
+      "flux": 8.770351677880935e-13,
+      "flux_err": 9.279184384750465e-14,
+      "ew_rest_keV": 0.1716358818606,
+      "ew_obs_keV": 0.1661528382,
+      "line_metrics": {
+        "rest_energy_keV": 6.4,
+        "rest_energy_err": 0.0,
+        "observed_energy_keV": 6.195546950629236,
+        "sigma_keV": 0.05,
+        "sigma_err": 0.0,
+        "norm": 8.83541518124505e-05,
+        "norm_err": 9.348022701229393e-06,
+        "flux": 8.770351677880935e-13,
+        "flux_err": 9.279184384750465e-14,
+        "ew_obs_keV": 0.1661528382,
+        "ew_obs_err_low": 0.017604469434994132,
+        "ew_obs_err_high": 0.017604469434994132,
+        "ew_rest_keV": 0.1716358818606,
+        "ew_rest_err": 0.018185416926348938,
+        "ew_rest_analytic_keV": 0.17188202673834227,
+        "ew_xspec_obs_keV": 0.1661528382,
+        "delta_chi2": 89.3343924942871,
+        "delta_dof": 1,
+        "p_value": 3.334122075817112e-21,
+        "significance_sigma": 9.451687282929283,
+        "detected": true,
+        "upper_limit_90_norm": 0.00010373164915597285,
+        "upper_limit_90_flux": 1.0296777509172385e-12,
+        "upper_limit_90_ew_rest_keV": 0.20179703758218626,
+        "continuum_photon_flux_at_line": 0.0005140395042406203
       }
     },
     "baseline_3_20_soft_excess": {
@@ -879,9 +1000,13 @@
     "line_band_crosscheck_delta_chi2": 22.217046291255528,
     "line_band_crosscheck_significance_sigma": 4.713496185556485,
     "line_band_crosscheck_flux_erg_cm2_s": 5.536845296976878e-13,
-    "line_band_crosscheck_ew_rest_keV": 0.10270833541812999
+    "line_band_crosscheck_ew_rest_keV": 0.10270833541812999,
+    "galactic_nH_variant_delta_chi2": 89.3343924942871,
+    "galactic_nH_variant_significance_sigma": 9.451687282929283,
+    "galactic_nH_variant_flux_erg_cm2_s": 8.770351677880935e-13,
+    "galactic_nH_variant_ew_rest_keV": 0.1716358818606
   },
-  "runtime_s": 5.345415830612183,
+  "runtime_s": 5.500957012176514,
   "caveats": [
     "The HEASARC stdprod PCA products are official reduced products; pcabackest/saextrct were not run.",
     "b2.pha is a PCA background model, not a measured background; its systematic uncertainty is not included in the chi-square errors.",

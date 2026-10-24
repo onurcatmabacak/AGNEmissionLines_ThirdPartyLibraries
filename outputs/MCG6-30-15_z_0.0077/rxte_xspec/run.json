@@ -1,7 +1,7 @@
 {
   "tool": "rxte_xspec",
   "tool_version": "1.0.0",
-  "created_utc": "2026-10-24T14:19:41Z",
+  "created_utc": "2026-10-24T14:21:31Z",
   "source": {
     "name": "MCG-6-30-15",
     "key": "MCG6-30-15_z_0.0077",
@@ -119,8 +119,8 @@
   },
   "container": {
     "image": "rxte_xspec",
-    "image_size_bytes": 4346169613,
-    "repo_commit": "5c839de4e2f23ae5dfc32fb3bb22a71c995e0df1",
+    "image_size_bytes": 4346170410,
+    "repo_commit": "2a140556c72aee5ac26e9a45bc8a5d74285b1e44",
     "base_image": "xmm_xspec:latest"
   },
   "config": {
@@ -169,7 +169,9 @@
     "notes": "Fallback/second independent AGN for the RXTE/PCA branch. Same production model as the default 3C 120 config: tbabs*(zpowerlw+zgauss), 3-20 keV, Fe K-alpha rest 6.4 keV with a fixed 50 eV narrow core; 3-10 keV line-band cross-check and free-width/free-centroid diagnostics. b2.pha is the official PCA background model.",
     "soft_excess_check": true,
     "seed_bb_kT_keV": 0.2,
-    "seed_bb_norm": 0.0001
+    "seed_bb_norm": 0.0001,
+    "galactic_nH_1e22": 0.04,
+    "galactic_nH_note": "Approximate Galactic cold column toward MCG-6-30-15 (~4e20 cm^-2). Used only for the diagnostic N_H-frozen variant; the production fit leaves N_H free."
   },
   "statistic_crosscheck": {
     "pgstat": {
@@ -446,6 +448,125 @@
         "upper_limit_90_flux": 1.060063795657862e-12,
         "upper_limit_90_ew_rest_keV": 0.23032289349759183,
         "continuum_photon_flux_at_line": 0.00045233157279536506
+      }
+    },
+    "baseline_3_20_galactic_nH": {
+      "fit_id": "baseline_3_20_galactic_nH",
+      "band_keV": [
+        3.0,
+        20.0
+      ],
+      "model": "tbabs*(zpowerlw)",
+      "line": false,
+      "free_sigma": false,
+      "free_energy": false,
+      "nH_fixed": true,
+      "soft_excess": false,
+      "chi2": 135.9839888187924,
+      "dof": 43,
+      "rchi2": 3.162418344623079,
+      "statistic": "chi",
+      "nH": [
+        0.04,
+        0.0
+      ],
+      "gamma": [
+        1.7564389693368105,
+        0.019424756947045218
+      ],
+      "pl_norm": [
+        0.010441163619742544,
+        0.0003790755442089001
+      ],
+      "group_chi2": 135.9839888,
+      "group_bins": 45,
+      "line_metrics": null
+    },
+    "line_3_20_galactic_nH": {
+      "fit_id": "line_3_20_galactic_nH",
+      "band_keV": [
+        3.0,
+        20.0
+      ],
+      "model": "tbabs*(zpowerlw + zgauss)",
+      "line": true,
+      "free_sigma": false,
+      "free_energy": false,
+      "nH_fixed": true,
+      "soft_excess": false,
+      "chi2": 44.606927165053946,
+      "dof": 42,
+      "rchi2": 1.0620696944060464,
+      "statistic": "chi",
+      "nH": [
+        0.04,
+        0.0
+      ],
+      "gamma": [
+        1.76667865638375,
+        0.020258805830372484
+      ],
+      "pl_norm": [
+        0.010229281375388968,
+        0.00038637733944127926
+      ],
+      "group_chi2": 44.60692717,
+      "group_bins": 45,
+      "line_params": {
+        "energy_rest_keV": [
+          6.4,
+          0.0
+        ],
+        "sigma_keV": [
+          0.05,
+          0.0
+        ],
+        "norm_photons_cm2_s": [
+          0.00012292799239962802,
+          1.286053524100863e-05
+        ],
+        "redshift": 0.007749
+      },
+      "line_component": 3,
+      "eqwidth_obs_keV": [
+        0.3174322635,
+        0.0,
+        0.0
+      ],
+      "delta_chi2": 91.37706165373845,
+      "delta_dof": 1,
+      "significance_sigma": 9.559134984596591,
+      "detected": true,
+      "flux": 1.2508026158876538e-12,
+      "flux_err": 1.3085702293806944e-13,
+      "ew_rest_keV": 0.3198920461098615,
+      "ew_obs_keV": 0.3174322635,
+      "line_metrics": {
+        "rest_energy_keV": 6.4,
+        "rest_energy_err": 0.0,
+        "observed_energy_keV": 6.3507877457581206,
+        "sigma_keV": 0.05,
+        "sigma_err": 0.0,
+        "norm": 0.00012292799239962802,
+        "norm_err": 1.286053524100863e-05,
+        "flux": 1.2508026158876538e-12,
+        "flux_err": 1.3085702293806944e-13,
+        "ew_obs_keV": 0.3174322635,
+        "ew_obs_err_low": 0.03313771025765077,
+        "ew_obs_err_high": 0.03313771025765077,
+        "ew_rest_keV": 0.3198920461098615,
+        "ew_rest_err": 0.033394494374437304,
+        "ew_rest_analytic_keV": 0.31920274496509154,
+        "ew_xspec_obs_keV": 0.3174322635,
+        "delta_chi2": 91.37706165373845,
+        "delta_dof": 1,
+        "p_value": 1.1874501343904219e-21,
+        "significance_sigma": 9.559134984596591,
+        "detected": true,
+        "upper_limit_90_norm": 0.00014408357287108722,
+        "upper_limit_90_flux": 1.466062418620778e-12,
+        "upper_limit_90_ew_rest_keV": 0.37413668821104096,
+        "continuum_photon_flux_at_line": 0.00038510944638985354
       }
     },
     "baseline_3_20_soft_excess": {
@@ -879,9 +1000,13 @@
     "line_band_crosscheck_delta_chi2": 45.36364205268626,
     "line_band_crosscheck_significance_sigma": 6.735253673967023,
     "line_band_crosscheck_flux_erg_cm2_s": 1.1209960203632525e-12,
-    "line_band_crosscheck_ew_rest_keV": 0.2621939912371021
+    "line_band_crosscheck_ew_rest_keV": 0.2621939912371021,
+    "galactic_nH_variant_delta_chi2": 91.37706165373845,
+    "galactic_nH_variant_significance_sigma": 9.559134984596591,
+    "galactic_nH_variant_flux_erg_cm2_s": 1.2508026158876538e-12,
+    "galactic_nH_variant_ew_rest_keV": 0.3198920461098615
   },
-  "runtime_s": 3.732804298400879,
+  "runtime_s": 3.8375658988952637,
   "caveats": [
     "The HEASARC stdprod PCA products are official reduced products; pcabackest/saextrct were not run.",
     "b2.pha is a PCA background model, not a measured background; its systematic uncertainty is not included in the chi-square errors.",

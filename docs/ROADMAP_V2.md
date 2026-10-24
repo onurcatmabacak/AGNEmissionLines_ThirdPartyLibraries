@@ -137,7 +137,7 @@ background; this is the dominant PCA caveat.
 **Accepted model.**  `tbabs*(zpowerlw+zgauss)` in the observed 3-20 keV band,
 `chi` statistic, Wilms abundances, Fe K-alpha at 6.4 keV rest with a fixed
 50 eV narrow core.  The 3-10 keV line-band fit is the local-continuum
-cross-check.  Runtime is 5.4 s inside the container.
+cross-check.  Runtime is 5.5 s inside the container.
 
 | quantity | 3C 120, 3-20 keV (production) | 3C 120, 3-10 keV cross-check |
 |---|---:|---:|
