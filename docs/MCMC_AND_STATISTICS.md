@@ -63,7 +63,7 @@ per-realization line fluxes.  This is labelled MC, not MCMC.
 `docs/line_tool_comparison.png` combines the line ratios measured by PyQSOFit,
 S3Fit, GANDALF and PAHFIT; `docs/line_ratio_scatter.csv` reports the
 inter-tool log scatter.  For 04592649654, Hβ/[O III] 5007 is 1.83–2.50 across
-the seven independent fitters, with a median of 2.03 and a log-scatter of
-0.042 dex.  Including the SDSS ZLINE anchor (1.57), the eight-entry median is
-2.01 and the scatter is 0.053 dex.  The three best-tested optical tools
+the seven independent fitters, with a median of 2.02 and a log-scatter of
+0.09 dex.  Including the SDSS ZLINE anchor (1.57), the eight-entry median is
+2.01 and the scatter is 0.12 dex.  The three best-tested optical tools
 (PyQSOFit/S3Fit/GANDALF) agree within 0.05 dex.
