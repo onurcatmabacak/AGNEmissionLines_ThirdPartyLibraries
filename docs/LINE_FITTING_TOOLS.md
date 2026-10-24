@@ -24,6 +24,7 @@ CAFE, S3Fit, GANDALF, PAHFIT and the generic Gaussian fitters operate on
 | `sheap_line` | line | UV–optical | SHEAP SPAF/AGN decomposition, BH mass | JAX optimisation + parametric-bootstrap MC |
 | `pahfit_mir` | line | MIR | PAH Drude profiles + dust continuum + gas Gaussians | least-squares + MC |
 | `fir_linefit` | line | FIR | local continuum + Gaussian forbidden lines | covariance |
+| `manga_dap` | line (IFU) | optical | **official DAP**: HYB10 binning + pPXF + SASUKE 35-line Gaussian fit on MaNGA cubes | DAP formal covariance; **9 central bins only**; fast mode rejected |
 | `ppxf_host` | host | optical–NIR | stellar templates + AGN power law, emission masked | pPXF formal errors |
 | `crossband` | ratio | NIR–FIR | line-ratio consistency | analytic propagation |
 | `cigale_sed` | **SED** | UV–FIR | SFH + BC03 + dust + DL2014 + SKIRTOR/Fritz | `pdf_analysis` posterior |
@@ -82,13 +83,26 @@ working GDL compatibility layer), the IDL Astronomy Library, MPFIT and stellar
 templates.  The implementation documents whether native GDL or a pPXF-gas
 fallback was used; the method is never mislabelled.
 
-### Official SDSS / IFU and X-ray exclusions
+### MaNGA DAP (implemented, subset production)
 
-- **MaNGA DAP** and **LVM-DAP** are IFU-survey pipelines.  The MaNGA low-level
-  `Sasuke.fit` path can consume one spectrum, but its line database has only
-  narrow multiplet-tied Gaussians (no broad lines/Fe II/Balmer continuum), so
-  it is a less capable duplicate of the existing fitters.  LVM's row-stacked
-  degenerate case loses the LVM science products.  Both are excluded.
+The official SDSS-IV MaNGA DAP (`sdss-mangadap` 4.5.0, BSD-3-Clause) is
+implemented in `Tools/manga_dap/` on the real MaNGA AGN NGC 1194
+(plateifu 9193-12701).  The accepted product is a Stage-A official DAP run
+(rdxqa + HYB10/S/N=50 binning + pPXF + `EMOM` + `INDXEN`) followed by the
+**official full-method SASUKE emission-line model** (65 MaStar-HC2 templates,
+`ELPMPL11`, `mdegree=14`) on the **9 central single-spaxel bins**.  The subset
+reproduces the published DAP MAPS at those spaxels to <0.1% with 9/9 BPT
+agreement.  The all-spaxel 2397-bin fit exceeded the 58 min wall-clock budget
+and was killed; the published official MAPS is the all-spaxel reference.  A
+fast fixed-continuum all-spaxel mode is retained only in `aux_fastmode/` with
+`QUALITY='FASTMODE_NOT_PRODUCTION'` and is rejected as production (Hα ratio
+2.37, BPT agreement 41%).  The DAP is a narrow-line model, not a broad-line
+QSO fitter.
+
+### Other official SDSS / IFU and X-ray exclusions
+
+- **LVM-DAP** is an IFU-survey pipeline.  LVM's row-stacked degenerate case
+  loses the LVM science products; excluded until LVM cubes are added.
 - The **SDSS spectroscopic pipeline** (`idlspec2d`) reduced these spectra; its
   official **`ZLINE`** product is used directly as the `sdss_zline` anchor.
   Re-running the IDL reduction is unnecessary.

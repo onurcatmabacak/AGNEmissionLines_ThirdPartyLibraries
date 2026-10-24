@@ -9,7 +9,7 @@ event files.
 
 | code | type / input | verdict | reason / next step |
 |---|---|---|---|
-| **MaNGA DAP** (`sdss-mangadap` 4.5.0) | official SDSS IFU DAP; MaNGA `LOGRSS`/`LOGMAP` cubes | **exclude for production** | The survey path requires MaNGA datacubes. A documented low-level `Sasuke.fit` adapter can fit one spectrum, but its models are single-Gaussian/multiplet-tied narrow lines with no broad lines, Fe II or Balmer continuum; it would cost ~2 GB and duplicate `ir_linefit` with less AGN physics. Revisit only if MaNGA cubes are added. |
+| **MaNGA DAP** (`sdss-mangadap` 4.5.0) | official SDSS IFU DAP; MaNGA `LOGCUBE`/`LOGRSS` cubes | **implemented (official subset)** | `manga_dap`; real NGC 1194 LOGCUBE, Stage-A official DAP (binning, pPXF, moments, indices) and official full-method SASUKE on 9 central single-spaxel bins.  The all-spaxel 2397-bin fit exceeded the 58 min budget; published MAPS is the all-spaxel reference.  Fast mode is auxiliary and rejected as production.  Narrow-line DAP, not a broad-line QSO fitter. |
 | **LVM-DAP** (`sdss/lvmdap`, pyPipe3D/pyFIT3D) | official SDSS-V LVM IFU DAP | **exclude** | LVM IFU data products required; a row-stacked single spectrum is technically readable but all LVM binning/map products and the science case disappear. |
 | **SDSS spectroscopic pipeline** (`idlspec2d`) | data reduction + `speclinefit` | **exclude code; use product** | The spectra are already RUN2D v6_0_4 products. Their `ZLINE` HDU is the official line-fit product and is now included as the `sdss_zline` anchor in the comparison. The reduction code itself is not needed. |
 | **GalSpec** | community 1-D AGN/galaxy line fit | **implemented** | `galspec_line`; full-continuum 2280-6460 A model with Fe II, Balmer/[O II]/[Ne III]/[O III] lines; emcee MCMC; real SDSS fit. |
@@ -44,16 +44,20 @@ official SDSS anchor in `pipeline/compare_line_tools.py`.  For `04592649654`,
 ZLINE gives Hβ/[O III] 5007 = **1.57 ± 0.014**, compared with 1.83–2.50 from
 the independent fitters.
 
-If a MaNGA/LVM branch is added later, the correct design is:
+The implemented MaNGA branch is:
 
 ```text
-inputs/<source>/raw/manga_cube.fits
-  -> manga_dap_adapter (DRP LOGRSS + redshift)
-  -> sdss-mangadap EmissionLineFit
-  -> outputs/<source>/manga_dap/
+inputs/NGC1194_z_0.0136/raw/manga-9193-12701-LOGCUBE.fits.gz
+  -> official MaNGADataCube + LOGRSS covariance
+  -> official manga_dap() Stage A (HYB10/S/N=50, pPXF, EMOM, INDXEN)
+  -> official full-method SASUKE on 9 central bins (65 MaStar-HC2 templates)
+  -> outputs/NGC1194_z_0.0136/manga_dap/
 ```
 
-Do not feed single-fiber spectra into these DAPs.
+The all-spaxel 2397-bin emission-line fit is a documented time-budget
+limitation, not a hidden success.  Do not feed single-fiber spectra into the
+MaNGA DAP, and do not call the fast fixed-continuum all-spaxel product the
+production DAP.
 
 ## HEASOFT / X-ray
 
@@ -112,6 +116,7 @@ therefore documented, not faked.
 | PyQSOFitSpec | `pi-agent-0616...` / `228a497e` | `outputs/04592649654_z_0.5874/pyqsofitspec_line/` |
 | QGfit | `feat/qgfit-sheap` / `08d5a814` | `outputs/04592649654_z_0.5874/qgfit/` |
 | SHEAP | `feat/qgfit-sheap` / `08d5a814`; audited/repaired (see `docs/SHEAP_ASSESSMENT.md`) | `outputs/04592649654_z_0.5874/sheap_line/` |
+| MaNGA DAP | `feat/manga-dap` (this work) | `outputs/NGC1194_z_0.0136/manga_dap/` |
 
-The line-ratio comparison now includes all four; the spread is
+The line-ratio comparison now includes all implemented tools; the spread is
 `docs/line_ratio_scatter.csv`.

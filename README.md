@@ -21,12 +21,12 @@ work/                   ignored generated inputs/logs
 `Tools/` contains: `badass`, `fantasy_agn`, `Gelato`, `Gleam`, `pyqsofit`,
 `sculptor`, `pipeline_ir`, `pyqsofit_uv`, `qsofitmore_line`, `pyqsofitspec_line`, `ppxf_host`,
 `gandalf_line`, `cafe_line`, `s3fit_line`, `galspec_line`, `qgfit`,
-`sheap_line`, `nir_linefit`, `pahfit_mir`, `fir_linefit`, `crossband`,
+`sheap_line`, `manga_dap`, `nir_linefit`, `pahfit_mir`, `fir_linefit`, `crossband`,
 `cigale_sed`, `agnfitter_sed`.
 
 CIGALE and AGNfitter are **SED/torus** codes; they do not measure individual
 lines.  Use `pyqsofit_uv`, `qsofitmore_line`, `pyqsofitspec_line`, `cafe_line`, `s3fit_line`,
-`gandalf_line`, `galspec_line`, `qgfit`, `sheap_line`, `pahfit_mir`,
+`gandalf_line`, `galspec_line`, `qgfit`, `sheap_line`, `manga_dap`, `pahfit_mir`,
 `nir_linefit` or `ir_linefit` for line fluxes and kinematics.
 
 ## Quick start
@@ -37,7 +37,7 @@ bash Pipelines/run_new_tools.sh --list
 bash Pipelines/run_new_tools.sh --cigale-models skirtor2016,fritz2006
 ```
 
-All **20 Docker images** build successfully (`Pipelines/build_images.sh`).  The matrix runner writes only to:
+All **22 Docker images** build successfully (`Pipelines/build_images.sh`).  The matrix runner writes only to:
 
 ```text
 outputs/<source_name>_z_<redshift>/<tool_name>/...
@@ -54,6 +54,7 @@ under `work/prepared/`.
 | J0100+2802 | `nir_linefit` (pipeline, 3×3, PSF), `ir_linefit` |
 | VV114 / PDS 456 | `pahfit_mir`, `cafe_line`, `ir_linefit` |
 | Low-z SDSS GANDALF example | `gandalf_line` (Hα/Hβ coverage) |
+| MaNGA AGN NGC 1194 (9193-12701) | `manga_dap` (official DAP subset; all-spaxel reference = published MAPS) |
 | NGC 1068 / NGC 253 / NGC 4151 | `pahfit_mir`, `fir_linefit`, `ir_linefit`; cross-band for NGC 253/4151 |
 | Mrk 231 | `pahfit_mir`, `ir_linefit`, `crossband` |
 | synthetic FIR / multiband | `fir_linefit` + `ir_linefit` / `crossband` |

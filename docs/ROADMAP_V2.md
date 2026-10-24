@@ -20,7 +20,7 @@ stage is completed before the next starts, with the same acceptance gates:
 | stage | mission/tool | official product | test data | status |
 |---|---|---|---|---|
 | 1 | **QSOFITMORE** | UV/optical AGN spectrum fit | real SDSS QSO `04592649654` | **complete** |
-| 2 | **MaNGA DAP** | `sdss-mangadap` official IFU DAP | real MaNGA AGN cube | planned |
+| 2 | **MaNGA DAP** | `sdss-mangadap` official IFU DAP | real MaNGA AGN cube | **complete (official subset; all-spaxel time-limited)** |
 | 3 | **XMM-Newton** | SAS + XGA/XSPEC | real XMM/EPIC AGN observation | planned |
 | 4 | **RXTE** | HEASoft + PyXspec | real RXTE/PCA AGN spectrum | planned |
 | 5 | cross-mission | X-ray/optical/SED comparison | combined source products | planned |
@@ -30,7 +30,7 @@ stage is completed before the next starts, with the same acceptance gates:
 | band | existing tools | planned official/extra |
 |---|---|---|
 | UV | PyQSOFit, QSOFITMORE, GalSpec | HST/COS CALCOS for reduction |
-| optical | PyQSOFit, BADASS, FANTASY, GELATO, GLEAM, S3Fit, GalSpec, QGfit, SHEAP, PyQSOFitSpec | SDSS ZLINE; QSOFITMORE |
+| optical | PyQSOFit, BADASS, FANTASY, GELATO, GLEAM, S3Fit, GalSpec, QGfit, SHEAP, PyQSOFitSpec, **MaNGA DAP** | SDSS ZLINE; QSOFITMORE; MaNGA all-spaxel DAP |
 | NIR | CAFE, S3Fit, nir_linefit, GANDALF | JWST/NIRSpec |
 | MIR | CAFE, PAHFIT | JWST/MIRI, Spitzer IRS |
 | FIR | fir_linefit, crossband | Herschel/PACS, ALMA/ADMIT |
@@ -75,3 +75,41 @@ continuum is not a complete physical description); Mg II is 1.38 and [O II]
 3.98.  These are diagnostics, not acceptance gates.  qsofitmore 1.2.2 has no
 MCMC sampler; the 200-draw lmfit parametric bootstrap is the native uncertainty
 mode and is not described as a posterior.
+
+
+## Stage 2 result — MaNGA DAP (official subset)
+
+Pinned `sdss-mangadap` **4.5.0** at upstream commit
+`996b46cb9739126fe0fbe69c1a50d8490d924853` (BSD-3-Clause).  The image
+`manga_dap` is **1,853,913,965 bytes** (1.85 GB) and ships the official
+MILES-HC and MaStar-HC2 templates plus `ELPMPL11`, `ELPSCMSK`, `BADSKY` and
+`sdssMaskbits.par` inside the wheel.
+
+Source: real MaNGA AGN **NGC 1194**, plateifu **9193-12701**, `z=0.0136253`
+(NSA v1_0_1), MaNGA AGN Catalog VAC (Comerford et al. 2020).  The DR17
+LOGCUBE (207,992,431 B) and LOGRSS (169,194,046 B) are downloaded unmodified
+by `inputs/NGC1194_z_0.0136/download.sh` and are Git-ignored (over GitHub's
+100 MB limit); the published DAP MAPS (10,775,592 B) is committed as the
+all-spaxel reference.
+
+**Accepted result.**  Official DAP Stage A (rdxqa, HYB10/S/N=50 binning,
+pPXF stellar kinematics, `EMOM` moments, `INDXEN` indices; 1741.7 s) followed
+by the **official full-method SASUKE** emission-line model (65 MaStar-HC2
+templates, `ELPMPL11`, `mdegree=14`, `deconstruct_bins='ignore'`) on the
+**9 central single-spaxel bins** (393.4 s, 9/9 fits).  Against the published
+MAPS at the same spaxels, Hα/Hβ/[O III]/[N II]/[S II] median ratios are
+**0.9995-0.99999** (Pearson r > 0.99998) and BPT agrees **9/9**.  The subset
+MAPS, central spectrum/model, 9-bin line table, comparison and figures are
+committed.
+
+**Time-budget limitation.**  A full all-spaxel HYB10/S/N=10 run produced
+**2397 bins**; the 65-template SASUKE fit reached 157/2397 spectra and was
+killed at the **3500 s (58 min)** cap.  No all-spaxel MAPS was produced.  The
+published official MAPS is the all-spaxel reference; the exact log is
+`outputs/NGC1194_z_0.0136/manga_dap/logs/full_dap_attempt_summary.txt`.
+
+**Fast mode rejected.**  A fixed-continuum all-spaxel diagnostic (175 bins)
+gives Hα ratio 2.37, [N II] 0.53, BPT agreement 41% and a +175 km/s gas
+velocity offset.  It is confined to `aux_fastmode/` with
+`QUALITY='FASTMODE_NOT_PRODUCTION'`, `PRODSTAT='AUXILIARY'`, `ACCEPT=0` and is
+not an acceptance product.

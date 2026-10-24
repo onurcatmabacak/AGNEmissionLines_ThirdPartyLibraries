@@ -1,0 +1,51 @@
+# MaNGA DAP analysis plan: stellar kinematics + emission-line moments only.
+#
+# This is the sdss-mangadap 4.5.0 default plan with the Gaussian
+# emission-line model block removed.  It is used as Stage A of the
+# production validation: the official DAP computes the reduction
+# assessments, HYB10 binning, pPXF stellar kinematics, emission-line
+# moments and spectral indices, and writes a MAPS file with the moment
+# fluxes/kinematics and the empty Gaussian-line extensions.
+#
+# Stage B (Tools/manga_dap/fast_eline.py) then runs the official SASUKE
+# Gaussian fitter on the same 175 official DAP bins with the pPXF
+# continuum fixed, and fills the Gaussian-line extensions.
+#
+# The key is deliberately the same as the published product so the
+# output file names and BINID conventions match.
+
+[default]
+ key = 'HYB10-MILESHC-MASTARHC2'
+
+[default.binning]
+ key                    = 'HYB10'
+ spatial_method         = 'voronoi'
+
+[default.binning.spatial]
+ target_snr             = 50
+ covar_mode         = 'matrix'
+
+[default.binning.spectral]
+ covar_mode         = 'channels'
+ covar_par          = 11
+
+[default.continuum]
+ key                    = 'MILESHC'
+ minimum_snr            = 1.0
+ fit_method             = 'ppxf'
+
+[default.continuum.fit]
+ artifact_mask          = 'BADSKY'
+ emission_line_mask     = 'ELPSCMSK'
+ velscale_ratio         = 4
+
+[default.continuum.fit.templates]
+ key              = 'MILESHC'
+
+[default.eline_moments]
+ key                = 'EMOM'
+ artifact_mask      = 'BADSKY'
+
+[default.indices]
+ key                      = 'INDXEN'
+ artifact_mask            = 'BADSKY'

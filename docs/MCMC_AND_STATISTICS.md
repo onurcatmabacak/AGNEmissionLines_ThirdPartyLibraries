@@ -19,6 +19,7 @@ broad-band SED code is not a line fitter.
 | `sheap_line` | JAX optimisation + 50-draw parametric-bootstrap MC | no | `sheap_mc_samples.csv`, uncertainty |
 | `galspec_line` | emcee (`MCMC_Fit`, full-continuum global model); dynesty optional | yes (production) | `galspec_uncertainty.*`, `galspec_corner.*`, saved posterior in `galspec_mcmc.npz` |
 | `ir_linefit` / `nir_linefit` / `fir_linefit` | `least_squares`/`curve_fit` covariance | no | per-line `flux_err`, `fwhm_err` |
+| `manga_dap` | official DAP/SASUKE formal covariance (`1/sqrt(IVAR)`); no MCMC | no | `subset_comparison.json`, formal flux/kinematic errors; 9 central bins |
 | `ppxf_host` | pPXF formal errors | no | `sigma_err_kms`, host error |
 | `crossband` | analytic ratio propagation | no | `err` per ratio |
 
@@ -101,3 +102,18 @@ Hβ/[O III] 5007 values are: ZLINE 1.57, S3Fit 1.83, PyQSOFit 1.96,
 GalSpec 2.21, GANDALF 2.07, PyQSOFitSpec 2.15, QGfit 2.50 and SHEAP 2.02.
 The full lens is regenerated in `docs/line_ratio_scatter.csv`; the
 well-tested trio (PyQSOFit/S3Fit/GANDALF) still agrees at 0.05 dex.
+
+
+## MaNGA DAP (subset)
+
+`manga_dap` is not an MCMC sampler.  The MaNGA DAP emission-line model
+(`Sasuke`) returns formal Gaussian covariance errors; the MAPS stores
+`1/sqrt(IVAR)`.  The production validation is the official full-method
+`EmissionLineModel` on the 9 central single-spaxel bins of NGC 1194
+(plateifu 9193-12701).  Against the published DAP MAPS at the same spaxels,
+Hα/Hβ/[O III]/[N II]/[S II] median ratios are 0.9995-0.99999 and BPT agrees
+9/9.  The all-spaxel 2397-bin fit exceeded the 58 min budget and was killed;
+the published MAPS is the all-spaxel reference.  A fast fixed-continuum
+all-spaxel run is kept only as an auxiliary diagnostic with
+`FASTMODE_NOT_PRODUCTION`; it fails the validation (Hα ratio 2.37, BPT 41%)
+and is not an error or posterior model.
