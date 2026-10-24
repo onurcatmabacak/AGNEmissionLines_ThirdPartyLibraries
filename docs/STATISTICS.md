@@ -21,7 +21,7 @@ Outputs:
 | FIR recovery | four synthetic lines | recovered/truth median and bootstrap 16–84 % CI | median 0.983 and CI 0.941–1.064; OI/OIII/CII near truth, NII 347±67 vs 300. |
 | Cross-band consistency | 13 real+synthetic ratios | fraction within broad priors; binomial test vs 0.5 | The 0.5 null is only a reference, not a physical model; priors are broad. |
 | PAHFIT stability | thirteen segments/fits | rms_rel + quality flags | 11/13 numerically stable; **all production fits are flagged/systematics-limited**. PDS short/long/both 0.0088/0.017/0.038; NGC 4151 0.031; VV114 0.195 (hot-dust mismatch); NGC 253 0.25 (gaps). Legacy NGC 253 tails remain unstable at 0.71/11.5. |
-| Cross-tool line ratios | SDSS ZLINE + PyQSOFit, PyQSOFitSpec, S3Fit, GANDALF, GalSpec, QGfit, SHEAP, PAHFIT | per-source median, 1000-sample bootstrap CI, log scatter | 04592649654 Hβ/[O III] 5007: ZLINE **1.57**, fitters **1.83–2.50**; eight-entry median **2.05**, 0.13 dex. PyQSOFit/S3Fit/GANDALF alone agree at 0.05 dex. |
+| Cross-tool line ratios | SDSS ZLINE + PyQSOFit, PyQSOFitSpec, S3Fit, GANDALF, GalSpec, QGfit, SHEAP, PAHFIT | per-source median, 1000-sample bootstrap CI, log scatter | 04592649654 Hβ/[O III] 5007: ZLINE **1.57**, fitters **1.83–2.50**; eight-entry median **2.04**, 0.12 dex. PyQSOFit/S3Fit/GANDALF alone agree at 0.05 dex. |
 
 The comparison figure is **not** a replacement for the per-object fit figures;
 it is a compact summary of bias, scatter, recovery and stability.

@@ -128,8 +128,8 @@ def read_standard(path: Path, source: str, tool: str, rows):
                         return _f(r[key])
                 return None
 
-            flux = pick("flux", "flux_1e17", "flux_int_erg_s_cm2", "flux_observed")
-            err = pick("flux_err", "flux_err_1e17", "flux_int_err_w_m2", "flux_int_err_erg_s_cm2", "flux_error")
+            flux = pick("flux", "flux_1e17", "area_1e17", "flux_int_erg_s_cm2", "flux_observed")
+            err = pick("flux_err", "flux_err_1e17", "area_err_1e17", "flux_int_err_w_m2", "flux_int_err_erg_s_cm2", "flux_error")
             fwhm = pick("fwhm_kms", "fwhm", "sigma_kms")
             add(rows, source, tool, r.get("line") or r.get("name"),
                 r.get("component") or r.get("comp") or "total",
@@ -204,6 +204,7 @@ def load():
             "pyqsofitspec_line": ("pyqsofitspec_lines.csv",),
             "qgfit": ("qgfit_lines.csv",),
             "sheap_line": ("sheap_lines.csv",),
+            "qsofitmore_line": ("qsofitmore_lines.csv",),
             "pahfit_mir": ("pahfit_lines.csv",),
         }.items():
             # A tool may publish its own production gate.  Do not let a
