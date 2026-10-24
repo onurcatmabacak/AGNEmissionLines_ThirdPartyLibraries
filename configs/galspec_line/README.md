@@ -1,58 +1,106 @@
-# `configs/galspec_line/default/`
+# `configs/galspec_line/`
 
-One JSON file, `config.json`, drives the GalSpec adapter.  It is a complete
-tool configuration, not a tuning grid.
+Two complete configurations are shipped:
 
-| block | contents |
-|---|---|
-| `input` | redshift/unit autodetection, vacuum-to-air conversion, rest-frame `(1+z)` flux correction, optional SDSS `AND_MASK` and Galactic dereddening |
-| `instrument` | `WRESL`-based SDSS resolution, subtracted in quadrature for the `fwhm_intrinsic_kms` column |
-| `continuum` | local linear continuum sidebands, and the park2022 Fe II template (GalSpec `IronTemplate_new`) |
-| `main_window` | rest-frame H-beta + [O III] 4959,5007 window, component labels, Gaussian bounds, initial guesses, integration/profile windows, and the 4959/5007 amplitude ratio (2.98) |
-| `aux_windows` | [O II] 3726/3728, [Ne III] 3869/3967 and [S II] 4068/4076, each with a linear continuum and tied narrow Gaussians |
-| `coverage_lines` | H-alpha/[N II]/[S II] 6716/6731 rows emitted as `not_covered` when the spectrum does not reach them |
-| `fitter` | `trf` (default), `levmar` or `dogbox`; maximum iterations |
-| `errors` | per-pixel error floor: fraction of the sideband continuum + absolute term |
-| `mcmc` | `emcee` walkers/steps/burn-in, seed, initial jitter, posterior sample count |
-| `nested` | optional `dynesty` controls (`nlive`, `rwalk`, `multi`, `dlogz`); disabled by default |
-| `detection` | S/N threshold for the `detected` flag |
-| `output` | figure DPI/PDF and saved MCMC sample count |
+| directory | model | status |
+|---|---|---|
+| `default/` | full-continuum global model, 2280-6460 A rest | production recipe |
+| `reduced/` | legacy 4720-5150 A H-beta/[O III] window | reproducibility only; not the production run |
 
-## Main-window model
+`default/config.json` selects the full model with `"model_mode": "full"`.
+`reduced/config.json` has no `model_mode`, so the adapter uses the original
+reduced-window path.
+
+## Full-continuum model (`default/`)
 
 ```text
-linear local continuum
-+ park2022 Fe II template (GalSpec IronTemplate_new)
-+ H-beta narrow  Gaussian  (sigma 100-700 km/s)
-+ H-beta broad   Gaussian  (sigma 700-5000 km/s)
-+ [O III] 5007 narrow + wing
-+ [O III] 4959 narrow + wing   (amplitude/kinematics tied to 5007, ratio 2.98)
+normalised polynomial continuum, degree 4, x0=4350 A, xscale=1200 A
++ park2022 Fe II template (GalSpec IronTemplate_new, rest 4000-5600 A)
++ H-beta narrow + broad
++ broad H-gamma and H-delta (broad Balmer sigma/dv tied to H-beta broad)
++ H-epsilon narrow, H8-H12 narrow (H8-H12 tied to H-epsilon by Case-B ratios)
++ [O II] 3726/3729 narrow
++ [Ne III] 3869/3967 narrow
++ [Ne V] 3426 narrow
++ [S II] 4068/4076 narrow
++ [O III] 4363 narrow
++ He II 4686 narrow
++ [O III] 5007 narrow/core + broad wing
++ [O III] 4959 narrow + wing (tied to 5007 by 2.98)
++ broad Mg II 2796 + 2804 (doublet ratio 1.0, kinematics tied)
++ [O I] 6300 + 6363 (6363 tied to 6300 by 3.05)
++ [S III] 6312 narrow
 ```
 
-The fit is performed on the 4720-5150 A rest-frame window.  `emcee` samples
-the 17 free parameters; the line fluxes, FWHM and velocities in
-`galspec_lines.csv` are posterior medians with 16th/84th-percentile errors.
-The LSQ solution is reported in `run.json` and is used as the starting point.
+The model is fitted to the whole usable rest-frame spectrum, not to a local
+window.  The polynomial continuum and Fe II are global; every line is part of
+the same likelihood.  There are 39 free parameters.
 
-## Auxiliary windows
+### Kinematic groups
 
-The auxiliary lines are fitted independently with a linear continuum and one
-Gaussian per line; multiplet members share `dv` and `sigma`.  Their errors are
-linear covariance errors, not MCMC.  They are useful diagnostics, not part of
-the H-beta/[O III] posterior.
+| group | reference component | free sigma/dv | typical bounds |
+|---|---|---|---|
+| `narrow` | `Hbeta_narrow` | yes | sigma 120-900 km/s, dv +/-700 km/s |
+| `oiii` | `OIII_5007_narrow` | yes | sigma 120-900 km/s, dv -1000 to +500 km/s |
+| `oiii_wing` | `OIII_5007_wing` | yes | sigma 400-4000 km/s, dv -2000 to +1000 km/s |
+| `broad_balmer` | `Hbeta_broad` | yes | sigma 700-3500 km/s, dv +/-2000 km/s |
+| `mgii` | `MgII_2796_broad` | yes | sigma 500-3000 km/s, dv +/-2000 km/s |
 
-## Error floor
+All other narrow lines share the `narrow` reference; [O III] 4363 and 4959
+share the `oiii` reference; 4959 wing shares the `oiii_wing` reference; broad
+H-gamma/H-delta share `Hbeta_broad`; Mg II 2804 shares `MgII_2796_broad`.
+Amplitudes are free (with the documented Case-B or doublet ties).  This keeps
+the global model identifiable at SDSS resolution.
 
-`errors.floor_frac_of_continuum = 0.02` adds 2 per cent of the local sideband
-continuum in quadrature to the calibrated SDSS error.  The raw and floored
-chi-square values are both written to `run.json`
-(`fit.main.chi2nu_raw`, `fit.main.chi2nu_floor`).  Set the fraction to `0` to
-use the calibrated SDSS errors only.
+### Continuum and Fe II
 
-## Adapting
+`continuum.polynomial_degree = 4`, evaluated in the normalised variable
+`(wave - 4350)/1200`.  The continuum must be positive over the fitted range;
+this is enforced as a prior in the emcee log-probability.  Fe II is GalSpec's
+`park2022` empirical template; its redshift parameter is fixed at zero and
+only amplitude, velocity width and velocity shift are sampled.
 
-For another instrument, update `instrument`, the main/aux windows, and the
-line component bounds.  Do not use a different vacuum/air convention without
-changing `input.vacuum_to_air`; GalSpec's optical line dictionary is in air
-wavelengths.  For a spectrum that covers H-alpha, add a new main or auxiliary
-window rather than moving the existing H-beta window.
+### Lines outside the coverage
+
+H-alpha 6563, [N II] 6548/6583 and [S II] 6716/6731 are outside the SDSS
+rest-frame coverage of the z=0.5874 target.  They are emitted in
+`galspec_lines.csv` with `status=not_covered`, `method=none`, and NaN fluxes.
+They are not silently omitted.
+
+### Sampler
+
+| setting | value |
+|---|---:|
+| sampler | `galspec.MCMC_Fit` / emcee `EnsembleSampler` |
+| walkers | 80 (auto-raised to `2*ndim+2`; ndim=39) |
+| steps | 4000 |
+| burn-in | 1200 |
+| seed | 42 |
+| initial jitter | 2 per cent of each parameter's prior span |
+| saved posterior | up to 40000 post-burn samples, thinned to fit the cap |
+| derived posterior | 4000 evenly spaced post-burn samples |
+| autocorrelation | `emcee` integrated time with `tol=0`, fallback `tol=1`/`5` |
+
+The LSQ start is a trust-region fit in three stages: (1) polynomial + Fe II to
+line-free pixels, (2) full model with continuum/Fe II fixed to solve the lines,
+then (3) joint full-model refinement.  After the joint stage the continuum and
+Fe II values are restored to the line-free solution, so a broad line cannot
+absorb the global continuum; the joint stage is used to refine the line
+parameters.  The LSQ solution is only a starting point; the reported line
+fluxes are posterior medians.
+
+### Errors
+
+`errors.floor_frac_of_continuum = 0.02` adds 2 per cent of the fitted global
+continuum in quadrature to the calibrated SDSS error, with a 1e-6 absolute
+minimum.  Both raw and floored chi-square values are recorded.
+
+### Adapting
+
+For another instrument, update `instrument` and the line list/profile windows.
+For a spectrum that covers H-alpha, add the line to `lines` and remove it from
+`coverage_lines`.  Do not change `input.vacuum_to_air` without changing the
+line wavelengths: GalSpec's optical dictionary and the line list are in air
+wavelengths.  The full model is intended for rest coverage that includes at
+least [O II] 3727, H-beta and [O III] 5007; below that, use a line-region
+configuration and document the reduced coverage.

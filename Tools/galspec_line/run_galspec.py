@@ -1,17 +1,19 @@
 #!/usr/bin/env python3
-"""GalSpec production line fit for an optical AGN/QSO spectrum.
+"""GalSpec line fits for optical AGN/QSO spectra.
 
-The tool is deliberately a *reduced-window* GalSpec fit, not a full-spectrum
-continuum/host decomposition:
+Two model modes are supported:
 
-  main window  H-beta + [O III] 4959,5007
-               linear continuum + park2022 Fe II template
-               H-beta narrow/broad Gaussians
-               [O III] core/wing Gaussians (4959 tied to 5007 by 2.98)
-               LSQ start + emcee posterior (or dynesty nested sampling)
+  full (production, configs/galspec_line/default)
+      Global rest-frame 2280-6460 A model: normalised polynomial continuum,
+      park2022 Fe II, narrow NLR lines, [O III] core/wing, broad Balmer,
+      broad Mg II, all available Balmer lines through H12, and the available
+      forbidden lines.  The full model is sampled with emcee.
 
-  auxiliary    [O II] 3726/3728, [Ne III] 3869/3967, [S II] 4068/4076
-               linear continuum + tied narrow Gaussians, LSQ covariance
+  reduced (legacy, configs/galspec_line/reduced)
+      The original 4720-5150 A H-beta/[O III] window with a local linear
+      continuum and Fe II.  Auxiliary [O II]/[Ne III]/[S II] windows are
+      fitted separately with LSQ covariance.  This path is kept for
+      reproducibility and is not the production recipe.
 
 GalSpec's Astropy models (Line_Gaussian, IronTemplate_new) and fitters
 (TRFLSQFitter, MCMC_Fit, Dynesty_Fit) do the scientific work.  This adapter
@@ -348,6 +350,24 @@ def read_spectrum(path: Path, z_override, cfg: dict) -> dict:
     factor = (1.0 + z) if rest_flux_correction else 1.0
     flux_rest = flux * factor
     err_rest = err * factor
+
+    # Optional rest-frame trim.  The reduced-window config leaves these null;
+    # the full-continuum config uses them to exclude the noisy SDSS edges.
+    rest_min = cfg.get("input", {}).get("rest_min_wavelength_angstrom")
+    rest_max = cfg.get("input", {}).get("rest_max_wavelength_angstrom")
+    if rest_min is not None or rest_max is not None:
+        rest_good = np.ones_like(rest, dtype=bool)
+        if rest_min is not None:
+            rest_good &= rest >= float(rest_min)
+        if rest_max is not None:
+            rest_good &= rest <= float(rest_max)
+        if rest_good.sum() < 20:
+            raise ValueError(f"{path}: only {int(rest_good.sum())} pixels after rest-frame trim")
+        rest = rest[rest_good]
+        flux_rest = flux_rest[rest_good]
+        err_rest = err_rest[rest_good]
+        if wresl is not None:
+            wresl = np.asarray(wresl, dtype=float)[rest_good]
 
     order = np.argsort(rest)
     rest = rest[order]
@@ -1535,6 +1555,10 @@ def run(args):
         LOG.addHandler(stream)
 
     LOG.info("GalSpec version %s; input=%s; config=%s", galspec.__version__, args.input, config_path)
+    if str(cfg.get("model_mode", "reduced")).lower() == "full":
+        from galspec_full import run_full
+
+        return run_full(args, cfg, config_path)
     input_path = find_input(Path(args.input))
     LOG.info("spectrum: %s", input_path)
 

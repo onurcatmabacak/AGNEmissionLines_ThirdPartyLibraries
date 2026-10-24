@@ -7,15 +7,16 @@
   },
   "image": "galspec_line",
   "object": "04592649654_z_0.5874",
+  "model_mode": "full",
   "input": {
     "path": "/app/input/raw/spec-00000-59345-04592649654.fits",
     "layout": "sdss_coadd_table",
     "z": 0.5874130725860596,
     "ebv": 0.04943593963980675,
     "n_pix_raw": 4621,
-    "n_pix_used": 4621,
-    "rest_min_A": 2246.394446240546,
-    "rest_max_A": 6508.649843009029,
+    "n_pix_used": 4523,
+    "rest_min_A": 2280.269619118624,
+    "rest_max_A": 6459.385211180764,
     "flux_scale_input_to_1e17": 1.0,
     "vacuum_to_air": true,
     "rest_frame_flux_correction": true,
@@ -27,12 +28,13 @@
     "flux_table": "both 1e-17 and cgs erg s-1 cm-2"
   },
   "model": {
-    "scope": "reduced line-window fit",
-    "main_window_A": [
-      4720.0,
-      5150.0
-    ],
-    "continuum": "linear",
+    "scope": "full-continuum global model (2280-6460 A rest)",
+    "continuum": {
+      "type": "normalized polynomial",
+      "degree": 4,
+      "x0": 4350.0,
+      "xscale": 1200.0
+    },
     "feii": {
       "enabled": true,
       "template": "park2022",
@@ -41,16 +43,78 @@
       "dv0": 0.0,
       "amplitude_bounds": [
         0.0,
-        300.0
+        120.0
       ],
       "sigma_bounds": [
-        400.0,
-        4000.0
+        500.0,
+        5000.0
       ],
       "dv_bounds": [
         -2000.0,
         2000.0
       ]
+    },
+    "kinematics": {
+      "narrow": {
+        "sigma0": 400.0,
+        "sigma_bounds": [
+          120.0,
+          900.0
+        ],
+        "dv0": 0.0,
+        "dv_bounds": [
+          -700.0,
+          700.0
+        ]
+      },
+      "oiii": {
+        "sigma0": 350.0,
+        "sigma_bounds": [
+          120.0,
+          900.0
+        ],
+        "dv0": -80.0,
+        "dv_bounds": [
+          -1000.0,
+          500.0
+        ]
+      },
+      "oiii_wing": {
+        "sigma0": 800.0,
+        "sigma_bounds": [
+          400.0,
+          4000.0
+        ],
+        "dv0": -500.0,
+        "dv_bounds": [
+          -2000.0,
+          1000.0
+        ]
+      },
+      "broad_balmer": {
+        "sigma0": 2000.0,
+        "sigma_bounds": [
+          700.0,
+          3500.0
+        ],
+        "dv0": 0.0,
+        "dv_bounds": [
+          -2000.0,
+          2000.0
+        ]
+      },
+      "mgii": {
+        "sigma0": 1600.0,
+        "sigma_bounds": [
+          500.0,
+          3000.0
+        ],
+        "dv0": 0.0,
+        "dv_bounds": [
+          -2000.0,
+          2000.0
+        ]
+      }
     },
     "lines": [
       {
@@ -60,7 +124,11 @@
           "narrow",
           "broad"
         ],
-        "tie_to": null
+        "groups": [
+          "narrow",
+          "broad_balmer"
+        ],
+        "total": true
       },
       {
         "name": "OIII_5007",
@@ -69,7 +137,213 @@
           "narrow",
           "wing"
         ],
-        "tie_to": null
+        "groups": [
+          "oiii",
+          "oiii_wing"
+        ],
+        "total": true
+      },
+      {
+        "name": "MgII_2796",
+        "wave_A": 2796.352,
+        "components": [
+          "broad"
+        ],
+        "groups": [
+          "mgii"
+        ],
+        "total": true
+      },
+      {
+        "name": "Hgamma",
+        "wave_A": 4340.471,
+        "components": [
+          "narrow",
+          "broad"
+        ],
+        "groups": [
+          "narrow",
+          "broad_balmer"
+        ],
+        "total": true
+      },
+      {
+        "name": "Hdelta",
+        "wave_A": 4101.742,
+        "components": [
+          "narrow",
+          "broad"
+        ],
+        "groups": [
+          "narrow",
+          "broad_balmer"
+        ],
+        "total": true
+      },
+      {
+        "name": "Hepsilon",
+        "wave_A": 3970.079,
+        "components": [
+          "narrow"
+        ],
+        "groups": [
+          "narrow"
+        ],
+        "total": true
+      },
+      {
+        "name": "H8",
+        "wave_A": 3889.064,
+        "components": [
+          "narrow"
+        ],
+        "groups": [
+          "narrow"
+        ],
+        "total": true
+      },
+      {
+        "name": "H9",
+        "wave_A": 3835.391,
+        "components": [
+          "narrow"
+        ],
+        "groups": [
+          "narrow"
+        ],
+        "total": true
+      },
+      {
+        "name": "H10",
+        "wave_A": 3797.904,
+        "components": [
+          "narrow"
+        ],
+        "groups": [
+          "narrow"
+        ],
+        "total": true
+      },
+      {
+        "name": "H11",
+        "wave_A": 3770.63,
+        "components": [
+          "narrow"
+        ],
+        "groups": [
+          "narrow"
+        ],
+        "total": true
+      },
+      {
+        "name": "H12",
+        "wave_A": 3750.15,
+        "components": [
+          "narrow"
+        ],
+        "groups": [
+          "narrow"
+        ],
+        "total": true
+      },
+      {
+        "name": "OII_3726",
+        "wave_A": 3726.032,
+        "components": [
+          "narrow"
+        ],
+        "groups": [
+          "narrow"
+        ],
+        "total": false
+      },
+      {
+        "name": "OII_3728",
+        "wave_A": 3728.815,
+        "components": [
+          "narrow"
+        ],
+        "groups": [
+          "narrow"
+        ],
+        "total": false
+      },
+      {
+        "name": "NeIII_3869",
+        "wave_A": 3868.76,
+        "components": [
+          "narrow"
+        ],
+        "groups": [
+          "narrow"
+        ],
+        "total": false
+      },
+      {
+        "name": "NeIII_3967",
+        "wave_A": 3967.47,
+        "components": [
+          "narrow"
+        ],
+        "groups": [
+          "narrow"
+        ],
+        "total": false
+      },
+      {
+        "name": "SII_4068",
+        "wave_A": 4068.6,
+        "components": [
+          "narrow"
+        ],
+        "groups": [
+          "narrow"
+        ],
+        "total": false
+      },
+      {
+        "name": "SII_4076",
+        "wave_A": 4076.349,
+        "components": [
+          "narrow"
+        ],
+        "groups": [
+          "narrow"
+        ],
+        "total": false
+      },
+      {
+        "name": "OIII_4363",
+        "wave_A": 4363.21,
+        "components": [
+          "narrow"
+        ],
+        "groups": [
+          "oiii"
+        ],
+        "total": false
+      },
+      {
+        "name": "HeII_4686",
+        "wave_A": 4685.71,
+        "components": [
+          "narrow"
+        ],
+        "groups": [
+          "narrow"
+        ],
+        "total": false
+      },
+      {
+        "name": "NeV_3426",
+        "wave_A": 3425.868,
+        "components": [
+          "narrow"
+        ],
+        "groups": [
+          "narrow"
+        ],
+        "total": false
       },
       {
         "name": "OIII_4959",
@@ -78,462 +352,338 @@
           "narrow",
           "wing"
         ],
-        "tie_to": "OIII_5007"
+        "groups": [
+          "oiii",
+          "oiii_wing"
+        ],
+        "total": true
+      },
+      {
+        "name": "MgII_2804",
+        "wave_A": 2803.531,
+        "components": [
+          "broad"
+        ],
+        "groups": [
+          "mgii"
+        ],
+        "total": true
+      },
+      {
+        "name": "OI_6300",
+        "wave_A": 6300.304,
+        "components": [
+          "narrow"
+        ],
+        "groups": [
+          "narrow"
+        ],
+        "total": false
+      },
+      {
+        "name": "OI_6363",
+        "wave_A": 6363.776,
+        "components": [
+          "narrow"
+        ],
+        "groups": [
+          "narrow"
+        ],
+        "total": false
+      },
+      {
+        "name": "SIII_6312",
+        "wave_A": 6312.06,
+        "components": [
+          "narrow"
+        ],
+        "groups": [
+          "narrow"
+        ],
+        "total": false
       }
     ],
-    "aux_windows": [
+    "free_parameters": [
       {
-        "name": "oii_doublet",
-        "rest": [
-          3650.0,
-          3800.0
-        ],
-        "sidebands": [
-          [
-            3650.0,
-            3680.0
-          ],
-          [
-            3770.0,
-            3800.0
-          ]
-        ],
-        "component_label": "narrow",
-        "lines": [
-          {
-            "name": "OII_3726",
-            "wave": 3726.032,
-            "sigma0": 300.0,
-            "sigma_bounds": [
-              80.0,
-              900.0
-            ],
-            "kinematic_ref": null
-          },
-          {
-            "name": "OII_3728",
-            "wave": 3728.815,
-            "sigma0": 300.0,
-            "sigma_bounds": [
-              80.0,
-              900.0
-            ],
-            "kinematic_ref": "OII_3726_narrow"
-          }
-        ]
+        "name": "c0_0",
+        "map_value": 48.576662718632264,
+        "lower_bound": 17.098637723716237,
+        "upper_bound": 122.13312659797313
       },
       {
-        "name": "neiii_doublet",
-        "rest": [
-          3820.0,
-          4020.0
-        ],
-        "sidebands": [
-          [
-            3820.0,
-            3860.0
-          ],
-          [
-            3975.0,
-            4020.0
-          ]
-        ],
-        "component_label": "narrow",
-        "lines": [
-          {
-            "name": "NeIII_3869",
-            "wave": 3868.76,
-            "sigma0": 300.0,
-            "sigma_bounds": [
-              80.0,
-              900.0
-            ],
-            "kinematic_ref": null
-          },
-          {
-            "name": "NeIII_3967",
-            "wave": 3967.47,
-            "sigma0": 300.0,
-            "sigma_bounds": [
-              80.0,
-              900.0
-            ],
-            "kinematic_ref": "NeIII_3869_narrow"
-          }
-        ]
+        "name": "c1_0",
+        "map_value": -33.577055680248584,
+        "lower_bound": -83.32096476609293,
+        "upper_bound": 16.679035233907072
       },
       {
-        "name": "sii_doublet",
-        "rest": [
-          4040.0,
-          4095.0
-        ],
-        "sidebands": [
-          [
-            4040.0,
-            4058.0
-          ],
-          [
-            4085.0,
-            4095.0
-          ]
-        ],
-        "component_label": "narrow",
-        "lines": [
-          {
-            "name": "SII_4068",
-            "wave": 4068.6,
-            "sigma0": 300.0,
-            "sigma_bounds": [
-              80.0,
-              900.0
-            ],
-            "kinematic_ref": null
-          },
-          {
-            "name": "SII_4076",
-            "wave": 4076.349,
-            "sigma0": 300.0,
-            "sigma_bounds": [
-              80.0,
-              900.0
-            ],
-            "kinematic_ref": "SII_4068_narrow"
-          }
-        ]
-      }
-    ],
-    "fitter": {
-      "name": "trf",
-      "maxiter": 5000,
-      "loss": "linear"
-    },
-    "error_floor": {
-      "floor_frac_of_continuum": 0.02,
-      "floor_abs": 0.0,
-      "min_error": 1e-06
-    }
-  },
-  "fit": {
-    "main": {
-      "chi2_raw": 697.1168316016104,
-      "chi2_floor": 440.92844832466074,
-      "dof": 362,
-      "chi2nu_raw": 1.925737103871852,
-      "chi2nu_floor": 1.2180343876371844,
-      "rms_1e17": 1.6265248294938763,
-      "rms_over_median_error": 1.6703721777588565,
-      "n_free": 17,
-      "n_pixels": 379,
-      "lsq_success": true,
-      "lsq_message": "`ftol` termination condition is satisfied."
-    },
-    "lsq_free_parameters": [
-      {
-        "name": "slope_0",
-        "lsq_value": -0.0124306356919563,
-        "map_value": -0.01221223306439147,
-        "map_lower": -0.06016850953178081,
-        "map_upper": 0.0398314904682192,
-        "lsq_cov_sigma": 0.0006476686601767535
+        "name": "c2_0",
+        "map_value": 16.19590753969024,
+        "lower_bound": -34.04860620323167,
+        "upper_bound": 65.95139379676833
       },
       {
-        "name": "intercept_0",
-        "lsq_value": 100.46899691261487,
-        "map_value": 99.31157988045095,
-        "map_lower": 41.30742509743416,
-        "map_upper": 141.30742509743416,
-        "lsq_cov_sigma": 3.206522176693125
+        "name": "c3_0",
+        "map_value": 3.8080035313463965,
+        "lower_bound": -46.240910641715814,
+        "upper_bound": 53.759089358284186
+      },
+      {
+        "name": "c4_0",
+        "map_value": -3.695573350055935,
+        "lower_bound": -53.81118782452839,
+        "upper_bound": 46.18881217547161
       },
       {
         "name": "amplitude_1",
-        "lsq_value": 55.23013158138612,
-        "map_value": 55.39889740558711,
-        "map_lower": 0.0,
-        "map_upper": 300.0,
-        "lsq_cov_sigma": 0.878412491081096
+        "map_value": 59.93242713344277,
+        "lower_bound": 0.0,
+        "upper_bound": 300.0
       },
       {
         "name": "dv_1",
-        "lsq_value": 18.98301031313183,
-        "map_value": 20.23717422975889,
-        "map_lower": -1000.0,
-        "map_upper": 1000.0,
-        "lsq_cov_sigma": 7.5582051853338035
+        "map_value": -3.5413495461412596,
+        "lower_bound": -700.0,
+        "upper_bound": 700.0
       },
       {
         "name": "sigma_1",
-        "lsq_value": 641.1047395419683,
-        "map_value": 643.7316202122065,
-        "map_lower": 100.0,
-        "map_upper": 700.0,
-        "lsq_cov_sigma": 10.776717130534319
+        "map_value": 715.3796830185506,
+        "lower_bound": 120.0,
+        "upper_bound": 900.0
       },
       {
         "name": "amplitude_2",
-        "lsq_value": 20.655332839939412,
-        "map_value": 20.528205221038434,
-        "map_lower": 0.0,
-        "map_upper": 300.0,
-        "lsq_cov_sigma": 0.7589493093920997
+        "map_value": 16.62614183319718,
+        "lower_bound": 0.0,
+        "upper_bound": 300.0
       },
       {
         "name": "dv_2",
-        "lsq_value": 41.52059844288532,
-        "map_value": 37.039986079326255,
-        "map_lower": -1500.0,
-        "map_upper": 1500.0,
-        "lsq_cov_sigma": 35.80725629977922
+        "map_value": -14.360395312696,
+        "lower_bound": -2000.0,
+        "upper_bound": 2000.0
       },
       {
         "name": "sigma_2",
-        "lsq_value": 2135.6229990820334,
-        "map_value": 2158.335613499751,
-        "map_lower": 700.0,
-        "map_upper": 5000.0,
-        "lsq_cov_sigma": 58.37497121743171
+        "map_value": 2844.0803763858835,
+        "lower_bound": 700.0,
+        "upper_bound": 3500.0
       },
       {
         "name": "amplitude_3",
-        "lsq_value": 57.154209472111326,
-        "map_value": 57.757190298538134,
-        "map_lower": 0.0,
-        "map_upper": 300.0,
-        "lsq_cov_sigma": 2.297138414635889
+        "map_value": 56.20932273760673,
+        "lower_bound": 0.0,
+        "upper_bound": 300.0
       },
       {
         "name": "dv_3",
-        "lsq_value": -135.8102533842125,
-        "map_value": -138.566010411536,
-        "map_lower": -1500.0,
-        "map_upper": 1500.0,
-        "lsq_cov_sigma": 6.39874069155748
+        "map_value": -151.88202597248028,
+        "lower_bound": -1000.0,
+        "upper_bound": 500.0
       },
       {
         "name": "sigma_3",
-        "lsq_value": 362.7865966337745,
-        "map_value": 362.5679766758026,
-        "map_lower": 100.0,
-        "map_upper": 600.0,
-        "lsq_cov_sigma": 10.52819164137196
+        "map_value": 365.4620303281395,
+        "lower_bound": 120.0,
+        "upper_bound": 900.0
       },
       {
         "name": "amplitude_4",
-        "lsq_value": 22.45822961053959,
-        "map_value": 22.130120743970654,
-        "map_lower": 0.0,
-        "map_upper": 300.0,
-        "lsq_cov_sigma": 1.1874423054353918
+        "map_value": 23.272675800611577,
+        "lower_bound": 0.0,
+        "upper_bound": 300.0
       },
       {
         "name": "dv_4",
-        "lsq_value": -916.250350551743,
-        "map_value": -922.9919055179506,
-        "map_lower": -2000.0,
-        "map_upper": 1500.0,
-        "lsq_cov_sigma": 78.03925140055098
+        "map_value": -924.0708444504544,
+        "lower_bound": -2000.0,
+        "upper_bound": 1000.0
       },
       {
         "name": "sigma_4",
-        "lsq_value": 797.6786473414695,
-        "map_value": 798.300120281547,
-        "map_lower": 400.0,
-        "map_upper": 4000.0,
-        "lsq_cov_sigma": 32.58757452449148
+        "map_value": 866.1545937399418,
+        "lower_bound": 400.0,
+        "upper_bound": 4000.0
+      },
+      {
+        "name": "amplitude_5",
+        "map_value": 38.48564613395691,
+        "lower_bound": 0.0,
+        "upper_bound": 400.0
+      },
+      {
+        "name": "dv_5",
+        "map_value": -252.52382549240141,
+        "lower_bound": -2000.0,
+        "upper_bound": 2000.0
+      },
+      {
+        "name": "sigma_5",
+        "map_value": 915.1829382955918,
+        "lower_bound": 500.0,
+        "upper_bound": 3000.0
+      },
+      {
+        "name": "amplitude_6",
+        "map_value": 29.245204131134223,
+        "lower_bound": 0.0,
+        "upper_bound": 200.0
       },
       {
         "name": "amplitude_7",
-        "lsq_value": 18.311278156068433,
-        "map_value": 18.7109801728555,
-        "map_lower": 0.0,
-        "map_upper": 300.0,
-        "lsq_cov_sigma": 0.9899421800720388
+        "map_value": 0.028196108041827553,
+        "lower_bound": 0.0,
+        "upper_bound": 200.0
       },
       {
-        "name": "sigma_7",
-        "lsq_value": 713.7227237741517,
-        "map_value": 724.1513628113603,
-        "map_lower": 400.0,
-        "map_upper": 4000.0,
-        "lsq_cov_sigma": 47.7715276806874
+        "name": "amplitude_8",
+        "map_value": 10.32248645527771,
+        "lower_bound": 0.0,
+        "upper_bound": 150.0
       },
       {
-        "name": "dv_7",
-        "lsq_value": 293.96911760673186,
-        "map_value": 294.2672240843909,
-        "map_lower": -2000.0,
-        "map_upper": 2000.0,
-        "lsq_cov_sigma": 33.341334642887404
-      }
-    ],
-    "aux": [
-      {
-        "name": "oii_doublet",
-        "status": "ok",
-        "rest": [
-          3650.0,
-          3800.0
-        ],
-        "n_pixels": 174,
-        "n_free": 6,
-        "fit_sec": 0.07228121184743941,
-        "quality": {
-          "chi2_raw": 364.0588986217683,
-          "chi2_floor": 174.71207464331343,
-          "dof": 168,
-          "chi2nu_raw": 2.167017253701002,
-          "chi2nu_floor": 1.039952825257818,
-          "rms_1e17": 1.9629436646344982,
-          "rms_over_median_error": 1.4076970114479483,
-          "n_free": 6,
-          "n_pixels": 174
-        },
-        "free_parameters": [
-          {
-            "name": "slope_0",
-            "value": -0.040886011813497394
-          },
-          {
-            "name": "intercept_0",
-            "value": 224.32646066595058
-          },
-          {
-            "name": "amplitude_1",
-            "value": 5.77042217332729
-          },
-          {
-            "name": "dv_1",
-            "value": -28.556015041609964
-          },
-          {
-            "name": "sigma_1",
-            "value": 352.9379065252616
-          },
-          {
-            "name": "amplitude_2",
-            "value": 21.384311186197806
-          }
-        ]
+        "name": "amplitude_9",
+        "map_value": 0.011183693656679441,
+        "lower_bound": 0.0,
+        "upper_bound": 150.0
       },
       {
-        "name": "neiii_doublet",
-        "status": "ok",
-        "rest": [
-          3820.0,
-          4020.0
-        ],
-        "n_pixels": 222,
-        "n_free": 6,
-        "fit_sec": 0.0619172069709748,
-        "quality": {
-          "chi2_raw": 466.0229228150282,
-          "chi2_floor": 215.86319297143712,
-          "dof": 216,
-          "chi2nu_raw": 2.1575135315510567,
-          "chi2nu_floor": 0.9993666341270236,
-          "rms_1e17": 1.7343029068098226,
-          "rms_over_median_error": 1.4774414173169066,
-          "n_free": 6,
-          "n_pixels": 222
-        },
-        "free_parameters": [
-          {
-            "name": "slope_0",
-            "value": -0.06625987164554356
-          },
-          {
-            "name": "intercept_0",
-            "value": 322.98020703843883
-          },
-          {
-            "name": "amplitude_1",
-            "value": 8.625968051657246
-          },
-          {
-            "name": "dv_1",
-            "value": -265.47015799619516
-          },
-          {
-            "name": "sigma_1",
-            "value": 899.9999999999998
-          },
-          {
-            "name": "amplitude_2",
-            "value": 7.61761991463913
-          }
-        ]
+        "name": "amplitude_10",
+        "map_value": 1.3115253622636187,
+        "lower_bound": 0.0,
+        "upper_bound": 150.0
       },
       {
-        "name": "sii_doublet",
-        "status": "ok",
-        "rest": [
-          4040.0,
-          4095.0
-        ],
-        "n_pixels": 59,
-        "n_free": 6,
-        "fit_sec": 0.044698609970510006,
-        "quality": {
-          "chi2_raw": 83.67546043887214,
-          "chi2_floor": 38.773940259406544,
-          "dof": 53,
-          "chi2nu_raw": 1.5787822724315497,
-          "chi2nu_floor": 0.7315837784793687,
-          "rms_1e17": 1.313734417967179,
-          "rms_over_median_error": 1.2119273111076014,
-          "n_free": 6,
-          "n_pixels": 59
-        },
-        "free_parameters": [
-          {
-            "name": "slope_0",
-            "value": 0.1344668493908988
-          },
-          {
-            "name": "intercept_0",
-            "value": -488.39423268415146
-          },
-          {
-            "name": "amplitude_1",
-            "value": 1.8719748697665346
-          },
-          {
-            "name": "dv_1",
-            "value": -121.64705656209287
-          },
-          {
-            "name": "sigma_1",
-            "value": 104.94014633251903
-          },
-          {
-            "name": "amplitude_2",
-            "value": 2.2794021948027093e-12
-          }
-        ]
+        "name": "amplitude_16",
+        "map_value": 6.9900733870657525,
+        "lower_bound": 0.0,
+        "upper_bound": 200.0
+      },
+      {
+        "name": "amplitude_17",
+        "map_value": 10.41566690787031,
+        "lower_bound": 0.0,
+        "upper_bound": 200.0
+      },
+      {
+        "name": "amplitude_18",
+        "map_value": 9.663812939056202,
+        "lower_bound": 0.0,
+        "upper_bound": 150.0
+      },
+      {
+        "name": "amplitude_19",
+        "map_value": 4.7685314420011045,
+        "lower_bound": 0.0,
+        "upper_bound": 100.0
+      },
+      {
+        "name": "amplitude_20",
+        "map_value": 0.2035119934229256,
+        "lower_bound": 0.0,
+        "upper_bound": 100.0
+      },
+      {
+        "name": "amplitude_21",
+        "map_value": 0.1005231260165722,
+        "lower_bound": 0.0,
+        "upper_bound": 100.0
+      },
+      {
+        "name": "amplitude_22",
+        "map_value": 3.7072699748212137,
+        "lower_bound": 0.0,
+        "upper_bound": 100.0
+      },
+      {
+        "name": "amplitude_23",
+        "map_value": 2.0031904794485067,
+        "lower_bound": 0.0,
+        "upper_bound": 100.0
+      },
+      {
+        "name": "amplitude_24",
+        "map_value": 7.095232760999084,
+        "lower_bound": 0.0,
+        "upper_bound": 100.0
+      },
+      {
+        "name": "amplitude_28",
+        "map_value": 4.666346424843991,
+        "lower_bound": 0.0,
+        "upper_bound": 100.0
+      },
+      {
+        "name": "amplitude_30",
+        "map_value": 1.8263190551094581,
+        "lower_bound": 0.0,
+        "upper_bound": 80.0
+      },
+      {
+        "name": "amplitude_31",
+        "map_value": 23.287399696187546,
+        "lower_bound": 0.0,
+        "upper_bound": 120.0
+      },
+      {
+        "name": "sigma_31",
+        "map_value": 795.9257754845104,
+        "lower_bound": 500.0,
+        "upper_bound": 5000.0
+      },
+      {
+        "name": "dv_31",
+        "map_value": 136.7035140206757,
+        "lower_bound": -2000.0,
+        "upper_bound": 2000.0
       }
     ]
   },
+  "fit": {
+    "full": {
+      "chi2_raw": 16633.327902335917,
+      "chi2_floor": 9681.553368690025,
+      "dof": 4484,
+      "chi2nu_raw": 3.7094843671578763,
+      "chi2nu_floor": 2.1591332222769903,
+      "rms_1e17": 3.501345040054175,
+      "rms_over_median_error": 2.363485156657164,
+      "n_free": 39,
+      "n_pixels": 4523,
+      "lsq_success": true,
+      "lsq_message": "`xtol` termination condition is satisfied."
+    },
+    "line_free_pixels": 3236,
+    "n_pixels": 4523,
+    "n_free": 39
+  },
   "sampling": {
-    "method": "emcee_mcmc",
+    "method": "emcee_mcmc_full",
     "nsteps": 4000,
-    "nburn": 1500,
-    "nwalkers": 48,
-    "ndim": 17,
-    "acceptance_fraction": 0.32433854166666665,
-    "tau_max": 201.37089542096837,
-    "tau_status": "ok",
-    "nsteps_over_tau_max": 19.863843737884515,
-    "n_samples_discarded": 120000,
-    "n_samples_derived": 2000,
-    "log_evidence": null,
-    "log_evidence_err": null,
-    "ncall": null
+    "nburn": 1200,
+    "nwalkers": 80,
+    "ndim": 39,
+    "acceptance_fraction": 0.187815625,
+    "tau_max": 342.5724686099473,
+    "tau_status": "ok (tol=0.0)",
+    "nsteps_over_tau_max": 11.676361548348465,
+    "n_steps_kept": 2800,
+    "n_samples_total": 224000,
+    "effective_sample_size": 653.876246707514,
+    "saved_samples": 37334,
+    "saved_thin": 6,
+    "n_samples_derived": 4000
   },
   "mcmc": {
-    "saved_samples": 2000,
+    "saved_samples": 37334,
+    "saved_thin": 6,
     "saved_parameters": [
-      "slope_0",
-      "intercept_0",
+      "c0_0",
+      "c1_0",
+      "c2_0",
+      "c3_0",
+      "c4_0",
       "amplitude_1",
       "dv_1",
       "sigma_1",
@@ -546,28 +696,69 @@
       "amplitude_4",
       "dv_4",
       "sigma_4",
+      "amplitude_5",
+      "dv_5",
+      "sigma_5",
+      "amplitude_6",
       "amplitude_7",
-      "sigma_7",
-      "dv_7"
+      "amplitude_8",
+      "amplitude_9",
+      "amplitude_10",
+      "amplitude_16",
+      "amplitude_17",
+      "amplitude_18",
+      "amplitude_19",
+      "amplitude_20",
+      "amplitude_21",
+      "amplitude_22",
+      "amplitude_23",
+      "amplitude_24",
+      "amplitude_28",
+      "amplitude_30",
+      "amplitude_31",
+      "sigma_31",
+      "dv_31"
     ],
     "theta_map": [
-      -0.01221223306439147,
-      99.31157988045095,
-      55.39889740558711,
-      20.23717422975889,
-      643.7316202122065,
-      20.528205221038434,
-      37.039986079326255,
-      2158.335613499751,
-      57.757190298538134,
-      -138.566010411536,
-      362.5679766758026,
-      22.130120743970654,
-      -922.9919055179506,
-      798.300120281547,
-      18.7109801728555,
-      724.1513628113603,
-      294.2672240843909
+      48.576662718632264,
+      -33.577055680248584,
+      16.19590753969024,
+      3.8080035313463965,
+      -3.695573350055935,
+      59.93242713344277,
+      -3.5413495461412596,
+      715.3796830185506,
+      16.62614183319718,
+      -14.360395312696,
+      2844.0803763858835,
+      56.20932273760673,
+      -151.88202597248028,
+      365.4620303281395,
+      23.272675800611577,
+      -924.0708444504544,
+      866.1545937399418,
+      38.48564613395691,
+      -252.52382549240141,
+      915.1829382955918,
+      29.245204131134223,
+      0.028196108041827553,
+      10.32248645527771,
+      0.011183693656679441,
+      1.3115253622636187,
+      6.9900733870657525,
+      10.41566690787031,
+      9.663812939056202,
+      4.7685314420011045,
+      0.2035119934229256,
+      0.1005231260165722,
+      3.7072699748212137,
+      2.0031904794485067,
+      7.095232760999084,
+      4.666346424843991,
+      1.8263190551094581,
+      23.287399696187546,
+      795.9257754845104,
+      136.7035140206757
     ],
     "file": "galspec_mcmc.npz"
   },
@@ -576,59 +767,59 @@
       "line": "Hbeta",
       "component": "narrow",
       "lambda_rest": 4861.333,
-      "flux": 1.439592322666678e-14,
-      "flux_err": 4.71729398765591e-16,
-      "flux_1e17": 1439.5923226666778,
-      "flux_err_1e17": 47.1729398765591,
-      "fwhm_kms": 1512.048815955661,
-      "fwhm_err_kms": 32.586049598951035,
-      "fwhm_intrinsic_kms": 1504.9002481594787,
-      "velocity_kms": 18.386807182357682,
-      "velocity_err_kms": 8.02169369572476,
-      "snr": 30.517333166721535,
+      "flux": 1.7786205234826275e-14,
+      "flux_err": 2.435004165433486e-16,
+      "flux_1e17": 1778.6205234826275,
+      "flux_err_1e17": 24.35004165433486,
+      "fwhm_kms": 1697.9030245937504,
+      "fwhm_err_kms": 16.855248255904712,
+      "fwhm_intrinsic_kms": 1691.5400722424963,
+      "velocity_kms": -3.350164447748425,
+      "velocity_err_kms": 6.502614262231514,
+      "snr": 73.04383905092797,
       "detected": true,
       "status": "ok",
-      "method": "emcee_mcmc",
+      "method": "emcee_mcmc_full",
       "window_A": "4780.0-4945.0",
-      "notes": "GalSpec emcee_mcmc; Gaussian velocity width; air rest wavelength"
+      "notes": "full-continuum GalSpec model; Gaussian velocity width; air rest wavelength"
     },
     {
       "line": "Hbeta",
       "component": "broad",
       "lambda_rest": 4861.333,
-      "flux": 1.7984638426877277e-14,
-      "flux_err": 4.463714882269381e-16,
-      "flux_1e17": 1798.4638426877275,
-      "flux_err_1e17": 44.6371488226938,
-      "fwhm_kms": 5053.189848326079,
-      "fwhm_err_kms": 170.8031293195645,
-      "fwhm_intrinsic_kms": 5051.055412317636,
-      "velocity_kms": 40.463792821007914,
-      "velocity_err_kms": 38.42534302267396,
-      "snr": 40.29074190718421,
+      "flux": 1.937479606015193e-14,
+      "flux_err": 3.436010938507764e-16,
+      "flux_1e17": 1937.479606015193,
+      "flux_err_1e17": 34.360109385077635,
+      "fwhm_kms": 7109.5547400608175,
+      "fwhm_err_kms": 91.77102791653078,
+      "fwhm_intrinsic_kms": 7108.037826081033,
+      "velocity_kms": -28.896563268538245,
+      "velocity_err_kms": 41.6170082195428,
+      "snr": 56.38746909393215,
       "detected": true,
       "status": "ok",
-      "method": "emcee_mcmc",
+      "method": "emcee_mcmc_full",
       "window_A": "4780.0-4945.0",
-      "notes": "GalSpec emcee_mcmc; Gaussian velocity width; air rest wavelength"
+      "notes": "full-continuum GalSpec model; Gaussian velocity width; air rest wavelength"
     },
     {
       "line": "Hbeta",
       "component": "total",
       "lambda_rest": 4861.333,
-      "flux": 3.2367500808524495e-14,
-      "flux_err": 3.8414403859418827e-16,
-      "flux_1e17": 3236.750080852449,
-      "flux_err_1e17": 38.414403859418826,
-      "fwhm_kms": 1867.8310726074812,
-      "fwhm_err_kms": 26.333121657173024,
-      "fwhm_intrinsic_kms": 1862.0488852002673,
-      "velocity_kms": 16.465563306167716,
+      "flux": 3.718476852029964e-14,
+      "flux_err": 2.8618891060876196e-16,
+      "flux_1e17": 3718.476852029964,
+      "flux_err_1e17": 28.618891060876194,
+      "fwhm_kms": 1959.373395607051,
+      "fwhm_err_kms": 22.653719998312795,
+      "fwhm_intrinsic_kms": 1953.8621339516892,
+      "velocity_kms": 0.0,
       "velocity_err_kms": 0.0,
-      "snr": 84.25876118493586,
+      "snr": 129.93085036454656,
       "detected": true,
       "status": "ok",
-      "method": "emcee_mcmc",
+      "method": "emcee_mcmc_full",
       "window_A": "4780.0-4945.0",
       "notes": "sum of all components; FWHM/velocity measured from the summed profile; air rest wavelength"
     },
@@ -636,241 +827,801 @@
       "line": "OIII_5007",
       "component": "narrow",
       "lambda_rest": 5006.843,
-      "flux": 8.691158310260862e-15,
-      "flux_err": 4.0388524549844424e-16,
-      "flux_1e17": 869.1158310260861,
-      "flux_err_1e17": 40.38852454984442,
-      "fwhm_kms": 856.1678255310342,
-      "fwhm_err_kms": 20.250680927816518,
-      "fwhm_intrinsic_kms": 843.9574097666576,
-      "velocity_kms": -136.31617865286137,
-      "velocity_err_kms": 7.978215544194001,
-      "snr": 21.51888044222784,
+      "flux": 8.346349561181824e-15,
+      "flux_err": 2.1421858281045162e-16,
+      "flux_1e17": 834.6349561181823,
+      "flux_err_1e17": 21.42185828104516,
+      "fwhm_kms": 834.5343389149843,
+      "fwhm_err_kms": 13.9327206145324,
+      "fwhm_intrinsic_kms": 822.0026319019767,
+      "velocity_kms": -141.344143101236,
+      "velocity_err_kms": 7.472017400005797,
+      "snr": 38.961837258380974,
       "detected": true,
       "status": "ok",
-      "method": "emcee_mcmc",
+      "method": "emcee_mcmc_full",
       "window_A": "4960.0-5055.0",
-      "notes": "GalSpec emcee_mcmc; Gaussian velocity width; air rest wavelength"
+      "notes": "full-continuum GalSpec model; Gaussian velocity width; air rest wavelength"
     },
     {
       "line": "OIII_5007",
       "component": "wing",
       "lambda_rest": 5006.843,
-      "flux": 7.479695229965471e-15,
-      "flux_err": 4.137427623982103e-16,
-      "flux_1e17": 747.9695229965471,
-      "flux_err_1e17": 41.37427623982103,
-      "fwhm_kms": 1875.365919520997,
-      "fwhm_err_kms": 51.27763700163894,
-      "fwhm_intrinsic_kms": 1869.8230119790326,
-      "velocity_kms": -916.23433306955,
-      "velocity_err_kms": 51.65403570224805,
-      "snr": 18.078129479801206,
+      "flux": 8.448444482262176e-15,
+      "flux_err": 2.621153008560799e-16,
+      "flux_1e17": 844.8444482262175,
+      "flux_err_1e17": 26.21153008560799,
+      "fwhm_kms": 1977.3581885684057,
+      "fwhm_err_kms": 42.888734891037416,
+      "fwhm_intrinsic_kms": 1972.1019674256281,
+      "velocity_kms": -889.8758610355251,
+      "velocity_err_kms": 24.325816274247472,
+      "snr": 32.23178675441377,
       "detected": true,
       "status": "ok",
-      "method": "emcee_mcmc",
+      "method": "emcee_mcmc_full",
       "window_A": "4960.0-5055.0",
-      "notes": "GalSpec emcee_mcmc; Gaussian velocity width; air rest wavelength"
+      "notes": "full-continuum GalSpec model; Gaussian velocity width; air rest wavelength"
     },
     {
       "line": "OIII_5007",
       "component": "total",
       "lambda_rest": 5006.843,
-      "flux": 1.6187213088353916e-14,
-      "flux_err": 1.4024425498403162e-16,
-      "flux_1e17": 1618.7213088353915,
-      "flux_err_1e17": 14.024425498403161,
-      "fwhm_kms": 1041.542925478275,
-      "fwhm_err_kms": 14.51151611151488,
-      "fwhm_intrinsic_kms": 1031.5291705227487,
-      "velocity_kms": -170.22901618963309,
-      "velocity_err_kms": 11.975308912211844,
-      "snr": 115.42157709203141,
+      "flux": 1.68058660366887e-14,
+      "flux_err": 1.3051216339300596e-16,
+      "flux_1e17": 1680.5866036688699,
+      "flux_err_1e17": 13.051216339300595,
+      "fwhm_kms": 1026.2079506934942,
+      "fwhm_err_kms": 14.915073807844749,
+      "fwhm_intrinsic_kms": 1016.0430709827451,
+      "velocity_kms": -178.48865711946505,
+      "velocity_err_kms": 7.410892214716398,
+      "snr": 128.76858064241782,
       "detected": true,
       "status": "ok",
-      "method": "emcee_mcmc",
+      "method": "emcee_mcmc_full",
       "window_A": "4960.0-5055.0",
       "notes": "sum of all components; FWHM/velocity measured from the summed profile; air rest wavelength"
     },
     {
-      "line": "OIII_4959",
-      "component": "narrow",
-      "lambda_rest": 4958.911,
-      "flux": 2.8885755912507805e-15,
-      "flux_err": 1.342344737220782e-16,
-      "flux_1e17": 288.857559125078,
-      "flux_err_1e17": 13.423447372207818,
-      "fwhm_kms": 856.1678255310342,
-      "fwhm_err_kms": 20.250680927816518,
-      "fwhm_intrinsic_kms": 843.8072786227067,
-      "velocity_kms": -136.31617865286137,
-      "velocity_err_kms": 7.978215544194001,
-      "snr": 21.51888044222788,
+      "line": "MgII_2796",
+      "component": "broad",
+      "lambda_rest": 2796.352,
+      "flux": 8.18131322976945e-15,
+      "flux_err": 1.0560336933951079e-16,
+      "flux_1e17": 818.1313229769451,
+      "flux_err_1e17": 10.560336933951078,
+      "fwhm_kms": 2114.159350666653,
+      "fwhm_err_kms": 44.5617922766985,
+      "fwhm_intrinsic_kms": 2105.5062709482872,
+      "velocity_kms": -260.635894458566,
+      "velocity_err_kms": 13.776481095588323,
+      "snr": 77.47208522738363,
       "detected": true,
       "status": "ok",
-      "method": "emcee_mcmc",
-      "window_A": "4930.0-4985.0",
-      "notes": "GalSpec emcee_mcmc; Gaussian velocity width; air rest wavelength"
+      "method": "emcee_mcmc_full",
+      "window_A": "2735.0-2865.0",
+      "notes": "full-continuum GalSpec model; Gaussian velocity width; air rest wavelength"
     },
     {
-      "line": "OIII_4959",
-      "component": "wing",
-      "lambda_rest": 4958.911,
-      "flux": 2.485936200904925e-15,
-      "flux_err": 1.375106978674134e-16,
-      "flux_1e17": 248.5936200904925,
-      "flux_err_1e17": 13.75106978674134,
-      "fwhm_kms": 1875.365919520997,
-      "fwhm_err_kms": 51.27763700163894,
-      "fwhm_intrinsic_kms": 1869.7552540594595,
-      "velocity_kms": -916.23433306955,
-      "velocity_err_kms": 51.65403570224805,
-      "snr": 18.07812947980122,
-      "detected": true,
-      "status": "ok",
-      "method": "emcee_mcmc",
-      "window_A": "4930.0-4985.0",
-      "notes": "GalSpec emcee_mcmc; Gaussian velocity width; air rest wavelength"
-    },
-    {
-      "line": "OIII_4959",
+      "line": "MgII_2796",
       "component": "total",
-      "lambda_rest": 4958.911,
-      "flux": 5.37994901809479e-15,
-      "flux_err": 4.6611293604185e-17,
-      "flux_1e17": 537.994901809479,
-      "flux_err_1e17": 4.661129360418499,
-      "fwhm_kms": 1041.6746174023933,
-      "fwhm_err_kms": 14.515228273223784,
-      "fwhm_intrinsic_kms": 1031.5393286358699,
-      "velocity_kms": -175.985381718911,
-      "velocity_err_kms": 0.0,
-      "snr": 115.42157709203228,
+      "lambda_rest": 2796.352,
+      "flux": 8.18131322976945e-15,
+      "flux_err": 1.0560336933951079e-16,
+      "flux_1e17": 818.1313229769451,
+      "flux_err_1e17": 10.560336933951078,
+      "fwhm_kms": 2090.5640387905387,
+      "fwhm_err_kms": 43.5534174747786,
+      "fwhm_intrinsic_kms": 2081.81288719124,
+      "velocity_kms": -261.32050484881734,
+      "velocity_err_kms": 17.42136698991142,
+      "snr": 77.47208522738363,
       "detected": true,
       "status": "ok",
-      "method": "emcee_mcmc",
-      "window_A": "4930.0-4985.0",
+      "method": "emcee_mcmc_full",
+      "window_A": "2735.0-2865.0",
+      "notes": "sum of all components; FWHM/velocity measured from the summed profile; air rest wavelength"
+    },
+    {
+      "line": "Hgamma",
+      "component": "narrow",
+      "lambda_rest": 4340.471,
+      "flux": 7.600201765171766e-15,
+      "flux_err": 1.3553354497739236e-16,
+      "flux_1e17": 760.0201765171765,
+      "flux_err_1e17": 13.553354497739235,
+      "fwhm_kms": 1697.9030245937504,
+      "fwhm_err_kms": 16.855248255904712,
+      "fwhm_intrinsic_kms": 1690.2756340637236,
+      "velocity_kms": -3.350164447748425,
+      "velocity_err_kms": 6.502614262231514,
+      "snr": 56.07616746422087,
+      "detected": true,
+      "status": "ok",
+      "method": "emcee_mcmc_full",
+      "window_A": "4300.0-4380.0",
+      "notes": "full-continuum GalSpec model; Gaussian velocity width; air rest wavelength"
+    },
+    {
+      "line": "Hgamma",
+      "component": "broad",
+      "lambda_rest": 4340.471,
+      "flux": 7.545685733034492e-17,
+      "flux_err": 8.563008447662727e-17,
+      "flux_1e17": 7.5456857330344915,
+      "flux_err_1e17": 8.563008447662726,
+      "fwhm_kms": 7109.5547400608175,
+      "fwhm_err_kms": 91.77102791653078,
+      "fwhm_intrinsic_kms": 7107.737026656667,
+      "velocity_kms": -28.896563268538245,
+      "velocity_err_kms": 41.6170082195428,
+      "snr": 0.8811956427643239,
+      "detected": false,
+      "status": "not_detected",
+      "method": "emcee_mcmc_full",
+      "window_A": "4300.0-4380.0",
+      "notes": "full-continuum GalSpec model; Gaussian velocity width; air rest wavelength"
+    },
+    {
+      "line": "Hgamma",
+      "component": "total",
+      "lambda_rest": 4340.471,
+      "flux": 7.696119277415248e-15,
+      "flux_err": 1.5068185712982485e-16,
+      "flux_1e17": 769.6119277415247,
+      "flux_err_1e17": 15.068185712982483,
+      "fwhm_kms": 1665.4924505190274,
+      "fwhm_err_kms": 19.536752213519094,
+      "fwhm_intrinsic_kms": 1657.7159409623812,
+      "velocity_kms": 0.0,
+      "velocity_err_kms": 0.0,
+      "snr": 51.075288186715184,
+      "detected": true,
+      "status": "ok",
+      "method": "emcee_mcmc_full",
+      "window_A": "4300.0-4380.0",
+      "notes": "sum of all components; FWHM/velocity measured from the summed profile; air rest wavelength"
+    },
+    {
+      "line": "Hdelta",
+      "component": "narrow",
+      "lambda_rest": 4101.742,
+      "flux": 2.5384966529470975e-15,
+      "flux_err": 1.1033331032214748e-16,
+      "flux_1e17": 253.84966529470972,
+      "flux_err_1e17": 11.033331032214747,
+      "fwhm_kms": 1697.9030245937504,
+      "fwhm_err_kms": 16.855248255904712,
+      "fwhm_intrinsic_kms": 1689.3352077055476,
+      "velocity_kms": -3.350164447748425,
+      "velocity_err_kms": 6.502614262231514,
+      "snr": 23.007527332727356,
+      "detected": true,
+      "status": "ok",
+      "method": "emcee_mcmc_full",
+      "window_A": "4065.0-4140.0",
+      "notes": "full-continuum GalSpec model; Gaussian velocity width; air rest wavelength"
+    },
+    {
+      "line": "Hdelta",
+      "component": "broad",
+      "lambda_rest": 4101.742,
+      "flux": 2.0880126755731323e-17,
+      "flux_err": 2.7017295417762967e-17,
+      "flux_1e17": 2.088012675573132,
+      "flux_err_1e17": 2.7017295417762965,
+      "fwhm_kms": 7109.5547400608175,
+      "fwhm_err_kms": 91.77102791653078,
+      "fwhm_intrinsic_kms": 7107.513444587366,
+      "velocity_kms": -28.896563268538245,
+      "velocity_err_kms": 41.6170082195428,
+      "snr": 0.7728429671758831,
+      "detected": false,
+      "status": "not_detected",
+      "method": "emcee_mcmc_full",
+      "window_A": "4065.0-4140.0",
+      "notes": "full-continuum GalSpec model; Gaussian velocity width; air rest wavelength"
+    },
+    {
+      "line": "Hdelta",
+      "component": "total",
+      "lambda_rest": 4101.742,
+      "flux": 2.5781850341504886e-15,
+      "flux_err": 1.1284377491667897e-16,
+      "flux_1e17": 257.81850341504884,
+      "flux_err_1e17": 11.284377491667897,
+      "fwhm_kms": 1665.059379891278,
+      "fwhm_err_kms": 19.828088200957268,
+      "fwhm_intrinsic_kms": 1656.3216781872015,
+      "velocity_kms": 0.0,
+      "velocity_err_kms": 0.0,
+      "snr": 22.847383792806966,
+      "detected": true,
+      "status": "ok",
+      "method": "emcee_mcmc_full",
+      "window_A": "4065.0-4140.0",
+      "notes": "sum of all components; FWHM/velocity measured from the summed profile; air rest wavelength"
+    },
+    {
+      "line": "Hepsilon",
+      "component": "narrow",
+      "lambda_rest": 3970.079,
+      "flux": 4.2782001231336613e-16,
+      "flux_err": 1.2208572862888977e-16,
+      "flux_1e17": 42.78200123133661,
+      "flux_err_1e17": 12.208572862888976,
+      "fwhm_kms": 1697.9030245937504,
+      "fwhm_err_kms": 16.855248255904712,
+      "fwhm_intrinsic_kms": 1688.78023133325,
+      "velocity_kms": -3.350164447748425,
+      "velocity_err_kms": 6.502614262231514,
+      "snr": 3.5042589917600644,
+      "detected": true,
+      "status": "ok",
+      "method": "emcee_mcmc_full",
+      "window_A": "3950.0-3990.0",
+      "notes": "full-continuum GalSpec model; Gaussian velocity width; air rest wavelength"
+    },
+    {
+      "line": "Hepsilon",
+      "component": "total",
+      "lambda_rest": 3970.079,
+      "flux": 4.2782001231336613e-16,
+      "flux_err": 1.2208572862888977e-16,
+      "flux_1e17": 42.78200123133661,
+      "flux_err_1e17": 12.208572862888976,
+      "fwhm_kms": 1688.91739235057,
+      "fwhm_err_kms": 17.482234706409145,
+      "fwhm_intrinsic_kms": 1679.7457983283152,
+      "velocity_kms": 0.0,
+      "velocity_err_kms": 4.534625448359577,
+      "snr": 3.5042589917600644,
+      "detected": true,
+      "status": "ok",
+      "method": "emcee_mcmc_full",
+      "window_A": "3950.0-3990.0",
+      "notes": "sum of all components; FWHM/velocity measured from the summed profile; air rest wavelength"
+    },
+    {
+      "line": "H8",
+      "component": "narrow",
+      "lambda_rest": 3889.064,
+      "flux": 2.7662689648890814e-16,
+      "flux_err": 7.894019738249087e-17,
+      "flux_1e17": 27.66268964889081,
+      "flux_err_1e17": 7.894019738249087,
+      "fwhm_kms": 1697.9030245937504,
+      "fwhm_err_kms": 16.855248255904712,
+      "fwhm_intrinsic_kms": 1688.6980393337692,
+      "velocity_kms": -3.350164447748425,
+      "velocity_err_kms": 6.502614262231514,
+      "snr": 3.5042589917600666,
+      "detected": true,
+      "status": "ok",
+      "method": "emcee_mcmc_full",
+      "window_A": "3870.0-3908.0",
+      "notes": "full-continuum GalSpec model; Gaussian velocity width; air rest wavelength"
+    },
+    {
+      "line": "H8",
+      "component": "total",
+      "lambda_rest": 3889.064,
+      "flux": 2.7662689648890814e-16,
+      "flux_err": 7.894019738249087e-17,
+      "flux_1e17": 27.66268964889081,
+      "flux_err_1e17": 7.894019738249087,
+      "fwhm_kms": 1688.9173923505482,
+      "fwhm_err_kms": 17.482234706410054,
+      "fwhm_intrinsic_kms": 1679.6631642413565,
+      "velocity_kms": 0.0,
+      "velocity_err_kms": 4.534625448368361,
+      "snr": 3.5042589917600666,
+      "detected": true,
+      "status": "ok",
+      "method": "emcee_mcmc_full",
+      "window_A": "3870.0-3908.0",
+      "notes": "sum of all components; FWHM/velocity measured from the summed profile; air rest wavelength"
+    },
+    {
+      "line": "H9",
+      "component": "narrow",
+      "lambda_rest": 3835.391,
+      "flux": 1.9046354266230076e-16,
+      "flux_err": 5.4352016534781787e-17,
+      "flux_1e17": 19.046354266230075,
+      "flux_err_1e17": 5.435201653478178,
+      "fwhm_kms": 1697.9030245937504,
+      "fwhm_err_kms": 16.855248255904712,
+      "fwhm_intrinsic_kms": 1688.4864151680947,
+      "velocity_kms": -3.350164447748425,
+      "velocity_err_kms": 6.502614262231514,
+      "snr": 3.5042589917600644,
+      "detected": true,
+      "status": "ok",
+      "method": "emcee_mcmc_full",
+      "window_A": "3817.0-3854.0",
+      "notes": "full-continuum GalSpec model; Gaussian velocity width; air rest wavelength"
+    },
+    {
+      "line": "H9",
+      "component": "total",
+      "lambda_rest": 3835.391,
+      "flux": 1.9046354266230076e-16,
+      "flux_err": 5.4352016534781787e-17,
+      "flux_1e17": 19.046354266230075,
+      "flux_err_1e17": 5.435201653478178,
+      "fwhm_kms": 1688.9173923505664,
+      "fwhm_err_kms": 17.482234706390955,
+      "fwhm_intrinsic_kms": 1679.4504016096562,
+      "velocity_kms": 0.0,
+      "velocity_err_kms": 4.534625448363044,
+      "snr": 3.5042589917600644,
+      "detected": true,
+      "status": "ok",
+      "method": "emcee_mcmc_full",
+      "window_A": "3817.0-3854.0",
+      "notes": "sum of all components; FWHM/velocity measured from the summed profile; air rest wavelength"
+    },
+    {
+      "line": "H10",
+      "component": "narrow",
+      "lambda_rest": 3797.904,
+      "flux": 1.3507136893129172e-16,
+      "flux_err": 3.8544916128887543e-17,
+      "flux_1e17": 13.507136893129172,
+      "flux_err_1e17": 3.8544916128887543,
+      "fwhm_kms": 1697.9030245937504,
+      "fwhm_err_kms": 16.855248255904712,
+      "fwhm_intrinsic_kms": 1688.3109205851974,
+      "velocity_kms": -3.350164447748425,
+      "velocity_err_kms": 6.502614262231514,
+      "snr": 3.504258991760065,
+      "detected": true,
+      "status": "ok",
+      "method": "emcee_mcmc_full",
+      "window_A": "3780.0-3816.0",
+      "notes": "full-continuum GalSpec model; Gaussian velocity width; air rest wavelength"
+    },
+    {
+      "line": "H10",
+      "component": "total",
+      "lambda_rest": 3797.904,
+      "flux": 1.3507136893129172e-16,
+      "flux_err": 3.8544916128887543e-17,
+      "flux_1e17": 13.507136893129172,
+      "flux_err_1e17": 3.8544916128887543,
+      "fwhm_kms": 1688.9173923505587,
+      "fwhm_err_kms": 17.482234706405052,
+      "fwhm_intrinsic_kms": 1679.2739627073488,
+      "velocity_kms": 0.0,
+      "velocity_err_kms": 4.534625448353478,
+      "snr": 3.504258991760065,
+      "detected": true,
+      "status": "ok",
+      "method": "emcee_mcmc_full",
+      "window_A": "3780.0-3816.0",
+      "notes": "sum of all components; FWHM/velocity measured from the summed profile; air rest wavelength"
+    },
+    {
+      "line": "H11",
+      "component": "narrow",
+      "lambda_rest": 3770.63,
+      "flux": 1.0158179302157131e-16,
+      "flux_err": 2.8988095132360754e-17,
+      "flux_1e17": 10.15817930215713,
+      "flux_err_1e17": 2.898809513236075,
+      "fwhm_kms": 1697.9030245937504,
+      "fwhm_err_kms": 16.855248255904712,
+      "fwhm_intrinsic_kms": 1688.1633605970496,
+      "velocity_kms": -3.350164447748425,
+      "velocity_err_kms": 6.502614262231514,
+      "snr": 3.504258991760064,
+      "detected": true,
+      "status": "ok",
+      "method": "emcee_mcmc_full",
+      "window_A": "3753.0-3788.0",
+      "notes": "full-continuum GalSpec model; Gaussian velocity width; air rest wavelength"
+    },
+    {
+      "line": "H11",
+      "component": "total",
+      "lambda_rest": 3770.63,
+      "flux": 1.0158179302157131e-16,
+      "flux_err": 2.8988095132360754e-17,
+      "flux_1e17": 10.15817930215713,
+      "flux_err_1e17": 2.898809513236075,
+      "fwhm_kms": 1688.9173923505516,
+      "fwhm_err_kms": 17.482234706434383,
+      "fwhm_intrinsic_kms": 1679.1256085599748,
+      "velocity_kms": 0.0,
+      "velocity_err_kms": 4.534625448360835,
+      "snr": 3.504258991760064,
+      "detected": true,
+      "status": "ok",
+      "method": "emcee_mcmc_full",
+      "window_A": "3753.0-3788.0",
+      "notes": "sum of all components; FWHM/velocity measured from the summed profile; air rest wavelength"
+    },
+    {
+      "line": "H12",
+      "component": "narrow",
+      "lambda_rest": 3750.15,
+      "flux": 8.082404502162146e-17,
+      "flux_err": 2.3064518122567885e-17,
+      "flux_1e17": 8.082404502162145,
+      "flux_err_1e17": 2.3064518122567885,
+      "fwhm_kms": 1697.9030245937504,
+      "fwhm_err_kms": 16.855248255904712,
+      "fwhm_intrinsic_kms": 1688.116097791449,
+      "velocity_kms": -3.350164447748425,
+      "velocity_err_kms": 6.502614262231514,
+      "snr": 3.5042589917600635,
+      "detected": true,
+      "status": "ok",
+      "method": "emcee_mcmc_full",
+      "window_A": "3733.0-3767.0",
+      "notes": "full-continuum GalSpec model; Gaussian velocity width; air rest wavelength"
+    },
+    {
+      "line": "H12",
+      "component": "total",
+      "lambda_rest": 3750.15,
+      "flux": 8.082404502162146e-17,
+      "flux_err": 2.3064518122567885e-17,
+      "flux_1e17": 8.082404502162145,
+      "flux_err_1e17": 2.3064518122567885,
+      "fwhm_kms": 1688.917392350601,
+      "fwhm_err_kms": 17.48223470641767,
+      "fwhm_intrinsic_kms": 1679.078091359177,
+      "velocity_kms": 0.0,
+      "velocity_err_kms": 4.5346254483599715,
+      "snr": 3.5042589917600635,
+      "detected": true,
+      "status": "ok",
+      "method": "emcee_mcmc_full",
+      "window_A": "3733.0-3767.0",
       "notes": "sum of all components; FWHM/velocity measured from the summed profile; air rest wavelength"
     },
     {
       "line": "OII_3726",
       "component": "narrow",
       "lambda_rest": 3726.032,
-      "flux": 6.344855049929115e-16,
-      "flux_err": 1.4757017931836298e-14,
-      "flux_1e17": 63.448550499291144,
-      "flux_err_1e17": 1475.7017931836297,
-      "fwhm_kms": 831.1052569369456,
-      "fwhm_err_kms": 520.2308523751695,
-      "fwhm_intrinsic_kms": 810.9292982208271,
-      "velocity_kms": -28.556015041609964,
-      "velocity_err_kms": 1103.7211785960735,
-      "snr": 0.04299550952120846,
-      "detected": false,
-      "status": "not_detected",
-      "method": "lsq_covariance",
-      "window_A": "3681.0-3771.0",
-      "notes": "auxiliary window oii_doublet; single Gaussian per line; linear continuum"
+      "flux": 1.9708790985593964e-15,
+      "flux_err": 2.982417971837859e-16,
+      "flux_1e17": 197.0879098559396,
+      "flux_err_1e17": 29.824179718378588,
+      "fwhm_kms": 1697.9030245937504,
+      "fwhm_err_kms": 16.855248255904712,
+      "fwhm_intrinsic_kms": 1688.1187930739063,
+      "velocity_kms": -3.350164447748425,
+      "velocity_err_kms": 6.502614262231514,
+      "snr": 6.6083262546358625,
+      "detected": true,
+      "status": "ok",
+      "method": "emcee_mcmc_full",
+      "window_A": "3700.0-3755.0",
+      "notes": "full-continuum GalSpec model; Gaussian velocity width; air rest wavelength"
     },
     {
       "line": "OII_3728",
       "component": "narrow",
       "lambda_rest": 3728.815,
-      "flux": 2.3530634565330776e-15,
-      "flux_err": 1.4803128960176887e-14,
-      "flux_1e17": 235.30634565330774,
-      "flux_err_1e17": 1480.3128960176887,
-      "fwhm_kms": 831.1052569369456,
-      "fwhm_err_kms": 520.2308523751695,
-      "fwhm_intrinsic_kms": 811.0813797740581,
-      "velocity_kms": -28.556015041609964,
-      "velocity_err_kms": 1103.7211785960735,
-      "snr": 0.15895716796518133,
-      "detected": false,
-      "status": "not_detected",
-      "method": "lsq_covariance",
-      "window_A": "3683.8-3773.8",
-      "notes": "auxiliary window oii_doublet; single Gaussian per line; linear continuum"
+      "flux": 1.946536127385984e-15,
+      "flux_err": 2.809904561251942e-16,
+      "flux_1e17": 194.65361273859838,
+      "flux_err_1e17": 28.09904561251942,
+      "fwhm_kms": 1697.9030245937504,
+      "fwhm_err_kms": 16.855248255904712,
+      "fwhm_intrinsic_kms": 1688.191854450367,
+      "velocity_kms": -3.350164447748425,
+      "velocity_err_kms": 6.502614262231514,
+      "snr": 6.927410112885515,
+      "detected": true,
+      "status": "ok",
+      "method": "emcee_mcmc_full",
+      "window_A": "3700.0-3755.0",
+      "notes": "full-continuum GalSpec model; Gaussian velocity width; air rest wavelength"
     },
     {
       "line": "NeIII_3869",
       "component": "narrow",
       "lambda_rest": 3868.76,
-      "flux": 2.511258240849099e-15,
-      "flux_err": 1.9146770450275733e-16,
-      "flux_1e17": 251.1258240849099,
-      "flux_err_1e17": 19.14677045027573,
-      "fwhm_kms": 2119.338040527854,
-      "fwhm_err_kms": 119.97207519665199,
-      "fwhm_intrinsic_kms": 2111.916561960206,
-      "velocity_kms": -265.47015799619516,
-      "velocity_err_kms": 42.05117816431958,
-      "snr": 13.115831974749216,
+      "flux": 2.3230861789298817e-15,
+      "flux_err": 1.142836192692532e-16,
+      "flux_1e17": 232.30861789298814,
+      "flux_err_1e17": 11.42836192692532,
+      "fwhm_kms": 1697.9030245937504,
+      "fwhm_err_kms": 16.855248255904712,
+      "fwhm_intrinsic_kms": 1688.6303667700574,
+      "velocity_kms": -3.350164447748425,
+      "velocity_err_kms": 6.502614262231514,
+      "snr": 20.32737669478834,
       "detected": true,
       "status": "ok",
-      "method": "lsq_covariance",
-      "window_A": "3823.8-3913.8",
-      "notes": "auxiliary window neiii_doublet; single Gaussian per line; linear continuum"
+      "method": "emcee_mcmc_full",
+      "window_A": "3845.0-3890.0",
+      "notes": "full-continuum GalSpec model; Gaussian velocity width; air rest wavelength"
     },
     {
       "line": "NeIII_3967",
       "component": "narrow",
       "lambda_rest": 3967.47,
-      "flux": 2.2742839774145056e-15,
-      "flux_err": 1.676302458795307e-16,
-      "flux_1e17": 227.42839774145054,
-      "flux_err_1e17": 16.76302458795307,
-      "fwhm_kms": 2119.338040527854,
-      "fwhm_err_kms": 119.97207519665199,
-      "fwhm_intrinsic_kms": 2112.0819438499198,
-      "velocity_kms": -265.47015799619516,
-      "velocity_err_kms": 42.05117816431958,
-      "snr": 13.567265056981093,
+      "flux": 8.80174315603031e-16,
+      "flux_err": 1.4085411629232057e-16,
+      "flux_1e17": 88.0174315603031,
+      "flux_err_1e17": 14.085411629232055,
+      "fwhm_kms": 1697.9030245937504,
+      "fwhm_err_kms": 16.855248255904712,
+      "fwhm_intrinsic_kms": 1688.8372000974568,
+      "velocity_kms": -3.350164447748425,
+      "velocity_err_kms": 6.502614262231514,
+      "snr": 6.248836305048889,
       "detected": true,
       "status": "ok",
-      "method": "lsq_covariance",
-      "window_A": "3922.5-4012.5",
-      "notes": "auxiliary window neiii_doublet; single Gaussian per line; linear continuum"
+      "method": "emcee_mcmc_full",
+      "window_A": "3948.0-3988.0",
+      "notes": "full-continuum GalSpec model; Gaussian velocity width; air rest wavelength"
     },
     {
       "line": "SII_4068",
       "component": "narrow",
       "lambda_rest": 4068.6,
-      "flux": 6.682760635421732e-17,
-      "flux_err": 4.603686016109459e-17,
-      "flux_1e17": 6.682760635421731,
-      "flux_err_1e17": 4.603686016109458,
-      "fwhm_kms": 247.11516011229688,
-      "fwhm_err_kms": 187.21481222098268,
-      "fwhm_intrinsic_kms": 177.51323582559098,
-      "velocity_kms": -121.64705656209287,
-      "velocity_err_kms": 77.66416459406878,
-      "snr": 1.451610863998341,
+      "flux": 5.18261674630163e-17,
+      "flux_err": 5.222255738576565e-17,
+      "flux_1e17": 5.18261674630163,
+      "flux_err_1e17": 5.222255738576565,
+      "fwhm_kms": 1697.9030245937504,
+      "fwhm_err_kms": 16.855248255904712,
+      "fwhm_intrinsic_kms": 1689.1772338806109,
+      "velocity_kms": -3.350164447748425,
+      "velocity_err_kms": 6.502614262231514,
+      "snr": 0.9924096033861146,
       "detected": false,
-      "status": "weak",
-      "method": "lsq_covariance",
-      "window_A": "4023.6-4113.6",
-      "notes": "auxiliary window sii_doublet; single Gaussian per line; linear continuum"
+      "status": "not_detected",
+      "method": "emcee_mcmc_full",
+      "window_A": "4050.0-4080.0",
+      "notes": "full-continuum GalSpec model; Gaussian velocity width; air rest wavelength"
     },
     {
       "line": "SII_4076",
       "component": "narrow",
       "lambda_rest": 4076.349,
-      "flux": 8.152732975854612e-29,
-      "flux_err": 6.176522607791285e-29,
-      "flux_1e17": 8.152732975854612e-12,
-      "flux_err_1e17": 6.176522607791284e-12,
-      "fwhm_kms": 247.11516011229688,
-      "fwhm_err_kms": 187.21481222098268,
-      "fwhm_intrinsic_kms": 177.87096406359655,
-      "velocity_kms": -121.64705656209287,
-      "velocity_err_kms": 77.66416459406878,
-      "snr": 1.3199551743841214,
+      "flux": 5.89323873456629e-17,
+      "flux_err": 5.940549645103864e-17,
+      "flux_1e17": 5.89323873456629,
+      "flux_err_1e17": 5.940549645103863,
+      "fwhm_kms": 1697.9030245937504,
+      "fwhm_err_kms": 16.855248255904712,
+      "fwhm_intrinsic_kms": 1689.2148644930262,
+      "velocity_kms": -3.350164447748425,
+      "velocity_err_kms": 6.502614262231514,
+      "snr": 0.9920359371835962,
       "detected": false,
-      "status": "weak",
-      "method": "lsq_covariance",
-      "window_A": "4031.3-4121.3",
-      "notes": "auxiliary window sii_doublet; single Gaussian per line; linear continuum"
+      "status": "not_detected",
+      "method": "emcee_mcmc_full",
+      "window_A": "4062.0-4092.0",
+      "notes": "full-continuum GalSpec model; Gaussian velocity width; air rest wavelength"
+    },
+    {
+      "line": "OIII_4363",
+      "component": "narrow",
+      "lambda_rest": 4363.21,
+      "flux": 5.239046539708167e-16,
+      "flux_err": 8.005283470830975e-17,
+      "flux_1e17": 52.39046539708167,
+      "flux_err_1e17": 8.005283470830975,
+      "fwhm_kms": 834.5343389149843,
+      "fwhm_err_kms": 13.9327206145324,
+      "fwhm_intrinsic_kms": 819.0579170089056,
+      "velocity_kms": -141.344143101236,
+      "velocity_err_kms": 7.472017400005797,
+      "snr": 6.544485974541432,
+      "detected": true,
+      "status": "ok",
+      "method": "emcee_mcmc_full",
+      "window_A": "4345.0-4382.0",
+      "notes": "full-continuum GalSpec model; Gaussian velocity width; air rest wavelength"
+    },
+    {
+      "line": "HeII_4686",
+      "component": "narrow",
+      "lambda_rest": 4685.71,
+      "flux": 6.230286919116337e-16,
+      "flux_err": 8.977339727073013e-17,
+      "flux_1e17": 62.30286919116337,
+      "flux_err_1e17": 8.977339727073012,
+      "fwhm_kms": 1697.9030245937504,
+      "fwhm_err_kms": 16.855248255904712,
+      "fwhm_intrinsic_kms": 1691.198737319975,
+      "velocity_kms": -3.350164447748425,
+      "velocity_err_kms": 6.502614262231514,
+      "snr": 6.940014646351888,
+      "detected": true,
+      "status": "ok",
+      "method": "emcee_mcmc_full",
+      "window_A": "4660.0-4712.0",
+      "notes": "full-continuum GalSpec model; Gaussian velocity width; air rest wavelength"
+    },
+    {
+      "line": "NeV_3426",
+      "component": "narrow",
+      "lambda_rest": 3425.868,
+      "flux": 1.5516346097845006e-15,
+      "flux_err": 1.4314219183311708e-16,
+      "flux_1e17": 155.16346097845005,
+      "flux_err_1e17": 14.314219183311707,
+      "fwhm_kms": 1697.9030245937504,
+      "fwhm_err_kms": 16.855248255904712,
+      "fwhm_intrinsic_kms": 1687.294006787129,
+      "velocity_kms": -3.350164447748425,
+      "velocity_err_kms": 6.502614262231514,
+      "snr": 10.839813125074125,
+      "detected": true,
+      "status": "ok",
+      "method": "emcee_mcmc_full",
+      "window_A": "3405.0-3448.0",
+      "notes": "full-continuum GalSpec model; Gaussian velocity width; air rest wavelength"
+    },
+    {
+      "line": "OIII_4959",
+      "component": "narrow",
+      "lambda_rest": 4958.911,
+      "flux": 2.773975660990216e-15,
+      "flux_err": 7.11972498266502e-17,
+      "flux_1e17": 277.39756609902156,
+      "flux_err_1e17": 7.119724982665019,
+      "fwhm_kms": 834.5343389149843,
+      "fwhm_err_kms": 13.9327206145324,
+      "fwhm_intrinsic_kms": 821.8484901795396,
+      "velocity_kms": -141.344143101236,
+      "velocity_err_kms": 7.472017400005797,
+      "snr": 38.96183725838066,
+      "detected": true,
+      "status": "ok",
+      "method": "emcee_mcmc_full",
+      "window_A": "4930.0-4985.0",
+      "notes": "full-continuum GalSpec model; Gaussian velocity width; air rest wavelength"
+    },
+    {
+      "line": "OIII_4959",
+      "component": "wing",
+      "lambda_rest": 4958.911,
+      "flux": 2.8079077200432887e-15,
+      "flux_err": 8.71161050250737e-17,
+      "flux_1e17": 280.79077200432886,
+      "flux_err_1e17": 8.71161050250737,
+      "fwhm_kms": 1977.3581885684057,
+      "fwhm_err_kms": 42.888734891037416,
+      "fwhm_intrinsic_kms": 1972.037723746847,
+      "velocity_kms": -889.8758610355251,
+      "velocity_err_kms": 24.325816274247472,
+      "snr": 32.23178675441376,
+      "detected": true,
+      "status": "ok",
+      "method": "emcee_mcmc_full",
+      "window_A": "4930.0-4985.0",
+      "notes": "full-continuum GalSpec model; Gaussian velocity width; air rest wavelength"
+    },
+    {
+      "line": "OIII_4959",
+      "component": "total",
+      "lambda_rest": 4958.911,
+      "flux": 5.585563246051654e-15,
+      "flux_err": 4.337675555780493e-17,
+      "flux_1e17": 558.5563246051654,
+      "flux_err_1e17": 4.337675555780493,
+      "fwhm_kms": 1026.2079506935222,
+      "fwhm_err_kms": 14.915073807836336,
+      "fwhm_intrinsic_kms": 1015.918370760524,
+      "velocity_kms": -178.48865711944973,
+      "velocity_err_kms": 7.410892214744294,
+      "snr": 128.76858064241793,
+      "detected": true,
+      "status": "ok",
+      "method": "emcee_mcmc_full",
+      "window_A": "4930.0-4985.0",
+      "notes": "sum of all components; FWHM/velocity measured from the summed profile; air rest wavelength"
+    },
+    {
+      "line": "MgII_2804",
+      "component": "broad",
+      "lambda_rest": 2803.531,
+      "flux": 8.202316897289318e-15,
+      "flux_err": 1.0587448205653971e-16,
+      "flux_1e17": 820.2316897289318,
+      "flux_err_1e17": 10.58744820565397,
+      "fwhm_kms": 2114.159350666653,
+      "fwhm_err_kms": 44.5617922766985,
+      "fwhm_intrinsic_kms": 2105.5044201486576,
+      "velocity_kms": -260.635894458566,
+      "velocity_err_kms": 13.776481095588323,
+      "snr": 77.47208522738339,
+      "detected": true,
+      "status": "ok",
+      "method": "emcee_mcmc_full",
+      "window_A": "2735.0-2870.0",
+      "notes": "full-continuum GalSpec model; Gaussian velocity width; air rest wavelength"
+    },
+    {
+      "line": "MgII_2804",
+      "component": "total",
+      "lambda_rest": 2803.531,
+      "flux": 8.202316897289318e-15,
+      "flux_err": 1.0587448205653971e-16,
+      "flux_1e17": 820.2316897289318,
+      "flux_err_1e17": 10.58744820565397,
+      "fwhm_kms": 2093.2307741024024,
+      "fwhm_err_kms": 45.11273220048224,
+      "fwhm_intrinsic_kms": 2084.4889486163347,
+      "velocity_kms": -252.63130032271962,
+      "velocity_err_kms": 9.022546440086714,
+      "snr": 77.47208522738339,
+      "detected": true,
+      "status": "ok",
+      "method": "emcee_mcmc_full",
+      "window_A": "2735.0-2870.0",
+      "notes": "sum of all components; FWHM/velocity measured from the summed profile; air rest wavelength"
+    },
+    {
+      "line": "OI_6300",
+      "component": "narrow",
+      "lambda_rest": 6300.304,
+      "flux": 1.7210220260161727e-15,
+      "flux_err": 1.825945205048541e-16,
+      "flux_1e17": 172.10220260161725,
+      "flux_err_1e17": 18.259452050485407,
+      "fwhm_kms": 1697.9030245937504,
+      "fwhm_err_kms": 16.855248255904712,
+      "fwhm_intrinsic_kms": 1693.210830056856,
+      "velocity_kms": -3.350164447748425,
+      "velocity_err_kms": 6.502614262231514,
+      "snr": 9.425376080605995,
+      "detected": true,
+      "status": "ok",
+      "method": "emcee_mcmc_full",
+      "window_A": "6275.0-6325.0",
+      "notes": "full-continuum GalSpec model; Gaussian velocity width; air rest wavelength"
+    },
+    {
+      "line": "OI_6363",
+      "component": "narrow",
+      "lambda_rest": 6363.776,
+      "flux": 5.699542130151854e-16,
+      "flux_err": 6.047018263684396e-17,
+      "flux_1e17": 56.99542130151853,
+      "flux_err_1e17": 6.0470182636843965,
+      "fwhm_kms": 1697.9030245937504,
+      "fwhm_err_kms": 16.855248255904712,
+      "fwhm_intrinsic_kms": 1693.2757943275979,
+      "velocity_kms": -3.350164447748425,
+      "velocity_err_kms": 6.502614262231514,
+      "snr": 9.425376080606,
+      "detected": true,
+      "status": "ok",
+      "method": "emcee_mcmc_full",
+      "window_A": "6340.0-6390.0",
+      "notes": "full-continuum GalSpec model; Gaussian velocity width; air rest wavelength"
+    },
+    {
+      "line": "SIII_6312",
+      "component": "narrow",
+      "lambda_rest": 6312.06,
+      "flux": 5.968703495262289e-16,
+      "flux_err": 1.7632798449474447e-16,
+      "flux_1e17": 59.68703495262288,
+      "flux_err_1e17": 17.632798449474446,
+      "fwhm_kms": 1697.9030245937504,
+      "fwhm_err_kms": 16.855248255904712,
+      "fwhm_intrinsic_kms": 1693.2227998003348,
+      "velocity_kms": -3.350164447748425,
+      "velocity_err_kms": 6.502614262231514,
+      "snr": 3.385000691957769,
+      "detected": true,
+      "status": "ok",
+      "method": "emcee_mcmc_full",
+      "window_A": "6290.0-6335.0",
+      "notes": "full-continuum GalSpec model; Gaussian velocity width; air rest wavelength"
     },
     {
       "line": "Halpha",
@@ -890,6 +1641,26 @@
       "status": "not_covered",
       "method": "none",
       "window_A": "6552.8-6572.8",
+      "notes": "outside the rest-frame coverage of this spectrum"
+    },
+    {
+      "line": "NII_6548",
+      "component": "narrow",
+      "lambda_rest": 6548.05,
+      "flux": null,
+      "flux_err": null,
+      "flux_1e17": null,
+      "flux_err_1e17": null,
+      "fwhm_kms": null,
+      "fwhm_err_kms": null,
+      "fwhm_intrinsic_kms": null,
+      "velocity_kms": null,
+      "velocity_err_kms": null,
+      "snr": null,
+      "detected": false,
+      "status": "not_covered",
+      "method": "none",
+      "window_A": "6538.1-6558.1",
       "notes": "outside the rest-frame coverage of this spectrum"
     },
     {
@@ -957,204 +1728,386 @@
     {
       "line": "Hbeta",
       "component": "total",
-      "galspec_flux_1e17": 3236.750080852449,
+      "galspec_flux_1e17": 3718.476852029964,
       "reference_tool": "pyqsofit_uv",
       "reference_component": "Hb_br+Hb_na",
       "reference_flux_1e17": 2905.1457395793796,
-      "ratio_galspec_over_reference": 1.1141437886421082,
+      "ratio_galspec_over_reference": 1.2799622412637868,
       "reference_runtime_sec": null,
       "note": "sum of PyQSOFit broad+narrow H-beta areas"
     },
     {
       "line": "Hbeta",
       "component": "narrow",
-      "galspec_flux_1e17": 1439.5923226666778,
+      "galspec_flux_1e17": 1778.6205234826275,
       "reference_tool": "pyqsofit_uv",
       "reference_component": "Hb_na",
       "reference_flux_1e17": 624.702528583967,
-      "ratio_galspec_over_reference": 2.3044445264690174,
+      "ratio_galspec_over_reference": 2.847147949783848,
       "reference_runtime_sec": null,
       "note": "PyQSOFit narrow H-beta"
     },
     {
       "line": "Hbeta",
       "component": "broad",
-      "galspec_flux_1e17": 1798.4638426877275,
+      "galspec_flux_1e17": 1937.479606015193,
       "reference_tool": "pyqsofit_uv",
       "reference_component": "Hb_br",
       "reference_flux_1e17": 2280.4432109954123,
-      "ratio_galspec_over_reference": 0.7886466253648557,
+      "ratio_galspec_over_reference": 0.8496066013279427,
       "reference_runtime_sec": null,
       "note": "PyQSOFit broad H-beta"
     },
     {
       "line": "OIII_5007",
       "component": "total",
-      "galspec_flux_1e17": 1618.7213088353915,
+      "galspec_flux_1e17": 1680.58660366887,
       "reference_tool": "pyqsofit_uv",
       "reference_component": "OIII5007c+OIII5007w",
       "reference_flux_1e17": 1479.5236561575302,
-      "ratio_galspec_over_reference": 1.0940827489297273,
+      "ratio_galspec_over_reference": 1.1358970819253544,
       "reference_runtime_sec": null,
       "note": "sum of PyQSOFit core+wing [O III] 5007"
     },
     {
       "line": "OIII_5007",
       "component": "narrow",
-      "galspec_flux_1e17": 869.1158310260861,
+      "galspec_flux_1e17": 834.6349561181823,
       "reference_tool": "pyqsofit_uv",
       "reference_component": "OIII5007c",
       "reference_flux_1e17": 813.81443220022,
-      "ratio_galspec_over_reference": 1.0679533277338837,
+      "ratio_galspec_over_reference": 1.025583871573366,
       "reference_runtime_sec": null,
       "note": "PyQSOFit core [O III] 5007"
     },
     {
       "line": "OIII_5007",
       "component": "broad",
-      "galspec_flux_1e17": 747.9695229965471,
+      "galspec_flux_1e17": 844.8444482262175,
       "reference_tool": "pyqsofit_uv",
       "reference_component": "OIII5007w",
       "reference_flux_1e17": 665.7092239573101,
-      "ratio_galspec_over_reference": 1.1235679123540463,
+      "ratio_galspec_over_reference": 1.269089292775662,
       "reference_runtime_sec": null,
       "note": "PyQSOFit wing [O III] 5007"
     },
     {
       "line": "Hbeta",
       "component": "total",
-      "galspec_flux_1e17": 3236.750080852449,
+      "galspec_flux_1e17": 3718.476852029964,
       "reference_tool": "gandalf_line",
       "reference_component": "Hbeta total",
       "reference_flux_1e17": 2950.82227,
-      "ratio_galspec_over_reference": 1.0968976728145843,
+      "ratio_galspec_over_reference": 1.2601493793219758,
       "reference_runtime_sec": 43.94355821609497,
       "note": "GANDALF total H-beta"
     },
     {
       "line": "Hbeta",
       "component": "narrow",
-      "galspec_flux_1e17": 1439.5923226666778,
+      "galspec_flux_1e17": 1778.6205234826275,
       "reference_tool": "gandalf_line",
       "reference_component": "Hbeta narrow",
       "reference_flux_1e17": 1486.43954,
-      "ratio_galspec_over_reference": 0.9684836038919401,
+      "ratio_galspec_over_reference": 1.1965643240912627,
       "reference_runtime_sec": 43.94355821609497,
       "note": "GANDALF narrow H-beta"
     },
     {
       "line": "Hbeta",
       "component": "broad",
-      "galspec_flux_1e17": 1798.4638426877275,
+      "galspec_flux_1e17": 1937.479606015193,
       "reference_tool": "gandalf_line",
       "reference_component": "Hbeta broad",
       "reference_flux_1e17": 1464.38273,
-      "ratio_galspec_over_reference": 1.228137839817141,
+      "ratio_galspec_over_reference": 1.3230691446458078,
       "reference_runtime_sec": 43.94355821609497,
       "note": "GANDALF broad H-beta"
     },
     {
       "line": "OIII_5007",
       "component": "narrow",
-      "galspec_flux_1e17": 869.1158310260861,
+      "galspec_flux_1e17": 834.6349561181823,
       "reference_tool": "gandalf_line",
       "reference_component": "[OIII]5007 narrow",
       "reference_flux_1e17": 1422.7398,
-      "ratio_galspec_over_reference": 0.6108747580028941,
+      "ratio_galspec_over_reference": 0.5866392126783705,
       "reference_runtime_sec": 43.94355821609497,
       "note": "GANDALF only reports the narrow [O III] 5007 component"
     },
     {
       "line": "OIII_5007",
       "component": "total",
-      "galspec_flux_1e17": 1618.7213088353915,
+      "galspec_flux_1e17": 1680.58660366887,
       "reference_tool": "gandalf_line",
       "reference_component": "[OIII]5007 narrow",
       "reference_flux_1e17": 1422.7398,
-      "ratio_galspec_over_reference": 1.1377493683914595,
+      "ratio_galspec_over_reference": 1.1812325793295935,
       "reference_runtime_sec": 43.94355821609497,
       "note": "GANDALF has no broad [O III] 5007 component"
     },
     {
       "line": "Hbeta",
       "component": "total",
-      "galspec_flux_1e17": 3236.750080852449,
+      "galspec_flux_1e17": 3718.476852029964,
       "reference_tool": "s3fit_line",
       "reference_component": "total H-beta",
       "reference_flux_1e17": 2761.0497076372567,
-      "ratio_galspec_over_reference": 1.1722896809497387,
+      "ratio_galspec_over_reference": 1.3467620092982742,
       "reference_runtime_sec": 936.9549686908722,
       "note": "S3Fit total H-beta"
     },
     {
       "line": "Hbeta",
       "component": "narrow",
-      "galspec_flux_1e17": 1439.5923226666778,
+      "galspec_flux_1e17": 1778.6205234826275,
       "reference_tool": "s3fit_line",
       "reference_component": "NLR H-beta",
       "reference_flux_1e17": 669.6647929382344,
-      "ratio_galspec_over_reference": 2.149720782468336,
+      "ratio_galspec_over_reference": 2.6559863117168176,
       "reference_runtime_sec": 936.9549686908722,
       "note": "S3Fit NLR H-beta"
     },
     {
       "line": "Hbeta",
       "component": "broad",
-      "galspec_flux_1e17": 1798.4638426877275,
+      "galspec_flux_1e17": 1937.479606015193,
       "reference_tool": "s3fit_line",
       "reference_component": "BLR H-beta",
       "reference_flux_1e17": 2091.3849146990224,
-      "ratio_galspec_over_reference": 0.8599391867309849,
+      "ratio_galspec_over_reference": 0.9264098599917565,
       "reference_runtime_sec": 936.9549686908722,
       "note": "S3Fit BLR H-beta"
     },
     {
       "line": "OIII_5007",
       "component": "total",
-      "galspec_flux_1e17": 1618.7213088353915,
+      "galspec_flux_1e17": 1680.58660366887,
       "reference_tool": "s3fit_line",
       "reference_component": "total [O III] 5008",
       "reference_flux_1e17": 1506.5459025928951,
-      "ratio_galspec_over_reference": 1.074458671355073,
+      "ratio_galspec_over_reference": 1.1155229991840514,
       "reference_runtime_sec": 936.9549686908722,
       "note": "S3Fit total [O III] 5008"
     },
     {
       "line": "OIII_5007",
       "component": "narrow",
-      "galspec_flux_1e17": 869.1158310260861,
+      "galspec_flux_1e17": 834.6349561181823,
       "reference_tool": "s3fit_line",
       "reference_component": "NLR [O III] 5008",
       "reference_flux_1e17": 1506.5459025928951,
-      "ratio_galspec_over_reference": 0.5768930302955011,
+      "ratio_galspec_over_reference": 0.5540056593574108,
       "reference_runtime_sec": 936.9549686908722,
       "note": "S3Fit NLR [O III] 5008"
+    },
+    {
+      "line": "Hbeta",
+      "component": "narrow",
+      "galspec_flux_1e17": 1778.6205234826275,
+      "reference_tool": "pyqsofitspec_line",
+      "reference_component": "narrow",
+      "reference_flux_1e17": 669.5107874,
+      "ratio_galspec_over_reference": 2.656597260202155,
+      "reference_runtime_sec": 221.76,
+      "note": "PyQSOFitSpec narrow H-beta"
+    },
+    {
+      "line": "Hbeta",
+      "component": "broad",
+      "galspec_flux_1e17": 1937.479606015193,
+      "reference_tool": "pyqsofitspec_line",
+      "reference_component": "broad",
+      "reference_flux_1e17": 2769.948034,
+      "ratio_galspec_over_reference": 0.6994642434563424,
+      "reference_runtime_sec": 221.76,
+      "note": "PyQSOFitSpec broad H-beta"
+    },
+    {
+      "line": "OIII_5007",
+      "component": "narrow",
+      "galspec_flux_1e17": 834.6349561181823,
+      "reference_tool": "pyqsofitspec_line",
+      "reference_component": "narrow",
+      "reference_flux_1e17": 775.970298,
+      "ratio_galspec_over_reference": 1.075601679947526,
+      "reference_runtime_sec": 221.76,
+      "note": "PyQSOFitSpec [O III] 5007 core"
+    },
+    {
+      "line": "OIII_5007",
+      "component": "broad",
+      "galspec_flux_1e17": 844.8444482262175,
+      "reference_tool": "pyqsofitspec_line",
+      "reference_component": "broad",
+      "reference_flux_1e17": 854.7713682,
+      "ratio_galspec_over_reference": 0.9883864617568008,
+      "reference_runtime_sec": 221.76,
+      "note": "PyQSOFitSpec [O III] 5007 wing"
+    },
+    {
+      "line": "Hbeta",
+      "component": "total",
+      "galspec_flux_1e17": 3718.476852029964,
+      "reference_tool": "pyqsofitspec_line",
+      "reference_component": "Hb_br+Hb_na",
+      "reference_flux_1e17": 3439.4588214,
+      "ratio_galspec_over_reference": 1.0811226547891601,
+      "reference_runtime_sec": 221.76,
+      "note": "sum of PyQSOFitSpec broad+narrow H-beta"
+    },
+    {
+      "line": "Hbeta",
+      "component": "total",
+      "galspec_flux_1e17": 3718.476852029964,
+      "reference_tool": "qgfit",
+      "reference_component": "total",
+      "reference_flux_1e17": 2915.2256331401945,
+      "ratio_galspec_over_reference": 1.2755365518738702,
+      "reference_runtime_sec": 225.82743906974792,
+      "note": "QGfit total H-beta"
+    },
+    {
+      "line": "Hbeta",
+      "component": "narrow",
+      "galspec_flux_1e17": 1778.6205234826275,
+      "reference_tool": "qgfit",
+      "reference_component": "narrow",
+      "reference_flux_1e17": 0.0,
+      "ratio_galspec_over_reference": null,
+      "reference_runtime_sec": 225.82743906974792,
+      "note": "QGfit narrow H-beta"
+    },
+    {
+      "line": "Hbeta",
+      "component": "broad",
+      "galspec_flux_1e17": 1937.479606015193,
+      "reference_tool": "qgfit",
+      "reference_component": "broad",
+      "reference_flux_1e17": 2915.2256331401945,
+      "ratio_galspec_over_reference": 0.6646070835787066,
+      "reference_runtime_sec": 225.82743906974792,
+      "note": "QGfit broad H-beta"
+    },
+    {
+      "line": "OIII_5007",
+      "component": "total",
+      "galspec_flux_1e17": 1680.58660366887,
+      "reference_tool": "qgfit",
+      "reference_component": "total",
+      "reference_flux_1e17": null,
+      "ratio_galspec_over_reference": null,
+      "reference_runtime_sec": 225.82743906974792,
+      "note": "QGfit total [O III] 5007"
+    },
+    {
+      "line": "OIII_5007",
+      "component": "narrow",
+      "galspec_flux_1e17": 834.6349561181823,
+      "reference_tool": "qgfit",
+      "reference_component": "narrow",
+      "reference_flux_1e17": 1166.864124764183,
+      "ratio_galspec_over_reference": 0.7152803299071839,
+      "reference_runtime_sec": 225.82743906974792,
+      "note": "QGfit narrow [O III] 5007"
+    },
+    {
+      "line": "OIII_5007",
+      "component": "total",
+      "galspec_flux_1e17": 1680.58660366887,
+      "reference_tool": "qgfit",
+      "reference_component": "narrow",
+      "reference_flux_1e17": 1166.864124764183,
+      "ratio_galspec_over_reference": 1.4402590395934125,
+      "reference_runtime_sec": 225.82743906974792,
+      "note": "QGfit has one [O III] component; narrow flux used as total"
+    },
+    {
+      "line": "Hbeta",
+      "component": "total",
+      "galspec_flux_1e17": 3718.476852029964,
+      "reference_tool": "sheap_line",
+      "reference_component": "total",
+      "reference_flux_1e17": 3256.2985234867947,
+      "ratio_galspec_over_reference": 1.1419336480392086,
+      "reference_runtime_sec": 57.96443557739258,
+      "note": "SHEAP total H-beta"
+    },
+    {
+      "line": "Hbeta",
+      "component": "narrow",
+      "galspec_flux_1e17": 1778.6205234826275,
+      "reference_tool": "sheap_line",
+      "reference_component": "narrow",
+      "reference_flux_1e17": 774.7738096781502,
+      "ratio_galspec_over_reference": 2.2956642329217174,
+      "reference_runtime_sec": 57.96443557739258,
+      "note": "SHEAP narrow H-beta"
+    },
+    {
+      "line": "Hbeta",
+      "component": "broad",
+      "galspec_flux_1e17": 1937.479606015193,
+      "reference_tool": "sheap_line",
+      "reference_component": "broad",
+      "reference_flux_1e17": 2481.5247138086443,
+      "ratio_galspec_over_reference": 0.7807617612002539,
+      "reference_runtime_sec": 57.96443557739258,
+      "note": "SHEAP broad H-beta"
+    },
+    {
+      "line": "OIII_5007",
+      "component": "total",
+      "galspec_flux_1e17": 1680.58660366887,
+      "reference_tool": "sheap_line",
+      "reference_component": "total",
+      "reference_flux_1e17": 814.3571994298441,
+      "ratio_galspec_over_reference": 2.0636971157687305,
+      "reference_runtime_sec": 57.96443557739258,
+      "note": "SHEAP total [O III] 5007"
+    },
+    {
+      "line": "OIII_5007",
+      "component": "narrow",
+      "galspec_flux_1e17": 834.6349561181823,
+      "reference_tool": "sheap_line",
+      "reference_component": "total",
+      "reference_flux_1e17": 814.3571994298441,
+      "ratio_galspec_over_reference": 1.0249003222449993,
+      "reference_runtime_sec": 57.96443557739258,
+      "note": "SHEAP only reports one [O III] component"
     }
   ],
   "runtime": {
-    "total_sec": 427.09049801318906,
-    "read_sec": 0.14014491997659206,
-    "lsq_main_sec": 0.6603374539408833,
-    "sampling_main_sec": 404.439706803998,
-    "aux_sec": 0.18095955485478044,
-    "plot_sec": 16.459198673954234,
-    "write_sec": 0.05386293516494334
+    "total_sec": 3703.027983298991,
+    "read_sec": 0.14301964198239148,
+    "continuum_start_sec": 0.08569057192653418,
+    "full_lsq_sec": 39.064197829924524,
+    "lsq_total_sec": 39.30885175312869,
+    "sampling_main_sec": 3596.623983336147,
+    "plot_sec": 37.81014986988157,
+    "write_sec": 0.8465128249954432
   },
   "reference_runtimes": {
     "pyqsofit_uv": null,
+    "pyqsofitspec_line": 221.76,
     "gandalf_line": 43.94355821609497,
-    "s3fit_line": 936.9549686908722
+    "s3fit_line": 936.9549686908722,
+    "qgfit": 225.82743906974792,
+    "sheap_line": 57.96443557739258
   },
   "limitations": [
-    "Reduced-window model, not a full-spectrum continuum/host decomposition: linear local continuum + park2022 Fe II + H-beta/[O III] 4959,5007 components in 4720-5150 A rest frame.",
-    "H-alpha 6563, [N II] 6548/6583 and [S II] 6716/6731 are outside the SDSS rest-frame coverage of this z=0.5874 QSO (rest ~2246-6509 A); they are reported as not_covered, not fitted.",
-    "The H-beta narrow/broad and [O III] core/wing labels are empirical. Their flux split depends on the adopted Gaussian decomposition and is not directly interchangeable with other tools' narrow/broad definitions.",
-    "Fe II is represented by GalSpec's park2022 empirical template; no Balmer pseudo-continuum, host galaxy or full QSO principal-component continuum is included.",
-    "Line fluxes are integrated Gaussian areas from the GalSpec model, in rest-frame 1e-17 erg s-1 cm-2 A-1 times (1+z); the (1+z) factor matches PyQSOFit and GANDALF.",
-    "Wavelengths are air rest-frame wavelengths. SDSS LOGLAM (vacuum) is converted with PyAstronomy vactoair2 before de-redshifting.",
+    "Full-continuum model: global normalised polynomial (degree 4) over 2280-6459 A rest frame plus park2022 Fe II and all fitted lines.  It is not a host-galaxy/stellar decomposition and does not use a QSO principal-component continuum.",
+    "H-alpha 6563, [N II] 6548/6583 and red [S II] 6716/6731 are outside the SDSS rest-frame coverage of this z=0.5874 QSO; they are emitted as not_covered, not fitted.",
+    "Fe II is the empirical park2022 template (rest 4000-5600 A); UV Fe II blends below 4000 A are absorbed by the polynomial continuum rather than modelled explicitly.",
+    "The Balmer pseudo-continuum is not a separate model component: explicit Balmer lines H-beta through H12 are fitted, and the polynomial continuum represents the remaining UV/optical shape.  Broad high-order Balmer lines are blended with Fe II and are not separately resolved.",
+    "Narrow Balmer/[O II]/[Ne III]/[S II]/[O I]/[S III]/He II/[Ne V] lines share one NLR sigma/dv; [O III] 4959/5007 core and wing have their own kinematic components.  The narrow/broad and core/wing splits are empirical and not directly interchangeable with other tools' definitions.",
+    "Line fluxes are integrated Gaussian areas from the full model, in rest-frame 1e-17 erg s-1 cm-2 A-1 times (1+z); wavelengths are air rest-frame.  The (1+z) factor matches PyQSOFit and GANDALF.",
     "Intrinsic FWHM subtracts the SDSS WRESL resolution in quadrature; the observed FWHM is also stored.",
-    "Auxiliary [O II], [Ne III] and [S II] lines use a single Gaussian per line and linear covariance errors; they are not sampled with emcee.",
-    "emcee chain: 4000 steps, 1500 burn-in, 48 walkers; tau_status=ok. A short chain is a demonstration of the posterior machinery, not a fully converged production posterior."
+    "The emcee posterior is production-length but convergence is reported explicitly: tau_max, nsteps/tau_max and effective sample size are in run.json.  A chain with nsteps/tau_max < 50 is a usable posterior for a wide-line QSO but should not be described as asymptotically converged.",
+    "The continuum is constrained by a polynomial, so absolute continuum systematics (flux calibration, slit losses, intrinsic QSO variability) are not included in the line-flux errors.",
+    "The red [O I] 6300/[S III] 6312 region contains SDSS sky residuals; those weak lines are less reliable than H-beta/[O III].",
+    "Mg II 2796/2804 is a broad doublet modelled without UV Fe II or a Balmer pseudo-continuum; its flux is model-dependent and lower than PyQSOFit's UV-inclusive value."
   ],
   "files": [
     "config.effective.json",

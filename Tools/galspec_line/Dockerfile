@@ -1,4 +1,4 @@
-# GalSpec line fit (H-beta/[O III] reduced-window model)
+# GalSpec full-continuum + emission-line model
 # Build context is the repository root:
 #   docker build -f Tools/galspec_line/dockerfile -t galspec_line .
 FROM python:3.12-slim
@@ -25,12 +25,13 @@ RUN pip install --no-cache-dir --no-deps \
       "galspec @ git+https://github.com/jyshangguan/GalSpec.git@${GALSPEC_COMMIT}"
 
 COPY Tools/galspec_line/run_galspec.py /app/galspec_line/run_galspec.py
+COPY Tools/galspec_line/galspec_full.py /app/galspec_line/galspec_full.py
 COPY configs/galspec_line /app/config
 
 RUN mkdir -p /app/input /app/output && chmod 777 /app/output
 
 LABEL org.opencontainers.image.title="galspec_line" \
-      org.opencontainers.image.description="GalSpec reduced H-beta/[O III] line fit" \
+      org.opencontainers.image.description="GalSpec full-continuum QSO emission-line fit with emcee" \
       org.opencontainers.image.source="https://github.com/jyshangguan/GalSpec" \
       org.opencontainers.image.revision="18e4effd796a1d51615ca2340bb927278eb18bbf"
 
