@@ -20,7 +20,7 @@ Outputs:
 | CIGALE vs AGNfitter | five QSOs, best CIGALE family by χ²_ν | paired Wilcoxon/t-test on log L_AGN, log M*, AGN fraction; Spearman correlation | Model-family scatter is the dominant systematic; no single-family claim. |
 | FIR recovery | four synthetic lines | recovered/truth median and bootstrap 16–84 % CI | median 0.983 and CI 0.941–1.064; OI/OIII/CII near truth, NII 347±67 vs 300. |
 | Cross-band consistency | 13 real+synthetic ratios | fraction within broad priors; binomial test vs 0.5 | The 0.5 null is only a reference, not a physical model; priors are broad. |
-| PAHFIT stability | thirteen segments/fits | rms_rel and stable flag | 11/13 stable; the two flagged entries are legacy NGC 253 tails (rms 0.71 and 11.5). Production NGC 253 is 0.25; PDS short 0.0088, long 0.017, both 0.038, NGC 4151 0.031, VV114 0.195. |
+| PAHFIT stability | thirteen segments/fits | rms_rel + quality flags | 11/13 numerically stable; **all production fits are flagged/systematics-limited**. PDS short/long/both 0.0088/0.017/0.038; NGC 4151 0.031; VV114 0.195 (hot-dust mismatch); NGC 253 0.25 (gaps). Legacy NGC 253 tails remain unstable at 0.71/11.5. |
 | Cross-tool line ratios | SDSS ZLINE + PyQSOFit, PyQSOFitSpec, S3Fit, GANDALF, GalSpec, QGfit, SHEAP, PAHFIT | per-source median, 1000-sample bootstrap CI, log scatter | 04592649654 Hβ/[O III] 5007: ZLINE **1.57**, fitters **1.83–2.50**; eight-entry median **2.05**, 0.13 dex. PyQSOFit/S3Fit/GANDALF alone agree at 0.05 dex. |
 
 The comparison figure is **not** a replacement for the per-object fit figures;

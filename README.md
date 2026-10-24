@@ -67,7 +67,7 @@ The production matrix uses real data only:
 | **CAFE** | VV114, full 12 MIRI `s1d` channels | AGN/SB continuum + selected MIR lines/PAHs, 200 covariance draws | rms **0.143**, χ²ν 2.68; Ar II, Ne II, Ne III, S IV, etc. detected |
 | **S3Fit** | `04592649654` SDSS QSO | **spec+sed**, 8 bands, 10 mock spectra, 8 threads | χ²ν **1.035**; MC χ² 1.605±0.112; Hβ/[O III] **1.83**; 58 min |
 | **GANDALF** | `spSpec-51908-0277-120` z=0.0859 | native GDL, pPXF + all Hα/Hβ/[O III]/[N II] lines | pPXF **accepted** (V=72.5, σ=79.9 km/s); Hα 1391, Hβ 244, [O III] 79.7 |
-| **PAHFIT** | VV114, PDS 456, NGC 4151, NGC 253 | full MIRI/IRS, covariance/bootstrap, 100–200 draws | rms VV114 **0.195**, PDS short/long/both **0.0088/0.017/0.038**, NGC 4151 **0.031**, NGC 253 **0.25** (still systematics-limited) |
+| **PAHFIT** | VV114, PDS 456, NGC 4151, NGC 253 | full MIRI/IRS, covariance/bootstrap, 100–200 draws | rms VV114 **0.195** (flagged hot-dust mismatch), PDS short/long/both **0.0088/0.017/0.038**, NGC 4151 **0.031**, NGC 253 **0.25**; all PAHFIT production runs are `flagged=true` / systematics-limited |
 | **GalSpec** | `04592649654` | full-continuum global model + `emcee`, 39 parameters | 224,000 samples, 37,334 saved; Hβ 3718, [O III] 1681, ratio **2.21** |
 | **PyQSOFitSpec** | `04592649654` | full Fe II/Balmer + skew-normal lines, 55 bootstrap draws | 53 valid; Hβ **3525**, [O III] **1639**, ratio **2.15** |
 | **QGfit** | `04592649654` | long continuum MCMC + line complexes | 2334 s; Hβ/[O III] **2.50**; line errors LSQ |
@@ -90,7 +90,7 @@ median 2.05, log-scatter 0.13 dex
 | CAFE PDS 456 had only four MRS L sub-bands and one detected line | added a 12-file MIRI `s1d` adapter; VV114 now has full 5–28 µm coverage and multiple MIR detections. The PDS gap remains documented. |
 | S3Fit was pure-spectrum with only 3 mocks | full **spec+sed** run with **10 mocks**, 8 threads; χ²ν 1.035. |
 | GANDALF had no Hα coverage and pPXF was rejected | added a real low-z SDSS spectrum; pPXF accepted; Hα/Hβ/[O III]/[N II] measured. |
-| PAHFIT PDS long/both had poor rms; NGC 253 was 11.5 | normalization/warm-start fixes gave **0.017/0.038** and **0.25**; NGC 253 remains systematics-limited. |
+| PAHFIT Jy/MJy conversion was wrong by **1e12**; MIRI s1d units were hard-coded; `pahfit_args` were dropped | corrected units, dynamic `TUNIT`/aperture handling, appended args; PDS long/both **0.017/0.038**, NGC 253 **0.25**. All production runs remain flagged/systematics-limited (VV114 hot dust, NGC 253 gaps, NGC 4151 residuals). |
 | GalSpec only fit a reduced Hβ/[O III] window | full-continuum 39-parameter `emcee` model; 37,334 saved samples. |
 | PyQSOFitSpec only 10 bootstraps and pinned widths | 55-draw bootstrap; width anchors and tied components documented. Hβ remains ~18% above GANDALF/S3Fit because of continuum/model definition. |
 | QGfit used a very short continuum MCMC | 2334 s production run with long continuum MCMC and expanded [O III] template; line errors remain LSQ. |

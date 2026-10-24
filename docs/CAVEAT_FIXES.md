@@ -62,7 +62,7 @@
 * **Production matrix (2026-10-24):** CAFE VV114 rms 0.143/χ²ν 2.68;
   S3Fit spec+sed 10 mocks χ²ν 1.035; GANDALF low-z pPXF accepted
   (V=72.5, σ=79.9 km/s); PAHFIT PDS short/long/both **0.0088/0.017/0.038**,
-  NGC 4151 0.031, NGC 253 0.25; GalSpec full 39-parameter MCMC (37,334 saved
+  NGC 4151 0.031, VV114 0.195, NGC 253 0.25 (all PAHFIT production runs flagged/systematics-limited); GalSpec full 39-parameter MCMC (37,334 saved
   samples, Hβ/[O III]=2.21); PyQSOFitSpec 53/55 bootstrap (2.15); QGfit long
   continuum MCMC (2.50); SHEAP repaired (2.02); SDSS ZLINE 1.57.
 * **PAHFIT** formal covariance/χ² errors are much smaller than the residuals
