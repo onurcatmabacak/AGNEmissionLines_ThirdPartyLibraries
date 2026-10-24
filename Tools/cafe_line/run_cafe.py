@@ -15,11 +15,18 @@ This is the production driver around the upstream CAFE fitter
   covariance (explicitly labelled ``lmfit_covariance``; this is **not** an
   MCMC).
 
-The most important caveat for the committed PDS 456 test is that the
-canonical x1d files only contain the MRS "L" sub-bands; the [Ne II] 12.81,
-[Ne III] 15.56 and [S III] 18.71 lines fall in the zeroed gaps.  The driver
-reports those lines as ``not_covered`` rather than fitting interpolated
-continuum across the gap.
+Inputs are canonical JWST/MIRI ``x1d`` tables (PDS 456, sparse L sub-bands)
+or PAHFIT-style MIRI ``s1d`` tables (VV114, all 12 channels).  For the PDS 456
+x1d product only the MRS "L" sub-bands are present; [Ne II] 12.81,
+[Ne III] 15.56 and [S III] 18.71 fall in the zeroed gaps.  The driver reports
+those lines as ``not_covered`` rather than fitting interpolated continuum
+across the gap.
+
+For very high-S/N full-coverage spectra, forcing every table line and PAH can
+make the lmfit finite-difference Jacobian impractically expensive.  The
+``--keep-line-waves`` / ``--keep-pah-complexes`` options apply a documented,
+reproducible science subset; the requested and retained sets are recorded in
+``run.json`` and ``config_used/``.
 """
 from __future__ import annotations
 
@@ -100,6 +107,8 @@ PAH_CENTRAL = {
 # Key science lines.  ``cafe_base`` is the CAFE parameter name without the
 # trailing N/B component suffix (see CAFE.cafe_lib.get_feat_pars).
 KEY_LINES = [
+    ("ArII_6.99", 6.985274, "ArII_69853", "narrow"),
+    ("OIV_25.89", 25.890300, "OIV_258903", "narrow+broad"),
     ("NeII_12.81", 12.813550, "NeII_128136", "narrow"),
     ("NeIII_15.56", 15.555100, "NeIII_155551", "narrow+broad"),
     ("SIII_18.71", 18.713000, "SIII_187130", "narrow"),
@@ -414,13 +423,87 @@ def _set_opt_value(text: str, key: str, value: str) -> str:
     return text
 
 
+def _ini_value(text: str, key: str) -> str | None:
+    """Read one quoted ``key = 'value'`` entry from a CAFE ini file."""
+    m = re.search(rf"(?mi)^\s*{re.escape(key)}\s*=\s*(.+?)\s*$", text)
+    if not m:
+        return None
+    value = m.group(1).split("#", 1)[0].strip()
+    return value.strip("\"'")
+
+
+def _mask_columns_for(table_name: str) -> tuple[int, int]:
+    """Return (wavelength column, mask column) for a CAFE line table."""
+    if "atomic" in table_name.lower():
+        return 1, 3          # NAME WAVE0 EP MASK DOUBLE
+    return 1, 2              # NAME WAVE0 MASK DOUBLE
+
+
+def _mask_unselected_lines(src: Path, z: float, keep_waves,
+                           wave_col: int = 1, mask_col: int = 3,
+                           tol_um: float = 0.005):
+    """Mask every line whose rest wavelength is not in ``keep_waves``.
+
+    This is a deliberate, documented reduction of the CAFE line set.  It is
+    needed for very high-S/N MIRI spectra where forcing every table line
+    makes the lmfit Jacobian prohibitively expensive.  The mask column is
+    the same one used by CAFE's own input tables.
+    """
+    keep = [float(w) for w in keep_waves]
+    out = []
+    n_total = n_masked = 0
+    for line in src.read_text().splitlines():
+        stripped = line.strip()
+        if not stripped or stripped.startswith(";"):
+            out.append(line)
+            continue
+        parts = stripped.split()
+        try:
+            wave = float(parts[wave_col])
+        except Exception:
+            out.append(line)
+            continue
+        n_total += 1
+        if not any(abs(wave - k) <= tol_um for k in keep):
+            parts[mask_col] = "1"
+            n_masked += 1
+        out.append("   ".join(parts))
+    src.write_text("\n".join(out) + "\n")
+    return n_total, n_masked
+
+
+def _trim_pah_complexes(src: Path, keep_complexes):
+    """Keep only template rows belonging to the named PAH complexes."""
+    keep = set(keep_complexes or [])
+    rows, n_total = [], 0
+    for line in src.read_text().splitlines():
+        stripped = line.strip()
+        if not stripped or stripped.startswith(";"):
+            continue
+        parts = stripped.split()
+        if len(parts) < 4:
+            continue
+        try:
+            wave = float(parts[0])
+        except Exception:
+            continue
+        n_total += 1
+        if _pah_complex_for_wave(wave) in keep:
+            rows.append("   ".join(parts))
+    src.write_text("; PAH table trimmed to the documented production subset\n"
+                   + "\n".join(rows) + ("\n" if rows else ""))
+    return n_total, len(rows)
+
+
 def prepare_effective_config(config: Path, tables: Path, z: float,
                              segments_um, work_dir: Path,
                              fit_lines: bool, fit_pahs: bool,
                              max_loops: int, error_floor: float,
                              coverage_mask: bool = True,
                              margin_um: float = 0.0,
-                             ftol: float | None = None) -> dict:
+                             ftol: float | None = None,
+                             keep_line_waves=None,
+                             keep_pah_complexes=None) -> dict:
     config = Path(config).resolve()
     inpar = config / "inpars.ini"
     opt = config / "default_opt.cafe"
@@ -435,6 +518,7 @@ def prepare_effective_config(config: Path, tables: Path, z: float,
     (eff / "tables").mkdir(parents=True)
 
     shutil.copy2(inpar, eff / "inpars.ini")
+    inpar_text = inpar.read_text()
     opt_text = opt.read_text()
     tables = _find_tables(config, tables)
     _copy_tables(tables, eff / "tables")
@@ -450,22 +534,44 @@ def prepare_effective_config(config: Path, tables: Path, z: float,
     (eff / "default_opt.cafe").write_text(opt_text)
 
     line_info = {}
+    # Honour whichever line tables the requested ini names.  The default AGN
+    # config uses lines.*_AGN.txt; the combined SB+AGN config uses
+    # lines.*_SB_and_AGN.txt.  Masking only the hard-coded AGN names would
+    # silently leave uncovered features active in the latter.
+    line_tables = []
+    for key in ("atomic_input", "molecular_input", "hrecomb_input"):
+        fname = _ini_value(inpar_text, key)
+        if fname and fname not in line_tables:
+            line_tables.append(fname)
+    if not line_tables:
+        line_tables = ["lines.atomic_AGN.txt", "lines.molecular_AGN.txt",
+                       "lines.H_recombination_AGN.txt"]
     if coverage_mask:
-        for fname, wc, mc in [
-            ("lines.atomic_AGN.txt", 1, 3),
-            ("lines.molecular_AGN.txt", 1, 2),
-            ("lines.H_recombination_AGN.txt", 1, 2),
-        ]:
+        for fname in line_tables:
             src = eff / "tables" / fname
             if src.exists():
+                wc, mc = _mask_columns_for(fname)
                 n, m = _rewrite_mask_table(src, src, wc, mc, z, segments_um,
                                            margin=margin_um)
                 line_info[fname] = {"n_rows": n, "n_masked_by_coverage": m}
-        pah_src = eff / "tables" / "pah_template.txt"
+                if keep_line_waves:
+                    _, ms = _mask_unselected_lines(src, z, keep_line_waves,
+                                                   wave_col=wc, mask_col=mc)
+                    line_info[fname]["n_masked_by_subset"] = ms
+        pah_src = eff / "tables" / (_ini_value(inpar_text, "pah_input")
+                                     or "pah_template.txt")
         if pah_src.exists():
             n, kept = _trim_pah_table(pah_src, pah_src, z, segments_um,
                                       margin=margin_um)
             line_info["pah_template.txt"] = {"n_rows": n, "n_kept": kept}
+            if kept and keep_pah_complexes:
+                n2, kept2 = _trim_pah_complexes(pah_src, keep_pah_complexes)
+                line_info["pah_template.txt"].update({
+                    "n_rows_before_subset": n2,
+                    "n_kept_after_subset": kept2,
+                    "kept_complexes": list(keep_pah_complexes),
+                })
+                kept = kept2
             if kept == 0 and fit_pahs:
                 # Keep the full table so CAFE's PAH-reference guesser can run,
                 # but turn the PAH component off.
@@ -501,8 +607,12 @@ def copy_config_used(eff: dict, out_dir: Path):
     dst.mkdir(parents=True)
     shutil.copy2(eff["inpars"], dst / "inpars.ini")
     shutil.copy2(eff["opt"], dst / "default_opt.cafe")
-    for name in ("lines.atomic_AGN.txt", "lines.molecular_AGN.txt",
-                 "lines.H_recombination_AGN.txt", "pah_template.txt"):
+    names = set(eff.get("line_tables", {}))
+    if not names:
+        names = {"lines.atomic_AGN.txt", "lines.molecular_AGN.txt",
+                 "lines.H_recombination_AGN.txt"}
+    names.add("pah_template.txt")
+    for name in sorted(names):
         src = Path(eff["tabpath"]) / name
         if src.exists():
             shutil.copy2(src, dst / name)
@@ -1095,8 +1205,14 @@ def _pah_flux_arrays(pars) -> dict:
     return out
 
 
-def _pah_flux_arrays_with_ext(pars, wave_grid, cont_profs) -> dict:
-    """PAH complex fluxes including the fitted extinction at each feature."""
+def _pah_flux_arrays_observed(pars, wave_grid, cont_profs) -> dict:
+    """PAH complex observed fluxes (intrinsic flux times fitted extinction).
+
+    Kept for diagnostics.  The uncertainty MC uses the *intrinsic* fluxes so
+    that its ``p50`` is directly comparable with the native
+    ``pah_strength_int`` column; multiplying by the extinction here would
+    silently turn the MC quantity into an observed flux.
+    """
     _, drude, _ = get_feat_pars(pars, apply_vgrad2waves=True)
     wave, gamma, peak, name = drude[0], drude[1], drude[2], drude[3]
     comp, _, ext, _, _, _ = get_model_fluxes(pars, wave_grid, cont_profs,
@@ -1148,7 +1264,7 @@ def run_monte_carlo(fit: dict, n_samples: int, seed: int, z: float,
         for j, name in enumerate(names):
             pars[name].value = float(samples[i, j])
         lines = _line_flux_arrays(pars)
-        pahs = _pah_flux_arrays_with_ext(pars, wave_grid, s.cont_profs)
+        pahs = _pah_flux_arrays(pars)
         for k in line_names:
             if k in model_line_names:
                 arrays[k][i] = lines.get(k, 0.0)
@@ -1675,7 +1791,8 @@ def parse_args(argv=None):
     p = argparse.ArgumentParser(description=__doc__,
                                 formatter_class=argparse.RawDescriptionHelpFormatter)
     p.add_argument("--input", required=True, type=Path,
-                   help="input directory with *_x1d.fits (or a FITS file)")
+                   help="input directory with *_x1d.fits / *_s1d.fits "
+                        "(or a FITS file)")
     p.add_argument("--output", required=True, type=Path)
     p.add_argument("--work", type=Path, default=Path("/app/work"),
                    help="scratch/work directory (outside outputs)")
@@ -1684,12 +1801,20 @@ def parse_args(argv=None):
                    help="CAFE config directory with inpars.ini + default_opt.cafe")
     p.add_argument("--tables", type=Path, default=None,
                    help="CAFE tables directory (default: ../tables next to --config)")
-    p.add_argument("--segment", choices=["both", "short", "long"], default="both")
+    p.add_argument("--segment", choices=["both", "short", "long"], default="both",
+                   help="MIRI module selection; for s1d inputs short=ch1+ch2 "
+                        "and long=ch3+ch4")
     p.add_argument("--dq-policy", choices=["good", "all"], default="good")
+    p.add_argument("--overlap-policy", choices=["trim", "keep"], default="trim",
+                   help="trim adjacent MRS channel overlaps at their midpoint "
+                        "(default) or keep both samples")
     p.add_argument("--min-wave", type=float, default=None)
     p.add_argument("--max-wave", type=float, default=None)
     p.add_argument("--error-floor", type=float, default=0.01,
                    help="fractional error floor applied in the adapter (default 1%%)")
+    p.add_argument("--sb-aperture-arcsec2", type=float, default=None,
+                   help="aperture used to convert surface-brightness spectra "
+                        "(MJy/sr) to Jy")
     p.add_argument("--bin-kms", type=float, default=0.0)
     p.add_argument("--edge-trim", type=int, default=2)
     p.add_argument("--gap-factor", type=float, default=10.0)
@@ -1698,6 +1823,14 @@ def parse_args(argv=None):
     p.add_argument("--coverage-margin-um", type=float, default=0.0)
     p.add_argument("--no-lines", action="store_true")
     p.add_argument("--no-pahs", action="store_true")
+    p.add_argument("--keep-line-waves", default=None,
+                   help="comma-separated rest wavelengths [um] of the only "
+                        "lines to keep (all other table rows are masked). "
+                        "Use for a documented reduced-line production fit.")
+    p.add_argument("--keep-pah-complexes", default=None,
+                   help="comma-separated CAFE PAH complex names to keep "
+                        "(e.g. PAH62,PAH77_C,PAH86,PAH113_C,PAH126_C,"
+                        "PAH136,PAH142,PAH170_C)")
     p.add_argument("--force-all-lines", dest="force_all_lines",
                    action="store_true", default=True)
     p.add_argument("--no-force-all-lines", dest="force_all_lines",
@@ -1763,7 +1896,9 @@ def main(argv=None) -> int:
             dq_policy=args.dq_policy, min_wave=args.min_wave,
             max_wave=args.max_wave, error_floor=args.error_floor,
             bin_kms=args.bin_kms, edge_trim=args.edge_trim,
-            gap_factor=args.gap_factor)
+            gap_factor=args.gap_factor,
+            sb_aperture_arcsec2=args.sb_aperture_arcsec2,
+            overlap_policy=args.overlap_policy)
         spec_path = work / f"{spectrum_stem}.txt"
         write_cafe_text(spec_path, spec["wave"], spec["flux"], spec["err"],
                         header=(f"CAFE input from {source_key}; z={args.z}; "
@@ -1782,12 +1917,18 @@ def main(argv=None) -> int:
               f"median S/N={spec['meta']['median_snr']:.1f}")
 
         # 2. effective config (coverage-aware)
+        keep_line_waves = ([float(x) for x in args.keep_line_waves.split(",") if x.strip()]
+                           if args.keep_line_waves else None)
+        keep_pah_complexes = ([x.strip() for x in args.keep_pah_complexes.split(",")
+                               if x.strip()] if args.keep_pah_complexes else None)
         config = prepare_effective_config(
             args.config, args.tables, args.z, spec["meta"]["segments_um"],
             work, fit_lines=not args.no_lines, fit_pahs=not args.no_pahs,
             max_loops=args.max_loops, error_floor=args.error_floor,
             coverage_mask=not args.no_coverage_mask,
-            margin_um=args.coverage_margin_um, ftol=args.ftol)
+            margin_um=args.coverage_margin_um, ftol=args.ftol,
+            keep_line_waves=keep_line_waves,
+            keep_pah_complexes=keep_pah_complexes)
         run["config"] = {
             "requested_config": str(args.config.resolve()),
             "requested_tables": str(Path(config["tables"])),
@@ -1795,6 +1936,13 @@ def main(argv=None) -> int:
             "effective_tabpath": config["tabpath"],
             "line_tables": config["line_tables"],
             "sha256": config["sha256"],
+            "line_subset": {
+                "keep_line_waves_um": keep_line_waves,
+                "keep_pah_complexes": keep_pah_complexes,
+                "note": ("non-None entries document a deliberate reduced "
+                         "line/PAH set; all other table rows are masked")
+                if (keep_line_waves or keep_pah_complexes) else None,
+            },
         }
         run["segments_um"] = spec["meta"]["segments_um"]
 
@@ -1950,9 +2098,22 @@ def main(argv=None) -> int:
         if any(not bool(s["covered"]) for s in
                [{"covered": r["covered"]} for _, r in key_df.iterrows()]):
             run["limitations"].append(
-                "Some key lines/PAHs fall in zeroed detector gaps of the "
-                "canonical x1d product; they are reported as not_covered, "
-                "not as non-detections.")
+                "Some key lines/PAHs are outside the contiguous observed "
+                "coverage (blanked MIRI sub-bands or red/blue limits); they "
+                "are reported as not_covered, not as non-detections.")
+        if run["config"].get("line_subset", {}).get("note"):
+            run["limitations"].append(
+                "The fit uses a documented reduced line/PAH subset "
+                "(run.json config.line_subset and config_used/). Features "
+                "not in that subset were masked, not measured. The full "
+                "all-line/all-PAH VV114 fit was attempted and did not "
+                "finish within 35 min, so the production run uses this "
+                "reduced set.")
+        if spec["meta"]["n_binned"]:
+            run["limitations"].append(
+                f"The spectrum was binned to {spec['meta']['bin_kms']:.0f} "
+                "km/s; narrow-line fluxes are conservative because this is "
+                "coarser than the MIRI resolution only at the red end.")
         if spec["meta"]["n_pixels"] < 500:
             run["limitations"].append("Fewer than 500 spectral pixels; "
                                       "the decomposition is under-constrained.")

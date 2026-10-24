@@ -1,7 +1,7 @@
 {
   "tool": "cafe_line",
   "tool_version": "1.0.0",
-  "created_utc": "2026-10-23T06:20:22Z",
+  "created_utc": "2026-10-24T02:56:14Z",
   "status": "ok",
   "source": {
     "key": "PDS456_z_0.1840",
@@ -16,9 +16,11 @@
     "tables": "/app/config/tables",
     "segment": "both",
     "dq_policy": "good",
+    "overlap_policy": "trim",
     "min_wave": null,
     "max_wave": 27.8,
     "error_floor": 0.01,
+    "sb_aperture_arcsec2": null,
     "bin_kms": 0.0,
     "edge_trim": 2,
     "gap_factor": 10.0,
@@ -26,6 +28,8 @@
     "coverage_margin_um": 0.0,
     "no_lines": false,
     "no_pahs": false,
+    "keep_line_waves": null,
+    "keep_pah_complexes": null,
     "force_all_lines": true,
     "max_loops": 5,
     "ftol": null,
@@ -38,33 +42,6 @@
     "source_key": "PDS456_z_0.1840"
   },
   "inputs": [
-    {
-      "path": "/app/input/jw02547001001_02101_00001_mirifulong_x1d.fits",
-      "sha256": "822666f9b25f6de4c970858c428ccb5cd26e78514554e17d75335ba999650a7e",
-      "bytes": 567360,
-      "flux_kind": "FLUX",
-      "n_rows": 2486,
-      "dq_counts": {
-        "0": 1249,
-        "1": 1237
-      },
-      "n_pixels_median": 1453.0,
-      "hdu": "EXTRACT1D",
-      "header": {
-        "TARGNAME": "PDS456-MIRI",
-        "INSTRUME": "MIRI",
-        "DETECTOR": "MIRIFULONG",
-        "BAND": "LONG",
-        "CHANNEL": "34",
-        "DATE-OBS": "2023-04-02",
-        "PROGRAM": "02547",
-        "OBSERVTN": "001"
-      },
-      "n_used": 1249,
-      "n_rejected_dq": 0,
-      "n_rejected_nonfinite": 0,
-      "n_rejected_zero_error": 1237
-    },
     {
       "path": "/app/input/jw02547001001_02101_00001_mirifushort_x1d.fits",
       "sha256": "ba51a7bb6bb6478b0e05e197838cccaf31b40f59a04e5cb8cbbda7419e0df92e",
@@ -91,6 +68,33 @@
       "n_rejected_dq": 0,
       "n_rejected_nonfinite": 0,
       "n_rejected_zero_error": 1864
+    },
+    {
+      "path": "/app/input/jw02547001001_02101_00001_mirifulong_x1d.fits",
+      "sha256": "822666f9b25f6de4c970858c428ccb5cd26e78514554e17d75335ba999650a7e",
+      "bytes": 567360,
+      "flux_kind": "FLUX",
+      "n_rows": 2486,
+      "dq_counts": {
+        "0": 1249,
+        "1": 1237
+      },
+      "n_pixels_median": 1453.0,
+      "hdu": "EXTRACT1D",
+      "header": {
+        "TARGNAME": "PDS456-MIRI",
+        "INSTRUME": "MIRI",
+        "DETECTOR": "MIRIFULONG",
+        "BAND": "LONG",
+        "CHANNEL": "34",
+        "DATE-OBS": "2023-04-02",
+        "PROGRAM": "02547",
+        "OBSERVTN": "001"
+      },
+      "n_used": 1249,
+      "n_rejected_dq": 0,
+      "n_rejected_nonfinite": 0,
+      "n_rejected_zero_error": 1237
     }
   ],
   "config": {
@@ -148,6 +152,11 @@
         "sb99-10myr.txt": "56d1ff17a76722c4c3e95e9547116c501272313dc761766928a2248c07533f30",
         "sb99-2myr.txt": "8c17e22f4641a53a2e1304137ddffb2a6d357859628ed5e6f024316493da9fd4"
       }
+    },
+    "line_subset": {
+      "keep_line_waves_um": null,
+      "keep_pah_complexes": null,
+      "note": null
     }
   },
   "spectrum": {
@@ -161,6 +170,8 @@
     "max_wave_um": 27.772674560546875,
     "n_pixels": 3361,
     "n_duplicates_combined": 0,
+    "n_overlap_trimmed": 0,
+    "overlap_policy": "trim",
     "n_binned": 0,
     "n_error_floor_applied": 3358,
     "error_floor": 0.01,
@@ -231,7 +242,7 @@
     "n_pixels": 3361,
     "n_params_total": 118,
     "n_params_free": 46,
-    "fit_runtime_s": 42.90176343917847,
+    "fit_runtime_s": 159.20403003692627,
     "method": "lmfit least_squares (trust region reflective)",
     "cafe_commit": "39e298bef517030f7828057bb9eeff2927fba77a",
     "cafe_version": "1.0.1",
@@ -302,7 +313,7 @@
     "n_free": 46,
     "n_samples": 200,
     "seed": 20250101,
-    "runtime_s": 4.7813286781311035,
+    "runtime_s": 2.460913896560669,
     "n_quantities": 45
   },
   "products": {
@@ -327,7 +338,7 @@
     "CAFE v1.0.1's ErrSpec option is present in default_opt.cafe but is not applied by the released code; the error floor is applied by this adapter instead."
   ],
   "limitations": [
-    "Some key lines/PAHs fall in zeroed detector gaps of the canonical x1d product; they are reported as not_covered, not as non-detections."
+    "Some key lines/PAHs are outside the contiguous observed coverage (blanked MIRI sub-bands or red/blue limits); they are reported as not_covered, not as non-detections."
   ],
   "segments_um": [
     {
@@ -678,9 +689,9 @@
       "flux_int_err_w_m2": 2.7085118656202988e-17,
       "snr_int": 14.02110614199533,
       "flux_3sigma_ul_w_m2": null,
-      "mc_p16": 3.3386083712822126e-16,
-      "mc_p50": 3.488914676750658e-16,
-      "mc_p84": 3.6304569028792056e-16
+      "mc_p16": 3.5436549036125787e-16,
+      "mc_p50": 3.7933971021993193e-16,
+      "mc_p84": 4.0487511522566557e-16
     },
     "PAH_7.7": {
       "cafe_name": "PAH77_C",
@@ -708,9 +719,9 @@
       "flux_int_err_w_m2": 2.4491196461425223e-17,
       "snr_int": 2.976058513925542,
       "flux_3sigma_ul_w_m2": 7.347358938427567e-17,
-      "mc_p16": 4.54358713030328e-17,
-      "mc_p50": 6.182087983720223e-17,
-      "mc_p84": 8.299507408463926e-17
+      "mc_p16": 5.129470601205382e-17,
+      "mc_p50": 6.997156071707537e-17,
+      "mc_p84": 9.402781607750334e-17
     },
     "PAH_11.3": {
       "cafe_name": "PAH113_C",
@@ -753,9 +764,9 @@
       "flux_int_err_w_m2": 1.5482529763422508e-17,
       "snr_int": 11.302879743513666,
       "flux_3sigma_ul_w_m2": null,
-      "mc_p16": 1.457066845757384e-16,
-      "mc_p50": 1.587904407245767e-16,
-      "mc_p84": 1.729299959578042e-16
+      "mc_p16": 1.580449480847834e-16,
+      "mc_p50": 1.7331616867606569e-16,
+      "mc_p84": 1.8957272665490373e-16
     },
     "PAH_14.2": {
       "cafe_name": "PAH142",
@@ -768,9 +779,9 @@
       "flux_int_err_w_m2": 1.1159407266822329e-17,
       "snr_int": 5.855431970886226,
       "flux_3sigma_ul_w_m2": null,
-      "mc_p16": 4.7498828007189556e-17,
-      "mc_p50": 5.744839398305909e-17,
-      "mc_p84": 6.775655574417722e-17
+      "mc_p16": 5.0904015511463746e-17,
+      "mc_p50": 6.258048482094314e-17,
+      "mc_p84": 7.346191983155442e-17
     },
     "PAH_17.0": {
       "cafe_name": "PAH170_C",
@@ -825,17 +836,17 @@
       "value": 0.19192804893439458,
       "err": 0.06592741169333131,
       "status": "marginal",
-      "mc_p16": 0.12730730212472863,
-      "mc_p50": 0.17676705659592554,
-      "mc_p84": 0.2401809044484155
+      "mc_p16": 0.13197372256855366,
+      "mc_p50": 0.1850261801064958,
+      "mc_p84": 0.24871203933735023
     },
     "H2_S3/PAH_6.2": {
       "value": 0.0,
       "err": null,
       "status": "undefined",
       "mc_p16": 0.0,
-      "mc_p50": 0.00020077106077662953,
-      "mc_p84": 0.0012818618079978308
+      "mc_p50": 0.00018783928047573116,
+      "mc_p84": 0.001198443502369066
     },
     "NeV_14.32/NeV_24.32": {
       "value": null,
@@ -868,5 +879,5 @@
       ]
     ]
   },
-  "runtime_s": 62.03556752204895
+  "runtime_s": 177.53899765014648
 }
