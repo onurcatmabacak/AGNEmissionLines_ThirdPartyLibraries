@@ -1,8 +1,8 @@
 ################################# S3Fit starts #################################
 You are now using S3Fit v2.2.6.
 ############################# Initialize FitFrame ##############################
-Perform fitting for the original data and 3 mock data.
-Perform fitting for the 3 mock data in multithreading with 3 threads.
+Perform fitting for the original data and 10 mock data.
+Perform fitting for the 10 mock data in multithreading with 8 threads.
 Perform fitting in log space.
 [Note] Pure line fitting (i.e., after subtracting continuum), if enabled, is always in linear space.
 All continuum models and line components with peak S/N < 2 (set with 'accept_fmod_SN') will be automatically disabled in examination.
@@ -10,9 +10,16 @@ All continuum models and line components with peak S/N < 2 (set with 'accept_fmo
 Mask out 115 data points with the input spec_valid_range and/or spec_invalid_range.
 Spectral fitting will be performed in wavelength range (rest frame, Å): from 2268.483 to 6576.029
 [Note] The wavelength range is extended for tolerances of redshift of 0.5874130725860596+-0.0050 (+-1500 km s-1) and convolution/dispersion FWHM of max 1500 km s-1.
+############################ Read photometric data #############################
+Data available in bands: ['SDSS_gp' 'SDSS_rp' 'SDSS_ip' 'SDSS_zp' 'WISE_1' 'WISE_2' 'WISE_3' 'WISE_4']
+SED fitting is performed in wavelength range (rest frame, Å): from 1901.488 to 221979.532
+[Note] The input spectrum is calibrated with photometric fluxes in the bands: ['SDSS_gp' 'SDSS_rp' 'SDSS_ip' 'SDSS_zp'].
+[Note] The calibration ratio for spectrum is 0.49379633053680216.
 ################## Initialize AGN UV/optical continuum models ##################
 AGN UV/optical/NIR continuum components: ['powerlaw', 'iron', 'recombination']
 Lower-level principal quantum number of Hydrogen recombination continuum: [2, 3, 4, 5]
+######################### Initialize AGN torus models ##########################
+Torus model components: [['dust']]
 ############################ Initialize line models ############################
 Ties of lines (if covered) with default (100 cm-3 and 10000 K) or given flux ratios:
     Line tying: H-gamma is tied to H-beta with flux ratio, 0.470, under electron density of 100 cm-3 and temperature of 10000 K,  for the components ['NLR' 'BLR'].
@@ -21,15 +28,16 @@ Ties of lines (if covered) with default (100 cm-3 and 10000 K) or given flux rat
     Line tying: [Ne III]:3969 is tied to [Ne III]:3870 with flux ratio, 0.301, under electron density of 100 cm-3 and temperature of 10000 K,  for the components ['NLR'].
     Line tying: [O III]:4960 is tied to [O III]:5008 with flux ratio, 0.335, under electron density of 100 cm-3 and temperature of 10000 K,  for the components ['NLR'].
     Line tying: [O I]:6366 is tied to [O I]:6302 with flux ratio, 0.319, under electron density of 100 cm-3 and temperature of 10000 K,  for the components ['NLR'].
+    Line tying: Mg II]:2804 is tied to Mg II]:2796 with flux ratio, 1.000, under electron density of 100 cm-3 and temperature of 10000 K,  for the components ['BLR'].
 Free lines in each components: 
 (0) 'NLR' component has 6 free (out of total 12) Gaussian, emission profiles: 
     ['[O II]:3730' '[Ne III]:3870' '[O III]:4364' 'H-beta' '[O III]:5008' '[O I]:6302']
-(1) 'BLR' component has 3 free (out of total 5) Gaussian, emission profiles: 
-    ['Mg II]:2796' 'Mg II]:2804' 'H-beta']
+(1) 'BLR' component has 2 free (out of total 5) Gaussian, emission profiles: 
+    ['Mg II]:2796' 'H-beta']
 ################################ Model summary #################################
-S3Fit imports these models: ['agn', 'line'].
+S3Fit imports these models: ['agn', 'torus', 'line'].
 ########################### Initialization finishes ############################
-####################### Loop 1/4 starts (original data) ########################
+####################### Loop 1/11 starts (original data) #######################
 ########################## Fit the original spectrum ###########################
 Continuum models used in spectral fitting: agn
 #### <cont_fit_init> start: spectral fitting, initialize continuum models.
@@ -37,401 +45,1331 @@ Do not perturb transferred parameters from the former step.
 Perform Non-linear Least-square optimazation for fine tuning.
 Non-linear fitting cycle 1/1, poor-fit with chi_sq = 16.462 > 10.000 (goal); accept the solution with the achieved min_chi_sq = 16.462
 Fit with 3 free elements and 8 free parameters of 1 models, reduced chi-squared = 16.462.
-#### <cont_fit_init> finish: 28.3s/28.3s/28.3s spent in this step/loop/total.
+#### <cont_fit_init> finish: 34.9s/34.9s/34.9s spent in this step/loop/total.
 #### <line_fit_init> start: spectral fitting, initialize line models.
 Do not perturb transferred parameters from the former step.
 Perform Non-linear Least-square optimazation for fine tuning.
-Non-linear fitting cycle 1/1, poor-fit with chi_sq = 16.407 > 10.000 (goal); accept the solution with the achieved min_chi_sq = 16.407
-Fit with 9 free elements and 7 free parameters of 1 models, reduced chi-squared = 16.407.
-#### <line_fit_init> finish: 1.9s/30.3s/30.3s spent in this step/loop/total.
+Non-linear fitting cycle 1/1, poor-fit with chi_sq = 16.478 > 10.000 (goal); accept the solution with the achieved min_chi_sq = 16.478
+Fit with 8 free elements and 7 free parameters of 1 models, reduced chi-squared = 16.478.
+#### <line_fit_init> finish: 3.8s/38.8s/38.8s spent in this step/loop/total.
 #### <cont_fit_1> start: spectral fitting, update continuum models.
 Do not perturb transferred parameters from the former step.
 Perform Non-linear Least-square optimazation for fine tuning.
-Non-linear fitting cycle 1/1, poor-fit with chi_sq = 15.661 > 10.000 (goal); accept the solution with the achieved min_chi_sq = 15.661
-Fit with 3 free elements and 8 free parameters of 1 models, reduced chi-squared = 15.661.
-#### <cont_fit_1> finish: 56.0s/86.3s/86.3s spent in this step/loop/total.
+Fit with 3 free elements and 8 free parameters of 1 models, reduced chi-squared = 5.119.
+#### <cont_fit_1> finish: 136.7s/175.4s/175.4s spent in this step/loop/total.
 #### <line_fit_1> start: spectral fitting, update line models.
 Do not perturb transferred parameters from the former step.
 Perform Non-linear Least-square optimazation for fine tuning.
-Non-linear fitting cycle 1/1, poor-fit with chi_sq = 16.001 > 10.000 (goal); accept the solution with the achieved min_chi_sq = 16.001
-Fit with 9 free elements and 7 free parameters of 1 models, reduced chi-squared = 16.001.
-#### <line_fit_1> finish: 4.5s/90.8s/90.8s spent in this step/loop/total.
+Fit with 8 free elements and 7 free parameters of 1 models, reduced chi-squared = 4.769.
+#### <line_fit_1> finish: 10.6s/186.0s/186.0s spent in this step/loop/total.
 #### <joint_fit_1> start: spectral fitting, fit with all models.
 Do not perturb transferred parameters from the former step.
 Perform Non-linear Least-square optimazation for fine tuning.
-Fit with 12 free elements and 15 free parameters of 2 models, reduced chi-squared = 15.678.
-#### <joint_fit_1> finish: 30.5s/121.3s/121.3s spent in this step/loop/total.
+Fit with 11 free elements and 15 free parameters of 2 models, reduced chi-squared = 4.864.
+#### <joint_fit_1> finish: 57.4s/243.4s/243.4s spent in this step/loop/total.
 #### Examine if each continuum model is indeed required, i.e., with peak S/N >= 2 (set by 'accept_fmod_SN'). ####
-agn continuum peak S/N = 52.860 --> remaining
+agn continuum peak S/N = 54.974 --> remaining
 #### Enabled continuum models after examination: agn
 #### Examine if each component of line model is indeed required, i.e., with peak S/N >= 2 (set by 'accept_fmod_SN'). ####
-NLR peak S/N = 17.240 --> remaining
-BLR peak S/N = 21.559 --> remaining
+NLR peak S/N = 17.599 --> remaining
+BLR peak S/N = 26.225 --> remaining
 #### Enabled components of line model after examination: ['NLR', 'BLR']
 #### <cont_fit_2a> start: spectral fitting, update continuum models.
 Do not perturb transferred parameters from the former step.
 Perform Non-linear Least-square optimazation for fine tuning.
-Non-linear fitting cycle 1/1, poor-fit with chi_sq = 15.509 > 10.000 (goal); accept the solution with the achieved min_chi_sq = 15.509
-Fit with 3 free elements and 8 free parameters of 1 models, reduced chi-squared = 15.509.
-#### <cont_fit_2a> finish: 13.2s/134.6s/134.6s spent in this step/loop/total.
+Fit with 3 free elements and 8 free parameters of 1 models, reduced chi-squared = 4.840.
+#### <cont_fit_2a> finish: 3.5s/246.9s/246.9s spent in this step/loop/total.
 #### <line_fit_2> start: spectral fitting, update line models.
 Do not perturb transferred parameters from the former step.
 Perform Non-linear Least-square optimazation for fine tuning.
-Non-linear fitting cycle 1/1, poor-fit with chi_sq = 15.867 > 10.000 (goal); accept the solution with the achieved min_chi_sq = 15.867
-Fit with 9 free elements and 7 free parameters of 1 models, reduced chi-squared = 15.867.
-#### <line_fit_2> finish: 1.3s/136.0s/136.0s spent in this step/loop/total.
+Fit with 8 free elements and 7 free parameters of 1 models, reduced chi-squared = 4.680.
+#### <line_fit_2> finish: 2.0s/248.9s/248.9s spent in this step/loop/total.
 #### <joint_fit_2> start: spectral fitting, update all models.
 Do not perturb transferred parameters from the former step.
 Perform Non-linear Least-square optimazation for fine tuning.
-Fit with 12 free elements and 15 free parameters of 2 models, reduced chi-squared = 15.609.
-#### <joint_fit_2> finish: 25.5s/161.5s/161.5s spent in this step/loop/total.
-#################### Loop 1/4 ends, chi_sq = 15.609 161.5s #####################
-######################### Loop 2/4 starts (mock data) ##########################
+Non-linear fitting cycle 1/1, accept this fitting with chi_sq = 4.856 / 4.840 (goal) < 110%.
+Fit with 11 free elements and 15 free parameters of 2 models, reduced chi-squared = 4.856.
+#### <joint_fit_2> finish: 30.9s/279.8s/279.8s spent in this step/loop/total.
+######### Perform simultaneous spectrum+SED fitting with original data #########
+Continuum models used in spectrum+SED fitting: agn+torus
+#### <cont_fit_3a> start: spectrum+SED fitting, update continuum models.
+Do not perturb transferred parameters from the former step.
+Perform Non-linear Least-square optimazation for fine tuning.
+Fit with 4 free elements and 13 free parameters of 2 models: 
+Reduced chi-squared with scaled errors = 0.294 for spectrum+SED;
+Reduced chi-squared with scaled errors = 0.285 for pure spectrum;
+Reduced chi-squared with scaled errors = 0.010 for pure phot-SED;
+Reduced chi-squared with original errors = 4.958 for pure spectrum;
+Reduced chi-squared with original errors = 1.019 for pure phot-SED.
+#### <cont_fit_3a> finish: 37.2s/317.0s/317.0s spent in this step/loop/total.
+The ratio of calibration error over flux is updated from 0.100 to 0.052.
+#### <cont_fit_3b> start: spectrum+SED fitting, update continuum models.
+Do not perturb transferred parameters from the former step.
+Perform Non-linear Least-square optimazation for fine tuning.
+Fit with 4 free elements and 13 free parameters of 2 models: 
+Reduced chi-squared with scaled errors = 0.846 for spectrum+SED;
+Reduced chi-squared with scaled errors = 0.814 for pure spectrum;
+Reduced chi-squared with scaled errors = 0.032 for pure phot-SED;
+Reduced chi-squared with original errors = 4.874 for pure spectrum;
+Reduced chi-squared with original errors = 1.008 for pure phot-SED.
+#### <cont_fit_3b> finish: 22.9s/340.0s/340.0s spent in this step/loop/total.
+The ratio of calibration error over flux is updated from 0.052 to 0.047.
+#### <line_fit_3> start: spectral fitting, update line models.
+Do not perturb transferred parameters from the former step.
+Perform Non-linear Least-square optimazation for fine tuning.
+Fit with 8 free elements and 7 free parameters of 1 models: 
+Reduced chi-squared with scaled errors = 0.903 for spectrum+SED;
+Reduced chi-squared with scaled errors = 0.870 for pure spectrum;
+Reduced chi-squared with scaled errors = 0.033 for pure phot-SED;
+Reduced chi-squared with original errors = 4.810 for pure spectrum;
+Reduced chi-squared with original errors = 1.068 for pure phot-SED.
+#### <line_fit_3> finish: 4.7s/344.7s/344.7s spent in this step/loop/total.
+The ratio of calibration error over flux is updated from 0.047 to 0.044.
+#### <joint_fit_3> start: spectrum+SED fitting, update all models.
+Do not perturb transferred parameters from the former step.
+Perform Non-linear Least-square optimazation for fine tuning.
+Non-linear fitting cycle 1/1, poor-fit with chi_sq = 1.035 > 0.903 (goal); accept the solution with the achieved min_chi_sq = 1.035
+Fit with 12 free elements and 19 free parameters of 3 models: 
+Reduced chi-squared with scaled errors = 1.035 for spectrum+SED;
+Reduced chi-squared with scaled errors = 0.993 for pure spectrum;
+Reduced chi-squared with scaled errors = 0.042 for pure phot-SED;
+Reduced chi-squared with original errors = 4.890 for pure spectrum;
+Reduced chi-squared with original errors = 1.036 for pure phot-SED.
+#### <joint_fit_3> finish: 68.1s/412.8s/412.8s spent in this step/loop/total.
+#################### Loop 1/11 ends, chi_sq = 1.035 412.8s #####################
+######################### Loop 2/11 starts (mock data) #########################
 ############################ Fit the mock spectrum #############################
-######################### Loop 4/4 starts (mock data) ##########################
-######################### Loop 3/4 starts (mock data) ##########################
+Continuum models used in spectral fitting: agn
+#### <cont_fit_init> start: spectral fitting, initialize continuum models.
+######################### Loop 3/11 starts (mock data) #########################
+############################ Fit the mock spectrum #############################
+Continuum models used in spectral fitting: agn
+#### <cont_fit_init> start: spectral fitting, initialize continuum models.
+######################### Loop 4/11 starts (mock data) #########################
+############################ Fit the mock spectrum #############################
+Continuum models used in spectral fitting: agn
+#### <cont_fit_init> start: spectral fitting, initialize continuum models.
+######################### Loop 5/11 starts (mock data) #########################
+############################ Fit the mock spectrum #############################
+Do not perturb transferred parameters from the former step.
+Perform Non-linear Least-square optimazation for fine tuning.
+######################### Loop 7/11 starts (mock data) #########################
+############################ Fit the mock spectrum #############################
+Do not perturb transferred parameters from the former step.
+Perform Non-linear Least-square optimazation for fine tuning.
+Do not perturb transferred parameters from the former step.
+Perform Non-linear Least-square optimazation for fine tuning.
+######################### Loop 9/11 starts (mock data) #########################
+############################ Fit the mock spectrum #############################
+Continuum models used in spectral fitting: agn
+#### <cont_fit_init> start: spectral fitting, initialize continuum models.
+Do not perturb transferred parameters from the former step.
+Perform Non-linear Least-square optimazation for fine tuning.
+######################### Loop 8/11 starts (mock data) #########################
+Continuum models used in spectral fitting: agn
+#### <cont_fit_init> start: spectral fitting, initialize continuum models.
+Do not perturb transferred parameters from the former step.
+Perform Non-linear Least-square optimazation for fine tuning.
+######################### Loop 6/11 starts (mock data) #########################
 ############################ Fit the mock spectrum #############################
 ############################ Fit the mock spectrum #############################
 Continuum models used in spectral fitting: agn
 #### <cont_fit_init> start: spectral fitting, initialize continuum models.
 Continuum models used in spectral fitting: agn
 #### <cont_fit_init> start: spectral fitting, initialize continuum models.
+Continuum models used in spectral fitting: agn
+#### <cont_fit_init> start: spectral fitting, initialize continuum models.
 Do not perturb transferred parameters from the former step.
+Do not perturb transferred parameters from the former step.
+Perform Non-linear Least-square optimazation for fine tuning.
 Perform Non-linear Least-square optimazation for fine tuning.
 Do not perturb transferred parameters from the former step.
 Perform Non-linear Least-square optimazation for fine tuning.
+Fit with 3 free elements and 8 free parameters of 1 models, reduced chi-squared = 2.786.
+#### <cont_fit_init> finish: 193.4s/193.5s/606.4s spent in this step/loop/total.
+#### <line_fit_init> start: spectral fitting, initialize line models.
+Do not perturb transferred parameters from the former step.
+Perform Non-linear Least-square optimazation for fine tuning.
+Fit with 3 free elements and 8 free parameters of 1 models, reduced chi-squared = 2.683.
+#### <cont_fit_init> finish: 20.3s/213.8s/626.7s spent in this step/loop/total.
+#### <line_fit_init> start: spectral fitting, initialize line models.
+Do not perturb transferred parameters from the former step.
+Perform Non-linear Least-square optimazation for fine tuning.
+Fit with 8 free elements and 7 free parameters of 1 models, reduced chi-squared = 3.446.
+#### <line_fit_init> finish: 10.1s/223.8s/636.8s spent in this step/loop/total.
+#### <cont_fit_1> start: spectral fitting, update continuum models.
+Do not perturb transferred parameters from the former step.
+Perform Non-linear Least-square optimazation for fine tuning.
+Fit with 3 free elements and 8 free parameters of 1 models, reduced chi-squared = 3.046.
+#### <cont_fit_init> finish: 10.5s/234.4s/647.3s spent in this step/loop/total.
+#### <line_fit_init> start: spectral fitting, initialize line models.
+Do not perturb transferred parameters from the former step.
+Perform Non-linear Least-square optimazation for fine tuning.
+Fit with 8 free elements and 7 free parameters of 1 models, reduced chi-squared = 4.980.
+#### <line_fit_init> finish: 16.8s/251.2s/664.1s spent in this step/loop/total.
+#### <cont_fit_1> start: spectral fitting, update continuum models.
+Do not perturb transferred parameters from the former step.
+Perform Non-linear Least-square optimazation for fine tuning.
+Fit with 8 free elements and 7 free parameters of 1 models, reduced chi-squared = 6.486.
+#### <line_fit_init> finish: 3.1s/254.2s/667.2s spent in this step/loop/total.
+#### <cont_fit_1> start: spectral fitting, update continuum models.
+Do not perturb transferred parameters from the former step.
+Perform Non-linear Least-square optimazation for fine tuning.
+Fit with 3 free elements and 8 free parameters of 1 models, reduced chi-squared = 2.904.
+#### <cont_fit_init> finish: 2.2s/256.5s/669.4s spent in this step/loop/total.
+#### <line_fit_init> start: spectral fitting, initialize line models.
+Do not perturb transferred parameters from the former step.
+Perform Non-linear Least-square optimazation for fine tuning.
+Fit with 8 free elements and 7 free parameters of 1 models, reduced chi-squared = 3.522.
+#### <line_fit_init> finish: 28.2s/284.7s/697.6s spent in this step/loop/total.
+#### <cont_fit_1> start: spectral fitting, update continuum models.
+Do not perturb transferred parameters from the former step.
+Perform Non-linear Least-square optimazation for fine tuning.
+Fit with 3 free elements and 8 free parameters of 1 models, reduced chi-squared = 2.799.
+#### <cont_fit_init> finish: 35.7s/320.4s/733.3s spent in this step/loop/total.
+#### <line_fit_init> start: spectral fitting, initialize line models.
+Do not perturb transferred parameters from the former step.
+Perform Non-linear Least-square optimazation for fine tuning.
+Fit with 3 free elements and 8 free parameters of 1 models, reduced chi-squared = 2.966.
+#### <cont_fit_init> finish: 6.6s/326.9s/739.9s spent in this step/loop/total.
+#### <line_fit_init> start: spectral fitting, initialize line models.
+Do not perturb transferred parameters from the former step.
+Perform Non-linear Least-square optimazation for fine tuning.
+Fit with 8 free elements and 7 free parameters of 1 models, reduced chi-squared = 3.570.
+#### <line_fit_init> finish: 27.6s/354.6s/767.5s spent in this step/loop/total.
+#### <cont_fit_1> start: spectral fitting, update continuum models.
+Do not perturb transferred parameters from the former step.
+Perform Non-linear Least-square optimazation for fine tuning.
+Fit with 8 free elements and 7 free parameters of 1 models, reduced chi-squared = 4.164.
+#### <line_fit_init> finish: 2.6s/357.2s/770.1s spent in this step/loop/total.
+#### <cont_fit_1> start: spectral fitting, update continuum models.
+Do not perturb transferred parameters from the former step.
+Perform Non-linear Least-square optimazation for fine tuning.
+Fit with 3 free elements and 8 free parameters of 1 models, reduced chi-squared = 2.884.
+#### <cont_fit_init> finish: 35.5s/392.6s/805.6s spent in this step/loop/total.
+#### <line_fit_init> start: spectral fitting, initialize line models.
+Do not perturb transferred parameters from the former step.
+Perform Non-linear Least-square optimazation for fine tuning.
+Fit with 8 free elements and 7 free parameters of 1 models, reduced chi-squared = 3.535.
+#### <line_fit_init> finish: 29.5s/422.1s/835.1s spent in this step/loop/total.
+#### <cont_fit_1> start: spectral fitting, update continuum models.
+Do not perturb transferred parameters from the former step.
+Perform Non-linear Least-square optimazation for fine tuning.
+Fit with 3 free elements and 8 free parameters of 1 models, reduced chi-squared = 6.888.
+#### <cont_fit_1> finish: 27.5s/449.6s/862.5s spent in this step/loop/total.
+#### <line_fit_1> start: spectral fitting, update line models.
+Do not perturb transferred parameters from the former step.
+Perform Non-linear Least-square optimazation for fine tuning.
+Fit with 3 free elements and 8 free parameters of 1 models, reduced chi-squared = 3.520.
+#### <cont_fit_1> finish: 32.4s/482.0s/895.0s spent in this step/loop/total.
+#### <line_fit_1> start: spectral fitting, update line models.
+Do not perturb transferred parameters from the former step.
+Perform Non-linear Least-square optimazation for fine tuning.
+Fit with 8 free elements and 7 free parameters of 1 models, reduced chi-squared = 3.977.
+#### <line_fit_1> finish: 5.4s/487.5s/900.4s spent in this step/loop/total.
+#### <joint_fit_1> start: spectral fitting, fit with all models.
+Do not perturb transferred parameters from the former step.
+Perform Non-linear Least-square optimazation for fine tuning.
+Fit with 8 free elements and 7 free parameters of 1 models, reduced chi-squared = 5.272.
+#### <line_fit_1> finish: 22.9s/510.4s/923.3s spent in this step/loop/total.
+#### <joint_fit_1> start: spectral fitting, fit with all models.
+Do not perturb transferred parameters from the former step.
+Perform Non-linear Least-square optimazation for fine tuning.
+Fit with 3 free elements and 8 free parameters of 1 models, reduced chi-squared = 2.840.
+#### <cont_fit_init> finish: 19.2s/529.6s/942.6s spent in this step/loop/total.
+#### <line_fit_init> start: spectral fitting, initialize line models.
+Do not perturb transferred parameters from the former step.
+Perform Non-linear Least-square optimazation for fine tuning.
+Fit with 3 free elements and 8 free parameters of 1 models, reduced chi-squared = 3.854.
+#### <cont_fit_1> finish: 0.7s/530.3s/943.3s spent in this step/loop/total.
+#### <line_fit_1> start: spectral fitting, update line models.
+Do not perturb transferred parameters from the former step.
+Perform Non-linear Least-square optimazation for fine tuning.
+Fit with 11 free elements and 15 free parameters of 2 models, reduced chi-squared = 4.024.
+#### <joint_fit_1> finish: 4.8s/535.1s/948.1s spent in this step/loop/total.
+#### Examine if each continuum model is indeed required, i.e., with peak S/N >= 2 (set by 'accept_fmod_SN'). ####
+agn continuum peak S/N = 54.820 --> remaining
+#### Enabled continuum models after examination: agn
+#### Examine if each component of line model is indeed required, i.e., with peak S/N >= 2 (set by 'accept_fmod_SN'). ####
+NLR peak S/N = 19.949 --> remaining
+BLR peak S/N = 25.845 --> remaining
+#### Enabled components of line model after examination: ['NLR', 'BLR']
+#### <cont_fit_2a> start: spectral fitting, update continuum models.
+Do not perturb transferred parameters from the former step.
+Perform Non-linear Least-square optimazation for fine tuning.
+Fit with 8 free elements and 7 free parameters of 1 models, reduced chi-squared = 4.313.
+#### <line_fit_init> finish: 5.0s/540.6s/953.5s spent in this step/loop/total.
+#### <cont_fit_1> start: spectral fitting, update continuum models.
+Do not perturb transferred parameters from the former step.
+Perform Non-linear Least-square optimazation for fine tuning.
+Fit with 8 free elements and 7 free parameters of 1 models, reduced chi-squared = 4.490.
+#### <line_fit_1> finish: 19.4s/560.0s/972.9s spent in this step/loop/total.
+#### <joint_fit_1> start: spectral fitting, fit with all models.
+Do not perturb transferred parameters from the former step.
+Perform Non-linear Least-square optimazation for fine tuning.
+Non-linear fitting cycle 1/1, poor-fit with chi_sq = 15.598 > 10.000 (goal); accept the solution with the achieved min_chi_sq = 15.598
+Fit with 3 free elements and 8 free parameters of 1 models, reduced chi-squared = 15.598.
+#### <cont_fit_1> finish: 28.7s/588.7s/1001.7s spent in this step/loop/total.
+#### <line_fit_1> start: spectral fitting, update line models.
+Do not perturb transferred parameters from the former step.
+Perform Non-linear Least-square optimazation for fine tuning.
+Fit with 3 free elements and 8 free parameters of 1 models, reduced chi-squared = 3.421.
+#### <cont_fit_1> finish: 12.2s/601.0s/1013.9s spent in this step/loop/total.
+#### <line_fit_1> start: spectral fitting, update line models.
+Do not perturb transferred parameters from the former step.
+Perform Non-linear Least-square optimazation for fine tuning.
+Non-linear fitting cycle 1/1, poor-fit with chi_sq = 15.270 > 10.000 (goal); accept the solution with the achieved min_chi_sq = 15.270
+Fit with 8 free elements and 7 free parameters of 1 models, reduced chi-squared = 15.286.
+#### <line_fit_1> finish: 8.8s/609.8s/1022.7s spent in this step/loop/total.
+#### <joint_fit_1> start: spectral fitting, fit with all models.
+Do not perturb transferred parameters from the former step.
+Perform Non-linear Least-square optimazation for fine tuning.
+Fit with 11 free elements and 15 free parameters of 2 models, reduced chi-squared = 15.409.
+#### <joint_fit_1> finish: 33.0s/642.8s/1055.7s spent in this step/loop/total.
+#### Examine if each continuum model is indeed required, i.e., with peak S/N >= 2 (set by 'accept_fmod_SN'). ####
+agn continuum peak S/N = 52.752 --> remaining
+#### Enabled continuum models after examination: agn
+#### Examine if each component of line model is indeed required, i.e., with peak S/N >= 2 (set by 'accept_fmod_SN'). ####
+NLR peak S/N = 25.180 --> remaining
+BLR peak S/N = 10.639 --> remaining
+#### Enabled components of line model after examination: ['NLR', 'BLR']
+#### <cont_fit_2a> start: spectral fitting, update continuum models.
+Do not perturb transferred parameters from the former step.
+Perform Non-linear Least-square optimazation for fine tuning.
+Fit with 8 free elements and 7 free parameters of 1 models, reduced chi-squared = 3.727.
+#### <line_fit_1> finish: 5.6s/648.7s/1061.6s spent in this step/loop/total.
+#### <joint_fit_1> start: spectral fitting, fit with all models.
+Do not perturb transferred parameters from the former step.
+Perform Non-linear Least-square optimazation for fine tuning.
+Fit with 11 free elements and 15 free parameters of 2 models, reduced chi-squared = 4.478.
+#### <joint_fit_1> finish: 16.8s/665.5s/1078.5s spent in this step/loop/total.
+#### Examine if each continuum model is indeed required, i.e., with peak S/N >= 2 (set by 'accept_fmod_SN'). ####
+agn continuum peak S/N = 54.663 --> remaining
+#### Enabled continuum models after examination: agn
+#### Examine if each component of line model is indeed required, i.e., with peak S/N >= 2 (set by 'accept_fmod_SN'). ####
+NLR peak S/N = 22.267 --> remaining
+BLR peak S/N = 14.459 --> remaining
+#### Enabled components of line model after examination: ['NLR', 'BLR']
+#### <cont_fit_2a> start: spectral fitting, update continuum models.
+Do not perturb transferred parameters from the former step.
+Perform Non-linear Least-square optimazation for fine tuning.
+Fit with 3 free elements and 8 free parameters of 1 models, reduced chi-squared = 3.519.
+#### <cont_fit_1> finish: 3.4s/669.2s/1082.1s spent in this step/loop/total.
+#### <line_fit_1> start: spectral fitting, update line models.
+Do not perturb transferred parameters from the former step.
+Perform Non-linear Least-square optimazation for fine tuning.
+Non-linear fitting cycle 1/1, poor-fit with chi_sq = 15.401 > 10.000 (goal); accept the solution with the achieved min_chi_sq = 15.401
+Fit with 3 free elements and 8 free parameters of 1 models, reduced chi-squared = 15.401.
+#### <cont_fit_2a> finish: 13.1s/682.2s/1095.2s spent in this step/loop/total.
+#### <line_fit_2> start: spectral fitting, update line models.
+Do not perturb transferred parameters from the former step.
+Perform Non-linear Least-square optimazation for fine tuning.
+Fit with 8 free elements and 7 free parameters of 1 models, reduced chi-squared = 4.522.
+#### <line_fit_1> finish: 3.9s/686.1s/1099.1s spent in this step/loop/total.
+#### <joint_fit_1> start: spectral fitting, fit with all models.
+Do not perturb transferred parameters from the former step.
+Perform Non-linear Least-square optimazation for fine tuning.
+Non-linear fitting cycle 1/1, poor-fit with chi_sq = 15.166 > 10.000 (goal); accept the solution with the achieved min_chi_sq = 15.166
+Fit with 8 free elements and 7 free parameters of 1 models, reduced chi-squared = 15.203.
+#### <line_fit_2> finish: 12.6s/698.8s/1111.7s spent in this step/loop/total.
+#### <joint_fit_2> start: spectral fitting, update all models.
+Do not perturb transferred parameters from the former step.
+Perform Non-linear Least-square optimazation for fine tuning.
+Fit with 3 free elements and 8 free parameters of 1 models, reduced chi-squared = 4.484.
+#### <cont_fit_2a> finish: 12.9s/711.6s/1124.6s spent in this step/loop/total.
+#### <line_fit_2> start: spectral fitting, update line models.
+Do not perturb transferred parameters from the former step.
+Perform Non-linear Least-square optimazation for fine tuning.
+Non-linear fitting cycle 1/1, accept this fitting with chi_sq = 4.645 / 4.490 (goal) < 110%.
+Fit with 11 free elements and 15 free parameters of 2 models, reduced chi-squared = 4.646.
+#### <joint_fit_1> finish: 5.5s/717.2s/1130.1s spent in this step/loop/total.
+#### Examine if each continuum model is indeed required, i.e., with peak S/N >= 2 (set by 'accept_fmod_SN'). ####
+agn continuum peak S/N = 54.959 --> remaining
+#### Enabled continuum models after examination: agn
+#### Examine if each component of line model is indeed required, i.e., with peak S/N >= 2 (set by 'accept_fmod_SN'). ####
+NLR peak S/N = 18.368 --> remaining
+BLR peak S/N = 19.132 --> remaining
+#### Enabled components of line model after examination: ['NLR', 'BLR']
+#### <cont_fit_2a> start: spectral fitting, update continuum models.
+Do not perturb transferred parameters from the former step.
+Perform Non-linear Least-square optimazation for fine tuning.
+Fit with 8 free elements and 7 free parameters of 1 models, reduced chi-squared = 4.306.
+#### <line_fit_2> finish: 3.6s/721.2s/1134.1s spent in this step/loop/total.
+#### <joint_fit_2> start: spectral fitting, update all models.
+Do not perturb transferred parameters from the former step.
+Perform Non-linear Least-square optimazation for fine tuning.
+Fit with 3 free elements and 8 free parameters of 1 models, reduced chi-squared = 4.646.
+#### <cont_fit_2a> finish: 14.8s/735.9s/1148.9s spent in this step/loop/total.
+#### <line_fit_2> start: spectral fitting, update line models.
+Do not perturb transferred parameters from the former step.
+Perform Non-linear Least-square optimazation for fine tuning.
+Non-linear fitting cycle 1/1, accept this fitting with chi_sq = 4.630 / 4.522 (goal) < 110%.
+Fit with 11 free elements and 15 free parameters of 2 models, reduced chi-squared = 4.672.
+#### <joint_fit_1> finish: 1.3s/737.3s/1150.2s spent in this step/loop/total.
+#### Examine if each continuum model is indeed required, i.e., with peak S/N >= 2 (set by 'accept_fmod_SN'). ####
+agn continuum peak S/N = 54.691 --> remaining
+#### Enabled continuum models after examination: agn
+#### Examine if each component of line model is indeed required, i.e., with peak S/N >= 2 (set by 'accept_fmod_SN'). ####
+NLR peak S/N = 23.665 --> remaining
+BLR peak S/N = 13.756 --> remaining
+#### Enabled components of line model after examination: ['NLR', 'BLR']
+#### <cont_fit_2a> start: spectral fitting, update continuum models.
+Do not perturb transferred parameters from the former step.
+Perform Non-linear Least-square optimazation for fine tuning.
+Fit with 8 free elements and 7 free parameters of 1 models, reduced chi-squared = 4.470.
+#### <line_fit_2> finish: 10.4s/748.3s/1161.2s spent in this step/loop/total.
+#### <joint_fit_2> start: spectral fitting, update all models.
+Do not perturb transferred parameters from the former step.
+Perform Non-linear Least-square optimazation for fine tuning.
+Fit with 3 free elements and 8 free parameters of 1 models, reduced chi-squared = 3.848.
+#### <cont_fit_2a> finish: 13.8s/762.0s/1175.0s spent in this step/loop/total.
+#### <line_fit_2> start: spectral fitting, update line models.
+Do not perturb transferred parameters from the former step.
+Perform Non-linear Least-square optimazation for fine tuning.
+Fit with 8 free elements and 7 free parameters of 1 models, reduced chi-squared = 3.576.
+#### <line_fit_2> finish: 13.2s/775.2s/1188.2s spent in this step/loop/total.
+#### <joint_fit_2> start: spectral fitting, update all models.
+Do not perturb transferred parameters from the former step.
+Perform Non-linear Least-square optimazation for fine tuning.
+Non-linear fitting cycle 1/1, accept this fitting with chi_sq = 3.752 / 3.727 (goal) < 110%.
+Fit with 11 free elements and 15 free parameters of 2 models, reduced chi-squared = 3.772.
+#### <joint_fit_1> finish: 13.3s/788.5s/1201.4s spent in this step/loop/total.
+#### Examine if each continuum model is indeed required, i.e., with peak S/N >= 2 (set by 'accept_fmod_SN'). ####
+agn continuum peak S/N = 54.918 --> remaining
+#### Enabled continuum models after examination: agn
+#### Examine if each component of line model is indeed required, i.e., with peak S/N >= 2 (set by 'accept_fmod_SN'). ####
+NLR peak S/N = 26.189 --> remaining
+BLR peak S/N = 28.104 --> remaining
+#### Enabled components of line model after examination: ['NLR', 'BLR']
+#### <cont_fit_2a> start: spectral fitting, update continuum models.
+Do not perturb transferred parameters from the former step.
+Perform Non-linear Least-square optimazation for fine tuning.
+Fit with 11 free elements and 15 free parameters of 2 models, reduced chi-squared = 4.643.
+Fit with 11 free elements and 15 free parameters of 2 models, reduced chi-squared = 4.466.
+#### <joint_fit_2> finish: 29.2s/817.9s/1230.9s spent in this step/loop/total.
+########### Perform simultaneous spectrum+SED fitting with mock data ###########
+Continuum models used in spectrum+SED fitting: agn+torus
+#### <cont_fit_3a> start: spectrum+SED fitting, update continuum models.
+Do not perturb transferred parameters from the former step.
+Perform Non-linear Least-square optimazation for fine tuning.
+#### <joint_fit_2> finish: 0.1s/818.3s/1231.2s spent in this step/loop/total.
+########### Perform simultaneous spectrum+SED fitting with mock data ###########
+Continuum models used in spectrum+SED fitting: agn+torus
+#### <cont_fit_3a> start: spectrum+SED fitting, update continuum models.
+Do not perturb transferred parameters from the former step.
+Perform Non-linear Least-square optimazation for fine tuning.
+Fit with 3 free elements and 8 free parameters of 1 models, reduced chi-squared = 3.746.
+#### <cont_fit_2a> finish: 5.3s/823.8s/1236.7s spent in this step/loop/total.
+#### <line_fit_2> start: spectral fitting, update line models.
+Do not perturb transferred parameters from the former step.
+Perform Non-linear Least-square optimazation for fine tuning.
+Fit with 8 free elements and 7 free parameters of 1 models, reduced chi-squared = 3.607.
+#### <line_fit_2> finish: 8.6s/832.3s/1245.3s spent in this step/loop/total.
+#### <joint_fit_2> start: spectral fitting, update all models.
+Do not perturb transferred parameters from the former step.
+Perform Non-linear Least-square optimazation for fine tuning.
+Fit with 3 free elements and 8 free parameters of 1 models, reduced chi-squared = 4.695.
+#### <cont_fit_2a> finish: 38.3s/870.7s/1283.6s spent in this step/loop/total.
+#### <line_fit_2> start: spectral fitting, update line models.
+Do not perturb transferred parameters from the former step.
+Perform Non-linear Least-square optimazation for fine tuning.
+Fit with 11 free elements and 15 free parameters of 2 models, reduced chi-squared = 15.114.
+#### <joint_fit_2> finish: 10.8s/881.5s/1294.5s spent in this step/loop/total.
+########### Perform simultaneous spectrum+SED fitting with mock data ###########
+Continuum models used in spectrum+SED fitting: agn+torus
+#### <cont_fit_3a> start: spectrum+SED fitting, update continuum models.
+Do not perturb transferred parameters from the former step.
+Perform Non-linear Least-square optimazation for fine tuning.
+Fit with 8 free elements and 7 free parameters of 1 models, reduced chi-squared = 4.066.
+#### <line_fit_2> finish: 5.0s/886.7s/1299.7s spent in this step/loop/total.
+#### <joint_fit_2> start: spectral fitting, update all models.
+Do not perturb transferred parameters from the former step.
+Perform Non-linear Least-square optimazation for fine tuning.
+Fit with 11 free elements and 15 free parameters of 2 models, reduced chi-squared = 3.722.
+#### <joint_fit_2> finish: 27.8s/914.5s/1327.5s spent in this step/loop/total.
+########### Perform simultaneous spectrum+SED fitting with mock data ###########
+Continuum models used in spectrum+SED fitting: agn+torus
+#### <cont_fit_3a> start: spectrum+SED fitting, update continuum models.
+Do not perturb transferred parameters from the former step.
+Perform Non-linear Least-square optimazation for fine tuning.
+Fit with 11 free elements and 15 free parameters of 2 models, reduced chi-squared = 3.564.
+#### <joint_fit_2> finish: 13.5s/928.3s/1341.2s spent in this step/loop/total.
+########### Perform simultaneous spectrum+SED fitting with mock data ###########
+Continuum models used in spectrum+SED fitting: agn+torus
+#### <cont_fit_3a> start: spectrum+SED fitting, update continuum models.
+Do not perturb transferred parameters from the former step.
+Perform Non-linear Least-square optimazation for fine tuning.
+Fit with 4 free elements and 13 free parameters of 2 models: 
+Reduced chi-squared with scaled errors = 4.113 for spectrum+SED;
+Reduced chi-squared with scaled errors = 3.909 for pure spectrum;
+Reduced chi-squared with scaled errors = 0.204 for pure phot-SED;
+Reduced chi-squared with original errors = 19.761 for pure spectrum;
+Reduced chi-squared with original errors = 1.871 for pure phot-SED.
+#### <cont_fit_3a> finish: 240.4s/1169.1s/1582.0s spent in this step/loop/total.
+#### <cont_fit_3b> start: spectrum+SED fitting, update continuum models.
+Do not perturb transferred parameters from the former step.
+Perform Non-linear Least-square optimazation for fine tuning.
+Fit with 4 free elements and 13 free parameters of 2 models: 
+Reduced chi-squared with scaled errors = 1.773 for spectrum+SED;
+Reduced chi-squared with scaled errors = 1.716 for pure spectrum;
+Reduced chi-squared with scaled errors = 0.057 for pure phot-SED;
+Reduced chi-squared with original errors = 9.035 for pure spectrum;
+Reduced chi-squared with original errors = 1.116 for pure phot-SED.
+#### <cont_fit_3a> finish: 6.3s/1175.5s/1588.5s spent in this step/loop/total.
+#### <cont_fit_3b> start: spectrum+SED fitting, update continuum models.
+Do not perturb transferred parameters from the former step.
+Perform Non-linear Least-square optimazation for fine tuning.
+Fit with 4 free elements and 13 free parameters of 2 models: 
+Reduced chi-squared with scaled errors = 1.598 for spectrum+SED;
+Reduced chi-squared with scaled errors = 1.574 for pure spectrum;
+Reduced chi-squared with scaled errors = 0.023 for pure phot-SED;
+Reduced chi-squared with original errors = 8.274 for pure spectrum;
+Reduced chi-squared with original errors = 0.747 for pure phot-SED.
+#### <cont_fit_3a> finish: 18.2s/1193.8s/1606.8s spent in this step/loop/total.
+#### <cont_fit_3b> start: spectrum+SED fitting, update continuum models.
+Do not perturb transferred parameters from the former step.
+Perform Non-linear Least-square optimazation for fine tuning.
+Fit with 4 free elements and 13 free parameters of 2 models: 
+Reduced chi-squared with scaled errors = 1.750 for spectrum+SED;
+Reduced chi-squared with scaled errors = 1.723 for pure spectrum;
+Reduced chi-squared with scaled errors = 0.028 for pure phot-SED;
+Reduced chi-squared with original errors = 8.987 for pure spectrum;
+Reduced chi-squared with original errors = 1.103 for pure phot-SED.
+#### <cont_fit_3a> finish: 48.9s/1242.8s/1655.8s spent in this step/loop/total.
+#### <cont_fit_3b> start: spectrum+SED fitting, update continuum models.
+Do not perturb transferred parameters from the former step.
+Perform Non-linear Least-square optimazation for fine tuning.
+Fit with 4 free elements and 13 free parameters of 2 models: 
+Reduced chi-squared with scaled errors = 1.574 for spectrum+SED;
+Reduced chi-squared with scaled errors = 1.539 for pure spectrum;
+Reduced chi-squared with scaled errors = 0.034 for pure phot-SED;
+Reduced chi-squared with original errors = 8.195 for pure spectrum;
+Reduced chi-squared with original errors = 1.302 for pure phot-SED.
+#### <cont_fit_3b> finish: 16.6s/1259.6s/1672.5s spent in this step/loop/total.
+#### <line_fit_3> start: spectral fitting, update line models.
+Do not perturb transferred parameters from the former step.
+Perform Non-linear Least-square optimazation for fine tuning.
+Fit with 4 free elements and 13 free parameters of 2 models: 
+Reduced chi-squared with scaled errors = 4.133 for spectrum+SED;
+Reduced chi-squared with scaled errors = 3.957 for pure spectrum;
+Reduced chi-squared with scaled errors = 0.177 for pure phot-SED;
+Reduced chi-squared with original errors = 20.234 for pure spectrum;
+Reduced chi-squared with original errors = 1.971 for pure phot-SED.
+#### <cont_fit_3b> finish: 7.4s/1267.2s/1680.1s spent in this step/loop/total.
+#### <line_fit_3> start: spectral fitting, update line models.
+Do not perturb transferred parameters from the former step.
+Perform Non-linear Least-square optimazation for fine tuning.
+Fit with 8 free elements and 7 free parameters of 1 models: 
+Reduced chi-squared with scaled errors = 1.545 for spectrum+SED;
+Reduced chi-squared with scaled errors = 1.517 for pure spectrum;
+Reduced chi-squared with scaled errors = 0.028 for pure phot-SED;
+Reduced chi-squared with original errors = 8.255 for pure spectrum;
+Reduced chi-squared with original errors = 0.533 for pure phot-SED.
+#### <line_fit_3> finish: 6.8s/1274.1s/1687.1s spent in this step/loop/total.
+#### <joint_fit_3> start: spectrum+SED fitting, update all models.
+Do not perturb transferred parameters from the former step.
+Perform Non-linear Least-square optimazation for fine tuning.
+Fit with 8 free elements and 7 free parameters of 1 models: 
+Reduced chi-squared with scaled errors = 3.958 for spectrum+SED;
+Reduced chi-squared with scaled errors = 3.862 for pure spectrum;
+Reduced chi-squared with scaled errors = 0.096 for pure phot-SED;
+Reduced chi-squared with original errors = 19.558 for pure spectrum;
+Reduced chi-squared with original errors = 2.934 for pure phot-SED.
+#### <line_fit_3> finish: 20.4s/1294.6s/1707.6s spent in this step/loop/total.
+#### <joint_fit_3> start: spectrum+SED fitting, update all models.
+Do not perturb transferred parameters from the former step.
+Perform Non-linear Least-square optimazation for fine tuning.
+Fit with 11 free elements and 15 free parameters of 2 models, reduced chi-squared = 3.398.
+#### <joint_fit_2> finish: 25.9s/1320.7s/1733.6s spent in this step/loop/total.
+########### Perform simultaneous spectrum+SED fitting with mock data ###########
+Continuum models used in spectrum+SED fitting: agn+torus
+#### <cont_fit_3a> start: spectrum+SED fitting, update continuum models.
+Do not perturb transferred parameters from the former step.
+Perform Non-linear Least-square optimazation for fine tuning.
+Fit with 4 free elements and 13 free parameters of 2 models: 
+Reduced chi-squared with scaled errors = 1.723 for spectrum+SED;
+Reduced chi-squared with scaled errors = 1.671 for pure spectrum;
+Reduced chi-squared with scaled errors = 0.052 for pure phot-SED;
+Reduced chi-squared with original errors = 8.791 for pure spectrum;
+Reduced chi-squared with original errors = 0.942 for pure phot-SED.
+#### <cont_fit_3b> finish: 29.1s/1349.9s/1762.8s spent in this step/loop/total.
+#### <line_fit_3> start: spectral fitting, update line models.
+Do not perturb transferred parameters from the former step.
+Perform Non-linear Least-square optimazation for fine tuning.
+Fit with 4 free elements and 13 free parameters of 2 models: 
+Reduced chi-squared with scaled errors = 1.729 for spectrum+SED;
+Reduced chi-squared with scaled errors = 1.698 for pure spectrum;
+Reduced chi-squared with scaled errors = 0.031 for pure phot-SED;
+Reduced chi-squared with original errors = 9.025 for pure spectrum;
+Reduced chi-squared with original errors = 0.749 for pure phot-SED.
+#### <cont_fit_3b> finish: 5.4s/1355.3s/1768.3s spent in this step/loop/total.
+#### <line_fit_3> start: spectral fitting, update line models.
+Do not perturb transferred parameters from the former step.
+Perform Non-linear Least-square optimazation for fine tuning.
+Fit with 8 free elements and 7 free parameters of 1 models: 
+Reduced chi-squared with scaled errors = 1.580 for spectrum+SED;
+Reduced chi-squared with scaled errors = 1.535 for pure spectrum;
+Reduced chi-squared with scaled errors = 0.045 for pure phot-SED;
+Reduced chi-squared with original errors = 8.353 for pure spectrum;
+Reduced chi-squared with original errors = 1.292 for pure phot-SED.
+#### <line_fit_3> finish: 18.7s/1374.1s/1787.0s spent in this step/loop/total.
+#### <joint_fit_3> start: spectrum+SED fitting, update all models.
+Do not perturb transferred parameters from the former step.
+Perform Non-linear Least-square optimazation for fine tuning.
+Fit with 8 free elements and 7 free parameters of 1 models: 
+Reduced chi-squared with scaled errors = 1.712 for spectrum+SED;
+Reduced chi-squared with scaled errors = 1.675 for pure spectrum;
+Reduced chi-squared with scaled errors = 0.038 for pure phot-SED;
+Reduced chi-squared with original errors = 8.968 for pure spectrum;
+Reduced chi-squared with original errors = 1.252 for pure phot-SED.
+#### <line_fit_3> finish: 0.5s/1374.8s/1787.7s spent in this step/loop/total.
+#### <joint_fit_3> start: spectrum+SED fitting, update all models.
+Do not perturb transferred parameters from the former step.
+Perform Non-linear Least-square optimazation for fine tuning.
+Fit with 12 free elements and 19 free parameters of 3 models: 
+Reduced chi-squared with scaled errors = 1.529 for spectrum+SED;
+Reduced chi-squared with scaled errors = 1.500 for pure spectrum;
+Reduced chi-squared with scaled errors = 0.029 for pure phot-SED;
+Reduced chi-squared with original errors = 8.043 for pure spectrum;
+Reduced chi-squared with original errors = 0.567 for pure phot-SED.
+#### <joint_fit_3> finish: 44.6s/1419.5s/1832.4s spent in this step/loop/total.
+#################### Loop 7/11 ends, chi_sq = 1.529 1419.5s ####################
+######################## Loop 10/11 starts (mock data) #########################
+############################ Fit the mock spectrum #############################
 Continuum models used in spectral fitting: agn
 #### <cont_fit_init> start: spectral fitting, initialize continuum models.
 Do not perturb transferred parameters from the former step.
 Perform Non-linear Least-square optimazation for fine tuning.
-Fit with 3 free elements and 8 free parameters of 1 models, reduced chi-squared = 2.939.
-#### <cont_fit_init> finish: 58.8s/58.8s/220.3s spent in this step/loop/total.
-#### <line_fit_init> start: spectral fitting, initialize line models.
-Do not perturb transferred parameters from the former step.
-Perform Non-linear Least-square optimazation for fine tuning.
-Fit with 3 free elements and 8 free parameters of 1 models, reduced chi-squared = 2.790.
-#### <cont_fit_init> finish: 1.0s/59.8s/221.3s spent in this step/loop/total.
-#### <line_fit_init> start: spectral fitting, initialize line models.
-Do not perturb transferred parameters from the former step.
-Perform Non-linear Least-square optimazation for fine tuning.
-Fit with 9 free elements and 7 free parameters of 1 models, reduced chi-squared = 3.528.
-#### <line_fit_init> finish: 10.1s/70.0s/231.4s spent in this step/loop/total.
-#### <cont_fit_1> start: spectral fitting, update continuum models.
-Do not perturb transferred parameters from the former step.
-Perform Non-linear Least-square optimazation for fine tuning.
-Fit with 9 free elements and 7 free parameters of 1 models, reduced chi-squared = 3.351.
-#### <line_fit_init> finish: 1.1s/71.1s/232.6s spent in this step/loop/total.
-#### <cont_fit_1> start: spectral fitting, update continuum models.
-Do not perturb transferred parameters from the former step.
-Perform Non-linear Least-square optimazation for fine tuning.
-Fit with 3 free elements and 8 free parameters of 1 models, reduced chi-squared = 3.515.
-#### <cont_fit_1> finish: 114.8s/185.9s/347.4s spent in this step/loop/total.
-#### <line_fit_1> start: spectral fitting, update line models.
-Do not perturb transferred parameters from the former step.
-Perform Non-linear Least-square optimazation for fine tuning.
-Fit with 9 free elements and 7 free parameters of 1 models, reduced chi-squared = 3.424.
-#### <line_fit_1> finish: 12.4s/198.3s/359.8s spent in this step/loop/total.
-#### <joint_fit_1> start: spectral fitting, fit with all models.
-Do not perturb transferred parameters from the former step.
-Perform Non-linear Least-square optimazation for fine tuning.
-Non-linear fitting cycle 1/1, accept this fitting with chi_sq = 3.530 / 3.515 (goal) < 110%.
-Fit with 12 free elements and 15 free parameters of 2 models, reduced chi-squared = 3.530.
-#### <joint_fit_1> finish: 38.0s/236.3s/397.7s spent in this step/loop/total.
-#### Examine if each continuum model is indeed required, i.e., with peak S/N >= 2 (set by 'accept_fmod_SN'). ####
-agn continuum peak S/N = 54.883 --> remaining
-#### Enabled continuum models after examination: agn
-#### Examine if each component of line model is indeed required, i.e., with peak S/N >= 2 (set by 'accept_fmod_SN'). ####
-NLR peak S/N = 17.491 --> remaining
-BLR peak S/N = 21.902 --> remaining
-#### Enabled components of line model after examination: ['NLR', 'BLR']
-#### <cont_fit_2a> start: spectral fitting, update continuum models.
-Do not perturb transferred parameters from the former step.
-Perform Non-linear Least-square optimazation for fine tuning.
-Fit with 3 free elements and 8 free parameters of 1 models, reduced chi-squared = 3.506.
-#### <cont_fit_2a> finish: 6.4s/242.8s/404.3s spent in this step/loop/total.
-#### <line_fit_2> start: spectral fitting, update line models.
-Do not perturb transferred parameters from the former step.
-Perform Non-linear Least-square optimazation for fine tuning.
-Fit with 3 free elements and 8 free parameters of 1 models, reduced chi-squared = 2.790.
-#### <cont_fit_init> finish: 2.0s/244.9s/406.3s spent in this step/loop/total.
-#### <line_fit_init> start: spectral fitting, initialize line models.
-Do not perturb transferred parameters from the former step.
-Perform Non-linear Least-square optimazation for fine tuning.
-Fit with 9 free elements and 7 free parameters of 1 models, reduced chi-squared = 3.418.
-#### <line_fit_2> finish: 3.9s/248.8s/410.3s spent in this step/loop/total.
-#### <joint_fit_2> start: spectral fitting, update all models.
-Do not perturb transferred parameters from the former step.
-Perform Non-linear Least-square optimazation for fine tuning.
-Fit with 9 free elements and 7 free parameters of 1 models, reduced chi-squared = 3.539.
-#### <line_fit_init> finish: 4.6s/253.4s/414.8s spent in this step/loop/total.
-#### <cont_fit_1> start: spectral fitting, update continuum models.
-Do not perturb transferred parameters from the former step.
-Perform Non-linear Least-square optimazation for fine tuning.
-Non-linear fitting cycle 1/1, accept this fitting with chi_sq = 3.529 / 3.506 (goal) < 110%.
-Fit with 12 free elements and 15 free parameters of 2 models, reduced chi-squared = 3.529.
-#### <joint_fit_2> finish: 13.8s/267.2s/428.6s spent in this step/loop/total.
-##################### Loop 3/4 ends, chi_sq = 3.529 267.2s #####################
-Fit with 3 free elements and 8 free parameters of 1 models, reduced chi-squared = 3.456.
-#### <cont_fit_1> finish: 24.6s/278.0s/439.5s spent in this step/loop/total.
-#### <line_fit_1> start: spectral fitting, update line models.
-Do not perturb transferred parameters from the former step.
-Perform Non-linear Least-square optimazation for fine tuning.
-Fit with 9 free elements and 7 free parameters of 1 models, reduced chi-squared = 3.297.
-#### <line_fit_1> finish: 9.0s/287.0s/448.5s spent in this step/loop/total.
-#### <joint_fit_1> start: spectral fitting, fit with all models.
-Do not perturb transferred parameters from the former step.
-Perform Non-linear Least-square optimazation for fine tuning.
-Fit with 3 free elements and 8 free parameters of 1 models, reduced chi-squared = 3.624.
-#### <cont_fit_1> finish: 26.3s/313.3s/474.8s spent in this step/loop/total.
-#### <line_fit_1> start: spectral fitting, update line models.
-Do not perturb transferred parameters from the former step.
-Perform Non-linear Least-square optimazation for fine tuning.
-Fit with 9 free elements and 7 free parameters of 1 models, reduced chi-squared = 3.344.
-#### <line_fit_1> finish: 6.9s/320.2s/481.6s spent in this step/loop/total.
-#### <joint_fit_1> start: spectral fitting, fit with all models.
-Do not perturb transferred parameters from the former step.
-Perform Non-linear Least-square optimazation for fine tuning.
-Fit with 12 free elements and 15 free parameters of 2 models, reduced chi-squared = 3.441.
-#### <joint_fit_1> finish: 20.4s/340.6s/502.1s spent in this step/loop/total.
-#### Examine if each continuum model is indeed required, i.e., with peak S/N >= 2 (set by 'accept_fmod_SN'). ####
-agn continuum peak S/N = 54.907 --> remaining
-#### Enabled continuum models after examination: agn
-#### Examine if each component of line model is indeed required, i.e., with peak S/N >= 2 (set by 'accept_fmod_SN'). ####
-NLR peak S/N = 18.207 --> remaining
-BLR peak S/N = 21.564 --> remaining
-#### Enabled components of line model after examination: ['NLR', 'BLR']
-#### <cont_fit_2a> start: spectral fitting, update continuum models.
-Do not perturb transferred parameters from the former step.
-Perform Non-linear Least-square optimazation for fine tuning.
-Fit with 12 free elements and 15 free parameters of 2 models, reduced chi-squared = 3.393.
-#### <joint_fit_1> finish: 2.3s/342.9s/504.4s spent in this step/loop/total.
-#### Examine if each continuum model is indeed required, i.e., with peak S/N >= 2 (set by 'accept_fmod_SN'). ####
-agn continuum peak S/N = 54.866 --> remaining
-#### Enabled continuum models after examination: agn
-#### Examine if each component of line model is indeed required, i.e., with peak S/N >= 2 (set by 'accept_fmod_SN'). ####
-NLR peak S/N = 18.098 --> remaining
-BLR peak S/N = 21.296 --> remaining
-#### Enabled components of line model after examination: ['NLR', 'BLR']
-#### <cont_fit_2a> start: spectral fitting, update continuum models.
-Do not perturb transferred parameters from the former step.
-Perform Non-linear Least-square optimazation for fine tuning.
-Fit with 3 free elements and 8 free parameters of 1 models, reduced chi-squared = 3.370.
-#### <cont_fit_2a> finish: 4.4s/347.4s/508.8s spent in this step/loop/total.
-#### <line_fit_2> start: spectral fitting, update line models.
-Do not perturb transferred parameters from the former step.
-Perform Non-linear Least-square optimazation for fine tuning.
-Fit with 9 free elements and 7 free parameters of 1 models, reduced chi-squared = 3.282.
-#### <line_fit_2> finish: 2.6s/350.0s/511.4s spent in this step/loop/total.
-#### <joint_fit_2> start: spectral fitting, update all models.
-Do not perturb transferred parameters from the former step.
-Perform Non-linear Least-square optimazation for fine tuning.
-Fit with 3 free elements and 8 free parameters of 1 models, reduced chi-squared = 3.399.
-#### <cont_fit_2a> finish: 8.3s/358.3s/519.8s spent in this step/loop/total.
-#### <line_fit_2> start: spectral fitting, update line models.
-Do not perturb transferred parameters from the former step.
-Perform Non-linear Least-square optimazation for fine tuning.
-Fit with 9 free elements and 7 free parameters of 1 models, reduced chi-squared = 3.308.
-#### <line_fit_2> finish: 0.9s/359.2s/520.7s spent in this step/loop/total.
-#### <joint_fit_2> start: spectral fitting, update all models.
-Do not perturb transferred parameters from the former step.
-Perform Non-linear Least-square optimazation for fine tuning.
-Non-linear fitting cycle 1/1, accept this fitting with chi_sq = 3.391 / 3.370 (goal) < 110%.
-Fit with 12 free elements and 15 free parameters of 2 models, reduced chi-squared = 3.391.
-#### <joint_fit_2> finish: 1.5s/360.7s/522.2s spent in this step/loop/total.
-##################### Loop 4/4 ends, chi_sq = 3.391 360.7s #####################
-Non-linear fitting cycle 1/1, accept this fitting with chi_sq = 3.415 / 3.399 (goal) < 110%.
-Fit with 12 free elements and 15 free parameters of 2 models, reduced chi-squared = 3.415.
-#### <joint_fit_2> finish: 9.4s/368.7s/530.1s spent in this step/loop/total.
-##################### Loop 2/4 ends, chi_sq = 3.415 368.7s #####################
-3 fitting loops (3 mock data) have good quality, with chi_sq = [3.415 3.529 3.391].
-1 loops need refitting, with current chi_sq = [15.609].
-####################### Loop 1/4 starts (original data) ########################
-########################## Fit the original spectrum ###########################
+Fit with 12 free elements and 19 free parameters of 3 models: 
+Reduced chi-squared with scaled errors = 4.108 for spectrum+SED;
+Reduced chi-squared with scaled errors = 3.870 for pure spectrum;
+Reduced chi-squared with scaled errors = 0.238 for pure phot-SED;
+Reduced chi-squared with original errors = 20.087 for pure spectrum;
+Reduced chi-squared with original errors = 1.906 for pure phot-SED.
+#### <joint_fit_3> finish: 97.8s/97.9s/1930.3s spent in this step/loop/total.
+##################### Loop 2/11 ends, chi_sq = 4.108 97.9s #####################
+######################## Loop 11/11 starts (mock data) #########################
+############################ Fit the mock spectrum #############################
 Continuum models used in spectral fitting: agn
 #### <cont_fit_init> start: spectral fitting, initialize continuum models.
 Do not perturb transferred parameters from the former step.
 Perform Non-linear Least-square optimazation for fine tuning.
-Fit with 3 free elements and 8 free parameters of 1 models, reduced chi-squared = 3.164.
-#### <cont_fit_init> finish: 103.5s/103.5s/633.6s spent in this step/loop/total.
+Fit with 12 free elements and 19 free parameters of 3 models: 
+Reduced chi-squared with scaled errors = 1.537 for spectrum+SED;
+Reduced chi-squared with scaled errors = 1.488 for pure spectrum;
+Reduced chi-squared with scaled errors = 0.050 for pure phot-SED;
+Reduced chi-squared with original errors = 8.011 for pure spectrum;
+Reduced chi-squared with original errors = 1.116 for pure phot-SED.
+#### <joint_fit_3> finish: 11.1s/11.1s/1941.5s spent in this step/loop/total.
+##################### Loop 4/11 ends, chi_sq = 1.537 11.1s #####################
+Fit with 12 free elements and 19 free parameters of 3 models: 
+Reduced chi-squared with scaled errors = 1.680 for spectrum+SED;
+Reduced chi-squared with scaled errors = 1.665 for pure spectrum;
+Reduced chi-squared with scaled errors = 0.015 for pure phot-SED;
+Reduced chi-squared with original errors = 8.753 for pure spectrum;
+Reduced chi-squared with original errors = 0.475 for pure phot-SED.
+#### <joint_fit_3> finish: 61.5s/61.6s/1991.9s spent in this step/loop/total.
+##################### Loop 8/11 ends, chi_sq = 1.680 61.6s #####################
+Fit with 4 free elements and 13 free parameters of 2 models: 
+Reduced chi-squared with scaled errors = 1.528 for spectrum+SED;
+Reduced chi-squared with scaled errors = 1.492 for pure spectrum;
+Reduced chi-squared with scaled errors = 0.035 for pure phot-SED;
+Reduced chi-squared with original errors = 8.016 for pure spectrum;
+Reduced chi-squared with original errors = 1.021 for pure phot-SED.
+#### <cont_fit_3a> finish: 74.5s/74.5s/2004.8s spent in this step/loop/total.
+#### <cont_fit_3b> start: spectrum+SED fitting, update continuum models.
+Do not perturb transferred parameters from the former step.
+Perform Non-linear Least-square optimazation for fine tuning.
+Fit with 4 free elements and 13 free parameters of 2 models: 
+Reduced chi-squared with scaled errors = 1.644 for spectrum+SED;
+Reduced chi-squared with scaled errors = 1.609 for pure spectrum;
+Reduced chi-squared with scaled errors = 0.035 for pure phot-SED;
+Reduced chi-squared with original errors = 8.436 for pure spectrum;
+Reduced chi-squared with original errors = 1.078 for pure phot-SED.
+#### <cont_fit_3a> finish: 63.7s/138.3s/2068.6s spent in this step/loop/total.
+#### <cont_fit_3b> start: spectrum+SED fitting, update continuum models.
+Do not perturb transferred parameters from the former step.
+Perform Non-linear Least-square optimazation for fine tuning.
+Fit with 4 free elements and 13 free parameters of 2 models: 
+Reduced chi-squared with scaled errors = 1.569 for spectrum+SED;
+Reduced chi-squared with scaled errors = 1.517 for pure spectrum;
+Reduced chi-squared with scaled errors = 0.053 for pure phot-SED;
+Reduced chi-squared with original errors = 7.993 for pure spectrum;
+Reduced chi-squared with original errors = 1.379 for pure phot-SED.
+#### <cont_fit_3b> finish: 43.1s/181.5s/2111.8s spent in this step/loop/total.
+#### <line_fit_3> start: spectral fitting, update line models.
+Do not perturb transferred parameters from the former step.
+Perform Non-linear Least-square optimazation for fine tuning.
+Fit with 8 free elements and 7 free parameters of 1 models: 
+Reduced chi-squared with scaled errors = 1.532 for spectrum+SED;
+Reduced chi-squared with scaled errors = 1.491 for pure spectrum;
+Reduced chi-squared with scaled errors = 0.041 for pure phot-SED;
+Reduced chi-squared with original errors = 8.027 for pure spectrum;
+Reduced chi-squared with original errors = 1.044 for pure phot-SED.
+#### <line_fit_3> finish: 13.6s/195.3s/2125.6s spent in this step/loop/total.
+#### <joint_fit_3> start: spectrum+SED fitting, update all models.
+Do not perturb transferred parameters from the former step.
+Perform Non-linear Least-square optimazation for fine tuning.
+Fit with 3 free elements and 8 free parameters of 1 models, reduced chi-squared = 2.745.
+#### <cont_fit_init> finish: 61.9s/257.4s/2187.7s spent in this step/loop/total.
 #### <line_fit_init> start: spectral fitting, initialize line models.
 Do not perturb transferred parameters from the former step.
 Perform Non-linear Least-square optimazation for fine tuning.
-Fit with 9 free elements and 7 free parameters of 1 models, reduced chi-squared = 4.808.
-#### <line_fit_init> finish: 4.6s/108.1s/638.3s spent in this step/loop/total.
+Fit with 8 free elements and 7 free parameters of 1 models, reduced chi-squared = 6.465.
+#### <line_fit_init> finish: 12.3s/269.7s/2200.0s spent in this step/loop/total.
 #### <cont_fit_1> start: spectral fitting, update continuum models.
 Do not perturb transferred parameters from the former step.
 Perform Non-linear Least-square optimazation for fine tuning.
-Non-linear fitting cycle 1/1, poor-fit with chi_sq = 15.372 > 10.000 (goal); accept the solution with the achieved min_chi_sq = 15.372
-Fit with 3 free elements and 8 free parameters of 1 models, reduced chi-squared = 15.372.
-#### <cont_fit_1> finish: 50.0s/158.2s/688.3s spent in this step/loop/total.
+Fit with 4 free elements and 13 free parameters of 2 models: 
+Reduced chi-squared with scaled errors = 1.670 for spectrum+SED;
+Reduced chi-squared with scaled errors = 1.622 for pure spectrum;
+Reduced chi-squared with scaled errors = 0.047 for pure phot-SED;
+Reduced chi-squared with original errors = 8.639 for pure spectrum;
+Reduced chi-squared with original errors = 1.399 for pure phot-SED.
+#### <cont_fit_3b> finish: 6.5s/276.2s/2206.5s spent in this step/loop/total.
+#### <line_fit_3> start: spectral fitting, update line models.
+Do not perturb transferred parameters from the former step.
+Perform Non-linear Least-square optimazation for fine tuning.
+Fit with 3 free elements and 8 free parameters of 1 models, reduced chi-squared = 2.950.
+#### <cont_fit_init> finish: 4.9s/281.2s/2211.6s spent in this step/loop/total.
+#### <line_fit_init> start: spectral fitting, initialize line models.
+Do not perturb transferred parameters from the former step.
+Perform Non-linear Least-square optimazation for fine tuning.
+Fit with 3 free elements and 8 free parameters of 1 models, reduced chi-squared = 4.301.
+#### <cont_fit_1> finish: 3.1s/284.4s/2214.7s spent in this step/loop/total.
 #### <line_fit_1> start: spectral fitting, update line models.
 Do not perturb transferred parameters from the former step.
 Perform Non-linear Least-square optimazation for fine tuning.
-Non-linear fitting cycle 1/1, poor-fit with chi_sq = 15.684 > 10.000 (goal); accept the solution with the achieved min_chi_sq = 15.684
-Fit with 9 free elements and 7 free parameters of 1 models, reduced chi-squared = 15.684.
-#### <line_fit_1> finish: 3.5s/161.6s/691.8s spent in this step/loop/total.
+Fit with 8 free elements and 7 free parameters of 1 models: 
+Reduced chi-squared with scaled errors = 1.550 for spectrum+SED;
+Reduced chi-squared with scaled errors = 1.518 for pure spectrum;
+Reduced chi-squared with scaled errors = 0.032 for pure phot-SED;
+Reduced chi-squared with original errors = 8.057 for pure spectrum;
+Reduced chi-squared with original errors = 1.341 for pure phot-SED.
+#### <line_fit_3> finish: 0.4s/284.8s/2215.1s spent in this step/loop/total.
+#### <joint_fit_3> start: spectrum+SED fitting, update all models.
+Do not perturb transferred parameters from the former step.
+Perform Non-linear Least-square optimazation for fine tuning.
+Fit with 8 free elements and 7 free parameters of 1 models, reduced chi-squared = 6.663.
+#### <line_fit_1> finish: 7.6s/292.4s/2222.7s spent in this step/loop/total.
 #### <joint_fit_1> start: spectral fitting, fit with all models.
 Do not perturb transferred parameters from the former step.
 Perform Non-linear Least-square optimazation for fine tuning.
-Fit with 12 free elements and 15 free parameters of 2 models, reduced chi-squared = 15.366.
-#### <joint_fit_1> finish: 58.6s/220.2s/750.4s spent in this step/loop/total.
+Fit with 8 free elements and 7 free parameters of 1 models, reduced chi-squared = 8.710.
+#### <line_fit_init> finish: 2.0s/294.4s/2224.8s spent in this step/loop/total.
+#### <cont_fit_1> start: spectral fitting, update continuum models.
+Do not perturb transferred parameters from the former step.
+Perform Non-linear Least-square optimazation for fine tuning.
+Fit with 12 free elements and 19 free parameters of 3 models: 
+Reduced chi-squared with scaled errors = 1.545 for spectrum+SED;
+Reduced chi-squared with scaled errors = 1.489 for pure spectrum;
+Reduced chi-squared with scaled errors = 0.056 for pure phot-SED;
+Reduced chi-squared with original errors = 8.015 for pure spectrum;
+Reduced chi-squared with original errors = 1.473 for pure phot-SED.
+#### <joint_fit_3> finish: 5.6s/300.0s/2230.3s spent in this step/loop/total.
+#################### Loop 3/11 ends, chi_sq = 1.545 300.0s #####################
+Non-linear fitting cycle 1/1, poor-fit with chi_sq = 18.271 > 10.000 (goal); accept the solution with the achieved min_chi_sq = 18.271
+Fit with 3 free elements and 8 free parameters of 1 models, reduced chi-squared = 18.271.
+#### <cont_fit_1> finish: 81.3s/375.8s/2306.1s spent in this step/loop/total.
+#### <line_fit_1> start: spectral fitting, update line models.
+Do not perturb transferred parameters from the former step.
+Perform Non-linear Least-square optimazation for fine tuning.
+Non-linear fitting cycle 1/1, poor-fit with chi_sq = 17.240 > 10.000 (goal); accept the solution with the achieved min_chi_sq = 17.240
+Fit with 8 free elements and 7 free parameters of 1 models, reduced chi-squared = 17.293.
+#### <line_fit_1> finish: 5.5s/381.2s/2311.6s spent in this step/loop/total.
+#### <joint_fit_1> start: spectral fitting, fit with all models.
+Do not perturb transferred parameters from the former step.
+Perform Non-linear Least-square optimazation for fine tuning.
+Fit with 11 free elements and 15 free parameters of 2 models, reduced chi-squared = 17.245.
+#### <joint_fit_1> finish: 52.7s/434.0s/2364.3s spent in this step/loop/total.
 #### Examine if each continuum model is indeed required, i.e., with peak S/N >= 2 (set by 'accept_fmod_SN'). ####
-agn continuum peak S/N = 52.969 --> remaining
+agn continuum peak S/N = 52.689 --> remaining
 #### Enabled continuum models after examination: agn
 #### Examine if each component of line model is indeed required, i.e., with peak S/N >= 2 (set by 'accept_fmod_SN'). ####
-NLR peak S/N = 17.069 --> remaining
-BLR peak S/N = 21.786 --> remaining
+NLR peak S/N = 22.609 --> remaining
+BLR peak S/N = 13.694 --> remaining
 #### Enabled components of line model after examination: ['NLR', 'BLR']
 #### <cont_fit_2a> start: spectral fitting, update continuum models.
 Do not perturb transferred parameters from the former step.
 Perform Non-linear Least-square optimazation for fine tuning.
-Non-linear fitting cycle 1/1, poor-fit with chi_sq = 15.249 > 10.000 (goal); accept the solution with the achieved min_chi_sq = 15.249
-Fit with 3 free elements and 8 free parameters of 1 models, reduced chi-squared = 15.249.
-#### <cont_fit_2a> finish: 5.5s/225.8s/755.9s spent in this step/loop/total.
+Fit with 11 free elements and 15 free parameters of 2 models, reduced chi-squared = 5.551.
+#### <joint_fit_1> finish: 2.7s/437.0s/2367.3s spent in this step/loop/total.
+#### Examine if each continuum model is indeed required, i.e., with peak S/N >= 2 (set by 'accept_fmod_SN'). ####
+agn continuum peak S/N = 54.619 --> remaining
+#### Enabled continuum models after examination: agn
+#### Examine if each component of line model is indeed required, i.e., with peak S/N >= 2 (set by 'accept_fmod_SN'). ####
+NLR peak S/N = 24.682 --> remaining
+BLR peak S/N = 11.001 --> remaining
+#### Enabled components of line model after examination: ['NLR', 'BLR']
+#### <cont_fit_2a> start: spectral fitting, update continuum models.
+Do not perturb transferred parameters from the former step.
+Perform Non-linear Least-square optimazation for fine tuning.
+Non-linear fitting cycle 1/1, poor-fit with chi_sq = 17.205 > 10.000 (goal); accept the solution with the achieved min_chi_sq = 17.205
+Fit with 3 free elements and 8 free parameters of 1 models, reduced chi-squared = 17.205.
+#### <cont_fit_2a> finish: 6.9s/444.1s/2374.4s spent in this step/loop/total.
 #### <line_fit_2> start: spectral fitting, update line models.
 Do not perturb transferred parameters from the former step.
 Perform Non-linear Least-square optimazation for fine tuning.
-Non-linear fitting cycle 1/1, poor-fit with chi_sq = 15.607 > 10.000 (goal); accept the solution with the achieved min_chi_sq = 15.607
-Fit with 9 free elements and 7 free parameters of 1 models, reduced chi-squared = 15.607.
-#### <line_fit_2> finish: 0.8s/226.6s/756.8s spent in this step/loop/total.
+Non-linear fitting cycle 1/1, poor-fit with chi_sq = 17.205 > 10.000 (goal); accept the solution with the achieved min_chi_sq = 17.205
+Fit with 8 free elements and 7 free parameters of 1 models, reduced chi-squared = 17.264.
+#### <line_fit_2> finish: 7.9s/452.1s/2382.4s spent in this step/loop/total.
 #### <joint_fit_2> start: spectral fitting, update all models.
 Do not perturb transferred parameters from the former step.
 Perform Non-linear Least-square optimazation for fine tuning.
-Fit with 12 free elements and 15 free parameters of 2 models, reduced chi-squared = 15.360.
-#### <joint_fit_2> finish: 10.9s/237.6s/767.7s spent in this step/loop/total.
-#################### Loop 1/4 ends, chi_sq = 15.360 237.6s #####################
-3 fitting loops (3 mock data) have good quality, with chi_sq = [3.415 3.529 3.391].
-1 loops need refitting, with current chi_sq = [15.36].
-####################### Loop 1/4 starts (original data) ########################
-########################## Fit the original spectrum ###########################
+Fit with 3 free elements and 8 free parameters of 1 models, reduced chi-squared = 5.576.
+#### <cont_fit_2a> finish: 5.5s/457.6s/2387.9s spent in this step/loop/total.
+#### <line_fit_2> start: spectral fitting, update line models.
+Do not perturb transferred parameters from the former step.
+Perform Non-linear Least-square optimazation for fine tuning.
+Fit with 8 free elements and 7 free parameters of 1 models, reduced chi-squared = 3.753.
+#### <line_fit_2> finish: 18.7s/476.3s/2406.6s spent in this step/loop/total.
+#### <joint_fit_2> start: spectral fitting, update all models.
+Do not perturb transferred parameters from the former step.
+Perform Non-linear Least-square optimazation for fine tuning.
+Fit with 3 free elements and 8 free parameters of 1 models, reduced chi-squared = 9.577.
+#### <cont_fit_1> finish: 2.9s/479.1s/2409.4s spent in this step/loop/total.
+#### <line_fit_1> start: spectral fitting, update line models.
+Do not perturb transferred parameters from the former step.
+Perform Non-linear Least-square optimazation for fine tuning.
+Fit with 11 free elements and 15 free parameters of 2 models, reduced chi-squared = 17.235.
+#### <joint_fit_2> finish: 8.9s/488.1s/2418.4s spent in this step/loop/total.
+########### Perform simultaneous spectrum+SED fitting with mock data ###########
+Continuum models used in spectrum+SED fitting: agn+torus
+#### <cont_fit_3a> start: spectrum+SED fitting, update continuum models.
+Do not perturb transferred parameters from the former step.
+Perform Non-linear Least-square optimazation for fine tuning.
+Fit with 8 free elements and 7 free parameters of 1 models, reduced chi-squared = 4.716.
+#### <line_fit_1> finish: 8.0s/496.1s/2426.4s spent in this step/loop/total.
+#### <joint_fit_1> start: spectral fitting, fit with all models.
+Do not perturb transferred parameters from the former step.
+Perform Non-linear Least-square optimazation for fine tuning.
+Fit with 12 free elements and 19 free parameters of 3 models: 
+Reduced chi-squared with scaled errors = 1.538 for spectrum+SED;
+Reduced chi-squared with scaled errors = 1.492 for pure spectrum;
+Reduced chi-squared with scaled errors = 0.046 for pure phot-SED;
+Reduced chi-squared with original errors = 7.961 for pure spectrum;
+Reduced chi-squared with original errors = 1.244 for pure phot-SED.
+#### <joint_fit_3> finish: 17.5s/513.6s/2443.9s spent in this step/loop/total.
+#################### Loop 5/11 ends, chi_sq = 1.538 513.6s #####################
+Fit with 11 free elements and 15 free parameters of 2 models, reduced chi-squared = 3.775.
+#### <joint_fit_2> finish: 26.1s/522.2s/2452.6s spent in this step/loop/total.
+########### Perform simultaneous spectrum+SED fitting with mock data ###########
+Continuum models used in spectrum+SED fitting: agn+torus
+#### <cont_fit_3a> start: spectrum+SED fitting, update continuum models.
+Do not perturb transferred parameters from the former step.
+Perform Non-linear Least-square optimazation for fine tuning.
+Fit with 4 free elements and 13 free parameters of 2 models: 
+Reduced chi-squared with scaled errors = 1.604 for spectrum+SED;
+Reduced chi-squared with scaled errors = 1.564 for pure spectrum;
+Reduced chi-squared with scaled errors = 0.040 for pure phot-SED;
+Reduced chi-squared with original errors = 8.402 for pure spectrum;
+Reduced chi-squared with original errors = 0.885 for pure phot-SED.
+#### <cont_fit_3a> finish: 228.5s/750.9s/2681.2s spent in this step/loop/total.
+#### <cont_fit_3b> start: spectrum+SED fitting, update continuum models.
+Do not perturb transferred parameters from the former step.
+Perform Non-linear Least-square optimazation for fine tuning.
+Fit with 4 free elements and 13 free parameters of 2 models: 
+Reduced chi-squared with scaled errors = 2.053 for spectrum+SED;
+Reduced chi-squared with scaled errors = 2.017 for pure spectrum;
+Reduced chi-squared with scaled errors = 0.036 for pure phot-SED;
+Reduced chi-squared with original errors = 10.408 for pure spectrum;
+Reduced chi-squared with original errors = 1.146 for pure phot-SED.
+#### <cont_fit_3a> finish: 22.4s/773.3s/2703.7s spent in this step/loop/total.
+#### <cont_fit_3b> start: spectrum+SED fitting, update continuum models.
+Do not perturb transferred parameters from the former step.
+Perform Non-linear Least-square optimazation for fine tuning.
+Fit with 4 free elements and 13 free parameters of 2 models: 
+Reduced chi-squared with scaled errors = 1.635 for spectrum+SED;
+Reduced chi-squared with scaled errors = 1.584 for pure spectrum;
+Reduced chi-squared with scaled errors = 0.051 for pure phot-SED;
+Reduced chi-squared with original errors = 8.400 for pure spectrum;
+Reduced chi-squared with original errors = 1.177 for pure phot-SED.
+#### <cont_fit_3b> finish: 19.6s/793.0s/2723.3s spent in this step/loop/total.
+#### <line_fit_3> start: spectral fitting, update line models.
+Do not perturb transferred parameters from the former step.
+Perform Non-linear Least-square optimazation for fine tuning.
+Fit with 4 free elements and 13 free parameters of 2 models: 
+Reduced chi-squared with scaled errors = 2.048 for spectrum+SED;
+Reduced chi-squared with scaled errors = 2.013 for pure spectrum;
+Reduced chi-squared with scaled errors = 0.035 for pure phot-SED;
+Reduced chi-squared with original errors = 10.343 for pure spectrum;
+Reduced chi-squared with original errors = 1.346 for pure phot-SED.
+#### <cont_fit_3b> finish: 4.4s/797.4s/2727.8s spent in this step/loop/total.
+#### <line_fit_3> start: spectral fitting, update line models.
+Do not perturb transferred parameters from the former step.
+Perform Non-linear Least-square optimazation for fine tuning.
+Fit with 8 free elements and 7 free parameters of 1 models: 
+Reduced chi-squared with scaled errors = 1.846 for spectrum+SED;
+Reduced chi-squared with scaled errors = 1.805 for pure spectrum;
+Reduced chi-squared with scaled errors = 0.040 for pure phot-SED;
+Reduced chi-squared with original errors = 9.837 for pure spectrum;
+Reduced chi-squared with original errors = 0.832 for pure phot-SED.
+#### <line_fit_3> finish: 7.9s/805.4s/2735.8s spent in this step/loop/total.
+#### <joint_fit_3> start: spectrum+SED fitting, update all models.
+Do not perturb transferred parameters from the former step.
+Perform Non-linear Least-square optimazation for fine tuning.
+Fit with 8 free elements and 7 free parameters of 1 models: 
+Reduced chi-squared with scaled errors = 1.546 for spectrum+SED;
+Reduced chi-squared with scaled errors = 1.516 for pure spectrum;
+Reduced chi-squared with scaled errors = 0.030 for pure phot-SED;
+Reduced chi-squared with original errors = 8.224 for pure spectrum;
+Reduced chi-squared with original errors = 0.987 for pure phot-SED.
+#### <line_fit_3> finish: 0.2s/805.7s/2736.0s spent in this step/loop/total.
+#### <joint_fit_3> start: spectrum+SED fitting, update all models.
+Do not perturb transferred parameters from the former step.
+Perform Non-linear Least-square optimazation for fine tuning.
+Fit with 11 free elements and 15 free parameters of 2 models, reduced chi-squared = 3.699.
+#### <joint_fit_1> finish: 22.5s/828.3s/2758.6s spent in this step/loop/total.
+#### Examine if each continuum model is indeed required, i.e., with peak S/N >= 2 (set by 'accept_fmod_SN'). ####
+agn continuum peak S/N = 54.905 --> remaining
+#### Enabled continuum models after examination: agn
+#### Examine if each component of line model is indeed required, i.e., with peak S/N >= 2 (set by 'accept_fmod_SN'). ####
+NLR peak S/N = 19.590 --> remaining
+BLR peak S/N = 28.416 --> remaining
+#### Enabled components of line model after examination: ['NLR', 'BLR']
+#### <cont_fit_2a> start: spectral fitting, update continuum models.
+Do not perturb transferred parameters from the former step.
+Perform Non-linear Least-square optimazation for fine tuning.
+Non-linear fitting cycle 1/1, poor-fit with chi_sq = 14.397 > 10.000 (goal); accept the solution with the achieved min_chi_sq = 14.397
+Fit with 3 free elements and 8 free parameters of 1 models, reduced chi-squared = 14.397.
+#### <cont_fit_1> finish: 19.0s/847.4s/2777.7s spent in this step/loop/total.
+#### <line_fit_1> start: spectral fitting, update line models.
+Do not perturb transferred parameters from the former step.
+Perform Non-linear Least-square optimazation for fine tuning.
+Non-linear fitting cycle 1/1, poor-fit with chi_sq = 14.685 > 10.000 (goal); accept the solution with the achieved min_chi_sq = 14.685
+Fit with 8 free elements and 7 free parameters of 1 models, reduced chi-squared = 14.686.
+#### <line_fit_1> finish: 11.4s/858.8s/2789.1s spent in this step/loop/total.
+#### <joint_fit_1> start: spectral fitting, fit with all models.
+Do not perturb transferred parameters from the former step.
+Perform Non-linear Least-square optimazation for fine tuning.
+Fit with 11 free elements and 15 free parameters of 2 models, reduced chi-squared = 14.420.
+#### <joint_fit_1> finish: 80.4s/939.2s/2869.5s spent in this step/loop/total.
+#### Examine if each continuum model is indeed required, i.e., with peak S/N >= 2 (set by 'accept_fmod_SN'). ####
+agn continuum peak S/N = 52.900 --> remaining
+#### Enabled continuum models after examination: agn
+#### Examine if each component of line model is indeed required, i.e., with peak S/N >= 2 (set by 'accept_fmod_SN'). ####
+NLR peak S/N = 18.625 --> remaining
+BLR peak S/N = 25.458 --> remaining
+#### Enabled components of line model after examination: ['NLR', 'BLR']
+#### <cont_fit_2a> start: spectral fitting, update continuum models.
+Do not perturb transferred parameters from the former step.
+Perform Non-linear Least-square optimazation for fine tuning.
+Non-linear fitting cycle 1/1, poor-fit with chi_sq = 14.317 > 10.000 (goal); accept the solution with the achieved min_chi_sq = 14.317
+Fit with 3 free elements and 8 free parameters of 1 models, reduced chi-squared = 14.317.
+#### <cont_fit_2a> finish: 9.6s/949.0s/2879.3s spent in this step/loop/total.
+#### <line_fit_2> start: spectral fitting, update line models.
+Do not perturb transferred parameters from the former step.
+Perform Non-linear Least-square optimazation for fine tuning.
+Non-linear fitting cycle 1/1, poor-fit with chi_sq = 14.687 > 10.000 (goal); accept the solution with the achieved min_chi_sq = 14.687
+Fit with 8 free elements and 7 free parameters of 1 models, reduced chi-squared = 14.687.
+#### <line_fit_2> finish: 6.4s/955.5s/2885.8s spent in this step/loop/total.
+#### <joint_fit_2> start: spectral fitting, update all models.
+Do not perturb transferred parameters from the former step.
+Perform Non-linear Least-square optimazation for fine tuning.
+Fit with 3 free elements and 8 free parameters of 1 models, reduced chi-squared = 3.586.
+#### <cont_fit_2a> finish: 4.2s/959.6s/2890.0s spent in this step/loop/total.
+#### <line_fit_2> start: spectral fitting, update line models.
+Do not perturb transferred parameters from the former step.
+Perform Non-linear Least-square optimazation for fine tuning.
+Fit with 8 free elements and 7 free parameters of 1 models, reduced chi-squared = 3.479.
+#### <line_fit_2> finish: 1.5s/961.2s/2891.5s spent in this step/loop/total.
+#### <joint_fit_2> start: spectral fitting, update all models.
+Do not perturb transferred parameters from the former step.
+Perform Non-linear Least-square optimazation for fine tuning.
+Non-linear fitting cycle 1/1, accept this fitting with chi_sq = 3.608 / 3.586 (goal) < 110%.
+Fit with 11 free elements and 15 free parameters of 2 models, reduced chi-squared = 3.608.
+#### <joint_fit_2> finish: 29.6s/990.8s/2921.1s spent in this step/loop/total.
+########### Perform simultaneous spectrum+SED fitting with mock data ###########
+Continuum models used in spectrum+SED fitting: agn+torus
+#### <cont_fit_3a> start: spectrum+SED fitting, update continuum models.
+Do not perturb transferred parameters from the former step.
+Perform Non-linear Least-square optimazation for fine tuning.
+Fit with 11 free elements and 15 free parameters of 2 models, reduced chi-squared = 14.402.
+#### <joint_fit_2> finish: 1.5s/992.4s/2922.7s spent in this step/loop/total.
+########### Perform simultaneous spectrum+SED fitting with mock data ###########
+Continuum models used in spectrum+SED fitting: agn+torus
+#### <cont_fit_3a> start: spectrum+SED fitting, update continuum models.
+Do not perturb transferred parameters from the former step.
+Perform Non-linear Least-square optimazation for fine tuning.
+Fit with 12 free elements and 19 free parameters of 3 models: 
+Reduced chi-squared with scaled errors = 1.610 for spectrum+SED;
+Reduced chi-squared with scaled errors = 1.549 for pure spectrum;
+Reduced chi-squared with scaled errors = 0.061 for pure phot-SED;
+Reduced chi-squared with original errors = 8.260 for pure spectrum;
+Reduced chi-squared with original errors = 1.968 for pure phot-SED.
+#### <joint_fit_3> finish: 1.3s/993.7s/2924.0s spent in this step/loop/total.
+#################### Loop 6/11 ends, chi_sq = 1.610 993.7s #####################
+Fit with 12 free elements and 19 free parameters of 3 models: 
+Reduced chi-squared with scaled errors = 1.895 for spectrum+SED;
+Reduced chi-squared with scaled errors = 1.872 for pure spectrum;
+Reduced chi-squared with scaled errors = 0.023 for pure phot-SED;
+Reduced chi-squared with original errors = 9.906 for pure spectrum;
+Reduced chi-squared with original errors = 0.782 for pure phot-SED.
+#### <joint_fit_3> finish: 9.8s/1002.2s/2932.5s spent in this step/loop/total.
+################### Loop 11/11 ends, chi_sq = 1.895 1002.2s ####################
+Fit with 4 free elements and 13 free parameters of 2 models: 
+Reduced chi-squared with scaled errors = 1.585 for spectrum+SED;
+Reduced chi-squared with scaled errors = 1.531 for pure spectrum;
+Reduced chi-squared with scaled errors = 0.054 for pure phot-SED;
+Reduced chi-squared with original errors = 8.158 for pure spectrum;
+Reduced chi-squared with original errors = 2.188 for pure phot-SED.
+#### <cont_fit_3a> finish: 39.2s/1031.7s/2962.0s spent in this step/loop/total.
+#### <cont_fit_3b> start: spectrum+SED fitting, update continuum models.
+Do not perturb transferred parameters from the former step.
+Perform Non-linear Least-square optimazation for fine tuning.
+Fit with 4 free elements and 13 free parameters of 2 models: 
+Reduced chi-squared with scaled errors = 1.612 for spectrum+SED;
+Reduced chi-squared with scaled errors = 1.566 for pure spectrum;
+Reduced chi-squared with scaled errors = 0.046 for pure phot-SED;
+Reduced chi-squared with original errors = 8.307 for pure spectrum;
+Reduced chi-squared with original errors = 1.340 for pure phot-SED.
+#### <cont_fit_3b> finish: 29.4s/1061.1s/2991.4s spent in this step/loop/total.
+#### <line_fit_3> start: spectral fitting, update line models.
+Do not perturb transferred parameters from the former step.
+Perform Non-linear Least-square optimazation for fine tuning.
+Fit with 8 free elements and 7 free parameters of 1 models: 
+Reduced chi-squared with scaled errors = 1.577 for spectrum+SED;
+Reduced chi-squared with scaled errors = 1.523 for pure spectrum;
+Reduced chi-squared with scaled errors = 0.054 for pure phot-SED;
+Reduced chi-squared with original errors = 8.196 for pure spectrum;
+Reduced chi-squared with original errors = 1.483 for pure phot-SED.
+#### <line_fit_3> finish: 4.4s/1065.5s/2995.8s spent in this step/loop/total.
+#### <joint_fit_3> start: spectrum+SED fitting, update all models.
+Do not perturb transferred parameters from the former step.
+Perform Non-linear Least-square optimazation for fine tuning.
+Fit with 4 free elements and 13 free parameters of 2 models: 
+Reduced chi-squared with scaled errors = 3.876 for spectrum+SED;
+Reduced chi-squared with scaled errors = 3.815 for pure spectrum;
+Reduced chi-squared with scaled errors = 0.061 for pure phot-SED;
+Reduced chi-squared with original errors = 19.813 for pure spectrum;
+Reduced chi-squared with original errors = 1.128 for pure phot-SED.
+#### <cont_fit_3a> finish: 26.9s/1092.5s/3022.8s spent in this step/loop/total.
+#### <cont_fit_3b> start: spectrum+SED fitting, update continuum models.
+Do not perturb transferred parameters from the former step.
+Perform Non-linear Least-square optimazation for fine tuning.
+Fit with 4 free elements and 13 free parameters of 2 models: 
+Reduced chi-squared with scaled errors = 3.880 for spectrum+SED;
+Reduced chi-squared with scaled errors = 3.832 for pure spectrum;
+Reduced chi-squared with scaled errors = 0.048 for pure phot-SED;
+Reduced chi-squared with original errors = 20.015 for pure spectrum;
+Reduced chi-squared with original errors = 1.274 for pure phot-SED.
+#### <cont_fit_3b> finish: 17.3s/1109.7s/3040.1s spent in this step/loop/total.
+#### <line_fit_3> start: spectral fitting, update line models.
+Do not perturb transferred parameters from the former step.
+Perform Non-linear Least-square optimazation for fine tuning.
+Fit with 8 free elements and 7 free parameters of 1 models: 
+Reduced chi-squared with scaled errors = 3.807 for spectrum+SED;
+Reduced chi-squared with scaled errors = 3.749 for pure spectrum;
+Reduced chi-squared with scaled errors = 0.058 for pure phot-SED;
+Reduced chi-squared with original errors = 19.146 for pure spectrum;
+Reduced chi-squared with original errors = 1.978 for pure phot-SED.
+#### <line_fit_3> finish: 2.6s/1112.4s/3042.7s spent in this step/loop/total.
+#### <joint_fit_3> start: spectrum+SED fitting, update all models.
+Do not perturb transferred parameters from the former step.
+Perform Non-linear Least-square optimazation for fine tuning.
+Fit with 12 free elements and 19 free parameters of 3 models: 
+Reduced chi-squared with scaled errors = 1.571 for spectrum+SED;
+Reduced chi-squared with scaled errors = 1.515 for pure spectrum;
+Reduced chi-squared with scaled errors = 0.056 for pure phot-SED;
+Reduced chi-squared with original errors = 8.018 for pure spectrum;
+Reduced chi-squared with original errors = 1.803 for pure phot-SED.
+#### <joint_fit_3> finish: 27.1s/1139.5s/3069.8s spent in this step/loop/total.
+################### Loop 10/11 ends, chi_sq = 1.571 1139.5s ####################
+Non-linear fitting cycle 1/1, accept this fitting with chi_sq = 3.891 / 3.880 (goal) < 110%.
+Fit with 12 free elements and 19 free parameters of 3 models: 
+Reduced chi-squared with scaled errors = 3.891 for spectrum+SED;
+Reduced chi-squared with scaled errors = 3.843 for pure spectrum;
+Reduced chi-squared with scaled errors = 0.048 for pure phot-SED;
+Reduced chi-squared with original errors = 20.137 for pure spectrum;
+Reduced chi-squared with original errors = 1.248 for pure phot-SED.
+#### <joint_fit_3> finish: 34.4s/1146.8s/3077.1s spent in this step/loop/total.
+#################### Loop 9/11 ends, chi_sq = 3.891 1146.8s ####################
+9 fitting loops (original data and 8 mock data) have good quality, with chi_sq = [1.035 1.545 1.537 1.538 1.61  1.529 1.68  1.571 1.895].
+2 loops need refitting, with current chi_sq = [4.108 3.891].
+######################### Loop 9/11 starts (mock data) #########################
+############################ Fit the mock spectrum #############################
+######################### Loop 2/11 starts (mock data) #########################
+############################ Fit the mock spectrum #############################
+Continuum models used in spectral fitting: agn
+#### <cont_fit_init> start: spectral fitting, initialize continuum models.
 Continuum models used in spectral fitting: agn
 #### <cont_fit_init> start: spectral fitting, initialize continuum models.
 Do not perturb transferred parameters from the former step.
 Perform Non-linear Least-square optimazation for fine tuning.
-Fit with 3 free elements and 8 free parameters of 1 models, reduced chi-squared = 3.114.
-#### <cont_fit_init> finish: 34.2s/34.2s/801.9s spent in this step/loop/total.
+Do not perturb transferred parameters from the former step.
+Perform Non-linear Least-square optimazation for fine tuning.
+Fit with 3 free elements and 8 free parameters of 1 models, reduced chi-squared = 2.959.
+#### <cont_fit_init> finish: 44.9s/44.9s/3122.1s spent in this step/loop/total.
 #### <line_fit_init> start: spectral fitting, initialize line models.
 Do not perturb transferred parameters from the former step.
 Perform Non-linear Least-square optimazation for fine tuning.
-Fit with 9 free elements and 7 free parameters of 1 models, reduced chi-squared = 4.759.
-#### <line_fit_init> finish: 4.7s/38.9s/806.6s spent in this step/loop/total.
+Fit with 8 free elements and 7 free parameters of 1 models, reduced chi-squared = 3.540.
+#### <line_fit_init> finish: 5.3s/50.2s/3127.4s spent in this step/loop/total.
 #### <cont_fit_1> start: spectral fitting, update continuum models.
 Do not perturb transferred parameters from the former step.
 Perform Non-linear Least-square optimazation for fine tuning.
-Fit with 3 free elements and 8 free parameters of 1 models, reduced chi-squared = 4.835.
-#### <cont_fit_1> finish: 51.6s/90.5s/858.2s spent in this step/loop/total.
+Non-linear fitting cycle 1/1, poor-fit with chi_sq = 16.072 > 10.000 (goal); accept the solution with the achieved min_chi_sq = 16.072
+Fit with 3 free elements and 8 free parameters of 1 models, reduced chi-squared = 16.072.
+#### <cont_fit_init> finish: 1.8s/52.0s/3129.2s spent in this step/loop/total.
+#### <line_fit_init> start: spectral fitting, initialize line models.
+Do not perturb transferred parameters from the former step.
+Perform Non-linear Least-square optimazation for fine tuning.
+Non-linear fitting cycle 1/1, poor-fit with chi_sq = 14.948 > 10.000 (goal); accept the solution with the achieved min_chi_sq = 14.948
+Fit with 8 free elements and 7 free parameters of 1 models, reduced chi-squared = 14.948.
+#### <line_fit_init> finish: 5.6s/57.6s/3134.8s spent in this step/loop/total.
+#### <cont_fit_1> start: spectral fitting, update continuum models.
+Do not perturb transferred parameters from the former step.
+Perform Non-linear Least-square optimazation for fine tuning.
+Fit with 3 free elements and 8 free parameters of 1 models, reduced chi-squared = 3.459.
+#### <cont_fit_1> finish: 59.8s/117.5s/3194.7s spent in this step/loop/total.
 #### <line_fit_1> start: spectral fitting, update line models.
 Do not perturb transferred parameters from the former step.
 Perform Non-linear Least-square optimazation for fine tuning.
-Fit with 9 free elements and 7 free parameters of 1 models, reduced chi-squared = 4.707.
-#### <line_fit_1> finish: 3.9s/94.5s/862.2s spent in this step/loop/total.
+Fit with 8 free elements and 7 free parameters of 1 models, reduced chi-squared = 3.339.
+#### <line_fit_1> finish: 5.8s/123.2s/3200.4s spent in this step/loop/total.
 #### <joint_fit_1> start: spectral fitting, fit with all models.
 Do not perturb transferred parameters from the former step.
 Perform Non-linear Least-square optimazation for fine tuning.
-Non-linear fitting cycle 1/1, accept this fitting with chi_sq = 4.857 / 4.835 (goal) < 110%.
-Fit with 12 free elements and 15 free parameters of 2 models, reduced chi-squared = 4.857.
-#### <joint_fit_1> finish: 39.3s/133.8s/901.5s spent in this step/loop/total.
+Non-linear fitting cycle 1/1, accept this fitting with chi_sq = 3.468 / 3.459 (goal) < 110%.
+Fit with 11 free elements and 15 free parameters of 2 models, reduced chi-squared = 3.468.
+#### <joint_fit_1> finish: 9.4s/132.6s/3209.8s spent in this step/loop/total.
+#### Examine if each continuum model is indeed required, i.e., with peak S/N >= 2 (set by 'accept_fmod_SN'). ####
+agn continuum peak S/N = 54.946 --> remaining
+#### Enabled continuum models after examination: agn
+#### Examine if each component of line model is indeed required, i.e., with peak S/N >= 2 (set by 'accept_fmod_SN'). ####
+NLR peak S/N = 18.562 --> remaining
+BLR peak S/N = 28.223 --> remaining
+#### Enabled components of line model after examination: ['NLR', 'BLR']
+#### <cont_fit_2a> start: spectral fitting, update continuum models.
+Do not perturb transferred parameters from the former step.
+Perform Non-linear Least-square optimazation for fine tuning.
+Fit with 3 free elements and 8 free parameters of 1 models, reduced chi-squared = 3.979.
+#### <cont_fit_1> finish: 1.8s/134.4s/3211.6s spent in this step/loop/total.
+#### <line_fit_1> start: spectral fitting, update line models.
+Do not perturb transferred parameters from the former step.
+Perform Non-linear Least-square optimazation for fine tuning.
+Fit with 3 free elements and 8 free parameters of 1 models, reduced chi-squared = 3.444.
+#### <cont_fit_2a> finish: 2.2s/136.6s/3213.8s spent in this step/loop/total.
+#### <line_fit_2> start: spectral fitting, update line models.
+Do not perturb transferred parameters from the former step.
+Perform Non-linear Least-square optimazation for fine tuning.
+Fit with 8 free elements and 7 free parameters of 1 models, reduced chi-squared = 3.333.
+#### <line_fit_2> finish: 2.3s/138.9s/3216.1s spent in this step/loop/total.
+#### <joint_fit_2> start: spectral fitting, update all models.
+Do not perturb transferred parameters from the former step.
+Perform Non-linear Least-square optimazation for fine tuning.
+Fit with 8 free elements and 7 free parameters of 1 models, reduced chi-squared = 3.711.
+#### <line_fit_1> finish: 1.1s/140.0s/3217.2s spent in this step/loop/total.
+#### <joint_fit_1> start: spectral fitting, fit with all models.
+Do not perturb transferred parameters from the former step.
+Perform Non-linear Least-square optimazation for fine tuning.
+Non-linear fitting cycle 1/1, accept this fitting with chi_sq = 3.466 / 3.444 (goal) < 110%.
+Fit with 11 free elements and 15 free parameters of 2 models, reduced chi-squared = 3.466.
+#### <joint_fit_2> finish: 13.3s/153.3s/3230.5s spent in this step/loop/total.
+########### Perform simultaneous spectrum+SED fitting with mock data ###########
+Continuum models used in spectrum+SED fitting: agn+torus
+#### <cont_fit_3a> start: spectrum+SED fitting, update continuum models.
+Do not perturb transferred parameters from the former step.
+Perform Non-linear Least-square optimazation for fine tuning.
+Fit with 11 free elements and 15 free parameters of 2 models, reduced chi-squared = 3.842.
+#### <joint_fit_1> finish: 9.7s/163.0s/3240.2s spent in this step/loop/total.
 #### Examine if each continuum model is indeed required, i.e., with peak S/N >= 2 (set by 'accept_fmod_SN'). ####
 agn continuum peak S/N = 54.891 --> remaining
 #### Enabled continuum models after examination: agn
 #### Examine if each component of line model is indeed required, i.e., with peak S/N >= 2 (set by 'accept_fmod_SN'). ####
-NLR peak S/N = 17.117 --> remaining
-BLR peak S/N = 21.248 --> remaining
+NLR peak S/N = 17.598 --> remaining
+BLR peak S/N = 27.787 --> remaining
 #### Enabled components of line model after examination: ['NLR', 'BLR']
 #### <cont_fit_2a> start: spectral fitting, update continuum models.
 Do not perturb transferred parameters from the former step.
 Perform Non-linear Least-square optimazation for fine tuning.
-Fit with 3 free elements and 8 free parameters of 1 models, reduced chi-squared = 4.735.
-#### <cont_fit_2a> finish: 14.6s/148.4s/916.1s spent in this step/loop/total.
+Fit with 4 free elements and 13 free parameters of 2 models: 
+Reduced chi-squared with scaled errors = 1.533 for spectrum+SED;
+Reduced chi-squared with scaled errors = 1.479 for pure spectrum;
+Reduced chi-squared with scaled errors = 0.053 for pure phot-SED;
+Reduced chi-squared with original errors = 7.791 for pure spectrum;
+Reduced chi-squared with original errors = 1.375 for pure phot-SED.
+#### <cont_fit_3a> finish: 90.9s/254.0s/3331.2s spent in this step/loop/total.
+#### <cont_fit_3b> start: spectrum+SED fitting, update continuum models.
+Do not perturb transferred parameters from the former step.
+Perform Non-linear Least-square optimazation for fine tuning.
+Fit with 4 free elements and 13 free parameters of 2 models: 
+Reduced chi-squared with scaled errors = 1.591 for spectrum+SED;
+Reduced chi-squared with scaled errors = 1.552 for pure spectrum;
+Reduced chi-squared with scaled errors = 0.038 for pure phot-SED;
+Reduced chi-squared with original errors = 8.232 for pure spectrum;
+Reduced chi-squared with original errors = 0.760 for pure phot-SED.
+#### <cont_fit_3b> finish: 22.3s/276.3s/3353.5s spent in this step/loop/total.
+#### <line_fit_3> start: spectral fitting, update line models.
+Do not perturb transferred parameters from the former step.
+Perform Non-linear Least-square optimazation for fine tuning.
+Fit with 8 free elements and 7 free parameters of 1 models: 
+Reduced chi-squared with scaled errors = 1.490 for spectrum+SED;
+Reduced chi-squared with scaled errors = 1.456 for pure spectrum;
+Reduced chi-squared with scaled errors = 0.034 for pure phot-SED;
+Reduced chi-squared with original errors = 7.857 for pure spectrum;
+Reduced chi-squared with original errors = 0.881 for pure phot-SED.
+#### <line_fit_3> finish: 4.7s/281.0s/3358.2s spent in this step/loop/total.
+#### <joint_fit_3> start: spectrum+SED fitting, update all models.
+Do not perturb transferred parameters from the former step.
+Perform Non-linear Least-square optimazation for fine tuning.
+Fit with 3 free elements and 8 free parameters of 1 models, reduced chi-squared = 3.581.
+#### <cont_fit_2a> finish: 10.1s/291.1s/3368.3s spent in this step/loop/total.
 #### <line_fit_2> start: spectral fitting, update line models.
 Do not perturb transferred parameters from the former step.
 Perform Non-linear Least-square optimazation for fine tuning.
-Fit with 9 free elements and 7 free parameters of 1 models, reduced chi-squared = 4.601.
-#### <line_fit_2> finish: 1.2s/149.6s/917.3s spent in this step/loop/total.
+Fit with 8 free elements and 7 free parameters of 1 models, reduced chi-squared = 3.453.
+#### <line_fit_2> finish: 3.6s/294.7s/3371.9s spent in this step/loop/total.
 #### <joint_fit_2> start: spectral fitting, update all models.
 Do not perturb transferred parameters from the former step.
 Perform Non-linear Least-square optimazation for fine tuning.
-Non-linear fitting cycle 1/1, accept this fitting with chi_sq = 4.761 / 4.735 (goal) < 110%.
-Fit with 12 free elements and 15 free parameters of 2 models, reduced chi-squared = 4.761.
-#### <joint_fit_2> finish: 19.0s/168.6s/936.3s spent in this step/loop/total.
-##################### Loop 1/4 ends, chi_sq = 4.761 168.6s #####################
-4 fitting loops (original data and 3 mock data) have good quality, with chi_sq = [4.761 3.415 3.529 3.391].
+Fit with 11 free elements and 15 free parameters of 2 models, reduced chi-squared = 3.578.
+#### <joint_fit_2> finish: 16.1s/310.8s/3388.0s spent in this step/loop/total.
+########### Perform simultaneous spectrum+SED fitting with mock data ###########
+Continuum models used in spectrum+SED fitting: agn+torus
+#### <cont_fit_3a> start: spectrum+SED fitting, update continuum models.
+Do not perturb transferred parameters from the former step.
+Perform Non-linear Least-square optimazation for fine tuning.
+Fit with 12 free elements and 19 free parameters of 3 models: 
+Reduced chi-squared with scaled errors = 1.545 for spectrum+SED;
+Reduced chi-squared with scaled errors = 1.496 for pure spectrum;
+Reduced chi-squared with scaled errors = 0.049 for pure phot-SED;
+Reduced chi-squared with original errors = 7.901 for pure spectrum;
+Reduced chi-squared with original errors = 1.344 for pure phot-SED.
+#### <joint_fit_3> finish: 13.1s/323.9s/3401.1s spent in this step/loop/total.
+#################### Loop 9/11 ends, chi_sq = 1.545 323.9s #####################
+Fit with 4 free elements and 13 free parameters of 2 models: 
+Reduced chi-squared with scaled errors = 1.608 for spectrum+SED;
+Reduced chi-squared with scaled errors = 1.562 for pure spectrum;
+Reduced chi-squared with scaled errors = 0.045 for pure phot-SED;
+Reduced chi-squared with original errors = 8.355 for pure spectrum;
+Reduced chi-squared with original errors = 0.979 for pure phot-SED.
+#### <cont_fit_3a> finish: 36.5s/347.3s/3424.5s spent in this step/loop/total.
+#### <cont_fit_3b> start: spectrum+SED fitting, update continuum models.
+Do not perturb transferred parameters from the former step.
+Perform Non-linear Least-square optimazation for fine tuning.
+Fit with 4 free elements and 13 free parameters of 2 models: 
+Reduced chi-squared with scaled errors = 1.518 for spectrum+SED;
+Reduced chi-squared with scaled errors = 1.471 for pure spectrum;
+Reduced chi-squared with scaled errors = 0.047 for pure phot-SED;
+Reduced chi-squared with original errors = 7.903 for pure spectrum;
+Reduced chi-squared with original errors = 1.560 for pure phot-SED.
+#### <cont_fit_3b> finish: 24.7s/372.0s/3449.2s spent in this step/loop/total.
+#### <line_fit_3> start: spectral fitting, update line models.
+Do not perturb transferred parameters from the former step.
+Perform Non-linear Least-square optimazation for fine tuning.
+Fit with 8 free elements and 7 free parameters of 1 models: 
+Reduced chi-squared with scaled errors = 1.490 for spectrum+SED;
+Reduced chi-squared with scaled errors = 1.448 for pure spectrum;
+Reduced chi-squared with scaled errors = 0.042 for pure phot-SED;
+Reduced chi-squared with original errors = 7.819 for pure spectrum;
+Reduced chi-squared with original errors = 1.174 for pure phot-SED.
+#### <line_fit_3> finish: 2.4s/374.4s/3451.6s spent in this step/loop/total.
+#### <joint_fit_3> start: spectrum+SED fitting, update all models.
+Do not perturb transferred parameters from the former step.
+Perform Non-linear Least-square optimazation for fine tuning.
+Non-linear fitting cycle 1/1, accept this fitting with chi_sq = 1.594 / 1.518 (goal) < 110%.
+Fit with 12 free elements and 19 free parameters of 3 models: 
+Reduced chi-squared with scaled errors = 1.594 for spectrum+SED;
+Reduced chi-squared with scaled errors = 1.548 for pure spectrum;
+Reduced chi-squared with scaled errors = 0.046 for pure phot-SED;
+Reduced chi-squared with original errors = 8.271 for pure spectrum;
+Reduced chi-squared with original errors = 1.086 for pure phot-SED.
+#### <joint_fit_3> finish: 30.1s/404.5s/3481.6s spent in this step/loop/total.
+#################### Loop 2/11 ends, chi_sq = 1.594 404.5s #####################
+11 fitting loops (original data and 10 mock data) have good quality, with chi_sq = [1.035 1.594 1.545 1.537 1.538 1.61  1.529 1.68  1.545 1.571 1.895].
 No fitting loop needs refitting. Run with FitFrame.main_fit(refit=True) to force refitting.
-################### 4 successful loops in 3 recyles, 936.3s ####################
+################## 11 successful loops in 2 recyles, 3481.7s ###################
 
 ############################### Best-fit results ###############################
-The best-fit properties are extracted for the models: agn+line
+The best-fit properties are extracted for the models: agn+torus+line
 #### Best-fit AGN properties ####
 # AGN component <powerlaw>:
 [Note] velocity shift (i.e., redshift) and FWHM are tied to other components following the input model_config.
 ================================================================================================
-| Extinction (Av)                                                   =     0.6550 +/- 0.3251    |
-| Powerlaw α_λ                                                      =    -1.8993 +/- 0.3265    |
-| Observed flux density (Fλ, log erg s-1 cm-2 Å-1) at rest 3000 Å   =   -15.5889 +/- 0.0175    |
-| Observed flux density (Fλ, log erg s-1 cm-2 Å-1) at rest 5100 Å   =   -15.8620 +/- 0.0162    |
-| Intrinsic lum. (integrated, log L☉) at rest 912-30000 Å           =    12.6236 +/- 0.2624    |
-| Dust-absorbed lum. (integrated, log L☉) at rest 912-30000 Å       =    12.4503 +/- 0.3431    |
-| Intrinsic lum. (λLλ, log erg s-1) at rest 3000 Å                  =    45.7160 +/- 0.2103    |
-| Intrinsic lum. (λLλ, log erg s-1) at rest 5100 Å                  =    45.5088 +/- 0.1357    |
+| Extinction (Av)                                                   =     0.5349 +/- 0.2777    |
+| Powerlaw α_λ                                                      =    -1.7962 +/- 0.2656    |
+| Observed flux density (Fλ, log erg s-1 cm-2 Å-1) at rest 3000 Å   =   -15.8271 +/- 0.0313    |
+| Observed flux density (Fλ, log erg s-1 cm-2 Å-1) at rest 5100 Å   =   -16.1066 +/- 0.0210    |
+| Intrinsic lum. (integrated, log L☉) at rest 912-30000 Å           =    12.2944 +/- 0.1796    |
+| Dust-absorbed lum. (integrated, log L☉) at rest 912-30000 Å       =    12.0654 +/- 0.4492    |
+| Intrinsic lum. (λLλ, log erg s-1) at rest 3000 Å                  =    45.3957 +/- 0.1710    |
+| Intrinsic lum. (λLλ, log erg s-1) at rest 5100 Å                  =    45.2122 +/- 0.1100    |
 ================================================================================================
 
 # AGN component <Fe II>:
 ================================================================================================
-| Velocity shift in relative to z_sys (km s-1)                      =   203.3447 +/- 0.5354    |
-| Velocity FWHM (km s-1)                                            =   401.4272 +/- 299.3021  |
-| Extinction (Av)                                                   =     1.1586 +/- 0.0480    |
-| Intrinsic lum. (integrated, log L☉) at rest UV (2150-4000 Å)      =    11.2590 +/- 0.0323    |
-| Intrinsic lum. (integrated, log L☉) at rest optical (4000-5600 Å) =    10.8982 +/- 0.0323    |
-| Observed flux density (Fλ, log erg s-1 cm-2 Å-1) at rest 3000 Å   =   -16.7519 +/- 0.0190    |
-| Observed flux density (Fλ, log erg s-1 cm-2 Å-1) at rest 5100 Å   =   -17.0399 +/- 0.0190    |
-| Intrinsic lum. (integrated, log L☉) at rest 912-30000 Å           =    11.5516 +/- 0.0323    |
-| Dust-absorbed lum. (integrated, log L☉) at rest 912-30000 Å       =    11.4625 +/- 0.0374    |
+| Velocity shift in relative to z_sys (km s-1)                      =   204.1990 +/- 4.2608    |
+| Velocity FWHM (km s-1)                                            =   457.8634 +/- 302.4386  |
+| Extinction (Av)                                                   =     1.9511 +/- 0.1252    |
+| Intrinsic lum. (integrated, log L☉) at rest UV (2150-4000 Å)      =    11.3212 +/- 0.0476    |
+| Intrinsic lum. (integrated, log L☉) at rest optical (4000-5600 Å) =    10.9604 +/- 0.0476    |
+| Observed flux density (Fλ, log erg s-1 cm-2 Å-1) at rest 3000 Å   =   -17.2318 +/- 0.0409    |
+| Observed flux density (Fλ, log erg s-1 cm-2 Å-1) at rest 5100 Å   =   -17.3204 +/- 0.0136    |
+| Intrinsic lum. (integrated, log L☉) at rest 912-30000 Å           =    11.6138 +/- 0.0476    |
+| Dust-absorbed lum. (integrated, log L☉) at rest 912-30000 Å       =    11.5834 +/- 0.0531    |
 ================================================================================================
 
 # AGN component <Balmer cont.>:
 [Note] velocity shift (i.e., redshift) and FWHM are tied to other components following the input model_config.
 ================================================================================================
-| Extinction (Av)                                                   =     1.6410 +/- 0.3437    |
-| Recombination cont. e- temperature (log K)                        =     4.0584 +/- 0.0345    |
-| Recombination cont. optical depth at 3646 Å (log τ)               =    -0.3695 +/- 0.0332    |
-| Recombination cont. bolometric lum. (log L☉)                      =    12.8961 +/- 0.2719    |
-| Observed flux density (Fλ, log erg s-1 cm-2 Å-1) at rest 3000 Å   =   -15.4903 +/- 0.0167    |
-| Observed flux density (Fλ, log erg s-1 cm-2 Å-1) at rest 5100 Å   =   -16.0013 +/- 0.0300    |
-| Intrinsic lum. (integrated, log L☉) at rest 912-30000 Å           =    12.8962 +/- 0.2719    |
-| Dust-absorbed lum. (integrated, log L☉) at rest 912-30000 Å       =    12.8624 +/- 0.3308    |
+| Extinction (Av)                                                   =     0.5179 +/- 0.4459    |
+| Recombination cont. e- temperature (log K)                        =     3.9582 +/- 0.0503    |
+| Recombination cont. optical depth at 3646 Å (log τ)               =    -0.2728 +/- 0.0406    |
+| Recombination cont. bolometric lum. (log L☉)                      =    11.7157 +/- 0.3569    |
+| Observed flux density (Fλ, log erg s-1 cm-2 Å-1) at rest 3000 Å   =   -15.8435 +/- 0.0294    |
+| Observed flux density (Fλ, log erg s-1 cm-2 Å-1) at rest 5100 Å   =   -16.4175 +/- 0.0374    |
+| Intrinsic lum. (integrated, log L☉) at rest 912-30000 Å           =    11.7159 +/- 0.3569    |
+| Dust-absorbed lum. (integrated, log L☉) at rest 912-30000 Å       =    11.4466 +/- 0.5401    |
 ================================================================================================
 
 # Best-fit properties of the sum of all AGN components.
 ================================================================================================
-| Observed flux density (Fλ, log erg s-1 cm-2 Å-1) at rest 3000 Å   =   -15.2227 +/- 0.0005    |
-| Observed flux density (Fλ, log erg s-1 cm-2 Å-1) at rest 5100 Å   =   -15.6087 +/- 0.0010    |
-| Intrinsic lum. (integrated, log L☉) at rest 912-30000 Å           =    13.0946 +/- 0.2222    |
-| Dust-absorbed lum. (integrated, log L☉) at rest 912-30000 Å       =    13.0168 +/- 0.2921    |
+| Observed flux density (Fλ, log erg s-1 cm-2 Å-1) at rest 3000 Å   =   -15.5256 +/- 0.0007    |
+| Observed flux density (Fλ, log erg s-1 cm-2 Å-1) at rest 5100 Å   =   -15.9163 +/- 0.0012    |
+| Intrinsic lum. (integrated, log L☉) at rest 912-30000 Å           =    12.4625 +/- 0.2044    |
+| Dust-absorbed lum. (integrated, log L☉) at rest 912-30000 Å       =    12.2613 +/- 0.3548    |
 ================================================================================================
+
+#### Best-fit torus properties ####
+# Torus component <main>:
+[Note] velocity shift (i.e., redshift) is tied following the input model_config.
+====================================================================================
+| Optical depth at 9.7 µm                               =    10.9997 +/- 1.3665    |
+| Half opening angle (degree)                           =    40.1139 +/- 11.4936   |
+| Outer/inner radii ratio                               =    19.9236 +/- 1.8648    |
+| Inclination (degree)                                  =    54.3611 +/- 13.9464   |
+| Torus dust absorption fraction                        =     0.3856 +/- 0.1905    |
+| Torus dust mass (log M☉)                              =     5.6295 +/- 0.1914    |
+| AGN disc bolometric lum. (log L☉)                     =    13.1905 +/- 0.2580    |
+| Torus dust bolometric lum. (log L☉)                   =    12.7766 +/- 0.1186    |
+| Intrinsic lum. (integrated, log L☉) at rest 5-38 µm   =    12.5673 +/- 0.0221    |
+| Intrinsic lum. (integrated, log L☉) at rest 1-1000 µm =    12.7222 +/- 0.0217    |
+====================================================================================
 
 #### Best-fit line model properties ####
 ==================================================================
 |    Par/Line Name     |        NLR         |        BLR         |
 ==================================================================
-|    Voff (km s-1)     | - 275.49 +-  18.20 |   191.93 +-   9.03 |
-|    FWHM (km s-1)     |  1409.12 +-  44.51 |  2933.67 +-  25.74 |
-|  Av (Balmer decre.)  |     1.43 +-   0.91 |     3.77 +-   0.36 |
-| log e-density (cm-3) |     2.50 +-   0.82 |     9.00 +-   0.00 |
+|    Voff (km s-1)     | - 247.37 +- 103.03 |    38.19 +-  72.56 |
+|    FWHM (km s-1)     |  1326.22 +-  82.98 |  2623.81 +- 286.01 |
+|  Av (Balmer decre.)  |     1.16 +-   1.28 |     3.50 +-   0.76 |
+| log e-density (cm-3) |     3.42 +-   0.96 |     9.00 +-   0.00 |
 | log e-temperature(K) |     4.00 +-   0.00 |     4.00 +-   0.00 |
-|     Mg II]:2796      |     0.00 +-   0.00 |    18.23 +-   0.16 |
-|     Mg II]:2804      |     0.00 +-   0.00 |     0.00 +-   0.00 |
-|     [O II]:3727      |     1.80 +-   0.07 |     0.00 +-   0.00 |
-|     [O II]:3730      |     2.44 +-   0.10 |     0.00 +-   0.00 |
-|    [Ne III]:3870     |     3.31 +-   0.27 |     0.00 +-   0.00 |
-|    [Ne III]:3969     |     1.04 +-   0.10 |     0.00 +-   0.00 |
-|       H-delta        |     1.34 +-   0.15 |     2.74 +-   0.20 |
-|       H-gamma        |     2.65 +-   0.19 |     6.25 +-   0.31 |
-|     [O III]:4364     |     0.62 +-   0.05 |     0.00 +-   0.00 |
-|        H-beta        |     6.70 +-   0.30 |    20.91 +-   0.21 |
-|     [O III]:4960     |     4.98 +-   0.13 |     0.00 +-   0.00 |
-|     [O III]:5008     |    15.07 +-   0.50 |     0.00 +-   0.00 |
-|      [O I]:6302      |     1.95 +-   0.08 |     0.00 +-   0.00 |
-|      [O I]:6366      |     0.63 +-   0.02 |     0.00 +-   0.00 |
+|     Mg II]:2796      |     0.00 +-   0.00 |     4.40 +-   0.17 |
+|     Mg II]:2804      |     0.00 +-   0.00 |     4.45 +-   0.17 |
+|     [O II]:3727      |     0.88 +-   0.06 |     0.00 +-   0.00 |
+|     [O II]:3730      |     1.19 +-   0.08 |     0.00 +-   0.00 |
+|    [Ne III]:3870     |     1.51 +-   0.11 |     0.00 +-   0.00 |
+|    [Ne III]:3969     |     0.47 +-   0.05 |     0.00 +-   0.00 |
+|       H-delta        |     0.43 +-   0.17 |     1.58 +-   0.26 |
+|       H-gamma        |     0.85 +-   0.38 |     3.56 +-   0.43 |
+|     [O III]:4364     |     0.36 +-   0.15 |     0.00 +-   0.00 |
+|        H-beta        |     2.07 +-   1.31 |    11.52 +-   1.13 |
+|     [O III]:4960     |     2.46 +-   0.07 |     0.00 +-   0.00 |
+|     [O III]:5008     |     7.43 +-   0.21 |     0.00 +-   0.00 |
+|      [O I]:6302      |     0.77 +-   0.07 |     0.00 +-   0.00 |
+|      [O I]:6366      |     0.25 +-   0.03 |     0.00 +-   0.00 |
 ==================================================================
 [Note] Rows starting with a line name show the observed line flux, in unit of 1e-15 erg/s/cm2.
 

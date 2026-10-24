@@ -1,8 +1,8 @@
 {
-  "mode": "spec",
-  "n_mocks": 3,
+  "mode": "spec+sed",
+  "n_mocks": 10,
   "seed": 42,
-  "threads": 3,
+  "threads": 8,
   "spec_wave_medium": "vacuum",
   "spec_flux_unit": "erg s-1 cm-2 angstrom-1",
   "phot_flux_unit": "mJy",
@@ -17,12 +17,17 @@
     ]
   ],
   "spec_invalid_range": null,
-  "phot_calib_b": null,
+  "phot_calib_b": [
+    "SDSS_gp",
+    "SDSS_rp",
+    "SDSS_ip",
+    "SDSS_zp"
+  ],
   "fit_space": "log",
   "examine_result": true,
   "accept_chi_sq": 10.0,
   "nlfit_ntry_max": 1,
-  "nllsq_max_nfev": 5000,
+  "nllsq_max_nfev": 10000,
   "conv_nbin_max": 5,
   "if_run_init_annealing": false,
   "da_niter_max": 10,
@@ -33,9 +38,9 @@
   "mc_plot_lines": [
     "H-beta",
     "[O III]:5008",
-    "H-gamma"
+    "Mg II]:2796"
   ],
-  "_comment": "FAST SMOKE/LINE MODE. Pure spectrum only: no photometric SED step, torus disabled, dual-annealing global search disabled, one nonlinear try, accept_chi_sq=10 to prevent 3x recycle. H-alpha/[N II]/[S II] removed because they are outside the SDSS coverage of both validation targets. This is a documented scope/control reduction, not a full spec+SED fit.",
+  "_comment": "PRODUCTION spec+sed QSO fit: full AGN+Fe II+Balmer+SKIRTOR torus+NLR/BLR model, 8 SDSS/WISE bands, 10 Monte-Carlo mocks. Runtime compromise: dual-annealing initialisation disabled, nlfit_ntry_max=1, accept_chi_sq=10 to avoid repeated recycle fits. The model grid and mock count are NOT reduced.",
   "comparison_lines": {
     "H-beta": [
       "Hb_br",
