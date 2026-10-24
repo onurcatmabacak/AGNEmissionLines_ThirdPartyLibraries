@@ -25,6 +25,7 @@ CAFE, S3Fit, GANDALF, PAHFIT and the generic Gaussian fitters operate on
 | `pahfit_mir` | line | MIR | PAH Drude profiles + dust continuum + gas Gaussians | least-squares + MC |
 | `fir_linefit` | line | FIR | local continuum + Gaussian forbidden lines | covariance |
 | `manga_dap` | line (IFU) | optical | **official DAP**: HYB10 binning + pPXF + SASUKE 35-line Gaussian fit on MaNGA cubes | DAP formal covariance; **9 central bins only**; fast mode rejected |
+| `rxte_xspec` | line (X-ray) | 3-20 keV observed; Fe K-alpha at 6.4 keV rest | **official RXTE/PCA stdprod**: `tbabs*(zpowerlw+zgauss)` | XSPEC covariance; `Delta chi^2` line significance; no MCMC |
 | `ppxf_host` | host | optical–NIR | stellar templates + AGN power law, emission masked | pPXF formal errors |
 | `crossband` | ratio | NIR–FIR | line-ratio consistency | analytic propagation |
 | `cigale_sed` | **SED** | UV–FIR | SFH + BC03 + dust + DL2014 + SKIRTOR/Fritz | `pdf_analysis` posterior |
@@ -112,28 +113,41 @@ QSO fitter.
   emission-line fitters; excluded.
 - **pyspeckit** is a general line-fitting toolkit; it is redundant with the
   existing GLEAM/BADASS/local-Gaussian/PyQSOFit stack.
-- **HEASOFT** is X-ray data reduction, not optical line fitting; see the
-  HEASOFT section below.
+- **HEASOFT** is X-ray spectral fitting, not optical line fitting; the
+  implemented X-ray branch is separate and does not enter the line-ratio
+  matrix.  See the X-ray section below.
 
-### HEASOFT (X-ray)
+### HEASOFT / RXTE PCA (implemented X-ray branch)
 
-The paper's HEASOFT use is Swift/XRT+UVOT reduction (`xrtpipeline`,
-`xrtproducts`, `uvotimsum`, `uvotsource`) and Einstein Probe `FXTDAS/fxtchain`.
-It is a separate X-ray branch, not an optical emission-line tool.  A proper
-integration needs:
+HEASOFT is the right engine for the X-ray part of the paper (RXTE/PCA,
+XMM-Newton/EPIC, Swift/XRT+UVOT and Einstein Probe follow-up), but it is **not**
+an optical emission-line fitter.  The repository now has an implemented,
+separate X-ray branch:
 
-```bash
-# inside a HEASOFT/HEASoftPy container with CALDB
-xrtpipeline indir=... outdir=... steminputs=...
-xrtproducts infile=... outdir=... regionfile=...
-uvotimsum infile=... outfile=...
-uvotsource image=... srcreg=... bkgreg=...
+```text
+inputs/<source>/xray/rxte_<obsid>/*_s2.pha.gz   # official PCA Standard2 source
+                                  *_b2.pha.gz   # official PCA background model
+                                  *.rsp.gz      # official 5-PCU response
+  -> Tools/rxte_xspec/ (HEASoft/PyXspec 13.0.0)
+  -> tbabs*(zpowerlw+zgauss), 3-20 keV
+  -> outputs/<source>/rxte_xspec/
 ```
 
-No X-ray event/spectrum data are in this repository, so HEASOFT is not added to
-the line-tool matrix.  When X-ray data exist, add a separate `heasoft_xray`
-Docker tool and a `route_analysis` branch; do not mix X-ray calibration with
-optical line fitting.
+The production example is **3C 120** (ObsID `10339-02-01-01`, 9808 s,
+294,417 net counts); **MCG-6-30-15** (ObsID `20310-01-02-00`, 5888 s,
+77,824 net counts) is the second independent AGN.  The products are the
+official HEASARC **`stdprod`** products, i.e. the RXTE equivalent of the XMM
+PPS products.  `pcabackest`/`saextrct` are **not** run.  The `b2` file is a
+background **model**; its systematics are not in the chi-square errors.  See
+`Tools/rxte_xspec/README.md`, `docs/ROADMAP_V2.md` and
+`docs/OFFICIAL_PIPELINES_AND_XRAY.md`.
+
+The `rxte_xspec` image is a thin `FROM xmm_xspec` layer, reusing the existing
+HEASoft/PyXspec 13.0.0 installation rather than adding a second 4.3 GB X-ray
+environment.  Swift/XRT+UVOT reduction (`xrtpipeline`, `xrtproducts`,
+`uvotimsum`, `uvotsource`) and Einstein Probe `FXTDAS/fxtchain` remain
+documented future work; they would be another image, not part of the optical
+line matrix.
 
 ### GalSpec / PyQSOFitSpec / QGfit / SHEAP
 
@@ -173,6 +187,9 @@ python pipeline/decide_tools.py --goal lines --z 0.18 --wave-min 5 --wave-max 28
 
 # NIR lines at z=6.327
 python pipeline/decide_tools.py --goal lines --z 6.327 --wave-min 1.7 --wave-max 5.2
+
+# X-ray Fe K-alpha at z=0.033 (RXTE/PCA; observed keV)
+python pipeline/decide_tools.py --goal xray --z 0.033 --wave-min 3 --wave-max 20
 ```
 
 The decision engine is advisory; `inputs/<source>/source.json` still controls

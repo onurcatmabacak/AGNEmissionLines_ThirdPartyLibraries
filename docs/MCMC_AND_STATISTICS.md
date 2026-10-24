@@ -20,6 +20,7 @@ broad-band SED code is not a line fitter.
 | `galspec_line` | emcee (`MCMC_Fit`, full-continuum global model); dynesty optional | yes (production) | `galspec_uncertainty.*`, `galspec_corner.*`, saved posterior in `galspec_mcmc.npz` |
 | `ir_linefit` / `nir_linefit` / `fir_linefit` | `least_squares`/`curve_fit` covariance | no | per-line `flux_err`, `fwhm_err` |
 | `manga_dap` | official DAP/SASUKE formal covariance (`1/sqrt(IVAR)`); no MCMC | no | `subset_comparison.json`, formal flux/kinematic errors; 9 central bins |
+| `rxte_xspec` | XSPEC chi-square (Levenberg-Marquardt); covariance; `Delta chi^2` line significance | no | `rxte_fit.csv`, `rxte_lines.csv`, full `xspec.log`; no posterior |
 | `ppxf_host` | pPXF formal errors | no | `sigma_err_kms`, host error |
 | `crossband` | analytic ratio propagation | no | `err` per ratio |
 
@@ -65,6 +66,29 @@ short chain is **not converged**, so the committed quantitative uncertainty
 remains the **100-realization MC**.  Both statuses are explicit in
 `outputs/04592649654_z_0.5874/pyqsofit/mcmc/STATUS.md`.
 
+## RXTE/PCA: chi-square and Delta chi-square, not MCMC
+
+`rxte_xspec` fits the official PCA Standard2 spectrum with XSPEC's `chi`
+statistic (grouped PHA, `STAT_ERR` from the official products).  Parameter
+uncertainties are the XSPEC covariance (1-sigma).  The Fe K-alpha significance
+is the Gaussian-equivalent one-sided p-value of
+`chi2_sf(Delta chi^2, Delta dof)`: one degree of freedom for the fixed
+6.4 keV / 50 eV narrow line, two for a free width, three for a free width and
+centroid.  It is **not** a posterior and **not** a look-elsewhere-corrected
+discovery significance.
+
+The PCA `b2` file is a background **model**, not a measured background.  XSPEC
+propagates its `STAT_ERR`, but the background-model systematics are not in the
+errors.  The tool therefore reports a conservative variant with `nH` frozen to
+the continuum-only value and a soft-blackbody continuum-systematic check.
+For 3C 120 the narrow-line `Delta chi^2` is 17.8 (4.2 sigma) on the production
+`tbabs*zpowerlw` baseline, 11.9 (3.5 sigma) with `nH` frozen, 22.2
+(4.7 sigma) in the 3-10 keV line band, and 53.9 (7.3 sigma) when a soft
+blackbody is added.  The spread is the honest continuum/background systematic,
+not a statistical error bar.  The verified-data note's `Delta chi^2 ~ 82` is
+not reproduced by the simple baseline; it lies above even the soft-excess
+check and is not quoted as this repository's measurement.
+
 ## Interpretation
 
 - `ultranest` (AGNfitter) and CIGALE `pdf_analysis` give **posterior**
@@ -94,6 +118,7 @@ remains the **100-realization MC**.  Both statuses are explicit in
 | PAHFIT | PDS 456 short/long/both, VV114, NGC 4151, NGC 253 | 100-200 each | full-rank covariance or full-refit bootstrap | `outputs/<source>/pahfit_mir/pahfit_uncertainty.png` |
 | AGNfitter | 5 QSOs | nested sampling | `ultranest` | `outputs/<source>/agnfitter_sed/OUTPUT/.../SED_manyrealizations...pdf` |
 | CIGALE | 5 QSOs × 2 tori | Bayesian `pdf_analysis` | posterior grid | `outputs/<source>/cigale_sed/*/sed_fit.png` |
+| RXTE/PCA | 3C 120 + MCG-6-30-15 | none (XSPEC chi-square) | covariance + `Delta chi^2` line significance | `outputs/<source>/rxte_xspec/rxte_fe_ka_zoom.png` |
 
 `docs/line_tool_comparison.png` combines the line ratios measured by PyQSOFit,
 S3Fit, GANDALF and PAHFIT; `docs/line_ratio_scatter.csv` reports the

@@ -13,11 +13,15 @@ Tools/                   Dockerized tool source and Dockerfiles
   pyqsofit_uv/ qsofitmore_line/ ppxf_host/ UV/host tool images
   gandalf_line/          native GANDALF v1.5 under GDL
   manga_dap/             official SDSS MaNGA DAP (sdss-mangadap 4.5.0), subset production
+  rxte_xspec/            official RXTE/PCA stdprod + HEASoft/PyXspec (thin FROM xmm_xspec)
   cafe_line/ s3fit_line/ galspec_line/ NIR/MIR/optical spectrum+SED line tools
   nir_linefit/ pahfit_mir/ fir_linefit/ crossband/
   cigale_sed/ agnfitter_sed/
 ```
 
+`inputs/<source>/xray/rxte_<obsid>/` holds the official HEASARC PCA `stdprod`
+products (`*_s2.pha.gz`, `*_b2.pha.gz`, `*.rsp.gz`), `download.sh` and
+`SHA256SUMS`; `outputs/<source>/rxte_xspec/` holds the fit products.
 `work/prepared/` and `work/logs/` are generated and ignored.  The legacy
 optical v1 trees (`results/`, `runs/`, `figures/`, `figures_main/`,
 `results_uncertainties/`, `runs_uncertainties/`, `statistical confirmation/`)

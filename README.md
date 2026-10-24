@@ -21,13 +21,15 @@ work/                   ignored generated inputs/logs
 `Tools/` contains: `badass`, `fantasy_agn`, `Gelato`, `Gleam`, `pyqsofit`,
 `sculptor`, `pipeline_ir`, `pyqsofit_uv`, `qsofitmore_line`, `pyqsofitspec_line`, `ppxf_host`,
 `gandalf_line`, `cafe_line`, `s3fit_line`, `galspec_line`, `qgfit`,
-`sheap_line`, `manga_dap`, `nir_linefit`, `pahfit_mir`, `fir_linefit`, `crossband`,
-`cigale_sed`, `agnfitter_sed`.
+`sheap_line`, `manga_dap`, `rxte_xspec`, `nir_linefit`, `pahfit_mir`, `fir_linefit`,
+`crossband`, `cigale_sed`, `agnfitter_sed`.
 
 CIGALE and AGNfitter are **SED/torus** codes; they do not measure individual
 lines.  Use `pyqsofit_uv`, `qsofitmore_line`, `pyqsofitspec_line`, `cafe_line`, `s3fit_line`,
 `gandalf_line`, `galspec_line`, `qgfit`, `sheap_line`, `manga_dap`, `pahfit_mir`,
-`nir_linefit` or `ir_linefit` for line fluxes and kinematics.
+`nir_linefit` or `ir_linefit` for optical/IR line fluxes and kinematics.  The
+X-ray Fe K-alpha branch is separate: `rxte_xspec` fits official RXTE/PCA
+`stdprod` spectra with HEASoft/PyXspec.
 
 ## Quick start
 
@@ -37,7 +39,7 @@ bash Pipelines/run_new_tools.sh --list
 bash Pipelines/run_new_tools.sh --cigale-models skirtor2016,fritz2006
 ```
 
-All **22 Docker images** build successfully (`Pipelines/build_images.sh`).  The matrix runner writes only to:
+All **23 Docker images** in `Pipelines/build_images.sh` build successfully; `rxte_xspec` is a thin layer on the existing `xmm_xspec` XSPEC 13.0.0 base.  The matrix runner writes only to:
 
 ```text
 outputs/<source_name>_z_<redshift>/<tool_name>/...
@@ -55,6 +57,7 @@ under `work/prepared/`.
 | VV114 / PDS 456 | `pahfit_mir`, `cafe_line`, `ir_linefit` |
 | Low-z SDSS GANDALF example | `gandalf_line` (Hα/Hβ coverage) |
 | MaNGA AGN NGC 1194 (9193-12701) | `manga_dap` (official DAP subset; all-spaxel reference = published MAPS) |
+| RXTE/PCA AGN 3C 120, MCG-6-30-15 | `rxte_xspec` (official HEASARC `stdprod`; PyXspec) |
 | NGC 1068 / NGC 253 / NGC 4151 | `pahfit_mir`, `fir_linefit`, `ir_linefit`; cross-band for NGC 253/4151 |
 | Mrk 231 | `pahfit_mir`, `ir_linefit`, `crossband` |
 | synthetic FIR / multiband | `fir_linefit` + `ir_linefit` / `crossband` |
@@ -76,6 +79,7 @@ The production matrix uses real data only:
 | **SHEAP** | `04592649654` | Hβ/[O III] SPAF/JAX, 50 bootstrap draws | Hβ/[O III] **2.02**, χ²ν 2.9 |
 | **PyQSOFit** | `04592649654` | 100-realization MC (`mc/`); short `emcee` MCMC (800 draws, not converged) + 300-step diagnostics | MCMC initialization fixed; acceptance ≈0.37; short-chain samples/corner/trace saved, but MC remains the quantitative product |
 | **SDSS ZLINE** | five SDSS QSOs | official `ZLINE` HDU | 045926 ratio **1.57** |
+| **RXTE/PCA** | 3C 120 (10339-02-01-01), MCG-6-30-15 (20310-01-02-00) | official `stdprod` Standard2; `tbabs*(zpowerlw+zgauss)`, 3-20 keV | 3C 120: χ²/dof **72.02/48**, Γ **1.816**, Fe Kα Δχ² **17.83 (4.22σ)**, EW_rest **90.3 eV**; MCG: χ²/dof **39.41/41**, Δχ² **46.48 (6.82σ)**, EW_rest **263.5 eV** |
 
 The cross-tool 04592649654 Hβ/[O III] 5007 values are:
 
@@ -110,7 +114,7 @@ median 2.04, log-scatter 0.06 dex
 * `docs/CAVEAT_FIXES.md` — what was fixed and what remains.
 * `docs/LINE_FITTING_TOOLS.md` — line-fitting tools vs SED fitting.
 * `docs/MCMC_AND_STATISTICS.md` — MC, nested sampling and covariance modes.
-* `docs/OFFICIAL_PIPELINES_AND_XRAY.md` — official SDSS DAP/HEASOFT exclusions and integration plan.
+* `docs/OFFICIAL_PIPELINES_AND_XRAY.md` — official SDSS DAP exclusions, implemented RXTE/PCA branch and HEASOFT integration notes.
 * `docs/line_tool_comparison.png` — official ZLINE + eight independent fitters.
 * `docs/line_ratio_scatter.csv` — inter-tool scatter and bootstrap intervals.
 * `docs/SHEAP_ASSESSMENT.md` — SHEAP repair and quality gates.

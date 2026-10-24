@@ -17,6 +17,7 @@ Pipelines/
   run_pyqsofitspec_line_docker.sh # PyQSOFitSpec bootstrap
   run_qgfit_docker.sh          # QGfit AGN/host/line fit
   run_sheap_line_docker.sh     # SHEAP JAX AGN decomposition
+  run_rxte_xspec_docker.sh     # official RXTE/PCA stdprod + HEASoft/PyXspec
   legacy_optical/              # archived optical-v1 drivers
 ```
 
@@ -28,6 +29,13 @@ bash Pipelines/run_new_tools.sh --list
 bash Pipelines/run_new_tools.sh --cigale-models skirtor2016,fritz2006
 bash Pipelines/run_ir.sh --fits inputs/04592649654_z_0.5874/raw/spec-00000-59345-04592649654.fits \
   --z 0.58741307 --out outputs/04592649654_z_0.5874/ir_linefit
+
+# official RXTE/PCA fit (thin image on the existing xmm_xspec XSPEC 13.0.0 base)
+bash Pipelines/build_images.sh rxte_xspec
+bash Pipelines/run_rxte_xspec_docker.sh \
+  inputs/3C120_z_0.0330/xray/rxte_10339-02-01-01 \
+  outputs/3C120_z_0.0330/rxte_xspec \
+  --source-key 3C120_z_0.0330 --redshift 0.0330 --source-name "3C 120"
 
 # CAFE spectral decomposition of the PDS 456 MIRI short+long x1d spectra
 bash Pipelines/build_images.sh cafe_line

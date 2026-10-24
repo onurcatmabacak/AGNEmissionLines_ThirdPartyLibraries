@@ -22,7 +22,7 @@ stage is completed before the next starts, with the same acceptance gates:
 | 1 | **QSOFITMORE** | UV/optical AGN spectrum fit | real SDSS QSO `04592649654` | **complete** |
 | 2 | **MaNGA DAP** | `sdss-mangadap` official IFU DAP | real MaNGA AGN cube | **complete (official subset; all-spaxel time-limited)** |
 | 3 | **XMM-Newton** | SAS + XGA/XSPEC | real XMM/EPIC AGN observation | planned |
-| 4 | **RXTE** | HEASoft + PyXspec | real RXTE/PCA AGN spectrum | planned |
+| 4 | **RXTE** | HEASoft + PyXspec | real RXTE/PCA AGN spectrum | **complete (3C 120 + MCG-6-30-15)** |
 | 5 | cross-mission | X-ray/optical/SED comparison | combined source products | planned |
 
 ## Wavelength coverage target
@@ -34,7 +34,7 @@ stage is completed before the next starts, with the same acceptance gates:
 | NIR | CAFE, S3Fit, nir_linefit, GANDALF | JWST/NIRSpec |
 | MIR | CAFE, PAHFIT | JWST/MIRI, Spitzer IRS |
 | FIR | fir_linefit, crossband | Herschel/PACS, ALMA/ADMIT |
-| X-ray | none yet | XMM/SAS+XGA, RXTE/HEASoft+PyXspec |
+| X-ray | **RXTE/PCA (`rxte_xspec`)**, existing XMM/EPIC `xmm_xspec` image | Swift/XRT+UVOT, Einstein Probe |
 
 No single code covers all bands.  The decision engine must route by observed
 band, rest-frame line coverage, data type and science goal (SED vs lines).
@@ -113,3 +113,87 @@ gives Hα ratio 2.37, [N II] 0.53, BPT agreement 41% and a +175 km/s gas
 velocity offset.  It is confined to `aux_fastmode/` with
 `QUALITY='FASTMODE_NOT_PRODUCTION'`, `PRODSTAT='AUXILIARY'`, `ACCEPT=0` and is
 not an acceptance product.
+
+## Stage 4 result - official RXTE/PCA (HEASoft/PyXspec)
+
+Pinned HEASARC conda **XSPEC 13.0.0** (`hb0f4dca_2`) on **HEASoft 6.37**
+(PyXspec), reused from the existing `xmm_xspec` image.  The `rxte_xspec`
+image is a thin `FROM xmm_xspec` layer: **4,346,169,613 bytes** (4.35 GB),
+only 216,251 bytes above the 4,345,953,362-byte base.  A second 4.3 GB XSPEC
+installation was deliberately avoided.
+
+**Data.**  Official HEASARC RXTE/PCA **`stdprod`** products, i.e. the RXTE
+equivalent of the XMM-Newton PPS products, for **3C 120**, ObsID
+`10339-02-01-01` (AO1/P10339), PCA Standard2, **9808 s**, **294,417 net
+counts** in 129 channels.  The committed input files are the official
+`xp10339020101_s2.pha.gz` (source), `xp10339020101_b2.pha.gz` (background
+model) and `xp10339020101.rsp.gz` (5-PCU response), with `download.sh` and
+`SHA256SUMS`.  The response is the real 129-channel PCA matrix (300 energy
+bins, `marfrmf 3.2.6`); no synthetic response is used.  **`pcabackest` and
+`saextrct` are not run** - the archive `stdprod` products already contain the
+official reduction.  The `b2` file is a background **model**, not a measured
+background; this is the dominant PCA caveat.
+
+**Accepted model.**  `tbabs*(zpowerlw+zgauss)` in the observed 3-20 keV band,
+`chi` statistic, Wilms abundances, Fe K-alpha at 6.4 keV rest with a fixed
+50 eV narrow core.  The 3-10 keV line-band fit is the local-continuum
+cross-check.  Runtime is 5.3 s inside the container.
+
+| quantity | 3C 120, 3-20 keV (production) | 3C 120, 3-10 keV cross-check |
+|---|---:|---:|
+| baseline `tbabs*zpowerlw` chi2/dof | 89.85/49 = 1.834 | 42.11/22 = 1.914 |
+| `tbabs*(zpowerlw+zgauss)` chi2/dof | **72.02/48 = 1.500** | **19.90/21 = 0.947** |
+| photon index Gamma | **1.8163 +/- 0.0240** | 1.6880 +/- 0.0364 |
+| N_H (10^22 cm^-2) | **3.06 +/- 0.51** | 1.36 +/- 0.61 |
+| Fe K-alpha Delta chi2 (1 dof) | **17.83 -> 4.22 sigma** | **22.22 -> 4.71 sigma** |
+| Fe K-alpha flux (erg cm^-2 s^-1) | **(5.03 +/- 1.17)e-13** | (5.54 +/- 1.15)e-13 |
+| EW_rest (eV) | **90.3** | 102.7 |
+
+**Systematic variants (3C 120).**  Freezing N_H to the continuum-only value
+gives Delta chi2 = 11.94 (3.46 sigma), flux 3.43e-13 and EW_rest 59.6 eV.
+Adding a soft blackbody continuum (`tbabs*(zpowerlw+zbbody+zgauss)`) gives
+Delta chi2 = 53.91 (7.34 sigma), flux 5.21e-13 and EW_rest 95.4 eV; the
+soft-excess fit has chi2/dof = 39.62/46 = 0.861.  The 3-10 keV free-width fit
+gives sigma = 0.60 +/- 0.25 keV (Delta chi2 = 24.96 for 2 dof, 4.62 sigma) and
+the free-centroid fit gives E_rest = 6.39 +/- 0.19 keV, sigma = 0.62 +/- 0.28
+keV (4.32 sigma).  The width is not a resolved velocity measurement.
+
+**Second independent AGN.**  MCG-6-30-15, ObsID `20310-01-02-00` (AO2/P20310,
+5888 s, 77,824 net counts): `tbabs*(zpowerlw+zgauss)` in 3-20 keV gives
+chi2/dof = **39.41/41 = 0.961**, Gamma = **1.867 +/- 0.048**, N_H =
+**(2.40 +/- 1.03)e22 cm^-2**, Delta chi2 = **46.48 (6.82 sigma)**, flux
+**(1.10 +/- 0.15)e-12 erg cm^-2 s^-1**, EW_rest = **263.5 eV**.  The 3-10 keV
+cross-check gives Delta chi2 = 45.36 (6.74 sigma).  This is the stronger of
+the two PCA detections and confirms the pipeline on a second real AGN.
+
+**The expected Delta chi2 ~ 82 caveat.**  The verified-data note quotes
+Delta chi2 ~ 82 for the 3C 120 Fe K-alpha in 3-20 keV.  That value is **not
+reproduced** by the simple `tbabs*zpowerlw` baseline with the official
+background model: the background-inclusive chi-square gives Delta chi2 = 17.83
+(4.22 sigma).  The value depends strongly on the continuum/background
+treatment: a soft-blackbody continuum reaches 53.91 (7.34 sigma), while a
+fixed-N_H conservative fit gives 11.94 (3.46 sigma).  The quoted 82 lies above
+even the soft-excess check and is not adopted.  The detection is significant
+in every variant (3.5-7.3 sigma), but the exact Delta chi2 is not a robust
+headline number.
+
+**Cross-mission note.**  The existing `xmm_xspec` image documents the
+XMM-Newton EPIC PPS fit of **PDS 456** (ObsID `0721010201`, z = 0.184,
+100.4 ks): narrow Fe K-alpha Delta chi2 = 16.39 (4.05 sigma) with the same
+kind of absorbed power-law model.  The `xmm_xspec` image is reused as the
+HEASoft/PyXspec base; its source tree is not part of this worktree, so the
+XMM fit is not re-run or re-audited in this pass.  PDS 456 and 3C 120 are
+**independent AGN**, not a same-object cross-calibration.  **NGC 4151** is the natural
+same-object XMM/RXTE anchor, but its PCA background systematics are severe;
+it is not used here for a same-object claim.  A true same-object XMM/RXTE
+comparison remains Stage 5 work.  The two X-ray results are therefore
+methodological cross-checks (independent objects, independent missions), not
+a measurement of cross-calibration.
+
+**Raw-vs-PPS provenance.**  The `stdprod` products are the official reduced
+PCA products.  Re-running `pcabackest`/`saextrct` from raw PCA event files
+would change the good-time intervals, background model and response; it would
+not be the same dataset.  The tool therefore fits the official products and
+records the choice in `run.json` and `provenance.md`.  It does not claim to
+reproduce the RXTE PCA reduction chain.  This is the RXTE analogue of using
+XMM PPS spectra instead of re-running SAS.

@@ -2,8 +2,9 @@
 
 This note records what was adopted and what was deliberately excluded.  The
 current sample is **1-D AGN spectroscopy** (SDSS single-fiber QSOs, JWST NIR/MIR,
-Spitzer IRS, PACS/HIFI); it is not a MaNGA/LVM IFU sample and contains no X-ray
-event files.
+Spitzer IRS, PACS/HIFI); it is not a MaNGA/LVM IFU sample.  It contains no raw
+X-ray event files, but it does now contain the official reduced RXTE/PCA
+spectra used by the `rxte_xspec` branch.
 
 ## Decision table
 
@@ -20,7 +21,7 @@ event files.
 | **ELFO** | CSST-IFS emission-line fitting | **exclude** | IFS-only; no 1-D path. |
 | **AGNdecompose** | 2-D AGN/host image decomposition | **exclude** | Image decomposition, not spectral line fitting. |
 | **pyspeckit** | general 1-D line fitting | **exclude** | Redundant with GLEAM/BADASS/local-Gaussian/PyQSOFit; no AGN-specific advantage. |
-| **HEASOFT** | X-ray data reduction/analysis | **exclude from line matrix** | X-ray branch; no event/spectrum inputs here. See below. |
+| **HEASOFT** | X-ray spectral fitting (RXTE/PCA; Swift/XRT+UVOT future) | **implemented X-ray branch; exclude from the optical line matrix** | `rxte_xspec` fits official HEASARC PCA `stdprod` products with PyXspec 13.0.0.  Separate from the optical/IR line matrix.  See below. |
 
 ## Official SDSS pipelines: what is and is not usable
 
@@ -59,54 +60,66 @@ limitation, not a hidden success.  Do not feed single-fiber spectra into the
 MaNGA DAP, and do not call the fast fixed-continuum all-spaxel product the
 production DAP.
 
-## HEASOFT / X-ray
+## HEASOFT / X-ray: official RXTE/PCA branch
 
-HEASOFT is the right tool for the X-ray part of the paper (Swift/XRT and UVOT,
-and Einstein Probe follow-up), but it is **not** an optical emission-line
-fitter.  The paper's tasks are:
-
-```text
-xrtpipeline   # Swift/XRT event screening and exposure maps
-xrtproducts   # XRT spectra/light curves and responses
-uvotimsum     # UVOT exposure co-addition
-uvotsource    # UVOT aperture photometry
-FXTDAS/fxtchain  # Einstein Probe follow-up
-```
-
-A reproducible integration would be a separate image, not part of `Tools/` line
-matrix:
+HEASOFT is the right engine for the X-ray part of the paper, but it is **not**
+an optical emission-line fitter and it is not part of the line-ratio matrix.
+The repository now has one implemented X-ray branch in this worktree, `rxte_xspec`:
 
 ```text
-heasoft_xray/
-  Dockerfile       # HEASOFT + CALDB + HEASoftPy
-  run_xray.py      # xrtpipeline -> xrtproducts; UVOT branch
-  configs/heasoft_xray/default/
+inputs/<source>/xray/rxte_<obsid>/
+  *_s2.pha.gz        # official HEASARC stdprod PCA Standard2 source
+  *_b2.pha.gz        # official PCA background model
+  *.rsp.gz           # official 5-PCU response matrix
+  download.sh
+  SHA256SUMS
+    -> Tools/rxte_xspec/ (HEASoft 6.37 / PyXspec 13.0.0)
+    -> outputs/<source>/rxte_xspec/
+       rxte_spectrum_model_residual.png
+       rxte_fe_ka_zoom.png
+       rxte_fit.csv, rxte_lines.csv
+       run.json, config.effective.json, xspec.log, provenance.md
 ```
 
-with inputs such as:
+The production example is **3C 120**, ObsID `10339-02-01-01`, PCA Standard2,
+9808 s, 294,417 net counts; **MCG-6-30-15**, ObsID `20310-01-02-00`, 5888 s,
+77,824 net counts, is the second independent AGN.  The model is
+`tbabs*(zpowerlw+zgauss)` in 3-20 keV observed frame with the Fe K-alpha at
+6.4 keV rest and a fixed 50 eV narrow core; the 3-10 keV fit is the line-band
+cross-check.  See `docs/ROADMAP_V2.md` for the measured values.
 
-```text
-inputs/<source>/xray/swift_xrt/event.fits.gz
-inputs/<source>/xray/swift_uvot/image.fits.gz
-```
+### PPS-equivalent provenance and the raw-reduction caveat
 
-and outputs:
+The input files are the HEASARC **`stdprod`** products, the official reduced
+PCA products.  They are the RXTE analogue of the XMM-Newton PPS products.
+**`pcabackest` and `saextrct` are not run.**  A raw PCA reduction would need
+the event files, housekeeping/particle-monitor screening, good-time intervals
+and a newly generated background model; it would produce a different dataset.
+The repository therefore fits the official archive products and records that
+choice explicitly in `run.json` and `provenance.md`.  It does not claim to
+reproduce the RXTE PCA reduction chain.
 
-```text
-outputs/<source>/heasoft_xray/{spectrum,response,lightcurve,uvot_photometry}/
-```
+The `b2` file is a background **model**, not a measured background.  XSPEC
+subtracts it and propagates its `STAT_ERR`, but the background-model
+systematics (the dominant PCA uncertainty) are not in the chi-square errors.
+The tool reports a conservative `nH`-frozen variant and a soft-blackbody
+continuum-systematic check for this reason.
 
-The Python entry point is `heasoftpy`:
+### Image reuse
 
-```python
-from heasoftpy import heasoftpy
-res = heasoftpy.xrtpipeline(indir="...", outdir="...", steminputs="...")
-```
+`rxte_xspec` is a thin `FROM xmm_xspec` layer.  The existing `xmm_xspec` image
+already contains XSPEC 13.0.0, HEASoft 6.37, CALDB and PyXspec; a second 4.3 GB
+XSPEC environment would add no capability.  The `rxte_xspec` image is
+4,346,169,613 bytes, only 216,251 bytes above the 4,345,953,362-byte base.
 
-Requirements: HEASOFT (6.36+), CALDB, `HEADAS`/`CALDB` environment, and Swift/EP
-data.  Since this repository has no X-ray event files, adding a 10+ GB HEASOFT
-image now would not produce a tested science result.  The X-ray branch is
-therefore documented, not faked.
+### What is still future work
+
+Swift/XRT+UVOT reduction (`xrtpipeline`, `xrtproducts`, `uvotimsum`,
+`uvotsource`) and Einstein Probe `FXTDAS/fxtchain` remain documented future
+work.  They would be another image, not part of the optical line matrix.  A
+same-object XMM/RXTE comparison (e.g. NGC 4151) is Stage 5 work; the current
+XMM PDS 456 and RXTE 3C 120 results are independent AGN, not a
+cross-calibration.
 
 ## Implemented in this pass
 
@@ -117,6 +130,7 @@ therefore documented, not faked.
 | QGfit | `feat/qgfit-sheap` / `08d5a814` | `outputs/04592649654_z_0.5874/qgfit/` |
 | SHEAP | `feat/qgfit-sheap` / `08d5a814`; audited/repaired (see `docs/SHEAP_ASSESSMENT.md`) | `outputs/04592649654_z_0.5874/sheap_line/` |
 | MaNGA DAP | `feat/manga-dap` (this work) | `outputs/NGC1194_z_0.0136/manga_dap/` |
+| RXTE/PCA | `rxte_xspec` (this work) | `outputs/3C120_z_0.0330/rxte_xspec/`, `outputs/MCG6-30-15_z_0.0077/rxte_xspec/` |
 
 The line-ratio comparison now includes all implemented tools; the spread is
 `docs/line_ratio_scatter.csv`.
