@@ -21,16 +21,15 @@ broad-band SED code is not a line fitter.
 | `ppxf_host` | pPXF formal errors | no | `sigma_err_kms`, host error |
 | `crossband` | analytic ratio propagation | no | `err` per ratio |
 
-## PyQSOFit: MCMC attempted, MC used
+## PyQSOFit: MCMC initialization fixed, MC retained quantitatively
 
-The optional `emcee` path is implemented upstream.  On
-`04592649654_z_0.5874` the continuum MCMC ran, but the line-complex MCMC
-raised `emcee`'s "Initial state has a large condition number" because the
-initial walkers mix amplitudes (10^-17) with logarithmic wavelengths and
-velocity widths.  This is a PyQSOFit initialization limitation, not a
-scientific result.  The production uncertainty run therefore uses **100
-independent MC resamplings of the calibrated error array** and saves the
-per-realization line fluxes.  This is labelled MC, not MCMC.
+The optional `emcee` path initially failed on `04592649654_z_0.5874` with
+`Initial state has a large condition number`.  The repair scales the walker
+initialization and adds trace/corner/sample exports; the capped run reached
+acceptance ≈0.37 and produced a fit PDF.  The capped Docker run did not
+persist the full chain before exit, so the committed quantitative uncertainty
+remains the **100-realization MC** of the calibrated error array.  The MCMC
+code path is fixed for future longer runs; this distinction is explicit.
 
 ## Interpretation
 

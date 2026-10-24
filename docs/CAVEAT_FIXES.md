@@ -35,9 +35,10 @@
   the stellar kinematics (σ at its 1000 km/s bound) and the gas fit used a fixed
   300 km/s stellar LOSVD.  The gas lines are native GANDALF/MPFIT measurements;
   the stellar σ is not a measurement for this AGN-dominated spectrum.
-* **PyQSOFit MCMC** is implemented upstream but the line-complex `emcee`
-  initialization fails its condition-number check on this source.  The
-  committed uncertainty figure is a 100-realization MC, explicitly not MCMC.
+* **PyQSOFit MCMC** initialization was repaired (walker scaling; acceptance
+  ≈0.37), but the capped production run did not persist the full chain.  The
+  fit PDF is preserved; the committed quantitative uncertainty remains the
+  100-realization MC, explicitly not MCMC.
 * **GalSpec** now uses the full 2280–6460 A rest-frame model (global
   polynomial continuum + Fe II + Balmer/[O II]/[Ne III]/[O III] lines), not
   the reduced 4720–5150 A window.  The full MCMC run gives Hβ total 3718 and
@@ -45,8 +46,8 @@
   model-dependent.  The chain is 80 walkers × 4000 steps with
   `tau_max=342.6`, `nsteps/tau_max=11.7`, saved posterior 37,334 samples; it
   is a real full-model posterior but not a 50-tau publication chain.
-* **PyQSOFitSpec** uses a 10-realisation bootstrap; its Hβ total is 3439,
-  about 18% above GANDALF/S3Fit.  The bootstrap errors are statistical only.
+* **PyQSOFitSpec** uses a 55-realisation bootstrap (53 valid); its Hβ total is
+  3525, about 19% above GANDALF/S3Fit.  The bootstrap errors are statistical only.
 * **QGfit** uses a short continuum MCMC and least-squares line errors; its
   Hβ/[O III] = 2.50, at the upper edge of the optical-tool spread.
 * **SHEAP** originally gave Hβ/[O III] = 4.00 because its 4600-5150 Å /
@@ -62,7 +63,7 @@
   S3Fit spec+sed 10 mocks χ²ν 1.035; GANDALF low-z pPXF accepted
   (V=72.5, σ=79.9 km/s); PAHFIT PDS short/long/both **0.0088/0.017/0.038**,
   NGC 4151 0.031, NGC 253 0.25; GalSpec full 39-parameter MCMC (37,334 saved
-  samples, Hβ/[O III]=2.21); PyQSOFitSpec 53/55 bootstrap (2.11); QGfit long
+  samples, Hβ/[O III]=2.21); PyQSOFitSpec 53/55 bootstrap (2.15); QGfit long
   continuum MCMC (2.50); SHEAP repaired (2.02); SDSS ZLINE 1.57.
 * **PAHFIT** formal covariance/χ² errors are much smaller than the residuals
   (χ²_ν 557 PDS short, 304 NGC 4151); they are statistical only and do not
