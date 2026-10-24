@@ -15,6 +15,14 @@ rights reserved.  The original headers are retained verbatim.
 
 Source: `https://www.star.herts.ac.uk/~sarzi/gandalf_releases/gandalf_release_v1.5.tar.gz`
 
+**Local modification (reproducibility).**  `gandalf.pro` sets
+`seed = 20250101L` immediately before its 100-draw Monte Carlo propagation of
+the integrated line-flux errors.  Upstream leaves `SEED` undefined, so
+GDL/IDL seeds from the system clock and the formal flux errors jitter between
+otherwise identical runs.  The fitted model parameters and fluxes are not
+changed by this seed; only the stochastic flux error becomes reproducible.
+The copyright header is unchanged.
+
 ## pPXF (IDL) and BVLS
 
 `third_party/ppxf_idl_2018/`

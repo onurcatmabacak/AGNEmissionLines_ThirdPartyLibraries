@@ -81,28 +81,49 @@
     "int_disp_kms": 61.5,
     "mdegree": 3,
     "degree": 0,
-    "ppxf_mask_sigma_kms": 2000.0,
+    "ppxf_degree": 0,
+    "ppxf_mask_sigma_kms": 200.0,
     "gandalf_mask_sigma_kms": 200.0,
     "use_ppxf": true,
     "reddening": null,
     "for_errors": true
   },
+  "input_lsf": {
+    "int_disp_kms": 61.5,
+    "assumption": "constant Gaussian instrumental sigma",
+    "source": "GANDALF v1.5 SDSS example (gandalf_SDSS.pro); BC03/Tremonti04 templates distributed at SDSS resolution",
+    "note": "SDSS spSpec/COADD R~2000; the real LSF varies with wavelength and is not Gaussian.  sigma_kms is intrinsic after subtracting this value in quadrature."
+  },
   "ppxf": {
     "attempted": true,
     "accepted": false,
-    "message": "rejected: sigma/velocity/template-count outside acceptance range",
-    "n_good_pixels": 871,
-    "v_kms": 556.773684,
-    "sigma_kms": 1000.0,
-    "chi2": 2.18405678,
-    "n_nonzero_templates": 4
+    "message": "rejected: nz<min chi2/dof>max (V=-190.248 km/s, sigma=365.811 km/s, sigma_err=11.059 km/s, nz=1, chi2/dof=26.919)",
+    "n_good_pixels": 2360,
+    "v_kms": -190.247985,
+    "v_err_kms": 11.04947,
+    "sigma_kms": 365.810882,
+    "sigma_err_kms": 11.0585663,
+    "sigma_over_error": 33.079413,
+    "chi2": 26.9186377,
+    "chi2_dof": 26.9186377,
+    "n_nonzero_templates": 1,
+    "acceptance": {
+      "sigma_min_kms": 30.0,
+      "sigma_max_kms": 800.0,
+      "v_max_kms": 500.0,
+      "chi2_max": 3.0,
+      "sigma_over_error_min": 3.0,
+      "min_templates": 2
+    }
   },
   "stellar_kinematics": {
     "source": "fixed_fallback",
     "v_kms": 0.0,
     "sigma_kms": 300.0,
+    "v_err_kms": null,
+    "sigma_err_kms": null,
     "fixed_sigma_kms": 300.0,
-    "note": "PPXF did not pass the acceptance cuts for this AGN-dominated continuum; a fixed 300 km/s stellar LOSVD was used.  The gas fit is still native GANDALF."
+    "note": "PPXF did not pass the acceptance cuts for this spectrum; a fixed 300 km/s stellar LOSVD was used.  The gas fit is still native GANDALF."
   },
   "line_measurements": [
     {
@@ -116,24 +137,24 @@
       "amplitude": 55.9668054,
       "amplitude_err": 0.42400163,
       "velocity_kms": -70.9164,
-      "velocity_err_kms": 0.0,
+      "velocity_err_kms": 3.3902,
       "sigma_kms": 650.676,
-      "sigma_err_kms": 0.0,
+      "sigma_err_kms": 3.2545,
       "sigma_obs_kms": 653.5759381862218,
       "snr": 131.99667510712163,
       "detected": true,
       "status": "ok",
       "method": "gandalf_gdl",
-      "notes": "kinematics tied to line index 11; flux error scaled from MPFIT amplitude error (tied kinematics)"
+      "notes": "kinematics tied to line index 11; flux error scaled from MPFIT amplitude error (tied kinematics); kinematic errors inherited from [OIII]5007"
     },
     {
       "line": "Hbeta",
       "component": "broad",
       "lambda_rest": 4861.3198,
       "flux_1e17": 1464.38273,
-      "flux_err_1e17": 31.3186858,
+      "flux_err_1e17": 31.6299486,
       "flux_erg_s_cm2": 1.46438273e-14,
-      "flux_err_erg_s_cm2": 3.1318685800000005e-16,
+      "flux_err_erg_s_cm2": 3.16299486e-16,
       "amplitude": 17.2674464,
       "amplitude_err": 0.28870835,
       "velocity_kms": 932.5324,
@@ -141,7 +162,7 @@
       "sigma_kms": 2079.037,
       "sigma_err_kms": 27.1432,
       "sigma_obs_kms": 2079.9464169466,
-      "snr": 46.757476969228385,
+      "snr": 46.29734776110259,
       "detected": true,
       "status": "ok",
       "method": "gandalf_gdl",
@@ -152,9 +173,9 @@
       "component": "total",
       "lambda_rest": 4861.32,
       "flux_1e17": 2950.82227,
-      "flux_err_1e17": 33.28174370095971,
+      "flux_err_1e17": 33.57481246374864,
       "flux_erg_s_cm2": 2.9508222700000006e-14,
-      "flux_err_erg_s_cm2": 3.328174370095971e-16,
+      "flux_err_erg_s_cm2": 3.3574812463748644e-16,
       "amplitude": null,
       "amplitude_err": null,
       "velocity_kms": -70.9164,
@@ -162,7 +183,7 @@
       "sigma_kms": null,
       "sigma_err_kms": null,
       "sigma_obs_kms": null,
-      "snr": 88.6618891279699,
+      "snr": 87.887974748513,
       "detected": true,
       "status": "ok",
       "method": "gandalf_gdl",
@@ -173,9 +194,9 @@
       "component": "narrow",
       "lambda_rest": 5006.77,
       "flux_1e17": 1422.7398,
-      "flux_err_1e17": 11.8482139,
+      "flux_err_1e17": 13.7377425,
       "flux_erg_s_cm2": 1.4227398e-14,
-      "flux_err_erg_s_cm2": 1.18482139e-16,
+      "flux_err_erg_s_cm2": 1.37377425e-16,
       "amplitude": 52.012195,
       "amplitude_err": 0.38862354,
       "velocity_kms": -70.8347,
@@ -183,7 +204,7 @@
       "sigma_kms": 650.676,
       "sigma_err_kms": 3.2545,
       "sigma_obs_kms": 653.5759381862218,
-      "snr": 120.08052960623881,
+      "snr": 103.56430832795127,
       "detected": true,
       "status": "ok",
       "method": "gandalf_gdl",
@@ -232,6 +253,27 @@
       "notes": "outside rest-frame coverage (3400-6200 A)"
     },
     {
+      "line": "[OII]3726",
+      "component": "narrow",
+      "lambda_rest": 3726.03,
+      "flux_1e17": 203.64222647999998,
+      "flux_err_1e17": 3.4869109788173476,
+      "flux_erg_s_cm2": 2.0364222647999998e-15,
+      "flux_err_erg_s_cm2": 3.486910978817348e-17,
+      "amplitude": 9.993334967000001,
+      "amplitude_err": 0.17111318224,
+      "velocity_kms": -70.9107,
+      "velocity_err_kms": 3.3902,
+      "sigma_kms": 650.676,
+      "sigma_err_kms": 3.2545,
+      "sigma_obs_kms": 653.5759381862218,
+      "snr": 58.40190005340175,
+      "detected": true,
+      "status": "ok",
+      "method": "gandalf_gdl_multiplet_ratio",
+      "notes": "multiplet satellite; flux fixed by GANDALF d# ratio 0.77 to [OII]3729; kinematics inherited; kinematic errors inherited from [OIII]5007"
+    },
+    {
       "line": "[OII]3729",
       "component": "narrow",
       "lambda_rest": 3729.8799,
@@ -242,15 +284,15 @@
       "amplitude": 12.9783571,
       "amplitude_err": 0.222224912,
       "velocity_kms": -70.9107,
-      "velocity_err_kms": 0.0,
+      "velocity_err_kms": 3.3902,
       "sigma_kms": 650.676,
-      "sigma_err_kms": 0.0,
+      "sigma_err_kms": 3.2545,
       "sigma_obs_kms": 653.5759381862218,
       "snr": 58.40190005340175,
       "detected": true,
       "status": "ok",
       "method": "gandalf_gdl",
-      "notes": "kinematics tied to line index 11; flux error scaled from MPFIT amplitude error (tied kinematics)"
+      "notes": "kinematics tied to line index 11; flux error scaled from MPFIT amplitude error (tied kinematics); kinematic errors inherited from [OIII]5007"
     },
     {
       "line": "[NeIII]3869",
@@ -263,15 +305,15 @@
       "amplitude": 9.69647339,
       "amplitude_err": 0.323973571,
       "velocity_kms": -70.97,
-      "velocity_err_kms": 0.0,
+      "velocity_err_kms": 3.3902,
       "sigma_kms": 650.676,
-      "sigma_err_kms": 0.0,
+      "sigma_err_kms": 3.2545,
       "sigma_obs_kms": 653.5759381862218,
       "snr": 29.929828411836716,
       "detected": true,
       "status": "ok",
       "method": "gandalf_gdl",
-      "notes": "kinematics tied to line index 11; flux error scaled from MPFIT amplitude error (tied kinematics)"
+      "notes": "kinematics tied to line index 11; flux error scaled from MPFIT amplitude error (tied kinematics); kinematic errors inherited from [OIII]5007"
     },
     {
       "line": "[NeIII]3967",
@@ -284,15 +326,36 @@
       "amplitude": 1.20426936,
       "amplitude_err": 0.606510336,
       "velocity_kms": -70.9086,
-      "velocity_err_kms": 0.0,
+      "velocity_err_kms": 3.3902,
       "sigma_kms": 650.676,
-      "sigma_err_kms": 0.0,
+      "sigma_err_kms": 3.2545,
       "sigma_obs_kms": 653.5759381862218,
       "snr": 1.9855710422715698,
       "detected": false,
       "status": "weak",
       "method": "gandalf_gdl",
-      "notes": "kinematics tied to line index 11; flux error scaled from MPFIT amplitude error (tied kinematics)"
+      "notes": "kinematics tied to line index 11; flux error scaled from MPFIT amplitude error (tied kinematics); kinematic errors inherited from [OIII]5007"
+    },
+    {
+      "line": "[OIII]4959",
+      "component": "narrow",
+      "lambda_rest": 4958.83,
+      "flux_1e17": 497.95893,
+      "flux_err_1e17": 4.808209874999999,
+      "flux_erg_s_cm2": 4.9795893e-15,
+      "flux_err_erg_s_cm2": 4.8082098749999995e-17,
+      "amplitude": 18.20426825,
+      "amplitude_err": 0.13601823899999999,
+      "velocity_kms": -70.8347,
+      "velocity_err_kms": 3.3902,
+      "sigma_kms": 650.676,
+      "sigma_err_kms": 3.2545,
+      "sigma_obs_kms": 653.5759381862218,
+      "snr": 103.56430832795128,
+      "detected": true,
+      "status": "ok",
+      "method": "gandalf_gdl_multiplet_ratio",
+      "notes": "multiplet satellite; flux fixed by GANDALF d# ratio 0.35 to [OIII]5007; kinematics inherited"
     }
   ],
   "line_yield": {
@@ -301,18 +364,30 @@
       "component": "total",
       "status": "ok",
       "flux_1e17": 2950.82227,
-      "flux_err_1e17": 33.28174370095971,
+      "flux_err_1e17": 33.57481246374864,
       "sigma_kms": null,
-      "sigma_err_kms": null
+      "sigma_err_kms": null,
+      "method": "gandalf_gdl"
     },
     "OIII5007": {
       "line": "[OIII]5007",
       "component": "narrow",
       "status": "ok",
       "flux_1e17": 1422.7398,
-      "flux_err_1e17": 11.8482139,
+      "flux_err_1e17": 13.7377425,
       "sigma_kms": 650.676,
-      "sigma_err_kms": 3.2545
+      "sigma_err_kms": 3.2545,
+      "method": "gandalf_gdl"
+    },
+    "OIII4959": {
+      "line": "[OIII]4959",
+      "component": "narrow",
+      "status": "ok",
+      "flux_1e17": 497.95893,
+      "flux_err_1e17": 4.808209874999999,
+      "sigma_kms": 650.676,
+      "sigma_err_kms": 3.2545,
+      "method": "gandalf_gdl_multiplet_ratio"
     },
     "Halpha": {
       "line": "Halpha",
@@ -321,7 +396,8 @@
       "flux_1e17": null,
       "flux_err_1e17": null,
       "sigma_kms": null,
-      "sigma_err_kms": null
+      "sigma_err_kms": null,
+      "method": "gandalf_gdl"
     },
     "NII6584": {
       "line": "[NII]6584",
@@ -330,13 +406,23 @@
       "flux_1e17": null,
       "flux_err_1e17": null,
       "sigma_kms": null,
-      "sigma_err_kms": null
+      "sigma_err_kms": null,
+      "method": "gandalf_gdl"
+    },
+    "NII6548": {
+      "status": "not_covered"
+    },
+    "SII6716": {
+      "status": "not_covered"
+    },
+    "SII6730": {
+      "status": "not_covered"
     }
   },
-  "residual_chi2_nu": 14.17424466783961,
-  "runtime_seconds": 40.7332866191864,
-  "total_runtime_seconds": 43.94355821609497,
-  "gdl_command": "gdl -quiet /tmp/gandalf_line_b0b0an3m/run_gandalf.gdl",
+  "residual_chi2_nu": 14.134025894967749,
+  "runtime_seconds": 29.88575553894043,
+  "total_runtime_seconds": 34.72593069076538,
+  "gdl_command": "gdl -quiet /tmp/gandalf_line_o3aanal_/run_gandalf.gdl",
   "outputs": [
     "gandalf_batch.gdl",
     "gandalf_fit.fits",
@@ -349,15 +435,16 @@
     "gandalf_model.csv",
     "gandalf_run.log",
     "gandalf_uncertainty.pdf",
-    "gandalf_uncertainty.png"
+    "gandalf_uncertainty.png",
+    "line_yield_summary.txt"
   ],
   "limitations": [
     "GANDALF v1.5 is an IDL code; this run uses GNU Data Language 1.0.4. GDL is IDL-compatible but not identical to licensed IDL.",
     "GANDALF uses MPFIT covariance (FOR_ERRORS=1), not MCMC.  Errors are formal 1-sigma and assume the model and noise are correct.",
-    "H-alpha and [N II] 6584 are outside the observed/rest-frame coverage of this spectrum; they are reported as not_covered, not as non-detections.",
-    "PPXF could not constrain the stellar kinematics of this AGN-dominated continuum; a fixed 300 km/s stellar LOSVD was used.  The gas fit is still native GANDALF.",
+    "H-alpha, [N II] and [S II] are outside the observed/rest-frame coverage of this spectrum; they are reported as not_covered, not as non-detections.",
+    "PPXF was rejected (rejected: nz<min chi2/dof>max (V=-190.248 km/s, sigma=365.811 km/s, sigma_err=11.059 km/s, nz=1, chi2/dof=26.919)); a fixed 300 km/s stellar LOSVD was used.  The gas fit is still native GANDALF.",
     "Narrow H-beta is tied to [O III] 5007 kinematics; the broad H-beta component is an independent Gaussian and an empirical BLR proxy, not a physical broad-line profile.",
     "Line fluxes are integrated Gaussian fluxes.  No aperture correction or reddening correction is applied; GANDALF v1.5 forbids REDDENING together with MDEGREE>0.",
-    "Stellar templates are BC03/Tremonti04 at SDSS resolution (int_disp=61.5 km/s); higher-resolution data must be degraded first."
+    "Stellar templates are BC03/Tremonti04 at SDSS resolution.  The instrumental LSF is a single 61.5 km/s Gaussian, taken from GANDALF's SDSS example; the real SDSS LSF varies with wavelength.  Intrinsic sigmas below ~80 km/s are LSF-dominated."
   ]
 }

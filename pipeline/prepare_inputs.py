@@ -61,10 +61,91 @@ def _col(table, *names):
     return None
 
 
+def _is_classic_spspec(hdul) -> bool:
+    """True for the classic SDSS spSpec layout (primary image, 4 x npix).
+
+    The primary HDU of an spSpec file stores the spectrum, continuum, noise and
+    mask as rows of a 2-D image.  It has no FLUX/LOGLAM table, so it cannot be
+    read by the COADD path below.
+    """
+    d = hdul[0].data
+    hdr = hdul[0].header
+    if d is None or np.ndim(d) != 2 or np.shape(d)[0] not in (3, 4) \
+            or np.shape(d)[1] <= 100:
+        return False
+    marker = str(hdr.get("TELESCOP", "")).upper().startswith("SDSS")
+    return bool(marker or "COEFF0" in hdr or "VERS_1D" in hdr
+                or "SPCOADD" in hdr)
+
+
+def _read_classic_spspec(hdul, path: Path) -> dict:
+    """Read a classic SDSS spSpec image without changing the pixel data.
+
+    Row 0 is the sky-subtracted spectrum, row 1 the continuum, row 2 the
+    1-sigma noise and row 3 the mask.  Flux and noise are in the SDSS
+    ``1e-17 erg s-1 cm-2 A-1`` convention.  Pixels with zero noise are marked
+    bad; the GANDALF reader drops them via ``err > 0``.
+    """
+    hdr = hdul[0].header
+    data = np.asarray(hdul[0].data, dtype=np.float64)
+    flux = data[0]
+    err = np.abs(data[2])
+    npix = flux.size
+
+    # SDSS spSpec is on a log10 wavelength grid (COEFF0/COEFF1, mirrored in
+    # CRVAL1/CD1_1).  Accept a linear grid too, for non-standard legacy files.
+    crval = hdr.get("CRVAL1", hdr.get("COEFF0", 3.5))
+    if not crval and "COEFF0" in hdr:
+        crval = hdr["COEFF0"]
+    cdelt = hdr.get("CD1_1") or hdr.get("CDELT1") or hdr.get("COEFF1") or 1e-4
+    crval, cdelt = float(crval), float(cdelt)
+    crpix = float(hdr.get("CRPIX1", 1.0))
+    if crpix == 0:
+        crpix = 1.0
+    ctype = str(hdr.get("CTYPE1", "")).upper()
+    if "LOG" in ctype or "COEFF0" in hdr or crval < 10.0:
+        wave = 10.0 ** (crval + cdelt * (np.arange(npix) - (crpix - 1.0)))
+    else:
+        wave = crval + cdelt * (np.arange(npix) - (crpix - 1.0))
+
+    good = np.isfinite(flux) & np.isfinite(err) & (err > 0)
+    ivar = np.zeros(npix, dtype=np.float64)
+    ivar[good] = 1.0 / np.square(err[good])
+    wdisp = np.full(npix, float(np.median(np.diff(wave))), dtype=np.float64)
+
+    def hget(*keys, default=None, cast=float):
+        for k in keys:
+            if k in hdr:
+                try:
+                    return cast(hdr[k])
+                except (TypeError, ValueError):
+                    pass
+        return default
+
+    return {
+        "path": str(path),
+        "wave": wave,
+        "flux_1e17": flux,
+        "ivar": ivar,
+        "wdisp": wdisp,
+        "good": good,
+        "z": hget("Z", "REDSHIFT", default=0.0, cast=float),
+        "ra": hget("RAOBJ", "PLUG_RA", "RA", default=0.0, cast=float),
+        "dec": hget("DECOBJ", "PLUG_DEC", "DEC", default=0.0, cast=float),
+        "mjd": hget("MJD", "MJD-OBS", default=0, cast=int),
+        "fiberid": hget("FIBERID", default=0, cast=int),
+        "plateid": hget("PLATEID", "PLATE", default=0, cast=int),
+        "catalogid": hget("CATALOGID", default=0, cast=int),
+        "n_pix": int(npix),
+    }
+
+
 def read_spectrum(path: Path) -> dict:
     """Read a raw spectrum, returning arrays and metadata in a tool-neutral dict."""
     with fits.open(path, memmap=False) as hdul:
         hdr0 = hdul[0].header
+        if _is_classic_spspec(hdul):
+            return _read_classic_spspec(hdul, path)
         tab = _get_table_hdu(hdul)
         data = tab.data
 
@@ -87,8 +168,8 @@ def read_spectrum(path: Path) -> dict:
         # Sanitize: non-positive inverse variance makes some tools' noise arrays
         # negative (BADASS3: "scale < 0"), so replace it with the median ivar.
         ivar = np.asarray(ivar, dtype=np.float64)
-        good = np.isfinite(ivar) & (ivar > 0)
-        ivar = np.where(good, ivar, np.median(ivar[good]) if good.any() else 1.0)
+        good_ivar = np.isfinite(ivar) & (ivar > 0)
+        ivar = np.where(good_ivar, ivar, np.median(ivar[good_ivar]) if good_ivar.any() else 1.0)
         wdisp = _col(data, "WDISP", "wdisp")
         if wdisp is None:
             wdisp = np.full_like(flux, np.median(np.diff(wave)))
@@ -141,6 +222,7 @@ def read_spectrum(path: Path) -> dict:
         "plateid": plateid,
         "catalogid": catalogid,
         "n_pix": int(flux.size),
+        "good": None,
     }
 
 
@@ -180,6 +262,11 @@ def write_pyqsofit(spec: dict, out: Path, fwhm: float = 2.5, ebv: float = 0.0) -
     flux_cgs = spec["flux_1e17"] * EFEDS_FLUX_UNIT_CGS
     # The ivar is calibrated for the 1e-17 flux units -> error in cgs.
     err_cgs = (1.0 / np.sqrt(np.clip(spec["ivar"], 1e-30, None))) * EFEDS_FLUX_UNIT_CGS
+    # Classic spSpec sets zero noise for bad pixels.  Preserve that mask as a
+    # zero error so readers such as gandalf_line drop the pixel instead of
+    # down-weighting it with an invented median error.
+    if spec.get("good") is not None:
+        err_cgs = np.where(np.asarray(spec["good"], dtype=bool), err_cgs, 0.0)
     hdul = fits.HDUList(
         [
             fits.PrimaryHDU(data=flux_cgs.astype(np.float64), header=hdr),
