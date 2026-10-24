@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Run the NIR/MIR/FIR/SED tools over the canonical source registry.
+"""Run the NIR/MIR/FIR/SED and RXTE/PCA tools over the canonical source registry.
 
 Examples
 --------
@@ -42,7 +42,7 @@ SPITZER_IRS = ",".join([
 ALL_TOOLS = ("ir_linefit", "pyqsofit_uv", "qsofitmore_line", "pyqsofitspec_line", "ppxf_host",
              "gandalf_line", "nir_linefit", "pahfit_mir", "fir_linefit", "cafe_line",
              "crossband", "cigale_sed", "agnfitter_sed", "s3fit_line", "galspec_line",
-             "qgfit", "sheap_line", "manga_dap", "xmm_xspec")
+             "qgfit", "sheap_line", "manga_dap", "rxte_xspec")
 
 
 def log(msg: str):
@@ -138,17 +138,20 @@ def tool_manga_dap(src: dict, out: Path, logp: Path) -> int:
     return run(cmd, logp)
 
 
-def tool_xmm_xspec(src: dict, out: Path, logp: Path, config: str | None = None) -> int:
-    """Official XMM-Newton EPIC PPS spectra + HEASoft/PyXspec."""
-    xr = src.get("xray") or {}
-    xdir = Path(src["_path"]) / xr.get("dir", "xray/xmm_0721010201")
-    if not (xdir / "pps").exists():
-        return _skip("no XMM PPS products")
-    cmd = [str(ROOT / "Pipelines" / "run_xmm_xspec_docker.sh"),
-           str(xdir), str(out), "--source-key", str(src["key"]),
-           "--redshift", str(src["z"])]
-    if config:
-        cmd += ["--config", str(config)]
+def tool_rxte(src: dict, out: Path, logp: Path) -> int:
+    """Official RXTE/PCA stdprod fit (HEASoft/PyXspec)."""
+    paths = source_files(src, "xray_pca_source")
+    if not paths:
+        return _skip("no RXTE/PCA source spectrum")
+    inp = paths[0].parent
+    cmd = [str(ROOT / "Pipelines" / "run_rxte_xspec_docker.sh"),
+           str(inp), str(out), "--source-key", str(src["key"])]
+    if src.get("name"):
+        cmd += ["--source-name", str(src["name"])]
+    if src.get("z") is not None:
+        cmd += ["--redshift", str(src["z"])]
+    if src.get("rxte_config"):
+        cmd += ["--config", str(ROOT / "configs" / "rxte_xspec" / str(src["rxte_config"]))]
     return run(cmd, logp)
 
 
@@ -403,8 +406,6 @@ def main(argv=None):
                    help="GalSpec config directory (default: configs/galspec_line/default)")
     p.add_argument("--galspec-sampler", choices=("mcmc", "nested", "lsq"), default=None,
                    help="GalSpec sampling mode override")
-    p.add_argument("--xmm-config", default=None,
-                   help="XMM/PyXspec config directory (default: configs/xmm_xspec/default)")
     args = p.parse_args(argv)
     if args.list:
         for s in iter_sources():
@@ -442,7 +443,7 @@ def main(argv=None):
                                                                args.pyqsofitspec_nboot,
                                                                args.pyqsofitspec_config),
                 "manga_dap": lambda: tool_manga_dap(src, out, logp),
-                "xmm_xspec": lambda: tool_xmm_xspec(src, out, logp, args.xmm_config),
+                "rxte_xspec": lambda: tool_rxte(src, out, logp),
                 "ppxf_host": lambda: tool_ppxf(src, out, logp),
                 "gandalf_line": lambda: tool_gandalf(src, out, logp),
                 "galspec_line": lambda: tool_galspec(src, out, logp,

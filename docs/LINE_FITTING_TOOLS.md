@@ -25,7 +25,7 @@ CAFE, S3Fit, GANDALF, PAHFIT and the generic Gaussian fitters operate on
 | `pahfit_mir` | line | MIR | PAH Drude profiles + dust continuum + gas Gaussians | least-squares + MC |
 | `fir_linefit` | line | FIR | local continuum + Gaussian forbidden lines | covariance |
 | `manga_dap` | line (IFU) | optical | **official DAP**: HYB10 binning + pPXF + SASUKE 35-line Gaussian fit on MaNGA cubes | DAP formal covariance; **9 central bins only**; fast mode rejected |
-| `xmm_xspec` | line (X-ray) | 0.5–10 keV observed (0.59–11.8 keV rest at z=0.184) | `tbabs*zpowerlw` + Fe Kα `zgauss`; per-instrument constants | XSPEC χ² + covariance; Δχ² line significance |
+| `rxte_xspec` | line (X-ray) | 3-20 keV observed; Fe K-alpha at 6.4 keV rest | **official RXTE/PCA stdprod**: `tbabs*(zpowerlw+zgauss)` | XSPEC covariance; `Delta chi^2` line significance; no MCMC |
 | `ppxf_host` | host | optical–NIR | stellar templates + AGN power law, emission masked | pPXF formal errors |
 | `crossband` | ratio | NIR–FIR | line-ratio consistency | analytic propagation |
 | `cigale_sed` | **SED** | UV–FIR | SFH + BC03 + dust + DL2014 + SKIRTOR/Fritz | `pdf_analysis` posterior |
@@ -113,47 +113,41 @@ QSO fitter.
   emission-line fitters; excluded.
 - **pyspeckit** is a general line-fitting toolkit; it is redundant with the
   existing GLEAM/BADASS/local-Gaussian/PyQSOFit stack.
-- **HEASOFT/XSPEC** is implemented for the XMM-Newton X-ray branch
-  (`xmm_xspec`), not as an optical line fitter; see the XMM-Newton section
-  below.
+- **HEASOFT** is X-ray spectral fitting, not optical line fitting; the
+  implemented X-ray branch is separate and does not enter the line-ratio
+  matrix.  See the X-ray section below.
 
-### XMM-Newton EPIC (X-ray branch, implemented)
+### HEASOFT / RXTE PCA (implemented X-ray branch)
 
-`xmm_xspec` is the repository's official X-ray spectral fit.  It is **not** an
-optical emission-line fitter and is kept out of the line-ratio matrix; it fits
-the broad-band EPIC continuum and the Fe Kα line.
-
-The production test is **PDS 456**, ObsID `0721010201`, PN Large Window Thin1,
-100.4 ks, 341,004 PN counts.  Inputs are the **official PPS** source spectra,
-background spectra and source ARFs plus the official CCF responses (PN
-`epn_e2_lw20_sdY9_v22.0.rmf`; MOS 15 eV canned matrices).  The PPS MOS spectra
-are 2400 channels at 5 eV; they are rebinned 3:1 to 800 channels at 15 eV to
-match the RMFs named in the PPS headers.  PN is used directly at 4096 channels.
+HEASOFT is the right engine for the X-ray part of the paper (RXTE/PCA,
+XMM-Newton/EPIC, Swift/XRT+UVOT and Einstein Probe follow-up), but it is **not**
+an optical emission-line fitter.  The repository now has an implemented,
+separate X-ray branch:
 
 ```text
-constant * tbabs * (zpowerlw + zgauss)          # 0.5-10 keV, joint PN+MOS
-constant_PN = 1 (fixed); constant_MOS1/MOS2 free
-zgauss: E_rest = 6.4 keV, sigma = 50 eV (narrow core)
+inputs/<source>/xray/rxte_<obsid>/*_s2.pha.gz   # official PCA Standard2 source
+                                  *_b2.pha.gz   # official PCA background model
+                                  *.rsp.gz      # official 5-PCU response
+  -> Tools/rxte_xspec/ (HEASoft/PyXspec 13.0.0)
+  -> tbabs*(zpowerlw+zgauss), 3-20 keV
+  -> outputs/<source>/rxte_xspec/
 ```
 
-Results (HEASoft/PyXspec 13.0.0, wilm abundances): joint baseline
-χ²/dof = 879.03/516 = 1.704, Γ = 2.0221 ± 0.0041,
-N_H = (2.304 ± 0.018) × 10²¹ cm⁻²; adding the narrow Fe Kα gives
-χ²/dof = 862.64/515 = 1.675, **Δχ² = 16.39 (4.05σ)**, line flux
-(2.01 ± 0.50) × 10⁻¹⁴ erg cm⁻² s⁻¹ and rest-frame EW 30.7 ± 7.6 eV.  The
-MOS/PN constants are 1.0514 (MOS1) and 1.0422 (MOS2).  Independent fits:
-PN 3.13σ, MOS2 2.45σ, MOS1 1.10σ; the line normalizations agree within 0.7σ,
-while PN and MOS Γ differ by 2.9σ (a cross-calibration systematic).  A
-blackbody soft-excess baseline still requires the line at 4.22σ.  The
-free-width Gaussian runs to the fit bound (σ ≈ 1.16 keV) and is degenerate
-with the continuum; it is not a resolved line width.
+The production example is **3C 120** (ObsID `10339-02-01-01`, 9808 s,
+294,417 net counts); **MCG-6-30-15** (ObsID `20310-01-02-00`, 5888 s,
+77,824 net counts) is the second independent AGN.  The products are the
+official HEASARC **`stdprod`** products, i.e. the RXTE equivalent of the XMM
+PPS products.  `pcabackest`/`saextrct` are **not** run.  The `b2` file is a
+background **model**; its systematics are not in the chi-square errors.  See
+`Tools/rxte_xspec/README.md`, `docs/ROADMAP_V2.md` and
+`docs/OFFICIAL_PIPELINES_AND_XRAY.md`.
 
-**SAS `epproc`/`especget`/`specgroup`/`epatplot` were not run.**  PPS spectra
-are official SAS products (header `xmmsas_20241108_1150-21.0.0`); the raw-ODF
-path is documented in `Tools/xmm_xspec/SAS_RAW_PATH.md`.  The PN RMF is CCF
-v22.0, later than the 2024 PPS reduction.  There is no MCMC: errors are XSPEC
-covariance 1σ and the line significance is Δχ².  Products:
-`outputs/PDS456_z_0.1840/xmm_xspec/`.
+The `rxte_xspec` image is a thin `FROM xmm_xspec` layer, reusing the existing
+HEASoft/PyXspec 13.0.0 installation rather than adding a second 4.3 GB X-ray
+environment.  Swift/XRT+UVOT reduction (`xrtpipeline`, `xrtproducts`,
+`uvotimsum`, `uvotsource`) and Einstein Probe `FXTDAS/fxtchain` remain
+documented future work; they would be another image, not part of the optical
+line matrix.
 
 ### GalSpec / PyQSOFitSpec / QGfit / SHEAP
 
@@ -193,6 +187,9 @@ python pipeline/decide_tools.py --goal lines --z 0.18 --wave-min 5 --wave-max 28
 
 # NIR lines at z=6.327
 python pipeline/decide_tools.py --goal lines --z 6.327 --wave-min 1.7 --wave-max 5.2
+
+# X-ray Fe K-alpha at z=0.033 (RXTE/PCA; observed keV)
+python pipeline/decide_tools.py --goal xray --z 0.033 --wave-min 3 --wave-max 20
 ```
 
 The decision engine is advisory; `inputs/<source>/source.json` still controls

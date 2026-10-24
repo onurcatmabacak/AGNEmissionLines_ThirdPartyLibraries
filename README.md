@@ -21,15 +21,15 @@ work/                   ignored generated inputs/logs
 `Tools/` contains: `badass`, `fantasy_agn`, `Gelato`, `Gleam`, `pyqsofit`,
 `sculptor`, `pipeline_ir`, `pyqsofit_uv`, `qsofitmore_line`, `pyqsofitspec_line`, `ppxf_host`,
 `gandalf_line`, `cafe_line`, `s3fit_line`, `galspec_line`, `qgfit`,
-`sheap_line`, `manga_dap`, `xmm_xspec`, `nir_linefit`, `pahfit_mir`,
-`fir_linefit`, `crossband`, `cigale_sed`, `agnfitter_sed`.
+`sheap_line`, `manga_dap`, `rxte_xspec`, `nir_linefit`, `pahfit_mir`, `fir_linefit`,
+`crossband`, `cigale_sed`, `agnfitter_sed`.
 
 CIGALE and AGNfitter are **SED/torus** codes; they do not measure individual
-lines.  `xmm_xspec` is the separate X-ray branch (official XMM-Newton PPS
-spectra + HEASoft/PyXspec); it fits the EPIC continuum and Fe Kα, not the
-optical/IR lines.  Use `pyqsofit_uv`, `qsofitmore_line`, `pyqsofitspec_line`, `cafe_line`, `s3fit_line`,
+lines.  Use `pyqsofit_uv`, `qsofitmore_line`, `pyqsofitspec_line`, `cafe_line`, `s3fit_line`,
 `gandalf_line`, `galspec_line`, `qgfit`, `sheap_line`, `manga_dap`, `pahfit_mir`,
-`nir_linefit` or `ir_linefit` for line fluxes and kinematics.
+`nir_linefit` or `ir_linefit` for optical/IR line fluxes and kinematics.  The
+X-ray Fe K-alpha branch is separate: `rxte_xspec` fits official RXTE/PCA
+`stdprod` spectra with HEASoft/PyXspec.
 
 ## Quick start
 
@@ -39,7 +39,7 @@ bash Pipelines/run_new_tools.sh --list
 bash Pipelines/run_new_tools.sh --cigale-models skirtor2016,fritz2006
 ```
 
-All **23 Docker images** build successfully (`Pipelines/build_images.sh`).  The matrix runner writes only to:
+All **23 Docker images** in `Pipelines/build_images.sh` build successfully; `rxte_xspec` is a thin layer on the existing `xmm_xspec` XSPEC 13.0.0 base.  The matrix runner writes only to:
 
 ```text
 outputs/<source_name>_z_<redshift>/<tool_name>/...
@@ -54,9 +54,10 @@ under `work/prepared/`.
 |---|---|
 | SDSS z>0.5 QSOs (5) | `ir_linefit`, `pyqsofit_uv`, `qsofitmore_line` (04592649654), `pyqsofitspec_line`, `ppxf_host`, `gandalf_line`, `s3fit_line`, `galspec_line`, `qgfit`, `sheap_line`, `cigale_sed`, `agnfitter_sed` |
 | J0100+2802 | `nir_linefit` (pipeline, 3×3, PSF), `ir_linefit` |
-| VV114 / PDS 456 | `pahfit_mir`, `cafe_line`, `ir_linefit`; PDS 456 also `xmm_xspec` (X-ray) |
+| VV114 / PDS 456 | `pahfit_mir`, `cafe_line`, `ir_linefit` |
 | Low-z SDSS GANDALF example | `gandalf_line` (Hα/Hβ coverage) |
 | MaNGA AGN NGC 1194 (9193-12701) | `manga_dap` (official DAP subset; all-spaxel reference = published MAPS) |
+| RXTE/PCA AGN 3C 120, MCG-6-30-15 | `rxte_xspec` (official HEASARC `stdprod`; PyXspec) |
 | NGC 1068 / NGC 253 / NGC 4151 | `pahfit_mir`, `fir_linefit`, `ir_linefit`; cross-band for NGC 253/4151 |
 | Mrk 231 | `pahfit_mir`, `ir_linefit`, `crossband` |
 | synthetic FIR / multiband | `fir_linefit` + `ir_linefit` / `crossband` |
@@ -78,7 +79,7 @@ The production matrix uses real data only:
 | **SHEAP** | `04592649654` | Hβ/[O III] SPAF/JAX, 50 bootstrap draws | Hβ/[O III] **2.02**, χ²ν 2.9 |
 | **PyQSOFit** | `04592649654` | 100-realization MC (`mc/`); short `emcee` MCMC (800 draws, not converged) + 300-step diagnostics | MCMC initialization fixed; acceptance ≈0.37; short-chain samples/corner/trace saved, but MC remains the quantitative product |
 | **SDSS ZLINE** | five SDSS QSOs | official `ZLINE` HDU | 045926 ratio **1.57** |
-| **XMM-Newton** | PDS 456, ObsID 0721010201 | official PPS spectra + CCF responses; PyXspec 13.0.0; joint PN+MOS1+MOS2 `tbabs*zpowerlw` + Fe Kα | χ²/dof **862.64/515 = 1.68**; Δχ² **16.39 (4.05σ)**; Fe Kα flux **2.01e-14 erg cm⁻² s⁻¹**, EW_rest **30.7 eV**; PN/MOS Γ pulls ≤2.9σ |
+| **RXTE/PCA** | 3C 120 (10339-02-01-01), MCG-6-30-15 (20310-01-02-00) | official `stdprod` Standard2; `tbabs*(zpowerlw+zgauss)`, 3-20 keV | 3C 120: χ²/dof **72.02/48**, Γ **1.816**, Fe Kα Δχ² **17.83 (4.22σ)**, EW_rest **90.3 eV**; MCG: χ²/dof **39.41/41**, Δχ² **46.48 (6.82σ)**, EW_rest **263.5 eV** |
 
 The cross-tool 04592649654 Hβ/[O III] 5007 values are:
 
@@ -102,8 +103,6 @@ median 2.04, log-scatter 0.06 dex
 | SHEAP failed at χ² 46 and Hβ/[O III]=4.00 | model/region/profile repair; now **2.02**, χ²ν 2.9, 50-draw MC. |
 | PyQSOFit line-stage `emcee` condition-number failure | fixed by bounds-aware walker initialization; short MCMC samples/corner/trace saved (800 draws, not converged), plus 300-step diagnostics (acceptance ≈0.37). Full 300-step chains were lost at the container timeout; the 100-realization MC remains quantitative. |
 | Official SDSS DAPs, AMARU, ELFO, AGNdecompose, pyspeckit | excluded with explicit data/model reasons; see `docs/OFFICIAL_PIPELINES_AND_XRAY.md`. |
-| XMM PPS MOS spectra are 2400×5 eV but the 15 eV canned RMF has 800 channels | 3:1 channel rebin to 800×15 eV; prepared spectra saved in the output; PPS/SAS provenance recorded |
-| XMM simple power law leaves χ²/dof 1.7 and a free-width Fe line runs to the fit bound | line significance is a Δχ² test with a soft-excess baseline check; the broad width is flagged as degenerate and not used for the production EW |
 
 ## Statistics and caveats
 
@@ -115,7 +114,7 @@ median 2.04, log-scatter 0.06 dex
 * `docs/CAVEAT_FIXES.md` — what was fixed and what remains.
 * `docs/LINE_FITTING_TOOLS.md` — line-fitting tools vs SED fitting.
 * `docs/MCMC_AND_STATISTICS.md` — MC, nested sampling and covariance modes.
-* `docs/OFFICIAL_PIPELINES_AND_XRAY.md` — official SDSS DAP, the implemented XMM-Newton/HEASOFT branch, and exclusions.
+* `docs/OFFICIAL_PIPELINES_AND_XRAY.md` — official SDSS DAP exclusions, implemented RXTE/PCA branch and HEASOFT integration notes.
 * `docs/line_tool_comparison.png` — official ZLINE + eight independent fitters.
 * `docs/line_ratio_scatter.csv` — inter-tool scatter and bootstrap intervals.
 * `docs/SHEAP_ASSESSMENT.md` — SHEAP repair and quality gates.

@@ -34,6 +34,9 @@ def choose(goal: str, z: float, wmin: float, wmax: float, instrument: str = "") 
     if goal in ("host", "both"):
         names += ["ppxf_host", "gandalf_line"]
         reasons.append("stellar host/continuum decomposition")
+    if goal == "xray" or any(k in instrument.upper() for k in ("RXTE", "PCA")):
+        names += ["rxte_xspec"]
+        reasons.append("X-ray: official RXTE/PCA stdprod fit with HEASoft/PyXspec (Fe K-alpha)")
     if goal in ("lines", "both"):
         # UV/optical coverage
         if rest_max >= 0.10 and rest_min <= 1.0:
@@ -79,7 +82,7 @@ def choose(goal: str, z: float, wmin: float, wmax: float, instrument: str = "") 
 
 def main(argv=None):
     p = argparse.ArgumentParser(description=__doc__)
-    p.add_argument("--goal", choices=["sed", "lines", "host", "both"], default="lines")
+    p.add_argument("--goal", choices=["sed", "lines", "host", "both", "xray"], default="lines")
     p.add_argument("--z", type=float, required=True)
     p.add_argument("--wave-min", type=float, required=True)
     p.add_argument("--wave-max", type=float, required=True)

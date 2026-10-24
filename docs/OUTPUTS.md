@@ -23,7 +23,7 @@ Tools and expected files:
 | `pyqsofit_uv` | `result.png/pdf`, `output.fits`, `qsopar.fits`, `pyqsofit_model.csv`, `pyqsofit_lines.csv` |
 | `qsofitmore_line` | `qsofitmore_lines.csv`, `qsofitmore_components.csv`, `qsofitmore_mc_samples.csv`, `qsofitmore_mc_summary.csv`, `qsofitmore_corner.png/pdf`, `qsofitmore_mgii_corner.png/pdf`, `qsofitmore_uncertainty.png/pdf`, `qsofitmore_fit.png/pdf`, `qsofitmore_result.fits/csv`, `qsofitmore_continuum.csv`, `config.effective.json`, `run.json`, `systematics/` |
 | `manga_dap` | `manga_lines.csv`/`subset_bins.csv` (9 central official bins), `subset_comparison.json`, `subset_kinematics.csv/json`, `fits/dap_subset_maps.fits.gz`, `fits/dap_subset_central_spectra.fits`, `fits/dap_stage_a_moments_maps.fits.gz`, `figures/manga_dap_spectrum_fit.png`, `comparison/`, `run.json`, `provenance.md`; `aux_fastmode/` is flagged `FASTMODE_NOT_PRODUCTION` |
-| `xmm_xspec` | `xmm_spectrum_model_residual.png/pdf`, `xmm_fe_ka_zoom.png/pdf`, `xmm_fit.csv`, `xmm_lines.csv`, `xmm_consistency.json`, `run.json`, `config.effective.json`, `xspec.log`, `provenance.md`, `fit_summary.txt`, `prepared/` (PN + rebinned-MOS spectra) |
+| `rxte_xspec` | `rxte_spectrum_model_residual.png/pdf`, `rxte_fe_ka_zoom.png/pdf`, `rxte_fit.csv`, `rxte_lines.csv`, `run.json`, `config.effective.json`, `xspec.log`, `run.log`, `provenance.md`, `fit_summary.txt`, `prepared/{source,background}.pha` + `response.rsp` |
 | `ppxf_host` | `ppxf_fit.png/pdf`, `ppxf_model.csv`, `ppxf_result.fits`, `ppxf_summary.json` |
 | `gandalf_line` | `gandalf_lines.csv`, `line_yield_summary.txt`, `gandalf_fit.png/pdf`, `gandalf_uncertainty.png/pdf`, `gandalf_fit.fits`, `gandalf_input.fits`, `gandalf_model.csv`, `gandalf_lines_raw.csv`, `gandalf_meta.txt`, `gandalf_run.log`, `run.json` |
 | `nir_linefit` | route/measurements/figure for the NIR spectrum |
@@ -41,6 +41,12 @@ Tools and expected files:
 | `agnfitter_sed` | `agnfitter_summary.csv`, `sed_summary.json`, `parameter_outvalues`, `SED_manyrealizations` PDF |
 | `pyqsofit_uv` (MC) | `mc/pyqsofit_mc_samples.csv`, `mc/pyqsofit_mc_summary.csv`, `mc/pyqsofit_mc.png` |
 
+X-ray sources use the same layout: `inputs/<source>/xray/rxte_<obsid>/` for the
+official HEASARC `stdprod` PCA products and
+`outputs/<source>/rxte_xspec/` for the fit products.  The PCA input is small
+(kilobytes), so the official source/background/response files are committed
+alongside `download.sh` and `SHA256SUMS`.
+
 Run the matrix with:
 
 ```bash
@@ -51,15 +57,3 @@ Run the matrix with:
 
 The runner writes logs to `work/logs/<source_key>/<tool>.log`; neither
 `work/prepared/` nor `work/logs/` is committed.
-
-
-## XMM-Newton outputs
-
-`outputs/PDS456_z_0.1840/xmm_xspec/` is the result of the official
-XMM-Newton PPS + PyXspec fit.  The `prepared/` directory contains the exact
-spectra used by XSPEC: the PN PPS spectrum with archive response pointers
-removed, and the MOS source/background spectra rebinned 3:1 from the 5 eV PPS
-channels to the 15 eV channels of the canned MOS RMF.  The input products stay
-under `inputs/PDS456_z_0.1840/xray/xmm_0721010201/`; `xspec.log` is the full
-XSPEC/PyXspec log and `run.json` records the PPS/SAS provenance, input hashes,
-software versions and caveats.
