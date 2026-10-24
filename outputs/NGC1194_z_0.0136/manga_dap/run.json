@@ -1,0 +1,1781 @@
+{
+  "tool": "manga_dap",
+  "source_key": "NGC1194_z_0.0136",
+  "status": "ok_subset",
+  "production_product": "official full-method SASUKE fit on 9 central single-spaxel HYB10 bins",
+  "dap_mode": "official DAP Stage A + official full-method SASUKE subset (65 MaStar-HC2 templates, ELPMPL11, mdegree=14, deconstruct_bins=ignore)",
+  "dap_completed": false,
+  "all_spaxel_dap_completed": false,
+  "stages_completed": [
+    "reduction_assessment",
+    "HYB10_binning",
+    "ppxf_stellar_kinematics",
+    "emission_line_moments",
+    "spectral_indices",
+    "sasuke_full_method_subset"
+  ],
+  "n_selected_bins": 9,
+  "selected_binids": [
+    97,
+    57,
+    0,
+    107,
+    110,
+    1,
+    94,
+    101,
+    120
+  ],
+  "versions": {
+    "astropy": "8.0.2",
+    "configobj": "5.0.9",
+    "cvxopt": "1.3.3",
+    "machine": "x86_64",
+    "mangadap_module_version": "4.5.0",
+    "matplotlib": "3.11.2",
+    "numpy": "2.4.1",
+    "platform": "Linux-7.0.0-38-generic-x86_64-with-glibc2.36",
+    "ppxf": "8.1.0",
+    "pydl": "1.0.1",
+    "python": "3.12.15",
+    "requests": "2.34.2",
+    "scipy": "1.18.1",
+    "sdss-mangadap": "4.5.0",
+    "shapely": "2.2.0",
+    "upstream_scm": {
+      "branch": "HEAD",
+      "dirty": false,
+      "distance": 0,
+      "node": "g996b46cb9739126fe0fbe69c1a50d8490d924853",
+      "node_date": "2026-06-24",
+      "tag": "4.5.0"
+    },
+    "vorbin": "3.1.5"
+  },
+  "host": {
+    "cpu_count": 8,
+    "image": "manga_dap",
+    "image_size_bytes": 1853913965,
+    "memory_total_kb": 32761700,
+    "repo_commit": ""
+  },
+  "image_size_bytes": 1853913965,
+  "started_utc": "2026-10-24T11:50:46Z",
+  "finished_utc": null,
+  "stage_a_runtime_seconds": 1741.7,
+  "subset_runtime_seconds": 393.4,
+  "runtime_seconds": 2135.1,
+  "inputs": {
+    "manga_cube": {
+      "path": "manga-9193-12701-LOGCUBE.fits.gz",
+      "relpath": "raw/manga-9193-12701-LOGCUBE.fits.gz",
+      "size_bytes": 207992431,
+      "sha256": "7810f4c94db2fbb677e1bc92bc91a866e88d421c24c8c52273aa5277b9b5f764",
+      "url": "https://data.sdss.org/sas/dr17/manga/spectro/redux/v3_1_1/9193/stack/manga-9193-12701-LOGCUBE.fits.gz"
+    },
+    "manga_rss": {
+      "path": "manga-9193-12701-LOGRSS.fits.gz",
+      "relpath": "raw/manga-9193-12701-LOGRSS.fits.gz",
+      "size_bytes": 169194046,
+      "sha256": "812000fdc1946193f8aa0e2e96878555ec370fa30b3a41df20cd76b0bad497bd",
+      "url": "https://data.sdss.org/sas/dr17/manga/spectro/redux/v3_1_1/9193/stack/manga-9193-12701-LOGRSS.fits.gz"
+    },
+    "reference_maps": {
+      "path": "manga-9193-12701-MAPS-HYB10-MILESHC-MASTARHC2.fits.gz",
+      "relpath": "raw/manga-9193-12701-MAPS-HYB10-MILESHC-MASTARHC2.fits.gz",
+      "size_bytes": 10775592,
+      "sha256": "f47f16b90c45fc668e0105e9b2a2241d6c28104924056bcfa493f84e1f200f49",
+      "url": ""
+    }
+  },
+  "stage_a": {
+    "status": "ok",
+    "runtime_seconds": 1741.7,
+    "dap_status_code": 0,
+    "dap_error": null,
+    "warning_count": 0,
+    "warnings": [],
+    "dap_meta": {
+      "z": 0.0136253,
+      "vdisp_initial_kms": 100.0,
+      "ell": 0.304294,
+      "pa_deg": 143.959,
+      "reff_arcsec": 14.8759,
+      "ebv_galactic": 0.0764222,
+      "drpcrit": false,
+      "plate": 9193,
+      "ifudesign": 12701,
+      "drpver": "v3_1_1",
+      "name": "manga-9193-12701",
+      "rss_loaded": true,
+      "can_compute_covariance": true,
+      "n_bins": 175
+    },
+    "dap_root": "/app/output/dap",
+    "method_dir": "/app/output/dap/HYB10-MILESHC-MASTARHC2/9193/12701",
+    "model_path": null,
+    "log_path": "/app/output/logs/manga_dap.log",
+    "note": "Stage A was the official DAP moments-only run at HYB10 target S/N=50 (175 bins) on a host validation; the all-spaxel target S/N=10 run (2397 bins) exceeded the time budget and was killed. See logs/full_dap_attempt_summary.txt."
+  },
+  "fast_mode": {
+    "role": "auxiliary only",
+    "quality_flag": "FASTMODE_NOT_PRODUCTION",
+    "acceptance": false,
+    "directory": "aux_fastmode/",
+    "description": "fast fixed-continuum SASUKE on all 175 HYB10/S/N=50 bins",
+    "rejection_metrics": {
+      "ha_median_ratio": 2.37,
+      "hb_median_ratio": 0.89,
+      "oiii_5007_median_ratio": 1.01,
+      "nii_6584_median_ratio": 0.53,
+      "bpt_agreement_fraction": 0.408,
+      "gas_velocity_ha_offset_kms": 175.5
+    },
+    "rejection_reason": "H-alpha median ratio 2.37, [N II] 0.53, BPT agreement 40.8%, gas velocity offset +175 km/s vs published MAPS; binned-spectrum fixed-continuum mode is not the survey deconstruction."
+  },
+  "subset_comparison": {
+    "bins": [
+      {
+        "bin_index": 0,
+        "binid": 97,
+        "bpt_agree": true,
+        "bpt_ours": "liner",
+        "bpt_ref": "liner",
+        "col": 37,
+        "dec_deg": -1.1037500000000051,
+        "ha_flux": 59.575172424316406,
+        "ha_flux_err": 0.198079704029508,
+        "ha_ratio": 0.9998687523224437,
+        "ha_ref_err_median": 0.1980863378676975,
+        "ha_ref_median": 59.58299255371094,
+        "hb_flux": 10.075800895690918,
+        "hb_flux_err": 0.13036805469958423,
+        "hb_ratio": 0.9994951081208411,
+        "hb_ref_err_median": 0.13038524580117333,
+        "hb_ref_median": 10.080890655517578,
+        "nii_6584_flux": 31.990581512451172,
+        "nii_6584_flux_err": 0.17132433915852824,
+        "nii_6584_ratio": 0.9998705769709634,
+        "nii_6584_ref_err_median": 0.17133032457847233,
+        "nii_6584_ref_median": 31.994722366333008,
+        "nspax": 1,
+        "oiii_5007_flux": 94.9133071899414,
+        "oiii_5007_flux_err": 0.2182980165933918,
+        "oiii_5007_ratio": 0.9999920421691085,
+        "oiii_5007_ref_err_median": 0.2182992071067011,
+        "oiii_5007_ref_median": 94.9140625,
+        "ra_deg": 45.954624,
+        "row": 37,
+        "sii_6716_flux": 19.075220108032227,
+        "sii_6716_flux_err": 0.16062263916625208,
+        "sii_6716_ratio": 0.999966104230192,
+        "sii_6716_ref_err_median": 0.1606244887487771,
+        "sii_6716_ref_median": 19.07586669921875,
+        "sii_6731_flux": 15.711809158325195,
+        "sii_6731_flux_err": 0.16491722696138889,
+        "sii_6731_ratio": 0.9999788168706327,
+        "sii_6731_ref_err_median": 0.16491815092647016,
+        "sii_6731_ref_median": 15.712141990661621,
+        "x_arcsec": -0.0006334824138320982,
+        "y_arcsec": -3.434401878621429e-05
+      },
+      {
+        "bin_index": 1,
+        "binid": 57,
+        "bpt_agree": true,
+        "bpt_ours": "liner",
+        "bpt_ref": "liner",
+        "col": 36,
+        "dec_deg": -1.1037499999967544,
+        "ha_flux": 55.182472229003906,
+        "ha_flux_err": 0.20907548726114744,
+        "ha_ratio": 0.9999086200971088,
+        "ha_ref_err_median": 0.20908416006536332,
+        "ha_ref_median": 55.18751525878906,
+        "hb_flux": 9.357131004333496,
+        "hb_flux_err": 0.13262335098694986,
+        "hb_ratio": 0.9996727416294146,
+        "hb_ref_err_median": 0.13264382688104168,
+        "hb_ref_median": 9.360194206237793,
+        "nii_6584_flux": 28.920686721801758,
+        "nii_6584_flux_err": 0.17773412316644033,
+        "nii_6584_ratio": 0.9998722032677585,
+        "nii_6584_ref_err_median": 0.17774039888050588,
+        "nii_6584_ref_median": 28.92438316345215,
+        "nspax": 1,
+        "oiii_5007_flux": 87.0777359008789,
+        "oiii_5007_flux_err": 0.2219555277652084,
+        "oiii_5007_ratio": 0.9999870330143834,
+        "oiii_5007_ref_err_median": 0.22195744652866176,
+        "oiii_5007_ref_median": 87.07886505126953,
+        "ra_deg": 45.954762914775145,
+        "row": 37,
+        "sii_6716_flux": 17.375802993774414,
+        "sii_6716_flux_err": 0.16747235697102933,
+        "sii_6716_ratio": 0.9999886937778896,
+        "sii_6716_ref_err_median": 0.16747553750621674,
+        "sii_6716_ref_median": 17.375999450683594,
+        "sii_6731_flux": 14.133597373962402,
+        "sii_6731_flux_err": 0.16950334562974376,
+        "sii_6731_ratio": 1.000001214563999,
+        "sii_6731_ref_err_median": 0.169502825452997,
+        "sii_6731_ref_median": 14.133580207824707,
+        "x_arcsec": 0.4993669092655182,
+        "y_arcsec": -3.433231540839188e-05
+      },
+      {
+        "bin_index": 2,
+        "binid": 0,
+        "bpt_agree": true,
+        "bpt_ours": "liner",
+        "bpt_ref": "liner",
+        "col": 37,
+        "dec_deg": -1.1036111110000206,
+        "ha_flux": 56.568458557128906,
+        "ha_flux_err": 0.1918062125326869,
+        "ha_ratio": 0.9998542266582627,
+        "ha_ref_err_median": 0.19181231655501987,
+        "ha_ref_median": 56.57670593261719,
+        "hb_flux": 9.487778663635254,
+        "hb_flux_err": 0.1266722991416254,
+        "hb_ratio": 0.9995325173233829,
+        "hb_ref_err_median": 0.1266852070304154,
+        "hb_ref_median": 9.492216110229492,
+        "nii_6584_flux": 29.770105361938477,
+        "nii_6584_flux_err": 0.16394858933906445,
+        "nii_6584_ratio": 0.9998673942175808,
+        "nii_6584_ref_err_median": 0.16395408668068845,
+        "nii_6584_ref_median": 29.7740535736084,
+        "nspax": 1,
+        "oiii_5007_flux": 89.89038848876953,
+        "oiii_5007_flux_err": 0.21001451050078662,
+        "oiii_5007_ratio": 0.9999917672490984,
+        "oiii_5007_ref_err_median": 0.2100155440640433,
+        "oiii_5007_ref_median": 89.89112854003906,
+        "ra_deg": 45.954624,
+        "row": 38,
+        "sii_6716_flux": 18.151119232177734,
+        "sii_6716_flux_err": 0.1563430424209387,
+        "sii_6716_ratio": 0.999974255671029,
+        "sii_6716_ref_err_median": 0.15634404830757215,
+        "sii_6716_ref_median": 18.151586532592773,
+        "sii_6731_flux": 14.752656936645508,
+        "sii_6731_flux_err": 0.15940056523807955,
+        "sii_6731_ratio": 0.9999903681008048,
+        "sii_6731_ref_err_median": 0.1594009205902215,
+        "sii_6731_ref_median": 14.752799034118652,
+        "x_arcsec": -0.0006334824138320982,
+        "y_arcsec": 0.4999660551548004
+      },
+      {
+        "bin_index": 3,
+        "binid": 107,
+        "bpt_agree": true,
+        "bpt_ours": "liner",
+        "bpt_ref": "liner",
+        "col": 37,
+        "dec_deg": -1.1038888890000038,
+        "ha_flux": 53.2492561340332,
+        "ha_flux_err": 0.17924134779420203,
+        "ha_ratio": 0.9998408445695373,
+        "ha_ref_err_median": 0.17924736161752525,
+        "ha_ref_median": 53.25773239135742,
+        "hb_flux": 9.186651229858398,
+        "hb_flux_err": 0.12441004894459486,
+        "hb_ratio": 0.999734626030789,
+        "hb_ref_err_median": 0.12442389033860815,
+        "hb_ref_median": 9.18908977508545,
+        "nii_6584_flux": 29.111238479614258,
+        "nii_6584_flux_err": 0.1567571791443263,
+        "nii_6584_ratio": 0.9998326916461838,
+        "nii_6584_ref_err_median": 0.15676424012677576,
+        "nii_6584_ref_median": 29.11610984802246,
+        "nspax": 1,
+        "oiii_5007_flux": 85.93605041503906,
+        "oiii_5007_flux_err": 0.20503063335582325,
+        "oiii_5007_ratio": 1.0000132283810743,
+        "oiii_5007_ref_err_median": 0.20503138957306766,
+        "oiii_5007_ref_median": 85.9349136352539,
+        "ra_deg": 45.954624,
+        "row": 36,
+        "sii_6716_flux": 17.268054962158203,
+        "sii_6716_flux_err": 0.14528142456365237,
+        "sii_6716_ratio": 1.0000546783757187,
+        "sii_6716_ref_err_median": 0.1452799390131969,
+        "sii_6716_ref_median": 17.26711082458496,
+        "sii_6731_flux": 14.552212715148926,
+        "sii_6731_flux_err": 0.15000358212904483,
+        "sii_6731_ratio": 1.0000397811212562,
+        "sii_6731_ref_err_median": 0.15000165727500853,
+        "sii_6731_ref_median": 14.551633834838867,
+        "x_arcsec": -0.0006334824138320982,
+        "y_arcsec": -0.500034749507904
+      },
+      {
+        "bin_index": 4,
+        "binid": 110,
+        "bpt_agree": true,
+        "bpt_ours": "liner",
+        "bpt_ref": "liner",
+        "col": 38,
+        "dec_deg": -1.1037499999967544,
+        "ha_flux": 53.60640335083008,
+        "ha_flux_err": 0.17799921275937303,
+        "ha_ratio": 0.9998391303562085,
+        "ha_ref_err_median": 0.17800570486176448,
+        "ha_ref_median": 53.615028381347656,
+        "hb_flux": 9.395971298217773,
+        "hb_flux_err": 0.12886572441410774,
+        "hb_ratio": 0.9994461266909113,
+        "hb_ref_err_median": 0.12888227486174897,
+        "hb_ref_median": 9.401178359985352,
+        "nii_6584_flux": 28.709749221801758,
+        "nii_6584_flux_err": 0.15387556166339014,
+        "nii_6584_ratio": 0.9998551250076556,
+        "nii_6584_ref_err_median": 0.15388155228188258,
+        "nii_6584_ref_median": 28.713909149169922,
+        "nspax": 1,
+        "oiii_5007_flux": 89.27491760253906,
+        "oiii_5007_flux_err": 0.21248005419570073,
+        "oiii_5007_ratio": 0.9999966670885506,
+        "oiii_5007_ref_err_median": 0.21248093246665015,
+        "oiii_5007_ref_median": 89.27521514892578,
+        "ra_deg": 45.95448508522486,
+        "row": 37,
+        "sii_6716_flux": 17.327301025390625,
+        "sii_6716_flux_err": 0.14608287741950815,
+        "sii_6716_ratio": 0.9999669777945481,
+        "sii_6716_ref_err_median": 0.14608393582661777,
+        "sii_6716_ref_median": 17.32787322998047,
+        "sii_6731_flux": 13.750733375549316,
+        "sii_6731_flux_err": 0.14944223441558172,
+        "sii_6731_ratio": 0.9999886953552197,
+        "sii_6731_ref_err_median": 0.14944301104413854,
+        "sii_6731_ref_median": 13.75088882446289,
+        "x_arcsec": -0.5006338953971863,
+        "y_arcsec": -3.433231540839188e-05
+      },
+      {
+        "bin_index": 5,
+        "binid": 1,
+        "bpt_agree": true,
+        "bpt_ours": "liner",
+        "bpt_ref": "liner",
+        "col": 36,
+        "dec_deg": -1.1036111109967601,
+        "ha_flux": 51.73877716064453,
+        "ha_flux_err": 0.19310780857950374,
+        "ha_ratio": 0.9999222946751062,
+        "ha_ref_err_median": 0.19311574104764365,
+        "ha_ref_median": 51.7427978515625,
+        "hb_flux": 8.54239273071289,
+        "hb_flux_err": 0.11589615161803991,
+        "hb_ratio": 0.9997458598992703,
+        "hb_ref_err_median": 0.11591223012611658,
+        "hb_ref_median": 8.544564247131348,
+        "nii_6584_flux": 26.80623435974121,
+        "nii_6584_flux_err": 0.16414696924692923,
+        "nii_6584_ratio": 0.9998887288199684,
+        "nii_6584_ref_err_median": 0.1641520478624309,
+        "nii_6584_ref_median": 26.80921745300293,
+        "nspax": 1,
+        "oiii_5007_flux": 79.02438354492188,
+        "oiii_5007_flux_err": 0.18679440296836522,
+        "oiii_5007_ratio": 0.9999902490687137,
+        "oiii_5007_ref_err_median": 0.18679590097566867,
+        "oiii_5007_ref_median": 79.02515411376953,
+        "ra_deg": 45.95476291476866,
+        "row": 38,
+        "sii_6716_flux": 16.236356735229492,
+        "sii_6716_flux_err": 0.1572692831021614,
+        "sii_6716_ratio": 0.9999955360105914,
+        "sii_6716_ref_err_median": 0.15727241413212556,
+        "sii_6716_ref_median": 16.23642921447754,
+        "sii_6731_flux": 13.224706649780273,
+        "sii_6731_flux_err": 0.16171773212842092,
+        "sii_6731_ratio": 1.0000108170788695,
+        "sii_6731_ref_err_median": 0.16171674798390762,
+        "sii_6731_ref_median": 13.224563598632812,
+        "x_arcsec": 0.4993668794631958,
+        "y_arcsec": 0.4999660551548004
+      },
+      {
+        "bin_index": 6,
+        "binid": 94,
+        "bpt_agree": true,
+        "bpt_ours": "liner",
+        "bpt_ref": "liner",
+        "col": 36,
+        "dec_deg": -1.1038888889967489,
+        "ha_flux": 49.97975540161133,
+        "ha_flux_err": 0.18084971068525582,
+        "ha_ratio": 0.9998810237180248,
+        "ha_ref_err_median": 0.1808577834492057,
+        "ha_ref_median": 49.98570251464844,
+        "hb_flux": 8.883662223815918,
+        "hb_flux_err": 0.13231626350324122,
+        "hb_ratio": 0.999362631335923,
+        "hb_ref_err_median": 0.13234467001490305,
+        "hb_ref_median": 8.889328002929688,
+        "nii_6584_flux": 26.91646385192871,
+        "nii_6584_flux_err": 0.1555507028179274,
+        "nii_6584_ratio": 0.9998521333257192,
+        "nii_6584_ref_err_median": 0.15555754457371854,
+        "nii_6584_ref_median": 26.92044448852539,
+        "nspax": 1,
+        "oiii_5007_flux": 81.77660369873047,
+        "oiii_5007_flux_err": 0.21987772433099975,
+        "oiii_5007_ratio": 0.9999945888864498,
+        "oiii_5007_ref_err_median": 0.2198790523950401,
+        "oiii_5007_ref_median": 81.77704620361328,
+        "ra_deg": 45.95476291478163,
+        "row": 36,
+        "sii_6716_flux": 16.61595916748047,
+        "sii_6716_flux_err": 0.14610724445197795,
+        "sii_6716_ratio": 0.9999561520811118,
+        "sii_6716_ref_err_median": 0.14610990968527324,
+        "sii_6716_ref_median": 16.616687774658203,
+        "sii_6731_flux": 13.852253913879395,
+        "sii_6731_flux_err": 0.14820014671636356,
+        "sii_6731_ratio": 0.9999319846326574,
+        "sii_6731_ref_err_median": 0.14820287846457517,
+        "sii_6731_ref_median": 13.853196144104004,
+        "x_arcsec": 0.4993669390678406,
+        "y_arcsec": -0.500034749507904
+      },
+      {
+        "bin_index": 7,
+        "binid": 101,
+        "bpt_agree": true,
+        "bpt_ours": "liner",
+        "bpt_ref": "liner",
+        "col": 38,
+        "dec_deg": -1.1036111109967601,
+        "ha_flux": 53.286109924316406,
+        "ha_flux_err": 0.20130020580065616,
+        "ha_ratio": 0.9995909648749316,
+        "ha_ref_err_median": 0.2013174388543143,
+        "ha_ref_median": 53.30791473388672,
+        "hb_flux": 9.19721508026123,
+        "hb_flux_err": 0.13747831115432296,
+        "hb_ratio": 0.9986224902617528,
+        "hb_ref_err_median": 0.1375202086295403,
+        "hb_ref_median": 9.209901809692383,
+        "nii_6584_flux": 27.93896484375,
+        "nii_6584_flux_err": 0.17058203159114474,
+        "nii_6584_ratio": 0.9997423531612653,
+        "nii_6584_ref_err_median": 0.17059345040106133,
+        "nii_6584_ref_median": 27.946165084838867,
+        "nspax": 1,
+        "oiii_5007_flux": 86.11957550048828,
+        "oiii_5007_flux_err": 0.22827586808662043,
+        "oiii_5007_ratio": 0.9999776756389042,
+        "oiii_5007_ref_err_median": 0.22827767186163753,
+        "oiii_5007_ref_median": 86.12149810791016,
+        "ra_deg": 45.95448508523135,
+        "row": 38,
+        "sii_6716_flux": 17.347976684570312,
+        "sii_6716_flux_err": 0.16413547239561416,
+        "sii_6716_ratio": 0.9999829585890415,
+        "sii_6716_ref_err_median": 0.16413624833596643,
+        "sii_6716_ref_median": 17.3482723236084,
+        "sii_6731_flux": 13.47836685180664,
+        "sii_6731_flux_err": 0.16651641031986938,
+        "sii_6731_ratio": 1.0000405447889367,
+        "sii_6731_ref_err_median": 0.16651425277991955,
+        "sii_6731_ref_median": 13.47782039642334,
+        "x_arcsec": -0.5006338357925415,
+        "y_arcsec": 0.4999660551548004
+      },
+      {
+        "bin_index": 8,
+        "binid": 120,
+        "bpt_agree": true,
+        "bpt_ours": "liner",
+        "bpt_ref": "liner",
+        "col": 38,
+        "dec_deg": -1.1038888889967489,
+        "ha_flux": 49.358158111572266,
+        "ha_flux_err": 0.18928038678157066,
+        "ha_ratio": 0.9996668535593476,
+        "ha_ref_err_median": 0.18929367182844647,
+        "ha_ref_median": 49.37460708618164,
+        "hb_flux": 8.29746150970459,
+        "hb_flux_err": 0.11659804978844374,
+        "hb_ratio": 0.998886136184145,
+        "hb_ref_err_median": 0.1166368480176092,
+        "hb_ref_median": 8.306714057922363,
+        "nii_6584_flux": 26.86185646057129,
+        "nii_6584_flux_err": 0.16574757484461752,
+        "nii_6584_ratio": 0.9997762396779726,
+        "nii_6584_ref_err_median": 0.16575701628556716,
+        "nii_6584_ref_median": 26.867868423461914,
+        "nspax": 1,
+        "oiii_5007_flux": 79.2469253540039,
+        "oiii_5007_flux_err": 0.18869623521161316,
+        "oiii_5007_ratio": 0.9999923944357306,
+        "oiii_5007_ref_err_median": 0.18869694004247412,
+        "oiii_5007_ref_median": 79.24752807617188,
+        "ra_deg": 45.95448508521837,
+        "row": 36,
+        "sii_6716_flux": 15.987160682678223,
+        "sii_6716_flux_err": 0.1543706298249347,
+        "sii_6716_ratio": 0.9998062265394851,
+        "sii_6716_ref_err_median": 0.1543785100227593,
+        "sii_6716_ref_median": 15.990259170532227,
+        "sii_6731_flux": 12.916964530944824,
+        "sii_6731_flux_err": 0.1584758551078565,
+        "sii_6731_ratio": 0.999680118162904,
+        "sii_6731_ref_err_median": 0.15848879236357535,
+        "sii_6731_ref_median": 12.921097755432129,
+        "x_arcsec": -0.5006338953971863,
+        "y_arcsec": -0.500034749507904
+      }
+    ],
+    "bpt": {
+      "agreement_fraction": 1.0,
+      "n": 9,
+      "n_agree": 9,
+      "ours": {
+        "agn_unclassified": 0,
+        "composite": 0,
+        "liner": 9,
+        "seyfert": 0,
+        "star_forming": 0,
+        "unclassified": 0
+      },
+      "reference": {
+        "agn_unclassified": 0,
+        "composite": 0,
+        "liner": 9,
+        "seyfert": 0,
+        "star_forming": 0,
+        "unclassified": 0
+      }
+    },
+    "line_statistics": {
+      "ha": {
+        "error_ratio_p16": 0.9999369707402473,
+        "error_ratio_p84": 0.9999664933501776,
+        "frac_diff_mad": 3.972932080321786e-05,
+        "frac_diff_p16": -0.00028490893753138684,
+        "frac_diff_p84": -9.910688903472877e-05,
+        "linear_intercept": -0.02960037098775564,
+        "linear_slope": 1.0003728934309528,
+        "median_error_ratio": 0.9999589237620048,
+        "median_frac_diff": -0.00014577334173721367,
+        "median_ours": 53.286109924316406,
+        "median_ratio": 0.9998542266582627,
+        "median_ref": 53.30791473388672,
+        "n": 9,
+        "n_error": 9,
+        "n_total": 9,
+        "pearson_r": 0.9999984294344475,
+        "pull_median": -0.030404032609612632,
+        "pull_rms": 0.040395146306154234,
+        "pull_scatter": 0.010603336060129032,
+        "ratio_p16": 0.9997150910624687,
+        "ratio_p84": 0.9999008931109653,
+        "status": "ok"
+      },
+      "hb": {
+        "error_ratio_p16": 0.9997205425144341,
+        "error_ratio_p84": 0.9998839481539228,
+        "frac_diff_mad": 0.0002633594398110493,
+        "frac_diff_p16": -0.0009804451733571298,
+        "frac_diff_p84": -0.00028270160159586075,
+        "linear_intercept": -0.014639141175097549,
+        "linear_slope": 1.000991095442659,
+        "median_error_ratio": 0.9998612872165502,
+        "median_frac_diff": -0.0005048918791589487,
+        "median_ours": 9.19721508026123,
+        "median_ratio": 0.9994951081208411,
+        "median_ref": 9.209901809692383,
+        "n": 9,
+        "n_error": 9,
+        "n_total": 9,
+        "pearson_r": 0.9999796610617443,
+        "pull_median": -0.027604664434229292,
+        "pull_rms": 0.03519280797629832,
+        "pull_scatter": 0.01671465132905328,
+        "ratio_p16": 0.9990195548266428,
+        "ratio_p84": 0.9997172983984042,
+        "status": "ok"
+      },
+      "nii_6584": {
+        "error_ratio_p16": 0.9999463773683636,
+        "error_ratio_p84": 0.9999660767789205,
+        "frac_diff_mad": 2.5320228428554126e-05,
+        "frac_diff_p16": -0.000207953770928289,
+        "frac_diff_p84": -0.00012825209534413803,
+        "linear_intercept": -0.00801316896118155,
+        "linear_slope": 1.0001210804931981,
+        "median_error_ratio": 0.9999610699372108,
+        "median_frac_diff": -0.0001448749923444095,
+        "median_ours": 28.709749221801758,
+        "median_ratio": 0.9998551250076556,
+        "median_ref": 28.713909149169922,
+        "n": 9,
+        "n_error": 9,
+        "n_total": 9,
+        "pearson_r": 0.9999997114563576,
+        "pull_median": -0.018094892397548742,
+        "pull_rms": 0.020242043752710104,
+        "pull_scatter": 0.00502458210648512,
+        "ratio_p16": 0.9997920462290717,
+        "ratio_p84": 0.9998717479046558,
+        "status": "ok"
+      },
+      "oiii_5007": {
+        "error_ratio_p16": 0.9999920135015171,
+        "error_ratio_p84": 0.9999961532626686,
+        "frac_diff_mad": 3.7757631300226994e-06,
+        "frac_diff_p16": -1.2066490404090244e-05,
+        "frac_diff_p84": -3.91480803765048e-06,
+        "linear_intercept": -0.00012207398307617368,
+        "linear_slope": 0.9999942774942117,
+        "median_error_ratio": 0.9999945464148722,
+        "median_frac_diff": -7.957830891431393e-06,
+        "median_ours": 86.11957550048828,
+        "median_ratio": 0.9999920421691085,
+        "median_ref": 86.12149810791016,
+        "n": 9,
+        "n_error": 9,
+        "n_total": 9,
+        "pearson_r": 0.9999999880427419,
+        "pull_median": -0.002446579297054517,
+        "pull_rms": 0.003207413974290771,
+        "pull_scatter": 0.0015174827639119635,
+        "ratio_p16": 0.9999879335095959,
+        "ratio_p84": 0.9999960851919624,
+        "status": "ok"
+      },
+      "sii_6716": {
+        "error_ratio_p16": 0.9999803485155646,
+        "error_ratio_p84": 0.9999947947958381,
+        "frac_diff_mad": 2.1405937231390576e-05,
+        "frac_diff_p16": -4.106131714575059e-05,
+        "frac_diff_p84": -6.379814565103524e-06,
+        "linear_intercept": -0.007374110847324709,
+        "linear_slope": 1.0003940622639718,
+        "median_error_ratio": 0.9999884850526876,
+        "median_frac_diff": -2.5744328970913007e-05,
+        "median_ours": 17.327301025390625,
+        "median_ratio": 0.999974255671029,
+        "median_ref": 17.32787322998047,
+        "n": 9,
+        "n_error": 9,
+        "n_total": 9,
+        "pearson_r": 0.9999994391712592,
+        "pull_median": -0.002113494941884857,
+        "pull_rms": 0.005350333086792527,
+        "pull_scatter": 0.001903683005660346,
+        "ratio_p16": 0.9999589386828542,
+        "ratio_p84": 0.9999936201854349,
+        "status": "ok"
+      },
+      "sii_6731": {
+        "error_ratio_p16": 0.9999851598876228,
+        "error_ratio_p84": 1.0000109431671507,
+        "frac_diff_mad": 3.031765487878872e-05,
+        "frac_diff_p16": -5.4902340709470427e-05,
+        "frac_diff_p84": 3.167118938787272e-05,
+        "linear_intercept": -0.010136174246108154,
+        "linear_slope": 1.0006868717565989,
+        "median_error_ratio": 0.9999977707020722,
+        "median_frac_diff": -9.631899195258054e-06,
+        "median_ours": 13.852253913879395,
+        "median_ratio": 0.9999903681008048,
+        "median_ref": 13.853196144104004,
+        "n": 9,
+        "n_error": 9,
+        "n_total": 9,
+        "pearson_r": 0.9999988360588885,
+        "pull_median": -0.00063034892443396,
+        "pull_rms": 0.0064678450317474925,
+        "pull_scatter": 0.0018619060554144404,
+        "ratio_p16": 0.9999450976592905,
+        "ratio_p84": 1.000031671189388,
+        "status": "ok"
+      }
+    },
+    "kinematics": {
+      "ha_sigma": {
+        "median_offset": -0.0161590576171875,
+        "median_ours": 148.1670379638672,
+        "median_ref": 148.18006896972656,
+        "n": 9,
+        "scatter": 0.0043435546875
+      },
+      "ha_vel": {
+        "median_offset": 0.0007811784744262695,
+        "median_ours": 0.9206354022026062,
+        "median_ref": 0.9198542237281799,
+        "n": 9,
+        "scatter": 0.0007735896348953247
+      },
+      "stellar_sigma": {
+        "median_offset": -0.00042724609375,
+        "median_ours": 162.10638427734375,
+        "median_ref": 162.10638427734375,
+        "n": 9,
+        "scatter": 0.00063343505859375
+      },
+      "stellar_vel": {
+        "median_offset": 0.00012063980102539062,
+        "median_ours": -8.439525604248047,
+        "median_ref": -8.453001022338867,
+        "n": 9,
+        "scatter": 0.00017886056900024414
+      }
+    }
+  },
+  "full_dap_attempt": {
+    "status": "did_not_complete",
+    "daptype": "HYB10-MILESHC-MASTARHC2",
+    "target_snr": 10,
+    "n_bins": 2397,
+    "attempt": "full 65-template MaStar-HC2 EmissionLineModel on 2397 bins",
+    "wall_time_minutes": 58,
+    "cpu": "100% of one core",
+    "progress": "reached the 2397-spectrum 65-template SASUKE fit; killed by the 3500 s wall-clock cap",
+    "blocker": "The all-spaxel survey emission-line stage is not viable on this 8-core host within the budget. The completed 175-bin S/N=50 fast/central-bin run plus the published official MAPS is the acceptance product."
+  },
+  "quality_gate": {
+    "all_spaxel_acceptance": false,
+    "fast_mode_acceptance": false,
+    "fast_mode_flag": "FASTMODE_NOT_PRODUCTION",
+    "fast_mode_used_for_all_spaxel_maps": true,
+    "reason": "The full 2397-bin all-spaxel DAP emission-line model exceeded the 58 min wall-clock budget and was killed. This product is the official full-method Sasuke fit on 9 central single-spaxel bins; the published official MAPS is the all-spaxel reference. The fast fixed-continuum all-spaxel product is auxiliary only and is flagged.",
+    "subset_acceptance": true
+  },
+  "config": {
+    "_comment": "Effective MaNGA DAP configuration for NGC 1194 (plateifu 9193-12701). The executable DAP run is Tools/manga_dap/run_manga_dap.py with this directory mounted at /app/config. plan.toml is passed verbatim to mangadap.config.analysisplan.MaNGAAnalysisPlan; config.json records the scientific choices and the reviewable metadata.",
+    "tool": "manga_dap",
+    "variant": "default",
+    "upstream": {
+      "repo": "https://github.com/sdss/mangadap",
+      "package": "sdss-mangadap",
+      "version": "4.5.0",
+      "license": "BSD-3-Clause",
+      "citation": "Westfall et al. 2019 (AJ 158, 231); Belfiore et al. 2019 (AJ 158, 160)"
+    },
+    "source": {
+      "key": "NGC1194_z_0.0136",
+      "name": "NGC 1194",
+      "plateifu": "9193-12701",
+      "plate": 9193,
+      "ifu_design": 12701,
+      "ra_deg": 45.954624,
+      "dec_deg": -1.10375,
+      "z": 0.0136253,
+      "z_reference": "NSA v1_0_1 via SDSS DR17 DRPall v3_1_1",
+      "catalog": "MaNGA AGN Catalog VAC (Comerford et al. 2020)",
+      "morphology": "SA(s)0/a? Sy2",
+      "urls": {
+        "manga_cube": "https://data.sdss.org/sas/dr17/manga/spectro/redux/v3_1_1/9193/stack/manga-9193-12701-LOGCUBE.fits.gz",
+        "manga_rss": "https://data.sdss.org/sas/dr17/manga/spectro/redux/v3_1_1/9193/stack/manga-9193-12701-LOGRSS.fits.gz",
+        "manga_maps_reference": "https://data.sdss.org/sas/dr17/manga/spectro/analysis/v3_1_1/3.1.0/HYB10-MILESHC-MASTARHC2/9193/12701/manga-9193-12701-MAPS-HYB10-MILESHC-MASTARHC2.fits.gz"
+      }
+    },
+    "dap": {
+      "daptype": "HYB10-MILESHC-MASTARHC2",
+      "plan_file": "plan.toml",
+      "drp_version": "v3_1_1",
+      "dap_code_version": "4.5.0",
+      "reference_product_version": "3.1.0",
+      "input_product": "LOGCUBE",
+      "output_products": [
+        "MAPS",
+        "LOGCUBE model"
+      ],
+      "analysis_stages": [
+        "rdxqa",
+        "binning",
+        "continuum",
+        "eline_moments",
+        "eline_fits",
+        "indices"
+      ],
+      "note": "The full manga_dap() workflow is executed. The published v3_1_1/3.1.0 MAPS is used only as an independent reference for comparison.",
+      "plan_file_moments": "plan_moments.toml",
+      "production_mode": "Official DAP Stage A (rdxqa + HYB10/S/N=50 binning + pPXF stellar kinematics + EMOM moments + INDXEN indices) followed by the official SASUKE fixed-continuum Gaussian fit on all 175 bins. The full all-spaxel 2397-bin 65-template EmissionLineModel was attempted and killed after 53 min.",
+      "full_attempt": {
+        "status": "did_not_complete",
+        "daptype": "HYB10-MILESHC-MASTARHC2",
+        "target_snr": 10,
+        "n_bins": 2397,
+        "attempt": "full 65-template MaStar-HC2 EmissionLineModel on 2397 bins",
+        "wall_time_minutes": 58,
+        "cpu": "100% of one core",
+        "progress": "reached the 2397-spectrum 65-template SASUKE fit; killed by the 3500 s wall-clock cap",
+        "blocker": "The all-spaxel survey emission-line stage is not viable on this 8-core host within the budget. The completed 175-bin S/N=50 fast/central-bin run plus the published official MAPS is the acceptance product."
+      }
+    },
+    "metadata": {
+      "z": 0.0136253,
+      "vdisp_kms_initial": 100.0,
+      "ell": 0.304294,
+      "pa_deg": 143.959,
+      "reff_arcsec": 14.8759,
+      "ebv_galactic": 0.0764222,
+      "source": "z from NSA; ell=1-NSA_ELPETRO_BA, pa=NSA_ELPETRO_PHI, reff=NSA_ELPETRO_TH50_R; vdisp not available in DRPall and left at the DAP default 100 km/s; E(B-V) from the LOGCUBE EBVGAL header keyword.",
+      "metadata_are_initial_values": true
+    },
+    "binning": {
+      "key": "HYB10",
+      "spatial_method": "voronoi",
+      "target_snr": 50.0,
+      "covar_mode": "matrix",
+      "spectral_covar_mode": "channels",
+      "spectral_covar_par": 11,
+      "note": "HYB10 hybrid binning at S/N=50 (175 bins) for the completed production validation. The official DAPTYPE string is HYB10-MILESHC-MASTARHC2; the target S/N is a config choice. The full all-spaxel target S/N=10 run (2397 bins) exceeded the time budget and was killed; see dap.full_attempt."
+    },
+    "continuum": {
+      "key": "MILESHC",
+      "fit_method": "ppxf",
+      "minimum_snr": 1.0,
+      "template_library": "MILESHC",
+      "template_file_search": "miles_cluster/*.fits",
+      "matched_resolution": true,
+      "velscale_ratio": 4,
+      "artifact_mask": "BADSKY",
+      "emission_line_mask": "ELPSCMSK",
+      "moments": 2,
+      "note": "Stellar kinematics: pPXF with the MILES-HC library, 4x velocity-scale ratio, additive polynomial degree 8, no multiplicative polynomial."
+    },
+    "emission_line_moments": {
+      "key": "EMOM",
+      "artifact_mask": "BADSKY",
+      "note": "Non-parametric moments are measured for every line in the database as a model-independent cross-check on the Gaussian fits."
+    },
+    "emission_line_fit": {
+      "key": "EFITHC2",
+      "fit_method": "sasuke",
+      "line_database": "ELPMPL11",
+      "line_database_file": "mangadap/data/emission_lines/elpmpl11.par",
+      "template_library": "MASTARHC2",
+      "template_file_search": "mastarhc_v2/*.fits.gz",
+      "etpl_line_sigma_mode": "offset",
+      "etpl_line_sigma_min_kms": 10.0,
+      "artifact_mask": "BADSKY",
+      "deconstruct_bins": "binid",
+      "reject_boxcar": 101,
+      "velscale_ratio": 1,
+      "mdegree": 14,
+      "note": "Single-Gaussian per line (with the DAP multiplet ties and fixed flux ratios from elpmpl11.par), fitted simultaneously over the full spectral window with the stellar continuum fixed from the pPXF model. No broad-line, Fe II or Balmer-continuum component is present in the DAP model; this is a narrow-line DAP, not a QSO broad-line fitter."
+    },
+    "line_database": {
+      "key": "ELPMPL11",
+      "n_channels": 35,
+      "wavelength_reference": "vacuum",
+      "wavelength_source": "NIST Ritz wavelengths as distributed in mangadap/data/emission_lines/elpmpl11.par",
+      "channel_file": "line_database.csv",
+      "key_lines": {
+        "Halpha": "Ha-6564",
+        "Hbeta": "Hb-4862",
+        "OIII_5007": "OIII-5008",
+        "NII_6584": "NII-6585",
+        "SII_6716": "SII-6718",
+        "SII_6731": "SII-6732"
+      },
+      "note": "Some channels are tied: [O III] 4959 is tied to 5007 at 0.35, [N II] 6548 is tied to 6584 at 0.34, [S II] 6716/6731 are independent, and the [O I] 6300/6364 pair is tied at 0.32. The tied channels are still reported by the DAP."
+    },
+    "uncertainty": {
+      "mode": "formal least-squares covariance from the DAP SASUKE fit",
+      "flux_error": "1/sqrt(EMLINE_GFLUX_IVAR)",
+      "velocity_error": "1/sqrt(EMLINE_GVEL_IVAR)",
+      "sigma_error": "1/sqrt(EMLINE_GSIGMA_IVAR)",
+      "minimum_error": "numpy.finfo(numpy.float32).eps (DAP default)",
+      "mcmc": false,
+      "mcmc_note": "The MaNGA DAP is not an MCMC sampler. Errors are the formal covariance propagated by the DAP; they do not include model-systematic scatter.",
+      "ratio_error": "analytic propagation from the two Gaussian flux errors, ignoring covariance between lines from the same fit",
+      "bpt_error_note": "BPT positions use the DAP Gaussian fluxes. Classification boundaries are applied to the central value; no probabilistic class membership is claimed."
+    },
+    "bpt": {
+      "diagnostics": [
+        "N2BPT: log10([N II] 6584 / Halpha) vs log10([O III] 5007 / Hbeta)",
+        "S2BPT: log10([S II] 6716+6731 / Halpha) vs log10([O III] 5007 / Hbeta)"
+      ],
+      "star_forming_boundary": "Kauffmann et al. (2003): log10([O III]/Hbeta) = 0.61/(log10([N II]/Halpha)-0.05)+1.30",
+      "agn_boundary": "Kewley et al. (2001): log10([O III]/Hbeta) = 0.61/(log10([N II]/Halpha)-0.47)+1.19",
+      "seyfert_liner_boundary": "Kewley et al. (2006): log10([O III]/Hbeta) = 1.05 + 0.45*log10([S II]/Halpha); above this line is LINER-like, below is Seyfert-like",
+      "classes": [
+        "star_forming",
+        "composite",
+        "seyfert",
+        "liner",
+        "agn_unclassified",
+        "unclassified"
+      ]
+    },
+    "templates": {
+      "MILESHC": {
+        "file_search": "miles_cluster/*.fits",
+        "fwhm_arcsec": 2.5,
+        "in_vacuum": false,
+        "wave_limit_A": [
+          3575.0,
+          7400.0
+        ],
+        "log10": false,
+        "source": "bundled in the sdss-mangadap 4.5.0 wheel under mangadap/data/spectral_templates/miles_cluster"
+      },
+      "MASTARHC2": {
+        "file_search": "mastarhc_v2/*.fits.gz",
+        "sres_ext": "SRES",
+        "in_vacuum": true,
+        "log10": true,
+        "source": "bundled in the sdss-mangadap 4.5.0 wheel under mangadap/data/spectral_templates/mastarhc_v2"
+      },
+      "hash_record": "effective_config.json records the SHA-256 of every template, line-database and artifact file actually read by the DAP."
+    },
+    "comparison": {
+      "reference": "published SDSS DAP MAPS v3_1_1/3.1.0 HYB10-MILESHC-MASTARHC2",
+      "reference_file": "inputs/NGC1194_z_0.0136/raw/manga-9193-12701-MAPS-HYB10-MILESHC-MASTARHC2.fits.gz",
+      "metrics": [
+        "per-spaxel flux ratio and fractional difference",
+        "Pearson correlation",
+        "median offset and robust scatter",
+        "formal-error ratio",
+        "BPT class agreement",
+        "stellar and gas kinematics offsets"
+      ],
+      "validity": "Only spaxels with finite, positive flux and zero DAP mask bits in both products are compared. Spaxels are correlated by the HYB10 binning, so the number of independent measurements is the number of bins, not the number of spaxels."
+    },
+    "limitations": [
+      "The DAP is a narrow-line single-Gaussian model. It does not fit broad Balmer lines, Fe II, Balmer continuum or AGN outflows.",
+      "The Gaussian line fluxes are integrated over the DAP fit window and tied multiplets; they are not aperture-corrected.",
+      "The DAP catalogues emission lines down to low S/N; individual spaxels can have large relative errors even when the integrated AGN spectrum is bright.",
+      "The published MAPS was produced with DAP 3.1.0 and the older DRP v3_1_1 reduction. Running DAP 4.5.0 on the same LOGCUBE is a code-version cross-check, not a bit-for-bit reproduction.",
+      "No extinction correction is applied to the DAP line fluxes. The Balmer decrement is reported as an observed ratio and is not corrected for stellar absorption."
+    ],
+    "fast_eline": {
+      "enabled": true,
+      "plan_file": "plan_moments.toml",
+      "fitclass": "mangadap.proc.sasuke.Sasuke",
+      "line_database": "ELPMPL11",
+      "n_bins_fit": 175,
+      "continuum": "official DAP pPXF stellar-continuum model, supplied as a fixed per-spectrum template",
+      "template_library": "per-spectrum pPXF model (not the 65-template MaStar-HC2 library)",
+      "ensemble": false,
+      "mdegree": 14,
+      "nproc": 8,
+      "note": "Fast fixed-continuum SASUKE mode on the 175 official DAP HYB10/S/N=50 bins. Full ELPMPL11 database, official pPXF continuum, official pixel mask/resolution, ensemble=False, mdegree=14. The all-spaxel 2397-bin full 65-template EmissionLineModel exceeded the time budget.",
+      "target_snr": 50.0
+    }
+  },
+  "outputs": [
+    {
+      "path": "aux_fastmode/README.md",
+      "size_bytes": 1366
+    },
+    {
+      "path": "aux_fastmode/comparison_fastmode/comparison_bpt.csv",
+      "size_bytes": 133
+    },
+    {
+      "path": "aux_fastmode/comparison_fastmode/comparison_bpt.json",
+      "size_bytes": 1041
+    },
+    {
+      "path": "aux_fastmode/comparison_fastmode/comparison_kinematics.csv",
+      "size_bytes": 1495
+    },
+    {
+      "path": "aux_fastmode/comparison_fastmode/comparison_lines.csv",
+      "size_bytes": 4978
+    },
+    {
+      "path": "aux_fastmode/comparison_fastmode/comparison_notes.md",
+      "size_bytes": 3411
+    },
+    {
+      "path": "aux_fastmode/comparison_fastmode/comparison_spaxels.csv",
+      "size_bytes": 1881580
+    },
+    {
+      "path": "aux_fastmode/comparison_fastmode/comparison_summary.json",
+      "size_bytes": 19272
+    },
+    {
+      "path": "aux_fastmode/comparison_fastmode/figures/comparison_bpt.pdf",
+      "size_bytes": 67472
+    },
+    {
+      "path": "aux_fastmode/comparison_fastmode/figures/comparison_bpt.png",
+      "size_bytes": 195717
+    },
+    {
+      "path": "aux_fastmode/comparison_fastmode/figures/comparison_flux_scatter.pdf",
+      "size_bytes": 33496
+    },
+    {
+      "path": "aux_fastmode/comparison_fastmode/figures/comparison_flux_scatter.png",
+      "size_bytes": 282130
+    },
+    {
+      "path": "aux_fastmode/comparison_fastmode/figures/comparison_kinematics_gas.pdf",
+      "size_bytes": 31076
+    },
+    {
+      "path": "aux_fastmode/comparison_fastmode/figures/comparison_kinematics_gas.png",
+      "size_bytes": 275366
+    },
+    {
+      "path": "aux_fastmode/comparison_fastmode/figures/comparison_kinematics_stellar.pdf",
+      "size_bytes": 33274
+    },
+    {
+      "path": "aux_fastmode/comparison_fastmode/figures/comparison_kinematics_stellar.png",
+      "size_bytes": 342302
+    },
+    {
+      "path": "aux_fastmode/comparison_fastmode/figures/comparison_residual_maps.pdf",
+      "size_bytes": 50066
+    },
+    {
+      "path": "aux_fastmode/comparison_fastmode/figures/comparison_residual_maps.png",
+      "size_bytes": 148905
+    },
+    {
+      "path": "aux_fastmode/fast_eline_bins.csv",
+      "size_bytes": 72081
+    },
+    {
+      "path": "aux_fastmode/figures/manga_dap_bpt_fastmode.pdf",
+      "size_bytes": 33550
+    },
+    {
+      "path": "aux_fastmode/figures/manga_dap_bpt_fastmode.png",
+      "size_bytes": 118139
+    },
+    {
+      "path": "aux_fastmode/figures/manga_dap_maps_fastmode.pdf",
+      "size_bytes": 74276
+    },
+    {
+      "path": "aux_fastmode/figures/manga_dap_maps_fastmode.png",
+      "size_bytes": 171312
+    },
+    {
+      "path": "aux_fastmode/figures/manga_dap_spectrum_fit_fastmode.pdf",
+      "size_bytes": 36691
+    },
+    {
+      "path": "aux_fastmode/figures/manga_dap_spectrum_fit_fastmode.png",
+      "size_bytes": 309073
+    },
+    {
+      "path": "aux_fastmode/fits/manga_dap_central_spectra_FASTMODE.fits",
+      "size_bytes": 230400
+    },
+    {
+      "path": "aux_fastmode/fits/manga_dap_key_maps_FASTMODE.fits.gz",
+      "size_bytes": 37993
+    },
+    {
+      "path": "aux_fastmode/fits/manga_dap_maps_FASTMODE.fits.gz",
+      "size_bytes": 1445680
+    },
+    {
+      "path": "aux_fastmode/line_summary_fastmode.csv",
+      "size_bytes": 2011
+    },
+    {
+      "path": "aux_fastmode/manga_lines_all_fastmode.csv.gz",
+      "size_bytes": 1538841
+    },
+    {
+      "path": "aux_fastmode/manga_lines_fastmode.csv",
+      "size_bytes": 3799686
+    },
+    {
+      "path": "aux_fastmode/maps_stats_fastmode.json",
+      "size_bytes": 2099
+    },
+    {
+      "path": "comparison/comparison_bins.csv",
+      "size_bytes": 6668
+    },
+    {
+      "path": "comparison/comparison_bpt.png",
+      "size_bytes": 67908
+    },
+    {
+      "path": "comparison/comparison_flux_scatter.png",
+      "size_bytes": 281055
+    },
+    {
+      "path": "comparison/comparison_kinematics.csv",
+      "size_bytes": 1543
+    },
+    {
+      "path": "comparison/comparison_kinematics.json",
+      "size_bytes": 760
+    },
+    {
+      "path": "comparison/comparison_lines.csv",
+      "size_bytes": 2576
+    },
+    {
+      "path": "comparison/comparison_notes.md",
+      "size_bytes": 2140
+    },
+    {
+      "path": "comparison/comparison_summary.json",
+      "size_bytes": 20982
+    },
+    {
+      "path": "effective_config.json",
+      "size_bytes": 46504
+    },
+    {
+      "path": "figures/manga_dap_spectrum_fit.pdf",
+      "size_bytes": 37878
+    },
+    {
+      "path": "figures/manga_dap_spectrum_fit.png",
+      "size_bytes": 292540
+    },
+    {
+      "path": "figures/manga_dap_subset_bpt.pdf",
+      "size_bytes": 23665
+    },
+    {
+      "path": "figures/manga_dap_subset_bpt.png",
+      "size_bytes": 67908
+    },
+    {
+      "path": "figures/manga_dap_subset_comparison.pdf",
+      "size_bytes": 25537
+    },
+    {
+      "path": "figures/manga_dap_subset_comparison.png",
+      "size_bytes": 281055
+    },
+    {
+      "path": "fits/dap_binned_spectra.fits.gz",
+      "size_bytes": 24511523
+    },
+    {
+      "path": "fits/dap_stage_a_moments_maps.fits.gz",
+      "size_bytes": 1659044
+    },
+    {
+      "path": "fits/dap_stellar_continuum.fits.gz",
+      "size_bytes": 4239342
+    },
+    {
+      "path": "fits/dap_subset_central_spectra.fits",
+      "size_bytes": 230400
+    },
+    {
+      "path": "fits/dap_subset_maps.fits.gz",
+      "size_bytes": 888289
+    },
+    {
+      "path": "line_summary.csv",
+      "size_bytes": 452
+    },
+    {
+      "path": "logs/full_dap_attempt_2397_tail.log",
+      "size_bytes": 300204
+    },
+    {
+      "path": "logs/full_dap_attempt_summary.txt",
+      "size_bytes": 3051
+    },
+    {
+      "path": "logs/manga_dap.log",
+      "size_bytes": 34818
+    },
+    {
+      "path": "logs/manga_dap_subset.log",
+      "size_bytes": 36703
+    },
+    {
+      "path": "manga_lines.csv",
+      "size_bytes": 6668
+    },
+    {
+      "path": "provenance.md",
+      "size_bytes": 9180
+    },
+    {
+      "path": "run.json",
+      "size_bytes": 66559
+    },
+    {
+      "path": "stage_a.json",
+      "size_bytes": 922
+    },
+    {
+      "path": "subset_bins.csv",
+      "size_bytes": 6668
+    },
+    {
+      "path": "subset_comparison.json",
+      "size_bytes": 20982
+    },
+    {
+      "path": "subset_comparison_lines.csv",
+      "size_bytes": 2576
+    },
+    {
+      "path": "subset_kinematics.csv",
+      "size_bytes": 1543
+    },
+    {
+      "path": "subset_kinematics.json",
+      "size_bytes": 760
+    },
+    {
+      "path": "subset_stats.json",
+      "size_bytes": 5979
+    }
+  ],
+  "products": {
+    "subset_maps": "fits/dap_subset_maps.fits.gz",
+    "subset_central_spectra": "fits/dap_subset_central_spectra.fits",
+    "stage_a_moments_maps": "fits/dap_stage_a_moments_maps.fits.gz",
+    "binned_spectra": "fits/dap_binned_spectra.fits.gz",
+    "stellar_continuum": "fits/dap_stellar_continuum.fits.gz",
+    "line_table": "manga_lines.csv (9 selected bins)",
+    "subset_bins": "subset_bins.csv",
+    "comparison": "comparison/",
+    "figures": [
+      "figures/manga_dap_spectrum_fit.png",
+      "figures/manga_dap_subset_comparison.png",
+      "figures/manga_dap_subset_bpt.png"
+    ],
+    "aux_fastmode": "aux_fastmode/ (FASTMODE_NOT_PRODUCTION)"
+  },
+  "configuration": {
+    "_comment": "Effective MaNGA DAP configuration for NGC 1194 (plateifu 9193-12701). The executable DAP run is Tools/manga_dap/run_manga_dap.py with this directory mounted at /app/config. plan.toml is passed verbatim to mangadap.config.analysisplan.MaNGAAnalysisPlan; config.json records the scientific choices and the reviewable metadata.",
+    "tool": "manga_dap",
+    "variant": "default",
+    "upstream": {
+      "repo": "https://github.com/sdss/mangadap",
+      "package": "sdss-mangadap",
+      "version": "4.5.0",
+      "license": "BSD-3-Clause",
+      "citation": "Westfall et al. 2019 (AJ 158, 231); Belfiore et al. 2019 (AJ 158, 160)"
+    },
+    "source": {
+      "key": "NGC1194_z_0.0136",
+      "name": "NGC 1194",
+      "plateifu": "9193-12701",
+      "plate": 9193,
+      "ifu_design": 12701,
+      "ra_deg": 45.954624,
+      "dec_deg": -1.10375,
+      "z": 0.0136253,
+      "z_reference": "NSA v1_0_1 via SDSS DR17 DRPall v3_1_1",
+      "catalog": "MaNGA AGN Catalog VAC (Comerford et al. 2020)",
+      "morphology": "SA(s)0/a? Sy2",
+      "urls": {
+        "manga_cube": "https://data.sdss.org/sas/dr17/manga/spectro/redux/v3_1_1/9193/stack/manga-9193-12701-LOGCUBE.fits.gz",
+        "manga_rss": "https://data.sdss.org/sas/dr17/manga/spectro/redux/v3_1_1/9193/stack/manga-9193-12701-LOGRSS.fits.gz",
+        "manga_maps_reference": "https://data.sdss.org/sas/dr17/manga/spectro/analysis/v3_1_1/3.1.0/HYB10-MILESHC-MASTARHC2/9193/12701/manga-9193-12701-MAPS-HYB10-MILESHC-MASTARHC2.fits.gz"
+      }
+    },
+    "dap": {
+      "daptype": "HYB10-MILESHC-MASTARHC2",
+      "plan_file": "plan.toml",
+      "drp_version": "v3_1_1",
+      "dap_code_version": "4.5.0",
+      "reference_product_version": "3.1.0",
+      "input_product": "LOGCUBE",
+      "output_products": [
+        "MAPS",
+        "LOGCUBE model"
+      ],
+      "analysis_stages": [
+        "rdxqa",
+        "binning",
+        "continuum",
+        "eline_moments",
+        "indices",
+        "sasuke_full_method_subset"
+      ],
+      "note": "The full manga_dap() workflow is executed. The published v3_1_1/3.1.0 MAPS is used only as an independent reference for comparison.",
+      "plan_file_moments": "plan_moments.toml",
+      "production_mode": "Official DAP Stage A (rdxqa + HYB10/S/N=50 binning + pPXF + EMOM + INDXEN) and official full-method SASUKE on the 9 central single-spaxel bins. The all-spaxel 2397-bin 65-template EmissionLineModel exceeded the 58 min budget and was killed; the published official MAPS is the all-spaxel reference. The fast fixed-continuum all-spaxel mode is auxiliary only.",
+      "full_attempt": {
+        "status": "did_not_complete",
+        "daptype": "HYB10-MILESHC-MASTARHC2",
+        "target_snr": 10,
+        "n_bins": 2397,
+        "attempt": "full 65-template MaStar-HC2 EmissionLineModel on 2397 bins",
+        "wall_time_minutes": 58,
+        "cpu": "100% of one core",
+        "progress": "reached Fitting spectrum 157/2397; killed by 3500 s cap",
+        "blocker": "The all-spaxel survey emission-line stage is not viable on this 8-core host within the budget. The completed 175-bin S/N=50 fast/central-bin run plus the published official MAPS is the acceptance product."
+      },
+      "plan_file_subset": "plan_subset.toml"
+    },
+    "metadata": {
+      "z": 0.0136253,
+      "vdisp_kms_initial": 100.0,
+      "ell": 0.304294,
+      "pa_deg": 143.959,
+      "reff_arcsec": 14.8759,
+      "ebv_galactic": 0.0764222,
+      "source": "z from NSA; ell=1-NSA_ELPETRO_BA, pa=NSA_ELPETRO_PHI, reff=NSA_ELPETRO_TH50_R; vdisp not available in DRPall and left at the DAP default 100 km/s; E(B-V) from the LOGCUBE EBVGAL header keyword.",
+      "metadata_are_initial_values": true
+    },
+    "binning": {
+      "key": "HYB10",
+      "spatial_method": "voronoi",
+      "target_snr": 50.0,
+      "covar_mode": "matrix",
+      "spectral_covar_mode": "channels",
+      "spectral_covar_par": 11,
+      "note": "HYB10 hybrid binning at S/N=50 (175 bins) for the completed production validation. The official DAPTYPE string is HYB10-MILESHC-MASTARHC2; the target S/N is a config choice. The full all-spaxel target S/N=10 run (2397 bins) exceeded the time budget and was killed; see dap.full_attempt."
+    },
+    "continuum": {
+      "key": "MILESHC",
+      "fit_method": "ppxf",
+      "minimum_snr": 1.0,
+      "template_library": "MILESHC",
+      "template_file_search": "miles_cluster/*.fits",
+      "matched_resolution": true,
+      "velscale_ratio": 4,
+      "artifact_mask": "BADSKY",
+      "emission_line_mask": "ELPSCMSK",
+      "moments": 2,
+      "note": "Stellar kinematics: pPXF with the MILES-HC library, 4x velocity-scale ratio, additive polynomial degree 8, no multiplicative polynomial."
+    },
+    "emission_line_moments": {
+      "key": "EMOM",
+      "artifact_mask": "BADSKY",
+      "note": "Non-parametric moments are measured for every line in the database as a model-independent cross-check on the Gaussian fits."
+    },
+    "emission_line_fit": {
+      "key": "EFITHC2",
+      "fit_method": "sasuke",
+      "line_database": "ELPMPL11",
+      "line_database_file": "mangadap/data/emission_lines/elpmpl11.par",
+      "template_library": "MASTARHC2",
+      "template_file_search": "mastarhc_v2/*.fits.gz",
+      "etpl_line_sigma_mode": "offset",
+      "etpl_line_sigma_min_kms": 10.0,
+      "artifact_mask": "BADSKY",
+      "deconstruct_bins": "binid",
+      "reject_boxcar": 101,
+      "velscale_ratio": 1,
+      "mdegree": 14,
+      "note": "Single-Gaussian per line (with the DAP multiplet ties and fixed flux ratios from elpmpl11.par), fitted simultaneously over the full spectral window with the stellar continuum fixed from the pPXF model. No broad-line, Fe II or Balmer-continuum component is present in the DAP model; this is a narrow-line DAP, not a QSO broad-line fitter."
+    },
+    "line_database": {
+      "key": "ELPMPL11",
+      "n_channels": 35,
+      "wavelength_reference": "vacuum",
+      "wavelength_source": "NIST Ritz wavelengths as distributed in mangadap/data/emission_lines/elpmpl11.par",
+      "channel_file": "line_database.csv",
+      "key_lines": {
+        "Halpha": "Ha-6564",
+        "Hbeta": "Hb-4862",
+        "OIII_5007": "OIII-5008",
+        "NII_6584": "NII-6585",
+        "SII_6716": "SII-6718",
+        "SII_6731": "SII-6732"
+      },
+      "note": "Some channels are tied: [O III] 4959 is tied to 5007 at 0.35, [N II] 6548 is tied to 6584 at 0.34, [S II] 6716/6731 are independent, and the [O I] 6300/6364 pair is tied at 0.32. The tied channels are still reported by the DAP."
+    },
+    "uncertainty": {
+      "mode": "formal least-squares covariance from the DAP SASUKE fit",
+      "flux_error": "1/sqrt(EMLINE_GFLUX_IVAR)",
+      "velocity_error": "1/sqrt(EMLINE_GVEL_IVAR)",
+      "sigma_error": "1/sqrt(EMLINE_GSIGMA_IVAR)",
+      "minimum_error": "numpy.finfo(numpy.float32).eps (DAP default)",
+      "mcmc": false,
+      "mcmc_note": "The MaNGA DAP is not an MCMC sampler. Errors are the formal covariance propagated by the DAP; they do not include model-systematic scatter.",
+      "ratio_error": "analytic propagation from the two Gaussian flux errors, ignoring covariance between lines from the same fit",
+      "bpt_error_note": "BPT positions use the DAP Gaussian fluxes. Classification boundaries are applied to the central value; no probabilistic class membership is claimed."
+    },
+    "bpt": {
+      "diagnostics": [
+        "N2BPT: log10([N II] 6584 / Halpha) vs log10([O III] 5007 / Hbeta)",
+        "S2BPT: log10([S II] 6716+6731 / Halpha) vs log10([O III] 5007 / Hbeta)"
+      ],
+      "star_forming_boundary": "Kauffmann et al. (2003): log10([O III]/Hbeta) = 0.61/(log10([N II]/Halpha)-0.05)+1.30",
+      "agn_boundary": "Kewley et al. (2001): log10([O III]/Hbeta) = 0.61/(log10([N II]/Halpha)-0.47)+1.19",
+      "seyfert_liner_boundary": "Kewley et al. (2006): log10([O III]/Hbeta) = 1.05 + 0.45*log10([S II]/Halpha); above this line is LINER-like, below is Seyfert-like",
+      "classes": [
+        "star_forming",
+        "composite",
+        "seyfert",
+        "liner",
+        "agn_unclassified",
+        "unclassified"
+      ]
+    },
+    "templates": {
+      "MILESHC": {
+        "file_search": "miles_cluster/*.fits",
+        "fwhm_arcsec": 2.5,
+        "in_vacuum": false,
+        "wave_limit_A": [
+          3575.0,
+          7400.0
+        ],
+        "log10": false,
+        "source": "bundled in the sdss-mangadap 4.5.0 wheel under mangadap/data/spectral_templates/miles_cluster"
+      },
+      "MASTARHC2": {
+        "file_search": "mastarhc_v2/*.fits.gz",
+        "sres_ext": "SRES",
+        "in_vacuum": true,
+        "log10": true,
+        "source": "bundled in the sdss-mangadap 4.5.0 wheel under mangadap/data/spectral_templates/mastarhc_v2"
+      },
+      "hash_record": "effective_config.json records the SHA-256 of every template, line-database and artifact file actually read by the DAP."
+    },
+    "comparison": {
+      "reference": "published SDSS DAP MAPS v3_1_1/3.1.0 HYB10-MILESHC-MASTARHC2",
+      "reference_file": "inputs/NGC1194_z_0.0136/raw/manga-9193-12701-MAPS-HYB10-MILESHC-MASTARHC2.fits.gz",
+      "metrics": [
+        "per-spaxel flux ratio and fractional difference",
+        "Pearson correlation",
+        "median offset and robust scatter",
+        "formal-error ratio",
+        "BPT class agreement",
+        "stellar and gas kinematics offsets"
+      ],
+      "validity": "Only spaxels with finite, positive flux and zero DAP mask bits in both products are compared. Spaxels are correlated by the HYB10 binning, so the number of independent measurements is the number of bins, not the number of spaxels."
+    },
+    "limitations": [
+      "Only the 9 central single-spaxel HYB10 bins are measured with the official full-method SASUKE. This is not a spatially complete IFU map; the published official MAPS is the all-spaxel reference.",
+      "The full all-spaxel 2397-bin 65-template EmissionLineModel did not complete within the 58 min wall-clock budget and was killed; no all-spaxel DAP MAPS was produced by this repository.",
+      "The fast fixed-continuum all-spaxel mode is auxiliary only and is rejected as production (H-alpha ratio 2.37, [N II] 0.53, BPT agreement 41%, gas velocity offset +175 km/s).",
+      "The DAP is a narrow-line single-Gaussian model. It does not fit broad Balmer lines, Fe II, Balmer continuum or AGN outflows.",
+      "Gaussian line fluxes are integrated over the DAP fit window and tied multiplets; they are not aperture-corrected.",
+      "No extinction correction is applied to the DAP line fluxes.",
+      "The published MAPS was produced with DAP 3.1.0; this run uses 4.5.0, so the comparison is a code-version cross-check, not a bit-for-bit reproduction.",
+      "BPT classes are discrete and boundary-sensitive; NGC 1194 sits near the Seyfert/LINER boundary."
+    ],
+    "fast_eline": {
+      "enabled": false,
+      "plan_file": "plan_moments.toml",
+      "fitclass": "mangadap.proc.sasuke.Sasuke",
+      "line_database": "ELPMPL11",
+      "n_bins_fit": 175,
+      "continuum": "official DAP pPXF stellar-continuum model, supplied as a fixed per-spectrum template",
+      "template_library": "per-spectrum pPXF model (not the 65-template MaStar-HC2 library)",
+      "ensemble": false,
+      "mdegree": 14,
+      "nproc": 8,
+      "note": "Fast fixed-continuum all-spaxel mode. Rejected as production: biased H-alpha/[N II]/[S II], BPT agreement 41%, gas velocity offset +175 km/s. Retained only in aux_fastmode/ with FITS headers QUALITY=FASTMODE_NOT_PRODUCTION, ACCEPT=0.",
+      "target_snr": 50.0,
+      "role": "auxiliary only",
+      "quality_flag": "FASTMODE_NOT_PRODUCTION",
+      "acceptance": false,
+      "rejection_metrics": {
+        "ha_median_ratio": 2.37,
+        "hb_median_ratio": 0.89,
+        "oiii_5007_median_ratio": 1.01,
+        "nii_6584_median_ratio": 0.53,
+        "bpt_agreement_fraction": 0.408,
+        "gas_velocity_ha_offset_kms": 175.5
+      }
+    },
+    "subset": {
+      "enabled": true,
+      "n_bins": 9,
+      "plan_file": "plan_subset.toml",
+      "selected_binids": [
+        97,
+        57,
+        0,
+        107,
+        110,
+        1,
+        94,
+        101,
+        120
+      ],
+      "fit_method": "official mangadap EmissionLineModel + Sasuke (65 MaStar-HC2 templates, ELPMPL11, mdegree=14, deconstruct_bins=ignore)",
+      "runtime_seconds": 393.4,
+      "comparison": {
+        "ha_median_ratio": 0.99985,
+        "hb_median_ratio": 0.9995,
+        "oiii_5007_median_ratio": 0.99999,
+        "nii_6584_median_ratio": 0.99986,
+        "sii_6716_median_ratio": 0.99997,
+        "sii_6731_median_ratio": 0.99999,
+        "bpt_agreement": "9/9",
+        "kinematics": {
+          "ha_vel_offset_kms": 0.001,
+          "ha_sigma_offset_kms": -0.016,
+          "stellar_vel_offset_kms": 0.0001,
+          "stellar_sigma_offset_kms": -0.0004,
+          "n_bins": 9
+        }
+      },
+      "acceptance": true,
+      "note": "Selected central 3x3 single-spaxel bins; not a spatially complete map."
+    }
+  },
+  "files": [
+    {
+      "path": "aux_fastmode/README.md",
+      "size_bytes": 1366
+    },
+    {
+      "path": "aux_fastmode/comparison_fastmode/comparison_bpt.csv",
+      "size_bytes": 133
+    },
+    {
+      "path": "aux_fastmode/comparison_fastmode/comparison_bpt.json",
+      "size_bytes": 1041
+    },
+    {
+      "path": "aux_fastmode/comparison_fastmode/comparison_kinematics.csv",
+      "size_bytes": 1495
+    },
+    {
+      "path": "aux_fastmode/comparison_fastmode/comparison_lines.csv",
+      "size_bytes": 4978
+    },
+    {
+      "path": "aux_fastmode/comparison_fastmode/comparison_notes.md",
+      "size_bytes": 3411
+    },
+    {
+      "path": "aux_fastmode/comparison_fastmode/comparison_spaxels.csv",
+      "size_bytes": 1881580
+    },
+    {
+      "path": "aux_fastmode/comparison_fastmode/comparison_summary.json",
+      "size_bytes": 19272
+    },
+    {
+      "path": "aux_fastmode/comparison_fastmode/figures/comparison_bpt.pdf",
+      "size_bytes": 67472
+    },
+    {
+      "path": "aux_fastmode/comparison_fastmode/figures/comparison_bpt.png",
+      "size_bytes": 195717
+    },
+    {
+      "path": "aux_fastmode/comparison_fastmode/figures/comparison_flux_scatter.pdf",
+      "size_bytes": 33496
+    },
+    {
+      "path": "aux_fastmode/comparison_fastmode/figures/comparison_flux_scatter.png",
+      "size_bytes": 282130
+    },
+    {
+      "path": "aux_fastmode/comparison_fastmode/figures/comparison_kinematics_gas.pdf",
+      "size_bytes": 31076
+    },
+    {
+      "path": "aux_fastmode/comparison_fastmode/figures/comparison_kinematics_gas.png",
+      "size_bytes": 275366
+    },
+    {
+      "path": "aux_fastmode/comparison_fastmode/figures/comparison_kinematics_stellar.pdf",
+      "size_bytes": 33274
+    },
+    {
+      "path": "aux_fastmode/comparison_fastmode/figures/comparison_kinematics_stellar.png",
+      "size_bytes": 342302
+    },
+    {
+      "path": "aux_fastmode/comparison_fastmode/figures/comparison_residual_maps.pdf",
+      "size_bytes": 50066
+    },
+    {
+      "path": "aux_fastmode/comparison_fastmode/figures/comparison_residual_maps.png",
+      "size_bytes": 148905
+    },
+    {
+      "path": "aux_fastmode/fast_eline_bins.csv",
+      "size_bytes": 72081
+    },
+    {
+      "path": "aux_fastmode/figures/manga_dap_bpt_fastmode.pdf",
+      "size_bytes": 33550
+    },
+    {
+      "path": "aux_fastmode/figures/manga_dap_bpt_fastmode.png",
+      "size_bytes": 118139
+    },
+    {
+      "path": "aux_fastmode/figures/manga_dap_maps_fastmode.pdf",
+      "size_bytes": 74276
+    },
+    {
+      "path": "aux_fastmode/figures/manga_dap_maps_fastmode.png",
+      "size_bytes": 171312
+    },
+    {
+      "path": "aux_fastmode/figures/manga_dap_spectrum_fit_fastmode.pdf",
+      "size_bytes": 36691
+    },
+    {
+      "path": "aux_fastmode/figures/manga_dap_spectrum_fit_fastmode.png",
+      "size_bytes": 309073
+    },
+    {
+      "path": "aux_fastmode/fits/manga_dap_central_spectra_FASTMODE.fits",
+      "size_bytes": 230400
+    },
+    {
+      "path": "aux_fastmode/fits/manga_dap_key_maps_FASTMODE.fits.gz",
+      "size_bytes": 547200
+    },
+    {
+      "path": "aux_fastmode/fits/manga_dap_maps_FASTMODE.fits.gz",
+      "size_bytes": 29972160
+    },
+    {
+      "path": "aux_fastmode/fits/tmpcdzbhyyd",
+      "size_bytes": 29972160
+    },
+    {
+      "path": "aux_fastmode/line_summary_fastmode.csv",
+      "size_bytes": 2011
+    },
+    {
+      "path": "aux_fastmode/manga_lines_all_fastmode.csv.gz",
+      "size_bytes": 1538841
+    },
+    {
+      "path": "aux_fastmode/manga_lines_fastmode.csv",
+      "size_bytes": 3799686
+    },
+    {
+      "path": "aux_fastmode/maps_stats_fastmode.json",
+      "size_bytes": 2099
+    },
+    {
+      "path": "comparison/comparison_bins.csv",
+      "size_bytes": 6668
+    },
+    {
+      "path": "comparison/comparison_bpt.png",
+      "size_bytes": 67908
+    },
+    {
+      "path": "comparison/comparison_flux_scatter.png",
+      "size_bytes": 281055
+    },
+    {
+      "path": "comparison/comparison_lines.csv",
+      "size_bytes": 2576
+    },
+    {
+      "path": "comparison/comparison_summary.json",
+      "size_bytes": 20982
+    },
+    {
+      "path": "effective_config.json",
+      "size_bytes": 66054
+    },
+    {
+      "path": "figures/manga_dap_spectrum_fit.pdf",
+      "size_bytes": 37878
+    },
+    {
+      "path": "figures/manga_dap_spectrum_fit.png",
+      "size_bytes": 292540
+    },
+    {
+      "path": "figures/manga_dap_subset_bpt.pdf",
+      "size_bytes": 23665
+    },
+    {
+      "path": "figures/manga_dap_subset_bpt.png",
+      "size_bytes": 67908
+    },
+    {
+      "path": "figures/manga_dap_subset_comparison.pdf",
+      "size_bytes": 25537
+    },
+    {
+      "path": "figures/manga_dap_subset_comparison.png",
+      "size_bytes": 281055
+    },
+    {
+      "path": "fits/dap_binned_spectra.fits.gz",
+      "size_bytes": 24511523
+    },
+    {
+      "path": "fits/dap_stage_a_moments_maps.fits.gz",
+      "size_bytes": 36017280
+    },
+    {
+      "path": "fits/dap_stellar_continuum.fits.gz",
+      "size_bytes": 4239342
+    },
+    {
+      "path": "fits/dap_subset_central_spectra.fits",
+      "size_bytes": 230400
+    },
+    {
+      "path": "fits/dap_subset_maps.fits.gz",
+      "size_bytes": 36017280
+    },
+    {
+      "path": "line_summary.csv",
+      "size_bytes": 452
+    },
+    {
+      "path": "logs/full_dap_attempt_2397_tail.log",
+      "size_bytes": 300204
+    },
+    {
+      "path": "logs/full_dap_attempt_summary.txt",
+      "size_bytes": 3051
+    },
+    {
+      "path": "logs/manga_dap.log",
+      "size_bytes": 34818
+    },
+    {
+      "path": "logs/manga_dap_subset.log",
+      "size_bytes": 36703
+    },
+    {
+      "path": "manga_lines.csv",
+      "size_bytes": 6668
+    },
+    {
+      "path": "provenance.md",
+      "size_bytes": 8871
+    },
+    {
+      "path": "run.json",
+      "size_bytes": 67298
+    },
+    {
+      "path": "stage_a.json",
+      "size_bytes": 922
+    },
+    {
+      "path": "subset_bins.csv",
+      "size_bytes": 6668
+    },
+    {
+      "path": "subset_comparison.json",
+      "size_bytes": 20982
+    },
+    {
+      "path": "subset_comparison_lines.csv",
+      "size_bytes": 2576
+    },
+    {
+      "path": "subset_stats.json",
+      "size_bytes": 5979
+    }
+  ],
+  "docker_subset_validation": {
+    "status": "ok_subset",
+    "runtime_seconds": 390.5712404740043,
+    "n_bins": 9,
+    "note": "same run_official_subset.py inside the final image with the Stage-A tree mounted read-only; ratios and 9/9 BPT identical"
+  }
+}

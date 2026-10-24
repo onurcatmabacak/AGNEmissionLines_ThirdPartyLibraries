@@ -14,7 +14,7 @@ The two families are deliberately separate:
 | family | tools | output |
 |---|---|---|
 | Broad-band SED / torus | `cigale_sed`, `agnfitter_sed` | stellar mass, AGN fraction, torus luminosity, model-family spread |
-| Spectral line fitting | `pyqsofit_uv`, `qsofitmore_line`, `pyqsofitspec_line`, `ir_linefit`, `nir_linefit`, `fir_linefit`, `pahfit_mir`, `cafe_line`, `s3fit_line`, `gandalf_line`, `galspec_line`, `qgfit`, `sheap_line`, `crossband` | line flux, FWHM, velocity, equivalent width, ratios |
+| Spectral line fitting | `pyqsofit_uv`, `qsofitmore_line`, `pyqsofitspec_line`, `ir_linefit`, `nir_linefit`, `fir_linefit`, `pahfit_mir`, `cafe_line`, `s3fit_line`, `gandalf_line`, `galspec_line`, `qgfit`, `sheap_line`, `manga_dap`, `crossband` | line flux, FWHM, velocity, equivalent width, ratios |
 | Host/continuum decomposition | `ppxf_host` | stellar velocity dispersion, host fraction |
 
 `gandalf_line/default/` is a complete tool configuration rather than a tuning
@@ -23,6 +23,13 @@ variant: it contains the GANDALF emission-line setup and the fit controls
 `galspec_line/default/` is likewise a complete configuration: main/aux windows,
 continuum and Fe II, Gaussian component bounds, fitter, error floor and
 emcee/dynesty controls. See `configs/galspec_line/README.md`.
+`manga_dap/default/` is a complete configuration: `config.json`, the full
+`plan.toml`, the Stage-A `plan_moments.toml`, the full-method subset
+`plan_subset.toml` and `line_database.csv`.  The accepted result is the
+full-method SASUKE fit on the 9 central single-spaxel bins; the fast
+fixed-continuum all-spaxel mode is flagged `FASTMODE_NOT_PRODUCTION`.  See
+`configs/manga_dap/default/README.md`.
+
 `qsofitmore_line/default/` is a complete configuration: the effective line
 table, the V09 Fe II / broken power law / Balmer-continuum switches, the
 SFD98+F99 extinction choice, the 1200 km/s narrow-line cap, and the 200-draw
@@ -52,6 +59,7 @@ the broad-band SED with templates.
 | `sheap_line` | JAX optimisation + parametric-bootstrap MC (not MCMC) |
 | `gandalf_line` | native MPFIT covariance/`FOR_ERRORS`; fallback bootstrap if GDL unavailable |
 | `ir_linefit`/`nir_linefit`/`fir_linefit` | covariance from `least_squares`/`curve_fit` |
+| `manga_dap` | DAP formal covariance (`1/sqrt(IVAR)`); no MCMC; official full-method SASUKE on 9 central bins |
 | `ppxf_host` | pPXF formal errors |
 | `crossband` | analytic ratio error propagation |
 
@@ -80,6 +88,7 @@ configs/
   sheap_line/default/config.json
   crossband/default/config.json
   ppxf_host/default/config.json
+  manga_dap/default/{config.json,plan.toml,plan_moments.toml,plan_subset.toml,line_database.csv}
   cigale_sed/{skirtor2016,fritz2006}/config.json
   agnfitter_sed/default/config.json
 ```

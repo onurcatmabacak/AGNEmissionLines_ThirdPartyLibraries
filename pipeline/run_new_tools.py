@@ -42,7 +42,7 @@ SPITZER_IRS = ",".join([
 ALL_TOOLS = ("ir_linefit", "pyqsofit_uv", "qsofitmore_line", "pyqsofitspec_line", "ppxf_host",
              "gandalf_line", "nir_linefit", "pahfit_mir", "fir_linefit", "cafe_line",
              "crossband", "cigale_sed", "agnfitter_sed", "s3fit_line", "galspec_line",
-             "qgfit", "sheap_line")
+             "qgfit", "sheap_line", "manga_dap")
 
 
 def log(msg: str):
@@ -124,6 +124,17 @@ def tool_pyqsofitspec(src: dict, out: Path, logp: Path, nboot: int | None = None
     cmd += ["--config", config or str(ROOT / "configs" / "pyqsofitspec_line" / "default")]
     if nboot is not None:
         cmd += ["--nboot", str(nboot)]
+    return run(cmd, logp)
+
+
+def tool_manga_dap(src: dict, out: Path, logp: Path) -> int:
+    """Official MaNGA DAP subset on the real LOGCUBE (Stage A + 9-bin SASUKE)."""
+    refs = source_files(src, "manga_maps_reference")
+    if not refs:
+        return _skip("no published DAP MAPS reference")
+    cmd = [str(ROOT / "Pipelines" / "run_manga_dap_docker.sh"),
+           str(Path(src["_path"])), str(out),
+           "--reference", str(refs[0]), "--n-bins", "9"]
     return run(cmd, logp)
 
 
@@ -414,6 +425,7 @@ def main(argv=None):
                 "pyqsofitspec_line": lambda: tool_pyqsofitspec(src, out, logp,
                                                                args.pyqsofitspec_nboot,
                                                                args.pyqsofitspec_config),
+                "manga_dap": lambda: tool_manga_dap(src, out, logp),
                 "ppxf_host": lambda: tool_ppxf(src, out, logp),
                 "gandalf_line": lambda: tool_gandalf(src, out, logp),
                 "galspec_line": lambda: tool_galspec(src, out, logp,

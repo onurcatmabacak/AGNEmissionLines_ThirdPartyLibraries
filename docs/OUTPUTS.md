@@ -22,6 +22,7 @@ Tools and expected files:
 | `ir_linefit` | `*.route.json`, `*.measurements.csv`, `*.fit.png/pdf` |
 | `pyqsofit_uv` | `result.png/pdf`, `output.fits`, `qsopar.fits`, `pyqsofit_model.csv`, `pyqsofit_lines.csv` |
 | `qsofitmore_line` | `qsofitmore_lines.csv`, `qsofitmore_components.csv`, `qsofitmore_mc_samples.csv`, `qsofitmore_mc_summary.csv`, `qsofitmore_corner.png/pdf`, `qsofitmore_mgii_corner.png/pdf`, `qsofitmore_uncertainty.png/pdf`, `qsofitmore_fit.png/pdf`, `qsofitmore_result.fits/csv`, `qsofitmore_continuum.csv`, `config.effective.json`, `run.json`, `systematics/` |
+| `manga_dap` | `manga_lines.csv`/`subset_bins.csv` (9 central official bins), `subset_comparison.json`, `subset_kinematics.csv/json`, `fits/dap_subset_maps.fits.gz`, `fits/dap_subset_central_spectra.fits`, `fits/dap_stage_a_moments_maps.fits.gz`, `figures/manga_dap_spectrum_fit.png`, `comparison/`, `run.json`, `provenance.md`; `aux_fastmode/` is flagged `FASTMODE_NOT_PRODUCTION` |
 | `ppxf_host` | `ppxf_fit.png/pdf`, `ppxf_model.csv`, `ppxf_result.fits`, `ppxf_summary.json` |
 | `gandalf_line` | `gandalf_lines.csv`, `line_yield_summary.txt`, `gandalf_fit.png/pdf`, `gandalf_uncertainty.png/pdf`, `gandalf_fit.fits`, `gandalf_input.fits`, `gandalf_model.csv`, `gandalf_lines_raw.csv`, `gandalf_meta.txt`, `gandalf_run.log`, `run.json` |
 | `nir_linefit` | route/measurements/figure for the NIR spectrum |

@@ -34,6 +34,7 @@ input policy: one source, one raw payload, one manifest.
 | `Mrk231_z_0.0422` | 0.04217 | Spitzer IRS | `mir_table` | pahfit_mir, ir_linefit, crossband |
 | `NGC253_z_0.0008` | 0.000811 | Spitzer IRS + Herschel PACS/HIFI | `mir_table`, `pacs`, `spectrum` | pahfit_mir, fir_linefit, ir_linefit, crossband |
 | `synthetic_fir_z_0.5000` | 0.500 | synthetic PACS-like | `spectrum` | fir_linefit, ir_linefit |
+| `NGC1194_z_0.0136` | 0.0136253 | real MaNGA DR17 AGN (Sy2) | `manga_cube`, `manga_rss`, `manga_maps_reference` | manga_dap |
 | `synthetic_multiband_z_0.0000` | 0.000 | synthetic ratios | `ratios` | crossband |
 
 `ir` = `ir_linefit` (the generic `pipeline_ir` fitter).
@@ -52,6 +53,7 @@ input policy: one source, one raw payload, one manifest.
 * NGC 1068, NGC 253: Herschel/PACS HPDP extracted spectra from the ESA HSA
   (`hpacs..._POC_*.fits.gz`); NGC 1068 also HIFI HPDP.
 * Mrk 231, NGC 253, NGC 4151: Spitzer IRS Enhanced `*_merge.tbl` from IRSA.
+* NGC 1194 (plateifu 9193-12701): real MaNGA DR17 LOGCUBE/LOGRSS and the published DAP MAPS, downloaded by `NGC1194_z_0.0136/download.sh`; the two DRP cubes are Git-ignored (>100 MB) and SHA-256 verified.  See `source.json`.
 * Synthetic files are labelled `synthetic_*`; they are not real sources.
 
 The PACS files were extracted from the public HSA product

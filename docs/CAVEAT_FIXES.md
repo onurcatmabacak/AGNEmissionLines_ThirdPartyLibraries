@@ -58,10 +58,14 @@
   (χ²_ν = 46).  The 2026-08 audit replaced that model; the production fit now
   gives 2.02 with χ²_ν = 2.9 (see `docs/SHEAP_ASSESSMENT.md`).  A hard quality
   gate prevents a failing SHEAP fit from entering the cross-tool comparison.
-* **Official SDSS DAPs** (MaNGA/LVM) require IFU cubes and are excluded from
-  this single-fiber sample; **AMARU**, **ELFO**, **AGNdecompose**, **pyspeckit**
-  and **HEASOFT** are excluded for the reasons in
-  `docs/OFFICIAL_PIPELINES_AND_XRAY.md`.
+* **Official SDSS DAPs** require IFU cubes.  The MaNGA DAP is now implemented
+  as a separate IFU branch (`manga_dap`, real NGC 1194); LVM-DAP remains
+  excluded.  The MaNGA accepted product is the **official full-method SASUKE
+  fit on 9 central single-spaxel bins**; the all-spaxel 2397-bin fit exceeded
+  the 58 min budget and the published MAPS is the all-spaxel reference.  The
+  fast fixed-continuum all-spaxel mode is rejected (`FASTMODE_NOT_PRODUCTION`).
+  **AMARU**, **ELFO**, **AGNdecompose**, **pyspeckit** and **HEASOFT** are
+  excluded for the reasons in `docs/OFFICIAL_PIPELINES_AND_XRAY.md`.
 * **Production matrix (2026-10-24):** CAFE VV114 rms 0.143/χ²ν 2.68;
   S3Fit spec+sed 10 mocks χ²ν 1.035; GANDALF low-z pPXF accepted
   (V=72.5, σ=79.9 km/s); PAHFIT PDS short/long/both **0.0088/0.017/0.038**,

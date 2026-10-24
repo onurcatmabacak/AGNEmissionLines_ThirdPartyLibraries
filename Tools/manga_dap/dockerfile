@@ -1,0 +1,87 @@
+# MaNGA Data Analysis Pipeline (official sdss-mangadap 4.5.0)
+#
+# Build context is the repository root:
+#   docker build --network=host -f Tools/manga_dap/dockerfile -t manga_dap .
+# or:
+#   bash Pipelines/build_images.sh manga_dap
+#
+# The image is deliberately separate from the shared venv: sdss-mangadap
+# 4.5.0 requires numpy>=2.4.1, astropy>=7 and ppxf==8.1.0, and it ships the
+# MILES-HC and MaStar-HC2 template libraries used by the DAP.
+FROM python:3.12-slim-bookworm
+
+ARG MANGADAP_VERSION=4.5.0
+ARG MANGADAP_COMMIT=996b46cb9739126fe0fbe69c1a50d8490d924853
+
+LABEL org.opencontainers.image.title="manga_dap" \
+      org.opencontainers.image.description="Official SDSS MaNGA Data Analysis Pipeline (sdss-mangadap 4.5.0) for IFU cubes" \
+      org.opencontainers.image.source="https://github.com/sdss/mangadap" \
+      org.opencontainers.image.revision="${MANGADAP_COMMIT}" \
+      org.opencontainers.image.version="${MANGADAP_VERSION}" \
+      org.opencontainers.image.licenses="BSD-3-Clause" \
+      int.agne.fitting.stage="IFU binning + pPXF + SASUKE emission lines" \
+      int.agne.templates="MILES-HC + MaStar-HC2 (bundled in the wheel)"
+
+ENV PYTHONUNBUFFERED=1 \
+    MPLBACKEND=Agg \
+    MPLCONFIGDIR=/tmp/mpl \
+    HOME=/tmp \
+    MANGADRP_VER=v3_1_1 \
+    MANGADAP_VER=${MANGADAP_VERSION} \
+    MANGA_SPECTRO_REDUX=/app/redux \
+    MANGA_SPECTRO_ANALYSIS=/app/output/dap \
+    MANGACORE_VER=v1_9_1 \
+    MANGACORE_DIR=/app/manga/core/v1_9_1 \
+    MANGADAP_COMMIT=${MANGADAP_COMMIT} \
+    MANGADAP_VERSION=${MANGADAP_VERSION}
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+      ca-certificates curl gcc g++ gfortran libopenblas-dev liblapack-dev && \
+    rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+
+COPY Tools/manga_dap/requirements.txt /app/requirements.txt
+RUN pip install --no-cache-dir --upgrade pip && \
+    pip install --no-cache-dir -r /app/requirements.txt
+
+# Verify the exact installed stack and that the template/DB data really shipped
+# in the wheel.  This fails the build if the wheel is incomplete.
+RUN python - <<'PY'
+import importlib.metadata as md
+import mangadap
+from mangadap.config.defaults import dap_data_root
+mods = ["sdss-mangadap", "numpy", "scipy", "astropy", "matplotlib", "ppxf",
+        "cvxopt", "vorbin", "pydl", "shapely"]
+for name in mods:
+    print(f"{name}=={md.version(name)}")
+print("mangadap.__version__", mangadap.__version__)
+root = dap_data_root()
+miles = sorted((root / "spectral_templates" / "miles_cluster").glob("*.fits"))
+mastar = sorted((root / "spectral_templates" / "mastarhc_v2").glob("*.fits.gz"))
+lines = sorted((root / "emission_lines").glob("elpmpl11.par"))
+print("MILES-HC template files:", len(miles))
+print("MaStar-HC2 template files:", len(mastar))
+print("ELPMPL11 line database:", [p.name for p in lines])
+assert len(miles) > 0 and len(mastar) > 0 and len(lines) == 1
+PY
+
+COPY Tools/manga_dap/run_manga_dap.py /app/run/run_manga_dap.py
+COPY Tools/manga_dap/compare_maps.py /app/run/compare_maps.py
+COPY Tools/manga_dap/manga_maps.py /app/run/manga_maps.py
+COPY Tools/manga_dap/fast_eline.py /app/run/fast_eline.py
+COPY Tools/manga_dap/run_official_subset.py /app/run/run_official_subset.py
+COPY Tools/manga_dap/README.md /app/run/README.md
+COPY Tools/manga_dap/THIRD_PARTY_LICENSES.md /app/THIRD_PARTY_LICENSES.md
+COPY configs/manga_dap/default /app/config
+
+WORKDIR /app/run
+RUN mkdir -p /app/input /app/output /app/reference /app/redux /app/manga/core/v1_9_1 /app/cache && \
+    chmod 755 /app/run /app/config && \
+    chmod 777 /app/output /app/cache && \
+    mkdir -p /tmp/mpl && chmod 777 /tmp/mpl
+
+CMD ["python", "/app/run/run_manga_dap.py", \
+     "--input-dir", "/app/input", \
+     "--out", "/app/output", \
+     "--config", "/app/config"]

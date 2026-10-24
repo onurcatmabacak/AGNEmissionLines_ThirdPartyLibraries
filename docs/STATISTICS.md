@@ -30,3 +30,16 @@ A separate `docs/nir_extraction_comparison.png` compares the pipeline x1d, QSO-c
 `docs/line_tool_comparison.png` and `docs/line_ratio_scatter.csv` compare line
 ratios across PyQSOFit/S3Fit/GANDALF/PAHFIT; `docs/MCMC_AND_STATISTICS.md`
 records which codes use MCMC, nested sampling, bootstrap or covariance.
+
+## MaNGA DAP subset validation
+
+The official MaNGA DAP branch (`manga_dap`) is validated separately: the
+full-method SASUKE fit on the 9 central single-spaxel bins of NGC 1194
+(9193-12701) is compared at the same spaxels to the published DAP MAPS.  The
+median Hα/Hβ/[O III]/[N II]/[S II] ratios are **0.9995-0.99999**, BPT agrees
+**9/9**, and the Hα/stellar kinematic offsets are <0.02 km/s.  This is a
+**subset** validation; the all-spaxel 2397-bin DAP emission-line model
+exceeded the 58 min budget and was killed, so the published MAPS is the
+all-spaxel reference.  The fast fixed-continuum all-spaxel mode is rejected as
+production (`FASTMODE_NOT_PRODUCTION`).  See
+`outputs/NGC1194_z_0.0136/manga_dap/comparison/`.
