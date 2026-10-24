@@ -88,7 +88,11 @@ def tool_ir(src: dict, out: Path, logp: Path) -> int:
 
 def tool_pyqsofit(src: dict, out: Path, logp: Path) -> int:
     inp = prep_pyqsofit(src)
-    return run([str(ROOT / "Pipelines" / "run_pyqsofit_uv_docker.sh"), str(inp), str(out)], logp)
+    return run(
+        [str(ROOT / "Pipelines" / "run_pyqsofit_uv_docker.sh"), str(inp), str(out)],
+        logp,
+        env={"PYQSOFIT_SOURCE_KEY": str(src["key"])},
+    )
 
 
 def tool_pyqsofitspec(src: dict, out: Path, logp: Path, nboot: int | None = None,

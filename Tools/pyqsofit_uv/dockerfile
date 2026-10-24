@@ -17,8 +17,9 @@ RUN pip install --no-cache-dir -r /app/requirements.txt
 
 COPY Tools/pyqsofit/PyQSOFit /app/pyqsofit/PyQSOFit
 COPY configs/pyqsofit/uv/main.py /app/run/main.py
+COPY configs/pyqsofit/uv/mcmc_support.py /app/run/mcmc_support.py
 COPY Tools/pyqsofit/PyQSOFit/src/pyqsofit/pca /app/run/pca
 WORKDIR /app/run
 RUN mkdir -p /app/input /app/output && chmod 777 /app/run /app/output
 
-CMD ["sh", "-c", "cp /app/input/spectrum.fits .; python main.py; rc=$?; cp *.fits *.pdf *.csv *.png /app/output/ 2>/dev/null || true; rm -f /app/output/spectrum.fits; exit $rc"]
+CMD ["sh", "-c", "cp /app/input/spectrum.fits .; python main.py; rc=$?; cp *.fits *.pdf *.csv *.png *.json *.npz /app/output/ 2>/dev/null || true; rm -f /app/output/spectrum.fits; exit $rc"]
