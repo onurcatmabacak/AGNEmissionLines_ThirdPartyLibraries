@@ -2,45 +2,122 @@
   "z": 0.184,
   "instrument": "['jwst.miri.mrs.ch1.A', 'jwst.miri.mrs.ch1.B', 'jwst.miri.mrs.ch1.C', 'jwst.miri.mrs.ch2.A', 'jwst.miri.mrs.ch2.B', 'jwst.miri.mrs.ch2.C', 'jwst.miri.mrs.ch3.A', 'jwst.miri.mrs.ch3.B', 'jwst.miri.mrs.ch3.C', 'jwst.miri.mrs.ch4.A', 'jwst.miri.mrs.ch4.B', 'jwst.miri.mrs.ch4.C']",
   "n_pixels": 125,
+  "n_binned_pixels": 125,
+  "n_input_pixels": 2486,
+  "n_duplicates_removed": 0,
+  "n_clipped": 0,
   "flux_unit": "MJy/sr",
   "segment": "long",
   "smooth_um": 0.05,
   "status": "ok",
   "plot_status": "ok",
+  "fit_converged": true,
+  "fit_quality": "systematics_limited",
+  "quality_flags": [
+    "formal_chi2_mismatch",
+    "coverage_gap",
+    "bootstrap_frozen_features",
+    "features_in_coverage_gaps"
+  ],
+  "unstable": false,
+  "flagged": true,
   "wave_min_um": 15.432361125946045,
   "wave_max_um": 27.978845596313477,
-  "n_features": 53,
-  "rms_rel": 0.11815772933459362,
-  "unstable": false,
-  "normalize_fit": false,
-  "fit_flux_scale": 1.0,
-  "fit_passes_requested": 1,
-  "fit_passes_completed": 1,
-  "fit_pass_chi2": [
-    833080.6688961806
+  "fit_wave_min_um": 15.432361125946045,
+  "fit_wave_max_um": 27.978845596313477,
+  "coverage": {
+    "gaps": [
+      {
+        "start_um": 17.97520351409912,
+        "end_um": 24.399370193481445,
+        "width_um": 6.424166679382324
+      }
+    ],
+    "max_gap_um": 6.424166679382324,
+    "gap_total_um": 6.424166679382324
+  },
+  "input_stats": [
+    {
+      "file": "jw02547001001_02101_00001_mirifulong_x1d.fits",
+      "n_total": 2486,
+      "n_good": 1192,
+      "n_flagged": 1237,
+      "unit_in": "Jy",
+      "conversion_to_MJy_sr": 1063629.257403805,
+      "aperture_arcsec2": 0.04,
+      "wave_min_um": 15.407740592956543,
+      "wave_max_um": 27.994897842407227
+    }
   ],
-  "chi2": 833080.6688961806,
-  "dof": 109,
-  "chi2_red": 7642.9419164787205,
-  "n_free_parameters": 16,
+  "n_features": 21,
+  "n_features_table": 53,
+  "rms_rel": 0.0173931451678304,
+  "rms_rel_all_input": 0.017393145167830394,
+  "normalize_fit": true,
+  "clip_nmad": 0.0,
+  "clip_iterations": 1,
+  "clip_refits": 0,
+  "fit_flux_scale": 1642520.9990460016,
+  "fit_passes_requested": 2,
+  "fit_passes_completed": 2,
+  "fit_pass_chi2": [
+    12227.023642364198,
+    12227.022058193414
+  ],
+  "chi2": 12227.022058193414,
+  "dof": 104,
+  "chi2_red": 117.56751979032128,
+  "n_free_parameters": 18,
   "n_free_parameters_all": 21,
-  "n_at_bound_parameters": 5,
+  "n_at_bound_parameters": 3,
+  "at_bound_fraction": 0.14285714285714285,
   "mc": {
-    "enabled": false,
+    "enabled": true,
     "requested_method": "auto",
-    "method": null,
-    "n_samples": 0,
+    "method": "bootstrap",
+    "n_samples": 100,
     "seed": 12347,
-    "runtime_s": 0.0,
-    "fit_passes": 1
+    "runtime_s": 272.6785705089569,
+    "fit_passes": 2,
+    "fallback_reason": "covariance_ill_conditioned_rank_12_of_18_cond_2.16e+09_ndata_125",
+    "n_samples_ok": 100,
+    "covariance_probe": {
+      "rank": 12,
+      "n_free": 18,
+      "n_at_bound": 3,
+      "n_data": 125,
+      "condition_number": 2164157706.7955937,
+      "rank_deficient": true
+    },
+    "bootstrap": {
+      "mode": "parametric",
+      "n_ok": 100,
+      "n_failed": 0,
+      "n_not_converged": 0,
+      "n_frozen_features": 11,
+      "median_nfev": 386.0,
+      "median_chi2": 12228.920362827808,
+      "median_runtime_s": 2.636531710624695
+    }
   },
   "config_file": "/app/configs/pahfit_mir/long/config.json",
   "config_name": "long",
-  "runtime_s": 9.283568620681763,
+  "runtime_s": 304.4391839504242,
   "fit_info": {
-    "nfev": 23,
-    "ierr": 2,
-    "message": "The relative error between two consecutive iterates is at most 0.000000",
+    "nfev": 88,
+    "ierr": 1,
+    "message": "Both actual and predicted relative reductions in the sum of squares\n  are at most 0.000000",
     "status": ""
-  }
+  },
+  "features_in_coverage_gaps": [
+    "H2_S(1)",
+    "PAH_15.9",
+    "PAH_17a",
+    "PAH_17b",
+    "PAH_17c",
+    "PAH_17d",
+    "[NeIII]",
+    "[SIII]_18"
+  ],
+  "n_features_in_coverage_gaps": 8
 }

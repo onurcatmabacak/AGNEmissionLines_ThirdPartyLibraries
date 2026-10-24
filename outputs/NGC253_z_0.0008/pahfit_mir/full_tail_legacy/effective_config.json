@@ -1,0 +1,95 @@
+{
+  "config_file": null,
+  "config_name": "cli",
+  "input": {
+    "mode": "tbl",
+    "instrument": "spitzer.irs.sl.2,spitzer.irs.sl.1,spitzer.irs.ll.2,spitzer.irs.ll.1",
+    "segment": "both",
+    "s1d": false,
+    "tbl": true,
+    "aperture_arcsec2": 0.04,
+    "tbl_aperture_arcsec2": 1.0,
+    "min_wave_um": 5.0,
+    "max_wave_um": 38.0,
+    "files": [
+      {
+        "file": "ngc253_irs.tbl",
+        "n_total": 366,
+        "n_good": 242,
+        "n_flagged": 124,
+        "unit_in": "Jy",
+        "conversion_to_MJy_sr": 42545.170296152195,
+        "aperture_arcsec2": 1.0,
+        "wave_min_um": 5.21725,
+        "wave_max_um": 37.86356
+      }
+    ],
+    "coverage": {
+      "gaps": [
+        {
+          "start_um": 14.83145,
+          "end_um": 16.18628,
+          "width_um": 1.3548299999999998
+        },
+        {
+          "start_um": 16.35563,
+          "end_um": 17.87981,
+          "width_um": 1.5241799999999976
+        },
+        {
+          "start_um": 20.58947,
+          "end_um": 35.83131,
+          "width_um": 15.241840000000003
+        }
+      ],
+      "max_gap_um": 15.241840000000003,
+      "gap_total_um": 18.12085
+    }
+  },
+  "preprocess": {
+    "smooth_um": 0.1,
+    "clip_nmad": 0.0,
+    "clip_iterations": 1,
+    "n_clipped": 0
+  },
+  "fit": {
+    "maxiter": 1000,
+    "passes": 1,
+    "no_guess": false,
+    "init_from": null,
+    "normalize": false,
+    "flux_scale": 1.0,
+    "converged": false,
+    "ierr": 5,
+    "quality": "unstable",
+    "quality_flags": [
+      "fit_not_converged",
+      "large_rms",
+      "formal_chi2_mismatch",
+      "coverage_gap"
+    ],
+    "chi2_red": 1420500.5085949625,
+    "dof": 86
+  },
+  "monte_carlo": {
+    "enabled": false,
+    "samples": 0,
+    "method": "auto",
+    "resolved_method": null,
+    "seed": 12345,
+    "rcond": 1e-10,
+    "maxiter": 500,
+    "bootstrap_mode": "parametric",
+    "scale": "none",
+    "save_samples": true,
+    "fallback_reason": null
+  },
+  "metadata": {
+    "z": 0.000811,
+    "wave_min_um": 5.2626100000000005,
+    "wave_max_um": 37.86356,
+    "n_pixels": 139,
+    "n_input_pixels": 366,
+    "flux_unit": "MJy/sr"
+  }
+}

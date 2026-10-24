@@ -201,7 +201,8 @@ def tool_pahfit(src: dict, out: Path, logp: Path) -> int:
                 if src_ecsv.exists():
                     (seed_dir / "pahfit_output.ecsv").write_bytes(src_ecsv.read_bytes())
             cmd = [str(ROOT / "Pipelines" / "run_pahfit_mir_docker.sh"), str(raw), str(sub),
-                   str(src["z"]), *_pahfit_config_arg(v["name"]), *v.get("args", [])]
+                   str(src["z"]), *_pahfit_config_arg(v.get("config", v["name"])),
+                   *v.get("args", [])]
             if src.get("kind") == "jwst_miri":
                 cmd += ["--instrument", MIRI_ALL]
             if v.get("init_from"):
@@ -210,11 +211,15 @@ def tool_pahfit(src: dict, out: Path, logp: Path) -> int:
         return rc
     args = list(src.get("pahfit_args", []))
     if "spitzer_irs" in str(src.get("kind", "")):
-        args = ["--tbl", "--smooth-um", "0.1", "--instrument", SPITZER_IRS]
+        # Keep the common-aperture convention but do not discard source args.
+        args = (["--tbl", "--smooth-um", "0.1",
+                 "--tbl-aperture-arcsec2", "1.0", "--instrument", SPITZER_IRS]
+                + args)
     if src.get("kind") == "jwst_miri":
         args += ["--instrument", MIRI_ALL]
+    cfg_name = src.get("pahfit_config", "default")
     return run([str(ROOT / "Pipelines" / "run_pahfit_mir_docker.sh"), str(raw), str(out),
-                str(src["z"]), *_pahfit_config_arg("default"), *args], logp)
+                str(src["z"]), *_pahfit_config_arg(cfg_name), *args], logp)
 
 
 def tool_fir(src: dict, out: Path, logp: Path) -> int:

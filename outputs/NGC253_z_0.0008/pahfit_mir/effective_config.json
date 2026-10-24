@@ -1,0 +1,89 @@
+{
+  "config_file": "/app/configs/pahfit_mir/ngc253/config.json",
+  "config_name": "ngc253",
+  "input": {
+    "mode": "tbl",
+    "instrument": "spitzer.irs.sl.2,spitzer.irs.sl.1,spitzer.irs.ll.2,spitzer.irs.ll.1",
+    "segment": "both",
+    "s1d": false,
+    "tbl": true,
+    "aperture_arcsec2": 0.04,
+    "tbl_aperture_arcsec2": 1.0,
+    "min_wave_um": 5.0,
+    "max_wave_um": 30.0,
+    "files": [
+      {
+        "file": "ngc253_irs.tbl",
+        "n_total": 366,
+        "n_good": 229,
+        "n_flagged": 124,
+        "unit_in": "Jy",
+        "conversion_to_MJy_sr": 42545.170296152195,
+        "aperture_arcsec2": 1.0,
+        "wave_min_um": 5.21725,
+        "wave_max_um": 20.58947
+      }
+    ],
+    "coverage": {
+      "gaps": [
+        {
+          "start_um": 14.83145,
+          "end_um": 16.18628,
+          "width_um": 1.3548299999999998
+        },
+        {
+          "start_um": 16.35563,
+          "end_um": 17.87981,
+          "width_um": 1.5241799999999976
+        }
+      ],
+      "max_gap_um": 1.5241799999999976,
+      "gap_total_um": 2.8790099999999974
+    }
+  },
+  "preprocess": {
+    "smooth_um": 0.1,
+    "clip_nmad": 0.0,
+    "clip_iterations": 1,
+    "n_clipped": 0
+  },
+  "fit": {
+    "maxiter": 5000,
+    "passes": 3,
+    "no_guess": false,
+    "init_from": null,
+    "normalize": true,
+    "flux_scale": 297893.0605594979,
+    "converged": true,
+    "ierr": 1,
+    "quality": "systematics_limited",
+    "quality_flags": [
+      "formal_chi2_mismatch",
+      "coverage_gap",
+      "bootstrap_frozen_features"
+    ],
+    "chi2_red": 6110.31292389952,
+    "dof": 80
+  },
+  "monte_carlo": {
+    "enabled": true,
+    "samples": 100,
+    "method": "auto",
+    "resolved_method": "bootstrap",
+    "seed": 12351,
+    "rcond": 1e-10,
+    "maxiter": 500,
+    "bootstrap_mode": "parametric",
+    "scale": "none",
+    "save_samples": true,
+    "fallback_reason": "covariance_ill_conditioned_rank_28_of_30_cond_542_ndata_126"
+  },
+  "metadata": {
+    "z": 0.000811,
+    "wave_min_um": 5.2626100000000005,
+    "wave_max_um": 20.58947,
+    "n_pixels": 126,
+    "n_input_pixels": 366,
+    "flux_unit": "MJy/sr"
+  }
+}

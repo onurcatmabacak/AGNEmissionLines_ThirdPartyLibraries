@@ -1,5 +1,7 @@
 {
   "schema_version": 1,
+  "name": "short",
+  "description": "PDS 456 MIRI short production fit: 0.05 um bin, rest 5-38 um, 100 MC bootstrap/covariance.",
   "input": {
     "instrument": [
       "jwst.miri.mrs.ch1.A",
@@ -21,14 +23,17 @@
     "smooth_um": 0.05,
     "min_wave": 5.0,
     "max_wave": 38.0,
-    "aperture_arcsec2": 0.04
+    "aperture_arcsec2": 0.04,
+    "tbl_aperture_arcsec2": 1.0
   },
   "fit": {
-    "maxiter": 1000,
-    "passes": 1,
+    "maxiter": 5000,
+    "passes": 2,
     "no_guess": false,
     "init_from": null,
-    "normalize": null
+    "normalize": true,
+    "clip_nmad": 0.0,
+    "clip_iterations": 1
   },
   "monte_carlo": {
     "enabled": false,
@@ -40,7 +45,5 @@
     "bootstrap_mode": "parametric",
     "scale": "none",
     "save_samples": true
-  },
-  "name": "short",
-  "description": "PDS 456 MIRI short segment: 0.05 um median bin, rest 5-38 um."
+  }
 }

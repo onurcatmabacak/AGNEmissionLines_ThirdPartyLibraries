@@ -2,55 +2,122 @@
   "z": 0.184,
   "instrument": "['jwst.miri.mrs.ch1.A', 'jwst.miri.mrs.ch1.B', 'jwst.miri.mrs.ch1.C', 'jwst.miri.mrs.ch2.A', 'jwst.miri.mrs.ch2.B', 'jwst.miri.mrs.ch2.C', 'jwst.miri.mrs.ch3.A', 'jwst.miri.mrs.ch3.B', 'jwst.miri.mrs.ch3.C', 'jwst.miri.mrs.ch4.A', 'jwst.miri.mrs.ch4.B', 'jwst.miri.mrs.ch4.C']",
   "n_pixels": 58,
+  "n_binned_pixels": 58,
+  "n_input_pixels": 4068,
+  "n_duplicates_removed": 0,
+  "n_clipped": 0,
   "flux_unit": "MJy/sr",
   "segment": "short",
   "smooth_um": 0.05,
   "status": "ok",
   "plot_status": "ok",
+  "fit_converged": true,
+  "fit_quality": "systematics_limited",
+  "quality_flags": [
+    "formal_chi2_mismatch",
+    "coverage_gap",
+    "bootstrap_frozen_features",
+    "features_in_coverage_gaps"
+  ],
+  "unstable": false,
+  "flagged": true,
   "wave_min_um": 6.5540995597839355,
   "wave_max_um": 11.690173149108887,
-  "n_features": 53,
-  "rms_rel": 0.008824127255453961,
-  "unstable": false,
+  "fit_wave_min_um": 6.5540995597839355,
+  "fit_wave_max_um": 11.690173149108887,
+  "coverage": {
+    "gaps": [
+      {
+        "start_um": 7.64514946937561,
+        "end_um": 10.015673637390137,
+        "width_um": 2.3705241680145264
+      }
+    ],
+    "max_gap_um": 2.3705241680145264,
+    "gap_total_um": 2.3705241680145264
+  },
+  "input_stats": [
+    {
+      "file": "jw02547001001_02101_00001_mirifushort_x1d.fits",
+      "n_total": 4068,
+      "n_good": 2204,
+      "n_flagged": 1864,
+      "unit_in": "Jy",
+      "conversion_to_MJy_sr": 1063629.257403805,
+      "aperture_arcsec2": 0.04,
+      "wave_min_um": 6.529533863067627,
+      "wave_max_um": 11.700483322143555
+    }
+  ],
+  "n_features": 24,
+  "n_features_table": 53,
+  "rms_rel": 0.00882412744135514,
+  "rms_rel_all_input": 0.008824127441355155,
   "normalize_fit": true,
-  "fit_flux_scale": 3.3708486814375654e+17,
+  "clip_nmad": 0.0,
+  "clip_iterations": 1,
+  "clip_refits": 0,
+  "fit_flux_scale": 337084.8681437565,
   "fit_passes_requested": 2,
   "fit_passes_completed": 2,
   "fit_pass_chi2": [
-    32611.845875644292,
-    25643.446340237537
+    32611.845875648323,
+    25643.44634023776
   ],
-  "chi2": 25643.446340237537,
-  "dof": 46,
-  "chi2_red": 557.4662247877725,
+  "chi2": 25643.44634023776,
+  "dof": 34,
+  "chi2_red": 754.2190100069929,
   "n_free_parameters": 12,
   "n_free_parameters_all": 24,
   "n_at_bound_parameters": 12,
+  "at_bound_fraction": 0.5,
   "mc": {
     "enabled": true,
     "requested_method": "auto",
     "method": "bootstrap",
     "n_samples": 100,
     "seed": 12346,
-    "runtime_s": 81.63234615325928,
+    "runtime_s": 127.81441903114319,
     "fit_passes": 2,
-    "fallback_reason": "covariance_ill_conditioned_rank_6_of_12_cond_841",
+    "fallback_reason": "covariance_ill_conditioned_rank_6_of_12_cond_841_ndata_58",
     "n_samples_ok": 100,
+    "covariance_probe": {
+      "rank": 6,
+      "n_free": 12,
+      "n_at_bound": 12,
+      "n_data": 58,
+      "condition_number": 840.5901473835823,
+      "rank_deficient": true
+    },
     "bootstrap": {
       "mode": "parametric",
       "n_ok": 100,
       "n_failed": 0,
-      "median_nfev": 97.0,
-      "median_runtime_s": 0.7671850919723511
+      "n_not_converged": 0,
+      "n_frozen_features": 23,
+      "median_nfev": 73.0,
+      "median_chi2": 25643.442820282587,
+      "median_runtime_s": 1.166543960571289
     }
   },
   "config_file": "/app/configs/pahfit_mir/short/config.json",
   "config_name": "short",
-  "runtime_s": 101.71724939346313,
+  "runtime_s": 152.95776200294495,
   "fit_info": {
-    "nfev": 331,
+    "nfev": 432,
     "ierr": 1,
     "message": "Both actual and predicted relative reductions in the sum of squares\n  are at most 0.000000",
     "status": ""
-  }
+  },
+  "features_in_coverage_gaps": [
+    "H2_S(4)",
+    "H2_S(5)",
+    "PAH_6.7",
+    "PAH_7.7a",
+    "PAH_7.7b",
+    "PAH_7.7c",
+    "PAH_8.3",
+    "[ArII]"
+  ],
+  "n_features_in_coverage_gaps": 8
 }

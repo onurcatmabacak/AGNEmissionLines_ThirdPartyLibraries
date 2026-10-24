@@ -106,27 +106,71 @@ def _instrument_default(cfg: dict):
     return v
 
 
+ARCSEC2_SR = (np.pi / 180.0 / 3600.0) ** 2
+
+
+def _fits_col_unit(hdu, col: str, default: str | None = None) -> str | None:
+    """Return the FITS table column unit, falling back to BUNIT."""
+    unit = None
+    try:
+        unit = hdu.columns[col].unit
+    except Exception:
+        unit = None
+    if not unit:
+        unit = hdu.header.get("BUNIT")
+    if not unit:
+        unit = default
+    return str(unit).strip() if unit else default
+
+
+def _first_col(names: dict, candidates: tuple[str, ...]) -> str | None:
+    for cand in candidates:
+        if cand in names:
+            return names[cand]
+    return None
+
+
 def read_s1d(path: Path):
+    """Read a PAHFIT/MIRI ``s1d`` table and preserve its real unit.
+
+    The official PAHFIT VV114 example stores flux in ``MJy`` (a flux
+    density), not ``MJy/sr``.  Older versions of this driver hard-coded
+    ``MJy/sr`` and therefore silently mislabelled the absolute scale.
+    """
     with fits.open(path, memmap=False) as h:
         d = h[1].data
-        return (np.asarray(d["wavelength"], float), np.asarray(d["flux"], float),
-                np.asarray(d["uncertainty"], float), np.zeros(len(d)), "MJy/sr")
+        names = {c.lower(): c for c in d.columns.names}
+        wc = _first_col(names, ("wavelength", "wave", "lambda"))
+        fc = _first_col(names, ("flux", "flux_density", "surf_bright"))
+        ec = _first_col(names, ("uncertainty", "error", "flux_error", "stdev"))
+        dc = _first_col(names, ("dq", "bit-flag", "bit_flag", "flag"))
+        if wc is None or fc is None or ec is None:
+            raise SystemExit(f"cannot identify wavelength/flux/error columns in {path}")
+        w = np.asarray(d[wc], float)
+        fl = np.asarray(d[fc], float)
+        er = np.asarray(d[ec], float)
+        dq = np.asarray(d[dc], float) if dc is not None else np.zeros(len(w))
+        unit = _fits_col_unit(h[1], fc, "MJy/sr")
+    return w, fl, er, dq, unit
 
 
 def read_x1d(path: Path):
     with fits.open(path, memmap=False) as h:
         d = h["EXTRACT1D"].data
-        names = set(d.columns.names)
-        w = np.asarray(d["WAVELENGTH"], float)
-        if "FLUX" in names:
-            fl = np.asarray(d["FLUX"], float)
-            er = np.asarray(d["FLUX_ERROR"], float)
-            unit = "Jy"
+        names = {c.lower(): c for c in d.columns.names}
+        w = np.asarray(d[names["wavelength"]], float)
+        if "flux" in names:
+            fl = np.asarray(d[names["flux"]], float)
+            ec = _first_col(names, ("flux_error", "error"))
+            er = np.asarray(d[ec], float)
+            unit = _fits_col_unit(h["EXTRACT1D"], names["flux"], "Jy")
         else:
-            fl = np.asarray(d["SURF_BRIGHT"], float)
-            er = np.asarray(d["SB_ERROR"], float)
-            unit = "MJy/sr"
-        dq = np.asarray(d["DQ"], float) if "DQ" in names else np.zeros(len(w))
+            fl = np.asarray(d[names["surf_bright"]], float)
+            ec = _first_col(names, ("sb_error", "error"))
+            er = np.asarray(d[ec], float)
+            unit = _fits_col_unit(h["EXTRACT1D"], names["surf_bright"], "MJy/sr")
+        dc = _first_col(names, ("dq", "bit-flag", "flag"))
+        dq = np.asarray(d[dc], float) if dc is not None else np.zeros(len(w))
         return w, fl, er, dq, unit
 
 
@@ -136,14 +180,77 @@ def read_irs_tbl(path: Path):
     except Exception:
         t = Table.read(path, format="ascii")
     names = {c.lower(): c for c in t.colnames}
-    w = np.asarray(t[names["wavelength"]], float)
-    fl = np.asarray(t[names["flux_density"]], float)
-    er = np.asarray(t[names.get("error", "flux_density_err")], float)
+    wc = _first_col(names, ("wavelength", "wave", "lambda"))
+    fc = _first_col(names, ("flux_density", "flux", "surf_bright"))
+    ec = _first_col(names, ("error", "flux_density_err", "stdev", "uncertainty"))
+    if wc is None or fc is None or ec is None:
+        raise SystemExit(f"cannot identify wavelength/flux/error columns in {path}")
+    w = np.asarray(t[wc], float)
+    fl = np.asarray(t[fc], float)
+    er = np.asarray(t[ec], float)
+    dc = _first_col(names, ("bit-flag", "bit_flag", "flag"))
     good = np.ones(len(w), dtype=bool)
-    if "bit-flag" in names:
-        good = np.asarray(t[names["bit-flag"]]) == 0
-    order = np.asarray(t[names["order"]], int) if "order" in names else np.zeros(len(w), int)
-    return w, fl, er, (~good).astype(float), "Jy", order
+    if dc is not None:
+        good = np.asarray(t[dc]) == 0
+    oc = _first_col(names, ("order",))
+    order = np.asarray(t[oc], int) if oc is not None else np.zeros(len(w), int)
+    try:
+        unit = str(t[fc].unit) if t[fc].unit is not None else "Jy"
+    except Exception:
+        unit = "Jy"
+    return w, fl, er, (~good).astype(float), unit, order
+
+
+def _to_mjy_sr(fl, er, unit: str | None, aperture_arcsec2: float,
+               label: str = "") -> tuple[np.ndarray, np.ndarray, str, float]:
+    """Convert a supported input flux unit to MJy/sr.
+
+    ``Jy`` and ``MJy`` are flux densities.  They are divided by the
+    requested aperture solid angle.  ``MJy/sr`` is already an intensity.
+    The historical code used ``1 Jy = 1e6 MJy`` (a factor 1e12 error), so
+    this helper deliberately goes through astropy units.
+    """
+    if not np.isfinite(aperture_arcsec2) or aperture_arcsec2 <= 0:
+        raise SystemExit(f"aperture must be positive, got {aperture_arcsec2}")
+    text = str(unit or "MJy/sr").strip()
+    try:
+        uu = u.Unit(text)
+    except Exception as exc:
+        raise SystemExit(f"cannot parse flux unit {text!r} for {label}: {exc}") from exc
+    if uu.is_equivalent(u.MJy / u.sr):
+        scale = float((1.0 * uu).to(u.MJy / u.sr).value)
+        return (np.asarray(fl, float) * scale, np.asarray(er, float) * scale,
+                "MJy/sr", scale)
+    if uu.is_equivalent(u.Jy):
+        omega = float(aperture_arcsec2) * ARCSEC2_SR
+        # 1 Jy = 1e-6 MJy; astropy handles mJy/uJy as well.
+        scale = float((1.0 * uu).to(u.MJy).value) / omega
+        return (np.asarray(fl, float) * scale, np.asarray(er, float) * scale,
+                "MJy/sr", scale)
+    raise SystemExit(
+        f"unsupported flux unit {text!r} for {label}; "
+        "expected MJy/sr, Jy or MJy"
+    )
+
+
+def _coverage_info(w) -> dict:
+    """Describe wavelength coverage gaps in a sorted spectrum."""
+    w = np.asarray(w, float)
+    if len(w) < 2:
+        return {"gaps": [], "max_gap_um": 0.0, "gap_total_um": 0.0}
+    sw = np.sort(w)
+    dw = np.diff(sw)
+    pos = dw[dw > 0]
+    med = float(np.median(pos)) if len(pos) else 0.0
+    thresh = max(5.0 * med, 0.25)
+    gaps = []
+    for a, b, d in zip(sw[:-1], sw[1:], dw):
+        if d > thresh:
+            gaps.append({"start_um": float(a), "end_um": float(b),
+                         "width_um": float(d)})
+    return {"gaps": gaps,
+            "max_gap_um": float(max((g["width_um"] for g in gaps), default=0.0)),
+            "gap_total_um": float(sum(g["width_um"] for g in gaps))}
 
 
 def bin_spectrum(w, f, e, width: float | None):
@@ -316,14 +423,96 @@ def _feature_geometry(row, kind, rest_min, rest_max):
     return float(wl), float(fwhm), float(ref)
 
 
+def _component_value(model, name: str, attr: str, default=float("nan")) -> float:
+    """Read a fitted astropy submodel attribute (authoritative, unscaled)."""
+    comp = _submodel(model, name)
+    if comp is None:
+        return float(default)
+    try:
+        value = getattr(comp, attr)
+        try:
+            return float(value.value)
+        except Exception:
+            return float(value)
+    except Exception:
+        return float(default)
+
+
+def _feature_power(model, name: str, kind: str) -> float:
+    """Integrated feature power in PAHFIT's internal intensity-power unit."""
+    if kind in ("line", "dust_feature"):
+        return _component_value(model, name, "power")
+    if kind in ("dust_continuum", "starlight"):
+        return _component_value(model, name, "amplitude")
+    if kind == "attenuation":
+        return _component_value(model, name, "tau_sil")
+    if kind == "absorption":
+        return _component_value(model, name, "tau")
+    return float("nan")
+
+
+def _feature_flux(model, name: str, kind: str, wl: float, fwhm: float,
+                  z: float, compute_ew: bool = True):
+    """Physical flux of one fitted feature.
+
+    PAHFIT's fittable components return F_nu in MJy/sr.  The line table
+    reports the integrated F_nu over wavelength (MJy/sr um), evaluated on
+    the same profile grid as the peak and EW.  PAHFIT's ``power`` parameter
+    in the ECSV is a different internal quantity (integral over frequency)
+    and is deliberately not copied into this table.
+    """
+    out = {
+        "flux_observed": float("nan"), "flux_intrinsic": float("nan"),
+        "flux_peak_observed": float("nan"), "flux_peak_intrinsic": float("nan"),
+        "ew_um": float("nan"), "attenuation_at_feature": float("nan"),
+    }
+    if kind in ("line", "dust_feature"):
+        fwhm = fwhm if np.isfinite(fwhm) and fwhm > 0 else 0.1 * max(wl, 1e-3)
+        half = max(8.0 * abs(fwhm), 1e-4 * max(abs(wl), 1e-3))
+        grid = np.linspace(max(wl - half, 1e-4), wl + half, 401)
+        comp = _component(model, name, grid)
+        att = _attenuation(model, grid)
+        out["flux_intrinsic"] = _trapz(comp, grid)
+        out["flux_observed"] = _trapz(comp * att, grid)
+        if np.isfinite(comp).any():
+            out["flux_peak_intrinsic"] = float(np.nanmax(comp))
+            out["flux_peak_observed"] = float(np.nanmax(comp * att)) / (1.0 + z)
+            if compute_ew:
+                cont = np.zeros_like(grid)
+                for cname in [str(r["name"]) for r in model.features
+                              if str(r["kind"]) in ("dust_continuum", "starlight")]:
+                    cont = cont + _component(model, cname, grid)
+                cont_obs = cont * att
+                good = np.isfinite(comp) & np.isfinite(cont_obs) & (cont_obs > 0)
+                if good.sum() > 2:
+                    out["ew_um"] = _trapz((comp * att)[good] / cont_obs[good], grid[good])
+        out["attenuation_at_feature"] = float(_attenuation(model, np.array([wl]))[0])
+    elif kind in ("dust_continuum", "starlight"):
+        lam = np.array([wl], float)
+        comp = _component(model, name, lam)
+        att = _attenuation(model, lam)
+        out["flux_intrinsic"] = float(comp[0])
+        out["flux_observed"] = float(comp[0] * att[0]) / (1.0 + z)
+        out["flux_peak_intrinsic"] = out["flux_intrinsic"]
+        out["flux_peak_observed"] = out["flux_observed"]
+        out["attenuation_at_feature"] = float(att[0])
+    return out
+
+
 def compute_feature_records(model, spec, z, flux_scale=1.0):
     """Build the unified gas-line / PAH / continuum table from the fit."""
     ft = model.features
     enabled = set(str(x) for x in getattr(model, "enabled_features", []))
+    coverage = spec.meta.get("coverage", {}) or {}
     lam_obs = spec.spectral_axis.to_value(u.micron)
     rest_min = float(np.nanmin(lam_obs) / (1.0 + z))
     rest_max = float(np.nanmax(lam_obs) / (1.0 + z))
-    att_names = [str(c.name) for c in getattr(model.fitter, "multiplicative_components", [])]
+    try:
+        free, at_bound, pmap = _free_parameters(model)
+        at_bound_features = {pmap.get(n, (None, None, 0))[0] for n, _ in at_bound}
+    except Exception:
+        free, at_bound, pmap = [], [], {}
+        at_bound_features = set()
     records = []
     for row in ft:
         name = str(row["name"])
@@ -337,6 +526,7 @@ def compute_feature_records(model, spec, z, flux_scale=1.0):
             "kind": kind,
             "included_in_fit": bool(included),
             "rest_wavelength_um": wl if np.isfinite(wl) else float("nan"),
+            "reference_wavelength_um": ref if np.isfinite(ref) else float("nan"),
             "observed_wavelength_um": (wl * (1.0 + z)) if np.isfinite(wl) else float("nan"),
             "fwhm_um": fwhm if np.isfinite(fwhm) else float("nan"),
             "quantity": "",
@@ -346,88 +536,83 @@ def compute_feature_records(model, spec, z, flux_scale=1.0):
             "flux_peak_observed": float("nan"),
             "flux_peak_intrinsic": float("nan"),
             "ew_um": float("nan"),
-            "temperature_K": _row_scalar(row, "temperature"),
-            "tau": _row_scalar(row, "tau"),
+            "temperature_K": _component_value(model, name, "temperature"),
+            "tau": _component_value(model, name, "amplitude"),
             "tau_sil": float("nan"),
             "attenuation_at_feature": float("nan"),
             "notes": "",
             "snr": float("nan"),
             "spec_index": None,
-            "at_bound": False,
+            "at_bound": bool(name in at_bound_features),
+            "extrapolated": False,
+            "status": "ok",
         }
         if not included:
             rec["notes"] = "outside fitted wavelength range"
+            rec["status"] = "excluded_from_fit"
             records.append(rec)
             continue
 
         if kind in ("line", "dust_feature"):
-            half = max(8.0 * abs(fwhm), 1e-4 * max(abs(wl), 1e-3))
-            lo = max(wl - half, 1e-4)
-            hi = wl + half
-            grid = np.linspace(lo, hi, 401)
-            comp = _component(model, name, grid)
-            att = _attenuation(model, grid)
-            obs = comp * att
+            values = _feature_flux(model, name, kind, wl, fwhm, z)
             rec["quantity"] = "integrated_intensity"
             rec["unit"] = "MJy/sr um"
-            rec["flux_observed"] = _trapz(obs, grid)
-            rec["flux_intrinsic"] = _trapz(comp, grid)
-            rec["flux_peak_intrinsic"] = float(np.nanmax(comp)) if np.isfinite(comp).any() else float("nan")
-            rec["flux_peak_observed"] = rec["flux_peak_intrinsic"] / (1.0 + z)
-            rec["attenuation_at_feature"] = float(_attenuation(model, np.array([wl]))[0])
-            rec["notes"] = "integrated feature intensity; observed = S07-attenuated"
-            # Equivalent width uses the observed continuum at the feature.
-            cont = np.zeros_like(grid)
-            for cname in [str(r["name"]) for r in ft
-                          if str(r["kind"]) in ("dust_continuum", "starlight")]:
-                cont = cont + _component(model, cname, grid)
-            cont_obs = cont * att
-            good = np.isfinite(obs) & np.isfinite(cont_obs) & (cont_obs > 0)
-            if good.sum() > 2:
-                rec["ew_um"] = _trapz(obs[good] / cont_obs[good], grid[good])
-        elif kind == "dust_continuum":
-            lamref = np.array([ref], float)
-            comp = _component(model, name, lamref)
-            att = _attenuation(model, lamref)
+            rec["notes"] = ("integrated F_nu dlambda (MJy/sr um); "
+                            "observed = S07-attenuated, intrinsic = unattenuated")
+        elif kind in ("dust_continuum", "starlight"):
+            values = _feature_flux(model, name, kind, ref, fwhm, z)
             rec["quantity"] = f"flux_density_{ref:g}um"
             rec["unit"] = "MJy/sr"
-            rec["flux_intrinsic"] = float(comp[0])
-            rec["flux_observed"] = float(comp[0] * att[0]) / (1.0 + z)
-            rec["flux_peak_intrinsic"] = rec["flux_intrinsic"]
-            rec["flux_peak_observed"] = rec["flux_observed"]
-            rec["attenuation_at_feature"] = float(att[0])
-            rec["notes"] = f"flux density at rest {ref:g} um; not an integrated flux"
-        elif kind == "starlight":
-            lamref = np.array([ref], float)
-            comp = _component(model, name, lamref)
-            att = _attenuation(model, lamref)
-            rec["quantity"] = f"flux_density_{ref:g}um"
-            rec["unit"] = "MJy/sr"
-            rec["flux_intrinsic"] = float(comp[0])
-            rec["flux_observed"] = float(comp[0] * att[0]) / (1.0 + z)
-            rec["flux_peak_intrinsic"] = rec["flux_intrinsic"]
-            rec["flux_peak_observed"] = rec["flux_observed"]
-            rec["attenuation_at_feature"] = float(att[0])
-            rec["notes"] = f"stellar continuum flux density at rest {ref:g} um"
+            rec["extrapolated"] = bool(ref < rest_min or ref > rest_max)
+            label = "dust continuum" if kind == "dust_continuum" else "stellar continuum"
+            rec["notes"] = f"{label} flux density at rest {ref:g} um; not an integrated flux"
+            if rec["extrapolated"]:
+                rec["notes"] += "; reference wavelength outside fitted range (extrapolated)"
         elif kind in ("attenuation", "absorption"):
-            comp = _submodel(model, name)
-            val = float("nan")
-            if comp is not None:
-                for attr in ("tau_sil", "tau"):
-                    if hasattr(comp, attr):
-                        try:
-                            val = float(getattr(comp, attr).value)
-                            break
-                        except Exception:
-                            pass
+            val = _feature_power(model, name, kind)
+            values = {"flux_observed": val, "flux_intrinsic": val,
+                      "flux_peak_observed": val, "flux_peak_intrinsic": val,
+                      "ew_um": float("nan"), "attenuation_at_feature": float("nan")}
             rec["quantity"] = "tau_sil" if kind == "attenuation" else "tau"
             rec["unit"] = ""
-            rec["flux_observed"] = val
-            rec["flux_intrinsic"] = val
             rec["tau_sil"] = val if kind == "attenuation" else float("nan")
             rec["notes"] = "multiplicative attenuation parameter"
         else:
+            values = {}
             rec["notes"] = f"unsupported feature kind: {kind}"
+            rec["status"] = "unsupported"
+        rec.update({k: v for k, v in values.items() if k in rec})
+        if rec["included_in_fit"] and rec["kind"] in ("line", "dust_feature"):
+            wobs = rec.get("observed_wavelength_um", float("nan"))
+            for gap in coverage.get("gaps", []):
+                if (gap.get("width_um", 0.0) > 0.5 and
+                        gap.get("start_um", np.inf) <= wobs <= gap.get("end_um", -np.inf)):
+                    rec["status"] = "coverage_gap"
+                    rec["notes"] = (rec["notes"] +
+                                    "; observed wavelength lies in a coverage gap "
+                                    "(unconstrained)").strip("; ")
+                    break
+        if rec["at_bound"]:
+            rec["status"] = "at_bound"
+        if rec["extrapolated"] and rec["status"] == "ok":
+            rec["status"] = "extrapolated"
+        if (np.isfinite(rec["flux_intrinsic"]) and rec["kind"] in
+                ("line", "dust_feature", "dust_continuum", "starlight")
+                and rec["flux_intrinsic"] == 0):
+            rec["status"] = "zero_flux"
+        # Gap coverage is the dominant caveat: re-assert it after the
+        # at-bound/zero-flux status assignment.
+        if rec["included_in_fit"] and rec["kind"] in ("line", "dust_feature"):
+            wobs = rec.get("observed_wavelength_um", float("nan"))
+            for gap in coverage.get("gaps", []):
+                if (gap.get("width_um", 0.0) > 0.5 and
+                        gap.get("start_um", np.inf) <= wobs <= gap.get("end_um", -np.inf)):
+                    rec["status"] = "coverage_gap"
+                    if "coverage gap" not in rec["notes"]:
+                        rec["notes"] = (rec["notes"] +
+                                        "; observed wavelength lies in a coverage "
+                                        "gap (unconstrained)").strip("; ")
+                    break
         if np.isfinite(flux_scale) and flux_scale != 1.0:
             for key in ("flux_observed", "flux_intrinsic",
                         "flux_peak_observed", "flux_peak_intrinsic"):
@@ -576,18 +761,16 @@ def _quantity_specs(model, records, z):
             continue
         name, kind = rec["name"], rec["kind"]
         if kind in ("line", "dust_feature"):
-            wl = rec["rest_wavelength_um"]
-            fwhm = rec["fwhm_um"]
-            half = max(8.0 * abs(fwhm), 1e-4 * max(abs(wl), 1e-3))
-            grid = np.linspace(max(wl - half, 1e-4), wl + half, 401)
+            wl = float(rec["rest_wavelength_um"])
+            fwhm = float(rec["fwhm_um"])
             specs.append({"record": idx, "name": name, "kind": kind,
-                          "mode": "integrated", "grid": grid,
+                          "mode": "integrated", "wl": wl, "fwhm": fwhm,
                           "ref": wl, "unit": "MJy/sr um",
                           "quantity": "integrated_intensity"})
         elif kind in ("dust_continuum", "starlight"):
-            ref = 20.0 if kind == "dust_continuum" else max(5.0, float(rec["rest_wavelength_um"]))
+            ref = float(rec["reference_wavelength_um"])
             specs.append({"record": idx, "name": name, "kind": kind,
-                          "mode": "flux_density", "grid": np.array([ref], float),
+                          "mode": "flux_density", "wl": ref, "fwhm": float(rec["fwhm_um"]),
                           "ref": ref, "unit": "MJy/sr",
                           "quantity": f"flux_density_{ref:g}um"})
         elif kind in ("attenuation", "absorption"):
@@ -600,29 +783,14 @@ def _quantity_specs(model, records, z):
 def _quantities_for_model(model, specs, z):
     obs, intr = [], []
     for sp in specs:
-        if sp["mode"] == "integrated":
-            grid = sp["grid"]
-            comp = _component(model, sp["name"], grid)
-            att = _attenuation(model, grid)
-            obs.append(_trapz(comp * att, grid))
-            intr.append(_trapz(comp, grid))
-        elif sp["mode"] == "flux_density":
-            lam = np.asarray(sp["grid"], float)
-            comp = _component(model, sp["name"], lam)[0]
-            att = _attenuation(model, lam)[0]
-            obs.append(float(comp * att) / (1.0 + z))
-            intr.append(float(comp))
+        if sp["mode"] in ("integrated", "flux_density"):
+            values = _feature_flux(model, sp["name"], sp["kind"],
+                                   float(sp["wl"]), float(sp["fwhm"]), z,
+                                   compute_ew=False)
+            obs.append(values["flux_observed"])
+            intr.append(values["flux_intrinsic"])
         else:
-            comp = _submodel(model, sp["name"])
-            val = float("nan")
-            if comp is not None:
-                for attr in ("tau_sil", "tau"):
-                    if hasattr(comp, attr):
-                        try:
-                            val = float(getattr(comp, attr).value)
-                            break
-                        except Exception:
-                            pass
+            val = _feature_power(model, sp["name"], sp["kind"])
             obs.append(val)
             intr.append(val)
     return np.asarray(obs, float), np.asarray(intr, float)
@@ -789,6 +957,8 @@ def run_bootstrap_mc(model, spec, z, specs, n_samples, seed, maxiter, mode,
     samples_i = np.full((n_samples, len(specs)), np.nan, float)
     status = []
     nfev = []
+    ierrs = []
+    chi2s = []
     runtime = []
     for i in range(n_samples):
         t0 = time.time()
@@ -807,24 +977,65 @@ def run_bootstrap_mc(model, spec, z, specs, n_samples, seed, maxiter, mode,
                         uncertainty=StdDevUncertainty(np.asarray(sigma, float) * flux_unit))
         sb.meta["instrument"] = spec.meta.get("instrument", "")
         st = "ok"
+        ierr = 0
+        nf = 0
+        chi2b = float("nan")
         try:
             mb.fit(sb, redshift=z, maxiter=maxiter, verbose=False)
-            so, si = _quantities_for_model(mb, specs, z)
-            samples_o[i] = so
-            samples_i[i] = si
+            try:
+                fi = mb.fitter.fit_info
+                ierr = int(fi.get("ierr", 0))
+                nf = int(fi.get("nfev", 0))
+            except Exception:
+                ierr, nf = 0, 0
+            pred_b = np.asarray(mb.fitter.model(lam_rest), float)
+            y_rest_b = y * (1.0 + z)
+            sig_rest_b = sigma * (1.0 + z)
+            good_b = (np.isfinite(pred_b) & np.isfinite(y_rest_b)
+                      & np.isfinite(sig_rest_b) & (sig_rest_b > 0))
+            if good_b.any():
+                chi2b = float(np.sum(((y_rest_b[good_b] - pred_b[good_b])
+                                      / sig_rest_b[good_b]) ** 2))
+            if ierr not in (1, 2, 3, 4):
+                st = f"fit_not_converged:ierr={ierr}"
+            elif not np.isfinite(chi2b):
+                st = "fit_failed:nonfinite_chi2"
+            else:
+                so, si = _quantities_for_model(mb, specs, z)
+                samples_o[i] = so
+                samples_i[i] = si
         except Exception as exc:  # noqa: BLE001
             st = f"fit_failed:{type(exc).__name__}"
+            try:
+                ierr = int(mb.fitter.fit_info.get("ierr", 0))
+            except Exception:
+                ierr = 0
         status.append(st)
-        try:
-            nfev.append(int(mb.fitter.fit_info.get("nfev", 0)))
-        except Exception:
-            nfev.append(0)
+        ierrs.append(ierr)
+        chi2s.append(chi2b)
+        nfev.append(int(nf))
         runtime.append(time.time() - t0)
     n_ok = int(sum(s == "ok" for s in status))
     err_o = np.nanstd(samples_o, axis=0, ddof=1) if n_ok > 1 else np.full(len(specs), np.nan)
     err_i = np.nanstd(samples_i, axis=0, ddof=1) if n_ok > 1 else np.full(len(specs), np.nan)
     q16 = np.nanpercentile(samples_o, 15.87, axis=0) if n_ok > 1 else np.full(len(specs), np.nan)
     q84 = np.nanpercentile(samples_o, 84.13, axis=0) if n_ok > 1 else np.full(len(specs), np.nan)
+    frozen = np.zeros(len(specs), dtype=bool)
+    if n_ok > 1:
+        med = np.nanmedian(samples_o, axis=0)
+        for k in range(len(specs)):
+            if not np.isfinite(med[k]):
+                continue
+            vals = samples_o[:, k]
+            vals = vals[np.isfinite(vals)]
+            if vals.size < 3:
+                continue
+            rel = np.nanstd(vals, ddof=1) / max(abs(med[k]), 1e-300)
+            n_unique = len(np.unique(np.round(vals, 12)))
+            if (abs(med[k]) > 0 and rel < 1e-6) or (n_unique < max(3, n_ok // 2)):
+                frozen[k] = True
+    n_frozen = int(np.sum(frozen))
+    err_o_raw = err_o.copy()
     if np.isfinite(flux_scale) and flux_scale != 1.0:
         samples_o = samples_o * float(flux_scale)
         samples_i = samples_i * float(flux_scale)
@@ -832,24 +1043,31 @@ def run_bootstrap_mc(model, spec, z, specs, n_samples, seed, maxiter, mode,
         err_i = err_i * float(flux_scale)
         q16 = q16 * float(flux_scale)
         q84 = q84 * float(flux_scale)
+        err_o_raw = err_o_raw * float(flux_scale)
+    err_o = np.where(frozen, np.nan, err_o)
+    err_i = np.where(frozen, np.nan, err_i)
     return {
         "method": "bootstrap",
         "samples_o": samples_o,
         "samples_i": samples_i,
         "err_o": err_o,
         "err_i": err_i,
+        "err_o_raw": err_o_raw,
         "err_sample_o": err_o,
         "err_sample_i": err_i,
         "q16_o": q16,
         "q84_o": q84,
+        "frozen": frozen,
+        "n_frozen": n_frozen,
         "status": status,
         "nfev": nfev,
+        "ierr": ierrs,
+        "chi2": chi2s,
         "runtime": runtime,
         "n_ok": n_ok,
         "n_failed": int(n_samples - n_ok),
         "bootstrap_mode": mode,
     }
-
 
 # ---------------------------------------------------------------------------
 # Output writers
@@ -865,13 +1083,14 @@ def _fmt(v):
 def write_lines_csv(path: Path, records):
     cols = [
         "category", "name", "group", "kind", "rest_wavelength_um",
-        "observed_wavelength_um", "fwhm_um", "included_in_fit", "quantity",
-        "unit", "flux_observed", "flux_intrinsic", "flux_peak_observed",
+        "reference_wavelength_um", "observed_wavelength_um", "fwhm_um",
+        "included_in_fit", "at_bound", "extrapolated", "quantity", "unit",
+        "flux_observed", "flux_intrinsic", "flux_peak_observed",
         "flux_peak_intrinsic", "ew_um", "temperature_K", "tau", "tau_sil",
-        "attenuation_at_feature", "snr", "notes",
+        "attenuation_at_feature", "snr", "status", "notes",
     ]
     with path.open("w", newline="") as fh:
-        w = csv.DictWriter(fh, fieldnames=cols)
+        w = csv.DictWriter(fh, fieldnames=cols, lineterminator="\n")
         w.writeheader()
         for r in records:
             kind = r["kind"]
@@ -895,9 +1114,12 @@ def write_lines_csv(path: Path, records):
                 "group": r["group"],
                 "kind": kind,
                 "rest_wavelength_um": _fmt(r["rest_wavelength_um"]),
+                "reference_wavelength_um": _fmt(r.get("reference_wavelength_um", float("nan"))),
                 "observed_wavelength_um": _fmt(r["observed_wavelength_um"]),
                 "fwhm_um": _fmt(r["fwhm_um"]),
                 "included_in_fit": str(bool(r["included_in_fit"])).lower(),
+                "at_bound": str(bool(r.get("at_bound", False))).lower(),
+                "extrapolated": str(bool(r.get("extrapolated", False))).lower(),
                 "quantity": r["quantity"],
                 "unit": r["unit"],
                 "flux_observed": _fmt(r["flux_observed"]),
@@ -910,6 +1132,7 @@ def write_lines_csv(path: Path, records):
                 "tau_sil": _fmt(r["tau_sil"]),
                 "attenuation_at_feature": _fmt(r["attenuation_at_feature"]),
                 "snr": _fmt(r["snr"]),
+                "status": r.get("status", "ok"),
                 "notes": r["notes"],
             })
 
@@ -919,29 +1142,35 @@ def write_uncertainties_csv(path: Path, records, specs, mc, method, n_samples,
     cols = [
         "feature", "group", "kind", "quantity", "unit", "rest_wavelength_um",
         "flux", "err", "err_delta", "err_low", "err_high", "flux_intrinsic",
-        "err_intrinsic", "method", "n_samples", "included_in_fit", "status",
+        "err_intrinsic", "method", "n_samples", "included_in_fit", "reliable",
+        "status",
     ]
     by_record = {sp["record"]: k for k, sp in enumerate(specs)}
+    frozen = mc.get("frozen")
+    err_delta_all = mc.get("err_delta_o")
     with path.open("w", newline="") as fh:
-        w = csv.DictWriter(fh, fieldnames=cols)
+        w = csv.DictWriter(fh, fieldnames=cols, lineterminator="\n")
         w.writeheader()
         for idx, r in enumerate(records):
             k = by_record.get(idx)
             status = "ok"
+            reliable = True
             flux = r["flux_observed"]
             flux_i = r["flux_intrinsic"]
             err = err_d = err_lo = err_hi = err_i = float("nan")
             if not r["included_in_fit"]:
                 status = "excluded_from_fit"
+                reliable = False
             elif k is None:
                 status = "no_quantity"
+                reliable = False
             else:
                 err = float(mc["err_o"][k]) if k < len(mc["err_o"]) else float("nan")
                 err_i = float(mc["err_i"][k]) if k < len(mc["err_i"]) else float("nan")
+                if err_delta_all is not None and k < len(err_delta_all):
+                    err_d = float(err_delta_all[k])
                 if method == "covariance":
                     err_d = err
-                else:
-                    err_d = float("nan")
                 try:
                     q16 = float(mc["q16_o"][k])
                     q84 = float(mc["q84_o"][k])
@@ -950,22 +1179,46 @@ def write_uncertainties_csv(path: Path, records, specs, mc, method, n_samples,
                         err_hi = q84 - flux
                 except Exception:
                     pass
-                if not np.isfinite(err):
-                    status = "mc_unavailable"
-                elif err == 0 and (not np.isfinite(flux) or flux == 0):
-                    status = "at_bound_or_zero"
-                elif (method == "covariance"
-                      and mc.get("cov", {}).get("rank", 0) < mc.get("n_free", 0)
-                      and np.isfinite(flux) and flux != 0
-                      and err <= 1e-6 * abs(flux)):
-                    status = "covariance_rank_deficient"
-                    err = float("nan")
-                    err_d = float("nan")
+                if frozen is not None and k < len(frozen) and bool(frozen[k]):
+                    reliable = False
                     err_i = float("nan")
                     err_lo = float("nan")
                     err_hi = float("nan")
-            if scale_chi2 is not None and np.isfinite(err) and np.isfinite(scale_chi2):
-                err_d = err * np.sqrt(scale_chi2)
+                    use_delta = (np.isfinite(err_d)
+                                 and np.isfinite(flux) and flux != 0
+                                 and abs(err_d) <= 10.0 * abs(flux))
+                    if use_delta:
+                        err = err_d
+                        status = "bootstrap_frozen_covariance_fallback"
+                    else:
+                        err = float("nan")
+                        status = "bootstrap_frozen_unconstrained"
+                elif not np.isfinite(err):
+                    status = "mc_unavailable"
+                    reliable = False
+                elif err == 0 and (not np.isfinite(flux) or flux == 0):
+                    status = "at_bound_or_zero"
+                    reliable = False
+                elif (method == "covariance"
+                      and mc.get("cov", {}).get("rank", 0) < mc.get("n_free", 0)):
+                    status = "covariance_rank_deficient"
+                    reliable = False
+                if r.get("status") == "coverage_gap":
+                    status = "coverage_gap"
+                    reliable = False
+                    err = err_d = err_lo = err_hi = err_i = float("nan")
+                if r.get("at_bound"):
+                    status = "at_bound" if status == "ok" else status
+                    reliable = False
+            scale = float(np.sqrt(scale_chi2)) if (
+                scale_chi2 is not None and np.isfinite(scale_chi2)
+                and scale_chi2 > 0) else 1.0
+            if scale != 1.0:
+                err = err * scale if np.isfinite(err) else err
+                err_d = err_d * scale if np.isfinite(err_d) else err_d
+                err_lo = err_lo * scale if np.isfinite(err_lo) else err_lo
+                err_hi = err_hi * scale if np.isfinite(err_hi) else err_hi
+                err_i = err_i * scale if np.isfinite(err_i) else err_i
             w.writerow({
                 "feature": r["name"],
                 "group": r["group"],
@@ -983,6 +1236,7 @@ def write_uncertainties_csv(path: Path, records, specs, mc, method, n_samples,
                 "method": method,
                 "n_samples": int(n_samples),
                 "included_in_fit": str(bool(r["included_in_fit"])).lower(),
+                "reliable": str(bool(reliable)).lower(),
                 "status": status,
             })
 
@@ -992,7 +1246,7 @@ def write_samples_csv(path: Path, records, specs, mc, method):
     if method == "bootstrap":
         cols.append("status")
     with path.open("w", newline="") as fh:
-        w = csv.writer(fh)
+        w = csv.writer(fh, lineterminator="\n")
         w.writerow(cols)
         samples = mc["samples_o"]
         for i in range(samples.shape[0]):
@@ -1006,7 +1260,10 @@ def _select_top(records, specs, mc, n=8):
     vals = []
     for k, sp in enumerate(specs):
         idx = sp["record"]
-        flux = records[idx]["flux_observed"]
+        rec = records[idx]
+        if rec.get("status") == "coverage_gap":
+            continue
+        flux = rec["flux_observed"]
         err = mc["err_o"][k] if k < len(mc["err_o"]) else float("nan")
         if np.isfinite(flux) and np.isfinite(err) and err > 0 and flux != 0:
             vals.append((abs(flux) / err, k, sp, flux, err))
@@ -1032,6 +1289,8 @@ def plot_uncertainties(path: Path, records, specs, mc, method, n_samples,
     for k, sp in enumerate(specs):
         idx = sp["record"]
         r = records[idx]
+        if r.get("status") == "coverage_gap":
+            continue
         flux = r["flux_observed"]
         err = mc["err_o"][k] if k < len(mc["err_o"]) else float("nan")
         if not (np.isfinite(flux) and np.isfinite(err) and flux != 0 and err > 0):
@@ -1141,12 +1400,21 @@ def plot_uncertainties(path: Path, records, specs, mc, method, n_samples,
         ax_trace.set_title("Bootstrap trace (top features)")
         ax_trace.legend(fontsize=6, ncol=2)
         ax_trace.grid(alpha=0.25)
+    elif method == "bootstrap":
+        ax_trace.text(0.5, 0.55, "Bootstrap samples are frozen",
+                      ha="center", va="center", transform=ax_trace.transAxes,
+                      fontsize=10)
+        ax_trace.text(0.5, 0.42, f"N = {n_samples}, no finite feature errors",
+                      ha="center", va="center", transform=ax_trace.transAxes,
+                      fontsize=8)
+        ax_trace.set_axis_off()
     else:
+        cov_info = mc.get("cov", {})
         ax_trace.text(0.5, 0.55, "Linearized covariance mode",
                       ha="center", va="center", transform=ax_trace.transAxes,
                       fontsize=10)
-        ax_trace.text(0.5, 0.42, f"rank {mc['cov']['rank']}/{mc['n_free']}  "
-                      f"rcond {mc['cov']['rcond']:g}",
+        ax_trace.text(0.5, 0.42, f"rank {cov_info.get('rank', 0)}/{mc.get('n_free', 0)}  "
+                      f"rcond {cov_info.get('rcond', float('nan')):g}",
                       ha="center", va="center", transform=ax_trace.transAxes,
                       fontsize=8)
         ax_trace.text(0.5, 0.30, f"N = {n_samples}  seed = {seed}",
@@ -1175,6 +1443,40 @@ def plot_uncertainties(path: Path, records, specs, mc, method, n_samples,
 # ---------------------------------------------------------------------------
 # Main
 # ---------------------------------------------------------------------------
+
+def _subset_spectrum(spec, mask):
+    mask = np.asarray(mask, dtype=bool)
+    out = Spectrum1D(
+        spectral_axis=spec.spectral_axis[mask],
+        flux=spec.flux[mask],
+        uncertainty=StdDevUncertainty(
+            np.asarray(spec.uncertainty.array, float)[mask] * spec.flux.unit),
+    )
+    out.meta.update(spec.meta)
+    return out
+
+
+def _relative_residual_mask(model, spec, z, nmad):
+    """Robust relative-residual clip (used for unflagged cosmic rays)."""
+    lam = spec.spectral_axis.to_value(u.micron) / (1.0 + z)
+    y = np.asarray(spec.flux.value, float)
+    try:
+        pred = np.asarray(model.fitter.model(lam), float) / (1.0 + z)
+    except Exception:
+        return np.ones(len(y), dtype=bool)
+    good = np.isfinite(y) & np.isfinite(pred) & (y != 0)
+    if good.sum() < 10:
+        return good
+    scale = np.maximum(np.abs(y), 1e-3 * np.nanmedian(np.abs(y[good])))
+    rel = np.full(len(y), np.nan)
+    rel[good] = (y[good] - pred[good]) / scale[good]
+    med = float(np.nanmedian(rel[good]))
+    mad = 1.4826 * float(np.nanmedian(np.abs(rel[good] - med)))
+    if not np.isfinite(mad) or mad <= 0:
+        return good
+    mask = good & (np.abs(rel - med) <= float(nmad) * mad)
+    return mask
+
 
 def build_parser(cfg: dict):
     inp = cfg.get("input", {}) if isinstance(cfg, dict) else {}
@@ -1208,7 +1510,11 @@ def build_parser(cfg: dict):
                    help="median-bin width in micron before fitting (MIRI high-res)")
     p.add_argument("--aperture-arcsec2", type=float,
                    default=float(inp.get("aperture_arcsec2", 0.04)),
-                   help="effective aperture for Jy -> MJy/sr (MIRI x1d)")
+                   help="effective aperture (arcsec^2) for flux-density -> MJy/sr "
+                        "(MIRI x1d and MIRI s1d tables)")
+    p.add_argument("--tbl-aperture-arcsec2", type=float,
+                   default=float(inp.get("tbl_aperture_arcsec2", 1.0)),
+                   help="common aperture (arcsec^2) for Spitzer IRS .tbl Jy data")
     p.add_argument("--min-wave", type=float, default=float(inp.get("min_wave", 5.0)))
     p.add_argument("--max-wave", type=float, default=float(inp.get("max_wave", 38.0)))
     p.add_argument("--normalize-fit", action=argparse.BooleanOptionalAction,
@@ -1216,6 +1522,13 @@ def build_parser(cfg: dict):
                    help="divide the input by its median before fitting; "
                         "auto-enabled for MC runs to keep PAHFIT's least "
                         "squares well scaled")
+    p.add_argument("--clip-nmad", type=float, default=float(fit.get("clip_nmad", 0.0)),
+                   help="optional robust outlier rejection: clip points whose "
+                        "relative residual is > NMAD robust standard deviations "
+                        "(0 disables; applied after the first fit)")
+    p.add_argument("--clip-iterations", type=int,
+                   default=int(fit.get("clip_iterations", 1)),
+                   help="number of clip/refit iterations when --clip-nmad > 0")
 
     p.add_argument("--mc", action="store_true",
                    help="enable Monte Carlo using the config sample count")
@@ -1269,19 +1582,30 @@ def main(argv=None):
         raise SystemExit("--mc-rcond must be between 0 and 1")
 
     flux_unit = "MJy/sr"
+    input_stats = []
+    coverage = {"gaps": [], "max_gap_um": 0.0, "gap_total_um": 0.0}
+    n_input = 0
+    n_duplicates = 0
     if args.spectrum:
         from pahfit.helpers import read_spectrum
         spec = read_spectrum(args.spectrum)
+        if not spec.flux.unit.is_equivalent(u.MJy / u.sr):
+            fl, er, _, _ = _to_mjy_sr(
+                spec.flux.value, spec.uncertainty.array,
+                str(spec.flux.unit), args.aperture_arcsec2, args.spectrum)
+            spec = Spectrum1D(spectral_axis=spec.spectral_axis,
+                              flux=fl * u.MJy / u.sr,
+                              uncertainty=StdDevUncertainty(er * u.MJy / u.sr))
         if args.instrument:
             parts = [x.strip() for x in args.instrument.split(",") if x.strip()]
             spec.meta["instrument"] = parts[0] if len(parts) == 1 else parts
         w = spec.spectral_axis.to_value(u.micron)
         flux_unit = str(spec.flux.unit)
+        n_input = int(len(w))
         print(f"[pahfit] packaged spectrum {args.spectrum}: {len(w)} pixels, "
               f"{w.min():.2f}-{w.max():.2f} um, unit={flux_unit}")
     else:
         waves, fluxes, errs = [], [], []
-        unit = None
         if args.tbl:
             files = sorted(args.input.glob("*.tbl"))
             if not files:
@@ -1297,35 +1621,40 @@ def main(argv=None):
         for f in files:
             if f.suffix == ".tbl":
                 w, fl, er, dq, uu, order = read_irs_tbl(f)
-                # Spitzer IRS tables are point-source calibrated Jy.  PAHFIT
-                # requires intensity, so divide by the slit solid angle.
-                arcsec2_sr = (np.pi / 180.0 / 3600.0) ** 2
-                # The IRS table is point-source calibrated, not per-slit
-                # surface brightness.  Applying different SL/LL slit areas
-                # inserts an 8.6x step at 14.2 um.  Use one common aperture
-                # solid angle so the SED is continuous; PAHFIT then fits the
-                # shape and relative features.
-                omega = 1.0 * arcsec2_sr
-                fl = fl * 1e6 / omega
-                er = er * 1e6 / omega
-                uu = "MJy/sr"
+                aperture = args.tbl_aperture_arcsec2
             elif args.s1d:
                 w, fl, er, dq, uu = read_s1d(f)
+                aperture = args.aperture_arcsec2
             else:
                 w, fl, er, dq, uu = read_x1d(f)
-            if uu == "Jy":
-                omega = args.aperture_arcsec2 * (np.pi / 180.0 / 3600.0) ** 2
-                fl = fl * 1e6 / omega
-                er = er * 1e6 / omega
-                uu = "MJy/sr"
+                aperture = args.aperture_arcsec2
+            unit_in = str(uu)
+            fl, er, uu, conv = _to_mjy_sr(fl, er, uu, aperture, f.name)
             good = (np.isfinite(w) & np.isfinite(fl) & np.isfinite(er) & (er > 0)
                     & (dq == 0) & (w >= args.min_wave) & (w <= args.max_wave))
+            n_total = int(len(w))
+            n_flagged = int(np.sum(dq != 0))
+            n_input += n_total
+            input_stats.append({
+                "file": f.name,
+                "n_total": n_total,
+                "n_good": int(good.sum()),
+                "n_flagged": n_flagged,
+                "unit_in": unit_in,
+                "conversion_to_MJy_sr": float(conv),
+                "aperture_arcsec2": float(aperture),
+                "wave_min_um": float(np.nanmin(w[good])) if good.any() else None,
+                "wave_max_um": float(np.nanmax(w[good])) if good.any() else None,
+            })
             waves.append(w[good]); fluxes.append(fl[good]); errs.append(er[good])
-            unit = unit or uu
-            print(f"[pahfit] {f.name}: {good.sum()} good pixels, "
-                  f"{w[good].min():.2f}-{w[good].max():.2f} um, unit={uu}, "
-                  f"median flux={np.nanmedian(fl[good]):.6g}, "
-                  f"median err={np.nanmedian(er[good]):.6g}")
+            if good.any():
+                print(f"[pahfit] {f.name}: {good.sum()}/{n_total} good pixels, "
+                      f"{w[good].min():.2f}-{w[good].max():.2f} um, "
+                      f"in={input_stats[-1]['unit_in']}, out=MJy/sr, "
+                      f"median flux={np.nanmedian(fl[good]):.6g}, "
+                      f"median err={np.nanmedian(er[good]):.6g}")
+            else:
+                print(f"[pahfit] {f.name}: no good pixels after masking")
         w = np.concatenate(waves); fl = np.concatenate(fluxes); er = np.concatenate(errs)
         order = np.argsort(w); w, fl, er = w[order], fl[order], er[order]
         # Remove exact/near duplicates from overlapping IRS orders or MRS segments.
@@ -1333,9 +1662,11 @@ def main(argv=None):
         for i in range(1, len(w)):
             if abs(w[i] - w[i - 1]) < 1e-5:
                 keep[i] = False
+        n_duplicates = int(len(w) - keep.sum())
         w, fl, er = w[keep], fl[keep], er[keep]
         w, fl, er = bin_spectrum(w, fl, er, args.smooth_um)
-        flux_unit = unit or "MJy/sr"
+        coverage = _coverage_info(w)
+        flux_unit = "MJy/sr"
         spec = Spectrum1D(spectral_axis=w * u.micron,
                           flux=fl * u.Unit(flux_unit),
                           uncertainty=StdDevUncertainty(er * u.Unit(flux_unit)))
@@ -1346,10 +1677,16 @@ def main(argv=None):
             spec.meta["instrument"] = MIRI_ALL
         if "instrument" not in spec.meta:
             raise SystemExit("PAHFIT needs --instrument for non-MIRI input")
+        spec.meta["input_stats"] = input_stats
+        spec.meta["coverage"] = coverage
         print(f"[pahfit] combined {len(w)} pixels, {w.min():.2f}-{w.max():.2f} um, "
               f"z={args.z}, bin={args.smooth_um}, unit={flux_unit}, "
               f"median flux={np.nanmedian(fl):.6g}, "
               f"median err={np.nanmedian(er):.6g}")
+        if coverage["gaps"]:
+            print("[pahfit] coverage gaps: " + "; ".join(
+                f"{g['start_um']:.3f}-{g['end_um']:.3f} um "
+                f"({g['width_um']:.3f})" for g in coverage["gaps"]), flush=True)
 
     fit_scale = 1.0
     fit_spec = spec
@@ -1402,28 +1739,94 @@ def main(argv=None):
 
     pass_chi2 = []
     passes_done = 0
-    for ipass in range(max(1, int(args.fit_passes))):
+    clip_refits = 0
+    fit_info_last = {}
+    fit_converged = True
+
+    def _fit_once(spec_fit):
+        nonlocal passes_done, status, fit_info_last, fit_converged
         t_pass = time.time()
         try:
-            model.fit(fit_spec, redshift=args.z, maxiter=args.maxiter, verbose=False)
+            model.fit(spec_fit, redshift=args.z, maxiter=args.maxiter, verbose=False)
             passes_done += 1
             try:
-                lam_rest = fit_spec.spectral_axis.to_value(u.micron) / (1.0 + args.z)
+                fi = model.fitter.fit_info
+                fit_info_last = {
+                    "nfev": int(fi.get("nfev", 0)),
+                    "ierr": int(fi.get("ierr", 0)),
+                    "message": str(fi.get("message", "")),
+                }
+            except Exception:
+                fit_info_last = {}
+            ierr = int(fit_info_last.get("ierr", 0))
+            if ierr not in (1, 2, 3, 4):
+                fit_converged = False
+                status = f"fit_not_converged:ierr={ierr}"
+            try:
+                lam_rest = spec_fit.spectral_axis.to_value(u.micron) / (1.0 + args.z)
                 pred = np.asarray(model.fitter.model(lam_rest), float)
-                y_rest = np.asarray(fit_spec.flux.value, float) * (1.0 + args.z)
-                sig_rest = np.asarray(fit_spec.uncertainty.array, float) * (1.0 + args.z)
-                good = np.isfinite(pred) & np.isfinite(y_rest) & np.isfinite(sig_rest) & (sig_rest > 0)
-                chi2 = float(np.sum(((y_rest[good] - pred[good]) / sig_rest[good]) ** 2))
+                y_rest = np.asarray(spec_fit.flux.value, float) * (1.0 + args.z)
+                sig_rest = np.asarray(spec_fit.uncertainty.array, float) * (1.0 + args.z)
+                good = (np.isfinite(pred) & np.isfinite(y_rest)
+                        & np.isfinite(sig_rest) & (sig_rest > 0))
+                chi2 = float(np.sum(((y_rest[good] - pred[good])
+                                     / sig_rest[good]) ** 2))
                 pass_chi2.append(chi2)
             except Exception:
                 pass_chi2.append(float("nan"))
-            print(f"[pahfit] fit pass {ipass + 1}/{args.fit_passes}: "
-                  f"chi2={pass_chi2[-1]:.6g}  ({time.time() - t_pass:.2f} s)", flush=True)
+            print(f"[pahfit] fit pass {passes_done}: chi2={pass_chi2[-1]:.6g} "
+                  f"ierr={fit_info_last.get('ierr', '?')} "
+                  f"({time.time() - t_pass:.2f} s)", flush=True)
         except Exception as exc:  # noqa: BLE001
             status = f"fit_failed:{type(exc).__name__}"
-            print(f"[pahfit] fit pass {ipass + 1} failed: {exc}", flush=True)
+            fit_converged = False
+            print(f"[pahfit] fit pass {passes_done + 1} failed: {exc}", flush=True)
+            raise
+
+    for ipass in range(max(1, int(args.fit_passes))):
+        try:
+            _fit_once(fit_spec)
+        except Exception:
             break
+
+    # Optional robust clipping of unflagged cosmic rays / hot pixels.
+    n_clipped = 0
+    if args.clip_nmad and args.clip_nmad > 0 and passes_done > 0:
+        n_par = 0
+        try:
+            n_par = int(len(model.fitter.model.param_names))
+        except Exception:
+            pass
+        for iclip in range(max(0, int(args.clip_iterations))):
+            n_before = int(len(fit_spec.spectral_axis))
+            mask = _relative_residual_mask(
+                model, fit_spec, args.z, args.clip_nmad)
+            n_new = int(mask.sum())
+            if n_new == n_before:
+                break
+            if n_new < max(10, n_par + 5):
+                print(f"[pahfit] clipping would leave only {n_new} pixels; "
+                      f"stopping robust clip", flush=True)
+                break
+            fit_spec = _subset_spectrum(fit_spec, mask)
+            n_clipped += n_before - n_new
+            print(f"[pahfit] robust clip {iclip + 1}: kept {n_new} pixels "
+                  f"(clipped {n_before - n_new}; total {n_clipped})",
+                  flush=True)
+            try:
+                _fit_once(fit_spec)
+                clip_refits += 1
+            except Exception:
+                break
+
+    # PAHFIT 2.0 stores instrument and redshift in swapped metadata slots
+    # inside Model.fit().  Write authoritative values for downstream users.
+    model.features.meta["instrument"] = fit_spec.meta.get("instrument", "")
+    model.features.meta["redshift"] = float(args.z)
+
     out_model = _scaled_model_copy(model, fit_scale)
+    out_model.features.meta["instrument"] = fit_spec.meta.get("instrument", "")
+    out_model.features.meta["redshift"] = float(args.z)
     out_model.save(str(args.output / "pahfit_output.ecsv"), overwrite=True)
     out_model.features.write(str(args.output / "pahfit_features.csv"),
                              format="ascii.csv", overwrite=True)
@@ -1433,7 +1836,7 @@ def main(argv=None):
         plot_model = _scaled_model_copy(model, fit_scale)
         try:
             plot_model._set_up_fitter(spec.meta.get("instrument"),
-                                      args.z, use_instrument_fwhm=False)
+                                      args.z, lam=w, use_instrument_fwhm=True)
         except Exception:
             pass
         fig = default_layout_plot(spec, plot_model, 2.0)
@@ -1458,34 +1861,44 @@ def main(argv=None):
     specs = _quantity_specs(model, records, args.z)
 
     rms_rel = float("nan")
+    rms_rel_all = float("nan")
     chi2_best = float("nan")
     n_data = 0
     n_free_all = 0
     n_free = 0
+    n_at_bound = 0
     try:
         lam = fit_spec.spectral_axis.to_value(u.micron) / (1.0 + args.z)
-        # PAHFIT converts the observed spectrum to the rest frame by (1+z);
-        # the model is evaluated on that rest-frame grid.  Compare like with
-        # like (the previous code compared observed flux to rest-frame model).
         pred = np.asarray(model.fitter.model(lam), float) / (1.0 + args.z)
         y = np.asarray(fit_spec.flux.value, float)
         if pred.shape == y.shape:
             rms_rel = float(np.sqrt(np.nanmean((y - pred) ** 2))
                             / max(np.nanmedian(np.abs(y)), 1e-30))
+        # Same metric on all input pixels (including clipped outliers).
+        try:
+            lam_all = spec.spectral_axis.to_value(u.micron) / (1.0 + args.z)
+            pred_all = (np.asarray(model.fitter.model(lam_all), float)
+                        * float(fit_scale) / (1.0 + args.z))
+            y_all = np.asarray(spec.flux.value, float)
+            if pred_all.shape == y_all.shape:
+                rms_rel_all = float(np.sqrt(np.nanmean((y_all - pred_all) ** 2))
+                                    / max(np.nanmedian(np.abs(y_all)), 1e-30))
+        except Exception:
+            pass
         y_rest = np.asarray(fit_spec.flux.value, float) * (1.0 + args.z)
         sig_rest = np.asarray(fit_spec.uncertainty.array, float) * (1.0 + args.z)
         pred_rest = np.asarray(model.fitter.model(lam), float)
-        good = np.isfinite(pred_rest) & np.isfinite(y_rest) & np.isfinite(sig_rest) & (sig_rest > 0)
+        good = (np.isfinite(pred_rest) & np.isfinite(y_rest)
+                & np.isfinite(sig_rest) & (sig_rest > 0))
         n_data = int(good.sum())
-        chi2_best = float(np.sum(((y_rest[good] - pred_rest[good]) / sig_rest[good]) ** 2))
+        chi2_best = float(np.sum(((y_rest[good] - pred_rest[good])
+                                  / sig_rest[good]) ** 2))
         try:
             mfit = model.fitter.model
             n_free_all = int(sum(1 for v in dict(mfit.fixed).values() if not v))
             n_free = n_free_all
         except Exception:
             pass
-        # Number of free parameters after dropping bound parameters, used for
-        # the covariance and the reduced chi-square below.
         try:
             free_tmp, at_tmp, _ = _free_parameters(model)
             n_free = len(free_tmp)
@@ -1493,8 +1906,10 @@ def main(argv=None):
         except Exception:
             n_at_bound = 0
     except Exception:
-        n_at_bound = 0
-    dof = max(1, n_data - max(n_free, 0))
+        pass
+    # Use all optimized parameters in the dof, including those resting on a
+    # physical bound: they are still parameters selected by the fit.
+    dof = max(1, n_data - max(n_free_all, 0))
     chi2_red = chi2_best / dof if np.isfinite(chi2_best) else float("nan")
 
     # Monte Carlo uncertainty estimation (opt-in).
@@ -1514,6 +1929,7 @@ def main(argv=None):
         t_mc = time.time()
         rng = np.random.default_rng(args.mc_seed)
         cov = None
+        probe = None
         fallback = None
         if args.mc_method in ("auto", "covariance"):
             try:
@@ -1528,21 +1944,39 @@ def main(argv=None):
                 print(f"[pahfit] covariance MC failed: {exc}", flush=True)
                 traceback.print_exc()
             if cov is not None and args.mc_method == "auto":
-                min_rank = max(2, int(0.8 * max(1, cov["n_free"])))
-                if (cov["cov"]["rank"] < min_rank
-                        or cov["cov"]["condition"] > 1e6):
+                # Require a full-rank covariance in auto mode.  A rank of
+                # 0.8*n_free is not enough: the missing directions still
+                # produce meaningless zero/underestimated feature errors.
+                if (cov["cov"]["rank"] < cov["n_free"]
+                        or cov["cov"]["condition"] > 1e6
+                        or cov["n_data"] <= cov["n_free"] + 2):
                     fallback = (f"covariance_ill_conditioned_rank_"
                                 f"{cov['cov']['rank']}_of_{cov['n_free']}_"
-                                f"cond_{cov['cov']['condition']:.3g}")
+                                f"cond_{cov['cov']['condition']:.3g}_"
+                                f"ndata_{cov['n_data']}")
+                    probe = cov
                     cov = None
+            elif cov is not None:
+                probe = cov
+        elif args.mc_method == "bootstrap":
+            # A cheap covariance probe supplies delta-method errors and the
+            # rank/condition diagnostics even when bootstrap is requested.
+            try:
+                probe = run_covariance_mc(
+                    model, fit_spec, args.z, records, specs, 0,
+                    args.mc_rcond, rng, chi2_red=chi2_red,
+                    flux_scale=fit_scale,
+                )
+            except Exception as exc:  # noqa: BLE001
+                print(f"[pahfit] covariance probe failed: {exc}", flush=True)
+                probe = None
         if cov is not None:
             mc = cov
             method = "covariance"
         elif args.mc_samples > 0:
             method = "bootstrap"
-            if fallback is None:
-                fallback = ("covariance_unavailable" if args.mc_method != "bootstrap"
-                            else None)
+            if fallback is None and args.mc_method != "bootstrap":
+                fallback = "covariance_unavailable"
             print(f"[pahfit] using full-refit bootstrap "
                   f"({args.mc_samples} realizations, mode={args.mc_bootstrap_mode})",
                   flush=True)
@@ -1551,13 +1985,26 @@ def main(argv=None):
                 args.mc_maxiter, args.mc_bootstrap_mode,
                 flux_scale=fit_scale,
             )
+            if probe is not None and "err_o" in probe:
+                mc["err_delta_o"] = np.asarray(probe["err_o"], float)
+                mc["err_delta_i"] = np.asarray(probe["err_i"], float)
         mc_runtime = time.time() - t_mc
         mc_summary.update({
             "method": method,
             "runtime_s": float(mc_runtime),
             "fallback_reason": fallback,
-            "n_samples_ok": int(mc.get("n_ok", args.mc_samples)) if method == "bootstrap" else int(args.mc_samples),
+            "n_samples_ok": (int(mc.get("n_ok", args.mc_samples))
+                             if method == "bootstrap" else int(args.mc_samples)),
         })
+        if probe is not None:
+            mc_summary["covariance_probe"] = {
+                "rank": int(probe["cov"]["rank"]),
+                "n_free": int(probe["n_free"]),
+                "n_at_bound": int(probe["n_at_bound"]),
+                "n_data": int(probe["n_data"]),
+                "condition_number": float(probe["cov"]["condition"]),
+                "rank_deficient": bool(probe["cov"]["rank"] < probe["n_free"]),
+            }
         if method == "covariance":
             mc_summary["covariance"] = {
                 "rank": int(mc["cov"]["rank"]),
@@ -1573,27 +2020,36 @@ def main(argv=None):
                 "covariance_scale": "absolute (no chi2/dof rescaling)",
                 "chi2_red": float(chi2_red) if np.isfinite(chi2_red) else None,
                 "scale": args.mc_scale,
+                "reliable": bool(mc["cov"]["rank"] >= mc["n_free"]),
             }
-            # Attach errors to records for the line table.
+            err_scale = (float(np.sqrt(chi2_red))
+                         if args.mc_scale == "chi2" and np.isfinite(chi2_red)
+                         and chi2_red > 0 else 1.0)
             by_record = {sp["record"]: k for k, sp in enumerate(specs)}
             for idx, rec in enumerate(records):
                 k = by_record.get(idx)
                 if k is None:
                     continue
                 _e = float(mc["err_o"][k]) if k < len(mc["err_o"]) else float("nan")
+                _e *= err_scale
                 _f = float(rec["flux_observed"])
-                if (mc["cov"]["rank"] < mc["n_free"] and np.isfinite(_f)
-                        and _f != 0 and np.isfinite(_e)
-                        and _e <= 1e-6 * abs(_f)):
+                if mc["cov"]["rank"] < mc["n_free"]:
+                    # A truncated covariance has missing directions; a formal
+                    # S/N would be meaningless even if the diagonal is finite.
                     rec["snr"] = float("nan")
                 else:
-                    rec["snr"] = _f / _e if _e and np.isfinite(_e) else float("nan")
+                    rec["snr"] = (_f / _e if np.isfinite(_e) and _e > 0
+                                  else float("nan"))
         else:
             mc_summary["bootstrap"] = {
                 "mode": str(mc.get("bootstrap_mode", args.mc_bootstrap_mode)),
                 "n_ok": int(mc.get("n_ok", 0)),
                 "n_failed": int(mc.get("n_failed", 0)),
+                "n_not_converged": int(sum(
+                    1 for x in mc.get("ierr", []) if int(x) not in (1, 2, 3, 4))),
+                "n_frozen_features": int(mc.get("n_frozen", 0)),
                 "median_nfev": float(np.nanmedian(mc.get("nfev", [np.nan]))),
+                "median_chi2": float(np.nanmedian(mc.get("chi2", [np.nan]))),
                 "median_runtime_s": float(np.nanmedian(mc.get("runtime", [np.nan]))),
             }
             by_record = {sp["record"]: k for k, sp in enumerate(specs)}
@@ -1601,8 +2057,9 @@ def main(argv=None):
                 k = by_record.get(idx)
                 if k is None:
                     continue
-                rec["snr"] = (float(rec["flux_observed"]) / float(mc["err_o"][k])
-                              if mc["err_o"][k] and np.isfinite(mc["err_o"][k]) else float("nan"))
+                _e = float(mc["err_o"][k]) if k < len(mc["err_o"]) else float("nan")
+                rec["snr"] = (float(rec["flux_observed"]) / _e
+                              if np.isfinite(_e) and _e > 0 else float("nan"))
         write_uncertainties_csv(
             args.output / "pahfit_uncertainties.csv", records, specs, mc,
             method, args.mc_samples,
@@ -1623,18 +2080,94 @@ def main(argv=None):
     elif args.mc_samples > 0:
         mc_summary["status"] = "skipped_fit_failed"
 
+    for rec in records:
+        if rec.get("status") == "coverage_gap":
+            rec["snr"] = float("nan")
+
     # The always-on line table gets S/N values when MC is available.
     write_lines_csv(args.output / "pahfit_lines.csv", records)
 
-    unstable = bool((np.isfinite(rms_rel) and rms_rel > 0.5) or status != "ok")
+    gap_feature_names = sorted({r["name"] for r in records
+                                if r.get("status") == "coverage_gap"})
+    n_features_enabled = 0
+    try:
+        n_features_enabled = int(len(model.enabled_features))
+    except Exception:
+        n_features_enabled = int(len(model.features))
+    at_bound_fraction = (float(n_at_bound) / float(max(n_free_all, 1)))
+    quality_flags = []
+    if passes_done == 0 or status.startswith("fit_failed"):
+        quality_flags.append("fit_failed")
+    if not fit_converged:
+        quality_flags.append("fit_not_converged")
+    if np.isfinite(rms_rel) and rms_rel > 0.5:
+        quality_flags.append("large_rms")
+    if np.isfinite(chi2_red) and chi2_red > 10:
+        quality_flags.append("formal_chi2_mismatch")
+    if at_bound_fraction > 0.5:
+        quality_flags.append("many_parameters_at_bound")
+    if n_data <= max(n_free_all, 1) + 5:
+        quality_flags.append("few_degrees_of_freedom")
+    if coverage.get("max_gap_um", 0.0) > 0.5:
+        quality_flags.append("coverage_gap")
+    if gap_feature_names:
+        quality_flags.append("features_in_coverage_gaps")
+    if n_clipped > 0:
+        quality_flags.append("outliers_clipped")
+    if method == "covariance" and "covariance" in mc_summary:
+        if mc_summary["covariance"].get("rank_deficient"):
+            quality_flags.append("covariance_rank_deficient")
+    if method == "bootstrap" and "bootstrap" in mc_summary:
+        if mc_summary["bootstrap"].get("n_frozen_features", 0) > 0:
+            quality_flags.append("bootstrap_frozen_features")
+        if (mc_summary["bootstrap"].get("n_failed", 0) > 0
+                or mc_summary["bootstrap"].get("n_not_converged", 0) > 0):
+            quality_flags.append("mc_fit_failures")
+    if args.mc_samples > 0 and method is None:
+        quality_flags.append("mc_unavailable")
+
+    if passes_done == 0 or status.startswith("fit_failed"):
+        fit_quality = "failed"
+    elif (not fit_converged) or (np.isfinite(rms_rel) and rms_rel > 0.5):
+        fit_quality = "unstable"
+    elif (np.isfinite(chi2_red) and chi2_red > 10) or at_bound_fraction > 0.5 \
+            or coverage.get("max_gap_um", 0.0) > 0.5:
+        fit_quality = "systematics_limited"
+    else:
+        fit_quality = "good"
+    unstable = bool(fit_quality in ("failed", "unstable"))
+    flagged = bool(unstable or quality_flags)
+
     summary = {
         "z": args.z, "instrument": str(spec.meta.get("instrument", "")),
-        "n_pixels": int(len(w)), "flux_unit": flux_unit, "segment": args.segment,
+        "n_pixels": int(len(fit_spec.spectral_axis)),
+        "n_binned_pixels": int(len(w)),
+        "n_input_pixels": int(n_input),
+        "n_duplicates_removed": int(n_duplicates),
+        "n_clipped": int(n_clipped),
+        "flux_unit": flux_unit, "segment": args.segment,
         "smooth_um": args.smooth_um, "status": status, "plot_status": plot_status,
-        "wave_min_um": float(np.min(w)), "wave_max_um": float(np.max(w)),
-        "n_features": int(len(model.features)), "rms_rel": rms_rel,
+        "fit_converged": bool(fit_converged),
+        "fit_quality": fit_quality,
+        "quality_flags": quality_flags,
         "unstable": unstable,
+        "flagged": flagged,
+        "wave_min_um": float(np.min(spec.spectral_axis.value)),
+        "wave_max_um": float(np.max(spec.spectral_axis.value)),
+        "fit_wave_min_um": float(np.min(fit_spec.spectral_axis.value)),
+        "fit_wave_max_um": float(np.max(fit_spec.spectral_axis.value)),
+        "coverage": coverage,
+        "features_in_coverage_gaps": gap_feature_names,
+        "n_features_in_coverage_gaps": int(len(gap_feature_names)),
+        "input_stats": input_stats,
+        "n_features": int(n_features_enabled),
+        "n_features_table": int(len(model.features)),
+        "rms_rel": rms_rel,
+        "rms_rel_all_input": rms_rel_all,
         "normalize_fit": bool(args.normalize_fit),
+        "clip_nmad": float(args.clip_nmad),
+        "clip_iterations": int(args.clip_iterations),
+        "clip_refits": int(clip_refits),
         "fit_flux_scale": float(fit_scale),
         "fit_passes_requested": int(args.fit_passes),
         "fit_passes_completed": int(passes_done),
@@ -1645,6 +2178,7 @@ def main(argv=None):
         "n_free_parameters": int(n_free),
         "n_free_parameters_all": int(n_free_all),
         "n_at_bound_parameters": int(n_at_bound),
+        "at_bound_fraction": at_bound_fraction,
         "mc": mc_summary,
         "config_file": str(cfg_path) if cfg_path else None,
         "config_name": str(cfg.get("name", "cli")) if isinstance(cfg, dict) else "cli",
@@ -1659,7 +2193,7 @@ def main(argv=None):
             "status": str(fi.get("status", "")),
         }
     except Exception:
-        pass
+        summary["fit_info"] = fit_info_last
     (args.output / "pahfit_summary.json").write_text(
         json.dumps(summary, indent=2, default=float)
     )
@@ -1676,10 +2210,16 @@ def main(argv=None):
             "s1d": bool(args.s1d),
             "tbl": bool(args.tbl),
             "aperture_arcsec2": float(args.aperture_arcsec2),
+            "tbl_aperture_arcsec2": float(args.tbl_aperture_arcsec2),
             "min_wave_um": float(args.min_wave),
             "max_wave_um": float(args.max_wave),
+            "files": input_stats,
+            "coverage": coverage,
         },
-        "preprocess": {"smooth_um": args.smooth_um},
+        "preprocess": {"smooth_um": args.smooth_um,
+                       "clip_nmad": float(args.clip_nmad),
+                       "clip_iterations": int(args.clip_iterations),
+                       "n_clipped": int(n_clipped)},
         "fit": {
             "maxiter": int(args.maxiter),
             "passes": int(args.fit_passes),
@@ -1687,37 +2227,48 @@ def main(argv=None):
             "init_from": args.init_from,
             "normalize": bool(args.normalize_fit),
             "flux_scale": float(fit_scale),
+            "converged": bool(fit_converged),
+            "ierr": int(fit_info_last.get("ierr", 0)),
+            "quality": fit_quality,
+            "quality_flags": quality_flags,
+            "chi2_red": float(chi2_red) if np.isfinite(chi2_red) else None,
+            "dof": int(dof),
         },
         "monte_carlo": {
             "enabled": bool(args.mc_samples > 0),
             "samples": int(args.mc_samples),
             "method": args.mc_method,
+            "resolved_method": method,
             "seed": int(args.mc_seed),
             "rcond": float(args.mc_rcond),
             "maxiter": int(args.mc_maxiter),
             "bootstrap_mode": args.mc_bootstrap_mode,
             "scale": args.mc_scale,
             "save_samples": bool(args.mc_save_samples),
+            "fallback_reason": mc_summary.get("fallback_reason"),
         },
         "metadata": {
             "z": float(args.z),
-            "wave_min_um": float(np.min(w)),
-            "wave_max_um": float(np.max(w)),
-            "n_pixels": int(len(w)),
-            "flux_unit": flux_unit,
+            "wave_min_um": float(np.min(spec.spectral_axis.value)),
+            "wave_max_um": float(np.max(spec.spectral_axis.value)),
+            "n_pixels": int(len(fit_spec.spectral_axis)),
+            "n_input_pixels": int(n_input),
+            "flux_unit": "MJy/sr",
         },
     }
     (args.output / "effective_config.json").write_text(
         json.dumps(effective, indent=2, default=float)
     )
 
-    print(f"[pahfit] done status={status} rms_rel={rms_rel:.3f} unstable={unstable} "
-          f"-> {args.output}")
+    print(f"[pahfit] done status={status} rms_rel={rms_rel:.3f} "
+          f"chi2_red={chi2_red:.1f} quality={fit_quality} "
+          f"flagged={flagged} -> {args.output}")
+    if quality_flags:
+        print("[pahfit] quality flags: " + ", ".join(quality_flags), flush=True)
     if args.mc_samples > 0:
         print(f"[pahfit] MC method={method} N={args.mc_samples} "
               f"runtime={mc_runtime:.1f}s")
     return 0
-
 
 if __name__ == "__main__":
     raise SystemExit(main())
