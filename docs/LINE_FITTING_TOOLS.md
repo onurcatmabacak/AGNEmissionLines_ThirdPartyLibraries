@@ -20,7 +20,7 @@ CAFE, S3Fit, GANDALF, PAHFIT and the generic Gaussian fitters operate on
 | `galspec_line` | line | optical–NIR | Astropy continuum + Gaussian lines; reduced Hβ/[O III] window | `emcee` MCMC / dynesty / LSQ covariance |
 | `pyqsofitspec_line` | line | UV–optical | PyQSOFitSpec skew-normal components + Fe II/Balmer | parametric bootstrap |
 | `qgfit` | line | UV–optical | AGN power law + Fe II + host + multi-component lines | continuum MCMC; LSQ line errors |
-| `sheap_line` | line | UV–optical | SHEAP SPAF/AGN decomposition, BH mass | JAX optimisation + covariance MC |
+| `sheap_line` | line | UV–optical | SHEAP SPAF/AGN decomposition, BH mass | JAX optimisation + parametric-bootstrap MC |
 | `pahfit_mir` | line | MIR | PAH Drude profiles + dust continuum + gas Gaussians | least-squares + MC |
 | `fir_linefit` | line | FIR | local continuum + Gaussian forbidden lines | covariance |
 | `ppxf_host` | host | optical–NIR | stellar templates + AGN power law, emission masked | pPXF formal errors |
@@ -102,14 +102,16 @@ These four community 1-D codes were added and run on the real
 
 | tool | fitted region/model | result |
 |---|---|---|
-| `galspec_line` | reduced Hβ/[O III] window, Fe II + Gaussian components | emcee MCMC, 2000 saved samples; Hβ/[O III] = 1.85 |
+| `galspec_line` | reduced Hβ/[O III] window, Fe II + Gaussian components | emcee MCMC, 2000 saved samples; Hβ/[O III] = 2.00 |
 | `pyqsofitspec_line` | UV/optical Fe II/Balmer + skew-normal lines | 10-fit parametric bootstrap; Hβ/[O III] = 2.11 |
 | `qgfit` | AGN power law + Fe II + host + line complexes | short continuum MCMC; Hβ/[O III] = 2.50 |
-| `sheap_line` | Hβ/[O III] SPAF/JAX model | 50-draw covariance MC; Hβ/[O III] = 4.00, flagged experimental |
+| `sheap_line` | Hβ/[O III] SPAF/JAX model, 4450-5450 Å, Fe II + 2 narrow components | 50-draw parametric bootstrap; Hβ/[O III] = 2.02, χ²_ν = 2.9; production |
 
 GalSpec and PyQSOFitSpec are adopted as production alternatives.  QGfit is
-kept with a caveat about its broader model.  SHEAP is kept as an experimental
-branch, not part of the default scientific recommendation.
+kept with a caveat about its broader model.  SHEAP is retained in production
+after the 2026-08 audit: the original 4.00 ratio was a model failure (600 km/s
+narrow-FWHM cap, no Fe II, too narrow a window), not a property of the object.
+See `docs/SHEAP_ASSESSMENT.md`.
 
 ### PAHFIT
 

@@ -9,6 +9,7 @@
 #   --reference DIR    directory of sibling tool outputs (default: auto-detect
 #                      pyqsofit_uv, gandalf_line and s3fit_line next to OUT)
 #   --name NAME        SHEAP object name (default: sheap)
+#   --variants         run the model-systematics variants from the config
 #
 # The input may be the canonical inputs/<source>_z_<z>/ directory (the runner
 # searches recursively for spec-*.fits) or a single FITS file.
@@ -19,7 +20,7 @@ DOCKER="${DOCKER:-docker}"
 IMAGE="${SHEAP_IMAGE:-sheap_line}"
 
 usage() {
-  sed -n '2,15p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//'
+  sed -n '2,18p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//'
 }
 
 IN=""
@@ -28,6 +29,7 @@ CONFIG="$ROOT/configs/sheap_line/default"
 Z=""
 REF=""
 NAME=""
+VARIANT=0
 
 while [ $# -gt 0 ]; do
   case "$1" in
@@ -35,6 +37,7 @@ while [ $# -gt 0 ]; do
     --z)          Z="${2:?--z needs a value}"; shift 2 ;;
     --reference)  REF="${2:?--reference needs a path}"; shift 2 ;;
     --name)       NAME="${2:?--name needs a value}"; shift 2 ;;
+    --variants)   VARIANT=1; shift ;;
     -h|--help)    usage; exit 0 ;;
     --)           shift; break ;;
     -*)           echo "unknown option: $1" >&2; usage >&2; exit 2 ;;
@@ -68,6 +71,7 @@ ARGS=(
 )
 [ -n "$Z" ] && ARGS+=(--z "$Z")
 [ -n "$NAME" ] && ARGS+=(--name "$NAME")
+[ "$VARIANT" -eq 1 ] && ARGS+=(--variants)
 
 if [ -d "$CONFIG" ]; then
   MOUNTS+=(-v "$CONFIG":/app/config:ro)

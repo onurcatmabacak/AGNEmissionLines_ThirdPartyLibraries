@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import argparse
 import csv
+import json
 import math
 import re
 from collections import defaultdict
@@ -73,8 +74,11 @@ def add(rows, source, tool, line, comp, flux, err, fwhm, snr=None):
         comp = "broad"
     elif comp in ("nlr", "narrow") or "narrow" in comp:
         comp = "narrow"
-    else:
+    elif comp in ("", "all", "sum", "total"):
         comp = "total"
+    # Keep other component names (wing, outflow, core, ...) distinct.  Mapping
+    # them to "total" made the ratio reader pick the first wing row as the
+    # total line flux (e.g. GalSpec [O III] 5007: 748 instead of 1619).
     rows.append(dict(source=source, tool=tool, line=line, component=comp,
                      flux=flux, flux_err=err, fwhm_kms=fwhm, snr=snr))
 
@@ -202,6 +206,18 @@ def load():
             "sheap_line": ("sheap_lines.csv",),
             "pahfit_mir": ("pahfit_lines.csv",),
         }.items():
+            # A tool may publish its own production gate.  Do not let a
+            # deliberately flagged diagnostic fit (e.g. an out-of-family line
+            # ratio) enter the cross-tool comparison.
+            meta_p = src / tool / "run.json"
+            if meta_p.exists():
+                try:
+                    meta = json.loads(meta_p.read_text())
+                    q = meta.get("quality")
+                    if isinstance(q, dict) and q.get("production_ok") is False:
+                        continue
+                except Exception:
+                    pass
             for n in names:
                 p = src / tool / n
                 if p.exists():
@@ -236,9 +252,7 @@ def ratios(rows):
                 if not recs:
                     return None
                 tot = [x for x in recs if x["component"] == "total"]
-                use = tot[:1] if tot else [x for x in recs if x["component"] in ("broad", "narrow")]
-                if not use:
-                    use = recs[:1]
+                use = tot[:1] if tot else recs
                 f = sum(x["flux"] for x in use)
                 e = math.sqrt(sum((x["flux_err"] or 0) ** 2 for x in use))
                 return f, e

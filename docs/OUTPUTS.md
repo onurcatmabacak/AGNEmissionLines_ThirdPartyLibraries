@@ -30,7 +30,7 @@ Tools and expected files:
 | `galspec_line` | `galspec_lines.csv`, `galspec_fit.png/pdf`, `galspec_corner.png/pdf`, `galspec_uncertainty.png/pdf`, `galspec_mcmc.npz`, `run.json` |
 | `pyqsofitspec_line` | `pyqsofitspec_lines.csv`, `pyqsofitspec_bootstrap.png/pdf`, `pyqsofitspec_corner.png/pdf`, `pyqsofitspec_out.csv`, `run.json` |
 | `qgfit` | `qgfit_lines.csv`, `qgfit_fit.png/pdf`, `qgfit_uncertainty.png/pdf`, `qgfit_mcmc_summary.csv`, `run.json` |
-| `sheap_line` | `sheap_lines.csv`, `sheap_fit.png/pdf`, `sheap_uncertainty.png/pdf`, `sheap_mc_samples.csv`, `run.json` |
+| `sheap_line` | `sheap_lines.csv`, `sheap_model.csv`, `sheap_fit.png/pdf`, `sheap_zoom_hbeta.png/pdf`, `sheap_zoom_oiii.png/pdf`, `sheap_residual.png/pdf`, `sheap_uncertainty.png/pdf`, `sheap_mc_samples.csv`, `sheap_systematics.csv` (audit runs), `run.json` |
 | `galspec_line` | `galspec_lines.csv`, `galspec_fit.png/pdf`, `galspec_uncertainty.png/pdf`, `galspec_corner.png/pdf`, `galspec_model.csv`, `galspec_mcmc.npz`, `galspec_comparison.csv`, `config.effective.json`, `run.json` |
 | `fir_linefit` | `*.fir_lines.csv`, `*.fir_fit.png/pdf`, `*.fir_summary.json` |
 | `crossband` | `crossband_ratios.csv`, `crossband_summary.json`, `crossband_ratios.png/pdf` |
