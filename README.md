@@ -72,7 +72,7 @@ The production matrix uses real data only:
 | **PyQSOFitSpec** | `04592649654` | full Fe II/Balmer + skew-normal lines, 55 bootstrap draws | 53 valid; Hβ **3525**, [O III] **1639**, ratio **2.15** |
 | **QGfit** | `04592649654` | long continuum MCMC + line complexes | 2334 s; Hβ/[O III] **2.50**; line errors LSQ |
 | **SHEAP** | `04592649654` | Hβ/[O III] SPAF/JAX, 50 bootstrap draws | Hβ/[O III] **2.02**, χ²ν 2.9 |
-| **PyQSOFit** | `04592649654` | 100-realization MC (`mc/`); fixed `emcee` initialization | MCMC fit PDF preserved; capped chain sample export remains incomplete, so MC remains the quantitative product |
+| **PyQSOFit** | `04592649654` | 100-realization MC (`mc/`); short `emcee` MCMC (800 draws, not converged) + 300-step diagnostics | MCMC initialization fixed; acceptance ≈0.37; short-chain samples/corner/trace saved, but MC remains the quantitative product |
 | **SDSS ZLINE** | five SDSS QSOs | official `ZLINE` HDU | 045926 ratio **1.57** |
 
 The cross-tool 04592649654 Hβ/[O III] 5007 values are:
@@ -95,7 +95,7 @@ median 2.05, log-scatter 0.13 dex
 | PyQSOFitSpec only 10 bootstraps and pinned widths | 55-draw bootstrap; width anchors and tied components documented. Hβ remains ~18% above GANDALF/S3Fit because of continuum/model definition. |
 | QGfit used a very short continuum MCMC | 2334 s production run with long continuum MCMC and expanded [O III] template; line errors remain LSQ. |
 | SHEAP failed at χ² 46 and Hβ/[O III]=4.00 | model/region/profile repair; now **2.02**, χ²ν 2.9, 50-draw MC. |
-| PyQSOFit line-stage `emcee` condition-number failure | initialization fixed (acceptance ≈0.37); capped MCMC fit PDF preserved, but sample export is still incomplete. The 100-realization MC remains the quantitative fallback. |
+| PyQSOFit line-stage `emcee` condition-number failure | fixed by bounds-aware walker initialization; short MCMC samples/corner/trace saved (800 draws, not converged), plus 300-step diagnostics (acceptance ≈0.37). Full 300-step chains were lost at the container timeout; the 100-realization MC remains quantitative. |
 | Official SDSS DAPs, AMARU, ELFO, AGNdecompose, pyspeckit | excluded with explicit data/model reasons; see `docs/OFFICIAL_PIPELINES_AND_XRAY.md`. |
 
 ## Statistics and caveats

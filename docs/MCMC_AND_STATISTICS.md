@@ -21,15 +21,20 @@ broad-band SED code is not a line fitter.
 | `ppxf_host` | pPXF formal errors | no | `sigma_err_kms`, host error |
 | `crossband` | analytic ratio propagation | no | `err` per ratio |
 
-## PyQSOFit: MCMC initialization fixed, MC retained quantitatively
+## PyQSOFit: MCMC initialization fixed, short chain retained
 
 The optional `emcee` path initially failed on `04592649654_z_0.5874` with
-`Initial state has a large condition number`.  The repair scales the walker
-initialization and adds trace/corner/sample exports; the capped run reached
-acceptance ≈0.37 and produced a fit PDF.  The capped Docker run did not
-persist the full chain before exit, so the committed quantitative uncertainty
-remains the **100-realization MC** of the calibrated error array.  The MCMC
-code path is fixed for future longer runs; this distinction is explicit.
+`Initial state has a large condition number`: two undetected [S II] amplitudes
+were exactly zero and lmfit's default walker state had zero columns.  The
+repair supplies a bounds-aware positive `pos` and records chains/tau/ESS.
+
+A **10-step validation chain** (800 draws; 8 retained steps) is committed with
+corner/trace/sample products.  A **300-step capped run** completed the fit
+(1400.6 s) with acceptance ≈0.37 and τ_max 36–38, i.e. only ~6 τ steps; its
+full chains were lost when the container timed out during the copy step.  The
+short chain is **not converged**, so the committed quantitative uncertainty
+remains the **100-realization MC**.  Both statuses are explicit in
+`outputs/04592649654_z_0.5874/pyqsofit/mcmc/STATUS.md`.
 
 ## Interpretation
 
@@ -48,6 +53,7 @@ code path is fixed for future longer runs; this distinction is explicit.
 | tool | run | realizations | method | figure |
 |---|---|---:|---|---|
 | PyQSOFit | `04592649654` | 100 | MC error-array resampling | `outputs/04592649654_z_0.5874/pyqsofit/mc/pyqsofit_mc.png` |
+| PyQSOFit MCMC | `04592649654` | 800 (10-step validation) | `emcee`, **not converged**; 300-step diagnostics | `outputs/04592649654_z_0.5874/pyqsofit/mcmc/pyqsofit_mcmc_corner.png` |
 | S3Fit | `04592649654` | **10** | mock spectra (spec+sed) | `outputs/04592649654_z_0.5874/s3fit_line/s3fit_mc.png` |
 | GalSpec | `04592649654` | 37,334 saved samples (thin 6; 224,000 post-burn draws) | full-continuum `emcee`, 80 walkers x 4000 steps, tau_max 342.6 | `outputs/04592649654_z_0.5874/galspec_line/galspec_corner.png` |
 | PyQSOFitSpec | `04592649654` | **53/55 valid** | parametric bootstrap | `outputs/04592649654_z_0.5874/pyqsofitspec_line/pyqsofitspec_bootstrap.png` |
