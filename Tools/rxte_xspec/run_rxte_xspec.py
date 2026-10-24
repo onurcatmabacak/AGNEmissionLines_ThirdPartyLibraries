@@ -472,6 +472,22 @@ def fit_all(prepared: dict, config: dict) -> dict:
         prepared, config, fit_id="line_3_20_fixed_nH", band=primary_band,
         line=True, seed=seed, nH_fixed=base["nH"][0])
 
+    # Diagnostic for the verified-data Delta chi2 ~ 82 quote: freeze N_H to
+    # the Galactic value.  This baseline is a poor description of the PCA
+    # continuum, so the line absorbs continuum residuals; the variant is
+    # reported to make the provenance of the larger Delta chi2 explicit, not
+    # as the production measurement.
+    galactic_nH = float(config.get("galactic_nH_1e22", 0.024))
+    gal_base = fit_model(
+        prepared, config, fit_id="baseline_3_20_galactic_nH",
+        band=primary_band, line=False, seed=seed, nH_fixed=galactic_nH)
+    results["baseline_3_20_galactic_nH"] = gal_base
+    gal_seed = {"nH": galactic_nH, "gamma": gal_base["gamma"][0],
+                "pl_norm": gal_base["pl_norm"][0]}
+    results["line_3_20_galactic_nH"] = fit_model(
+        prepared, config, fit_id="line_3_20_galactic_nH", band=primary_band,
+        line=True, seed=gal_seed, nH_fixed=galactic_nH)
+
     # Continuum-systematic check: allow a soft blackbody excess.  The
     # simple power law leaves significant residuals in 3-20 keV; this
     # diagnostic tests whether the Fe line survives a more flexible
@@ -1009,6 +1025,8 @@ def main(argv=None) -> int:
         "line_3_20": "baseline_3_20",
         "baseline_3_20_fixed_nH": "baseline_3_20_fixed_nH",
         "line_3_20_fixed_nH": "baseline_3_20_fixed_nH",
+        "baseline_3_20_galactic_nH": "baseline_3_20_galactic_nH",
+        "line_3_20_galactic_nH": "baseline_3_20_galactic_nH",
         "baseline_3_20_soft_excess": "baseline_3_20_soft_excess",
         "line_3_20_soft_excess": "baseline_3_20_soft_excess",
         "baseline_3_10": "baseline_3_10",
@@ -1045,6 +1063,10 @@ def main(argv=None) -> int:
             notes = "conservative baseline: N_H frozen"
         elif fit_id == "line_3_20_fixed_nH":
             notes = "conservative Fe K-alpha fit: N_H frozen to continuum value"
+        elif fit_id == "baseline_3_20_galactic_nH":
+            notes = "diagnostic baseline: N_H frozen to Galactic value"
+        elif fit_id == "line_3_20_galactic_nH":
+            notes = "diagnostic: N_H frozen to Galactic value (continuum mismatch)"
         elif fit_id == "baseline_3_20_soft_excess":
             notes = "continuum-systematic baseline: soft blackbody excess"
         elif fit_id == "line_3_20_soft_excess":
@@ -1069,6 +1091,9 @@ def main(argv=None) -> int:
         elif fit_id == "line_3_20_fixed_nH":
             interp = ("conservative narrow-line measurement with N_H fixed "
                       "to the continuum fit")
+        elif fit_id == "line_3_20_galactic_nH":
+            interp = ("diagnostic with Galactic N_H fixed; the baseline is a "
+                      "poor continuum fit, so this Delta chi2 is not adopted")
         elif fit_id == "line_3_20_soft_excess":
             interp = ("continuum-systematic check with a soft blackbody; "
                       "not the production model")
@@ -1191,6 +1216,14 @@ def main(argv=None) -> int:
         "line_band_crosscheck_flux_erg_cm2_s": results["line_3_10"]["flux"],
         "line_band_crosscheck_ew_rest_keV":
             results["line_3_10"]["ew_rest_keV"],
+        "galactic_nH_variant_delta_chi2":
+            results["line_3_20_galactic_nH"]["delta_chi2"],
+        "galactic_nH_variant_significance_sigma":
+            results["line_3_20_galactic_nH"]["significance_sigma"],
+        "galactic_nH_variant_flux_erg_cm2_s":
+            results["line_3_20_galactic_nH"]["flux"],
+        "galactic_nH_variant_ew_rest_keV":
+            results["line_3_20_galactic_nH"]["ew_rest_keV"],
     }
     run["runtime_s"] = time.time() - t0
 

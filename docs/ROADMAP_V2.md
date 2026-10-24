@@ -118,8 +118,8 @@ not an acceptance product.
 
 Pinned HEASARC conda **XSPEC 13.0.0** (`hb0f4dca_2`) on **HEASoft 6.37**
 (PyXspec), reused from the existing `xmm_xspec` image.  The `rxte_xspec`
-image is a thin `FROM xmm_xspec` layer: **4,346,169,613 bytes** (4.35 GB),
-only 216,251 bytes above the 4,345,953,362-byte base.  A second 4.3 GB XSPEC
+image is a thin `FROM xmm_xspec` layer: **4,346,170,410 bytes** (4.35 GB),
+only 217,048 bytes above the 4,345,953,362-byte base.  A second 4.3 GB XSPEC
 installation was deliberately avoided.
 
 **Data.**  Official HEASARC RXTE/PCA **`stdprod`** products, i.e. the RXTE
@@ -137,7 +137,7 @@ background; this is the dominant PCA caveat.
 **Accepted model.**  `tbabs*(zpowerlw+zgauss)` in the observed 3-20 keV band,
 `chi` statistic, Wilms abundances, Fe K-alpha at 6.4 keV rest with a fixed
 50 eV narrow core.  The 3-10 keV line-band fit is the local-continuum
-cross-check.  Runtime is 5.3 s inside the container.
+cross-check.  Runtime is 5.4 s inside the container.
 
 | quantity | 3C 120, 3-20 keV (production) | 3C 120, 3-10 keV cross-check |
 |---|---:|---:|
@@ -163,19 +163,32 @@ keV (4.32 sigma).  The width is not a resolved velocity measurement.
 chi2/dof = **39.41/41 = 0.961**, Gamma = **1.867 +/- 0.048**, N_H =
 **(2.40 +/- 1.03)e22 cm^-2**, Delta chi2 = **46.48 (6.82 sigma)**, flux
 **(1.10 +/- 0.15)e-12 erg cm^-2 s^-1**, EW_rest = **263.5 eV**.  The 3-10 keV
-cross-check gives Delta chi2 = 45.36 (6.74 sigma).  This is the stronger of
-the two PCA detections and confirms the pipeline on a second real AGN.
+cross-check gives Delta chi2 = 45.36 (6.74 sigma).  The Galactic-`nH`
+diagnostic gives Delta chi2 = 91.38 (9.56 sigma) on a poor chi2/dof =
+135.98/43 baseline, the same continuum-mismatch behaviour as 3C 120.  This is
+the stronger of the two PCA detections and confirms the pipeline on a second
+real AGN.
 
 **The expected Delta chi2 ~ 82 caveat.**  The verified-data note quotes
-Delta chi2 ~ 82 for the 3C 120 Fe K-alpha in 3-20 keV.  That value is **not
-reproduced** by the simple `tbabs*zpowerlw` baseline with the official
-background model: the background-inclusive chi-square gives Delta chi2 = 17.83
-(4.22 sigma).  The value depends strongly on the continuum/background
-treatment: a soft-blackbody continuum reaches 53.91 (7.34 sigma), while a
-fixed-N_H conservative fit gives 11.94 (3.46 sigma).  The quoted 82 lies above
-even the soft-excess check and is not adopted.  The detection is significant
-in every variant (3.5-7.3 sigma), but the exact Delta chi2 is not a robust
-headline number.
+Delta chi2 ~ 82 for the 3C 120 Fe K-alpha in 3-20 keV.  That larger value is
+reproduced only if `nH` is **frozen at a low, Galactic-scale value**.  With
+`nH = 0.024 x 10^22 cm^-2`, the diagnostic baseline is chi2/dof =
+**198.45/50 = 3.97**, and adding the narrow line gives chi2/dof = 109.11/49 =
+2.23, Delta chi2 = **89.33 (9.45 sigma)**, flux 8.77e-13 and EW_rest 171.6 eV.
+That is the family of fits behind the ~82 quote (at `nH = 0.5e22` the same
+baseline gives Delta chi2 = 76.8).  The baseline is a poor continuum
+description, so the line is absorbing continuum residuals; this variant is
+reported as a diagnostic, **not** as the production measurement.
+
+With `nH` free and the official background model, the production fit gives
+Delta chi2 = **17.83 (4.22 sigma)**.  The value depends strongly on the
+continuum/background treatment: a soft-blackbody continuum reaches 53.91
+(7.34 sigma), while a fixed-`nH` (continuum-value) conservative fit gives 11.94
+(3.46 sigma).  The detection is significant in every variant (3.5-9.5 sigma),
+but the exact Delta chi2 is not a robust headline number.  The production
+choice is the free-`nH` baseline because it is the statistically adequate
+continuum description (`chi2/dof = 1.83` before the line, 1.50 after), whereas
+the Galactic-`nH` baseline is not (`chi2/dof = 3.97`).
 
 **Cross-mission note.**  The existing `xmm_xspec` image documents the
 XMM-Newton EPIC PPS fit of **PDS 456** (ObsID `0721010201`, z = 0.184,

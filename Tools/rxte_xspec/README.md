@@ -120,7 +120,8 @@ entry point sources `headas-init.sh` and uses writable `PFILES`, `HOME` and
 | line flux | **(5.03 +/- 1.17) x 10^-13 erg cm^-2 s^-1** |
 | EW_rest | **90.3 eV** |
 | 3-10 keV line-band cross-check | chi2/dof = 19.90/21 = 0.947; Delta chi2 = 22.22 -> **4.71 sigma**; flux 5.54e-13; EW_rest 102.7 eV |
-| conservative (N_H frozen) | Delta chi2 = 11.94 -> 3.46 sigma; flux 3.43e-13; EW_rest 59.6 eV |
+| conservative (N_H frozen to continuum value) | Delta chi2 = 11.94 -> 3.46 sigma; flux 3.43e-13; EW_rest 59.6 eV |
+| diagnostic (N_H frozen at Galactic 0.024e22) | baseline chi2/dof = 198.45/50 = 3.97; line chi2/dof = 109.11/49 = 2.23; Delta chi2 = 89.33 -> 9.45 sigma; flux 8.77e-13; EW_rest 171.6 eV |
 | soft-blackbody continuum check | Delta chi2 = 53.91 -> 7.34 sigma; flux 5.21e-13; EW_rest 95.4 eV |
 | free width (3-10 keV) | sigma = 0.60 +/- 0.25 keV; Delta chi2 = 24.96 (2 dof) -> 4.62 sigma |
 | free centroid (3-10 keV) | E_rest = 6.39 +/- 0.19 keV; sigma = 0.62 +/- 0.28 keV; 4.32 sigma |
@@ -130,16 +131,21 @@ The second independent AGN, **MCG-6-30-15**, gives chi2/dof =
 **39.41/41 = 0.961**, Gamma = **1.867 +/- 0.048**, N_H =
 **(2.40 +/- 1.03) x 10^22 cm^-2**, Delta chi2 = **46.48 -> 6.82 sigma**,
 flux **(1.10 +/- 0.15) x 10^-12 erg cm^-2 s^-1**, EW_rest **263.5 eV**.
+Its Galactic-`nH` diagnostic gives Delta chi2 = 91.38 (9.56 sigma) on a poor
+chi2/dof = 135.98/43 baseline, the same continuum-mismatch behaviour.
 
-The verified-data note's `Delta chi^2 ~ 82` for 3C 120 is **not reproduced**
-by the simple baseline with the official background model.  The
-background-inclusive chi-square gives 17.83; a soft-excess continuum reaches
-53.91; a fixed-N_H conservative fit gives 11.94.  The detection is significant
-in every variant (3.5-7.3 sigma), but the exact Delta chi2 is
-continuum/background-dependent and is not quoted as 82.  The statistic choice
-is not the explanation: with the same model and background, `pgstat` gives
-17.84 and `cstat` gives 17.84, identical to `chi` within 0.01.  This is the
-honest PCA systematics budget, not a statistical error bar.
+The verified-data note's `Delta chi^2 ~ 82` for 3C 120 belongs to the
+**fixed-low-N_H family**: freezing `nH` at the Galactic value (0.024e22)
+gives Delta chi2 = 89.33, but that baseline has chi2/dof = 3.97 and the line
+is absorbing continuum residuals.  It is reported as a diagnostic, not the
+production measurement.  The production free-`nH` fit gives 17.83 on a
+chi2/dof = 1.83 baseline; a soft-excess continuum reaches 53.91; a fixed
+(continuum-value) N_H conservative fit gives 11.94.  The detection is
+significant in every variant (3.5-9.5 sigma), but the exact Delta chi2 is
+continuum/background-dependent.  The statistic choice is not the explanation:
+with the same model and background, `pgstat` gives 17.84 and `cstat` gives
+17.84, identical to `chi` within 0.01.  This is the honest PCA systematics
+budget, not a statistical error bar.
 
 ## What this tool can and cannot measure
 

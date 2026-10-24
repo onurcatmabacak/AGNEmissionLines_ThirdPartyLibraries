@@ -110,7 +110,7 @@ continuum-systematic check for this reason.
 `rxte_xspec` is a thin `FROM xmm_xspec` layer.  The existing `xmm_xspec` image
 already contains XSPEC 13.0.0, HEASoft 6.37, CALDB and PyXspec; a second 4.3 GB
 XSPEC environment would add no capability.  The `rxte_xspec` image is
-4,346,169,613 bytes, only 216,251 bytes above the 4,345,953,362-byte base.
+4,346,170,410 bytes, only 217,048 bytes above the 4,345,953,362-byte base.
 
 ### What is still future work
 

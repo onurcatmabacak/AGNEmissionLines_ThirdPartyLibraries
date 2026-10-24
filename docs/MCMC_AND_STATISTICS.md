@@ -82,12 +82,16 @@ propagates its `STAT_ERR`, but the background-model systematics are not in the
 errors.  The tool therefore reports a conservative variant with `nH` frozen to
 the continuum-only value and a soft-blackbody continuum-systematic check.
 For 3C 120 the narrow-line `Delta chi^2` is 17.8 (4.2 sigma) on the production
-`tbabs*zpowerlw` baseline, 11.9 (3.5 sigma) with `nH` frozen, 22.2
-(4.7 sigma) in the 3-10 keV line band, and 53.9 (7.3 sigma) when a soft
-blackbody is added.  The spread is the honest continuum/background systematic,
-not a statistical error bar.  The verified-data note's `Delta chi^2 ~ 82` is
-not reproduced by the simple baseline; it lies above even the soft-excess
-check and is not quoted as this repository's measurement.
+`tbabs*zpowerlw` baseline, 11.9 (3.5 sigma) with `nH` frozen to the continuum
+value, 22.2 (4.7 sigma) in the 3-10 keV line band, and 53.9 (7.3 sigma) when a
+soft blackbody is added.  The verified-data note's `Delta chi^2 ~ 82` is
+reproduced only when `nH` is frozen near the Galactic value: at
+`nH = 0.024e22 cm^-2` the diagnostic gives `Delta chi^2 = 89.3` (9.45 sigma),
+but the corresponding continuum baseline is chi2/dof = 3.97, so the line is
+absorbing continuum residuals.  That variant is reported but not adopted.
+The production free-`nH` baseline (chi2/dof = 1.83 before the line, 1.50
+after) gives 17.8.  The spread is the honest continuum/background systematic,
+not a statistical error bar.
 
 ## Interpretation
 
