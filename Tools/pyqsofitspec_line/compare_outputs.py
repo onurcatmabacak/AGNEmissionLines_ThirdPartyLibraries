@@ -2,7 +2,7 @@
 """Compare the PyQSOFitSpec line fluxes with the sibling tools in this repo.
 
 Reads the outputs already written under ``outputs/<source_key>/`` (PyQSOFit,
-GANDALF, S3Fit) and the PyQSOFitSpec totals, and writes
+GANDALF, S3Fit, GalSpec, QGfit) and the PyQSOFitSpec totals, and writes
 ``cross_tool_comparison.csv`` / ``.json`` into the PyQSOFitSpec output
 directory.  Standard library only; run it on the host after the container.
 
@@ -163,6 +163,63 @@ def s3fit_totals(root: Path):
     return out
 
 
+def galspec_totals(root: Path):
+    """galspec_line/galspec_lines.csv: component total rows."""
+    path = root / "galspec_line" / "galspec_lines.csv"
+    rows = read_csv(path)
+    if not rows:
+        return {}
+    out = {}
+    for row in rows:
+        if row.get("component") != "total":
+            continue
+        name = row.get("line", "")
+        flux = as_float(row.get("flux_1e17"))
+        err = as_float(row.get("flux_err_1e17"))
+        if flux is None:
+            continue
+        if name == "Hbeta":
+            out["Hbeta"] = {"flux": flux, "err": err,
+                            "definition": "H-beta total (GalSpec)", "snr": None}
+        elif name in ("OIII_5007", "OIII5007"):
+            out["OIII5007"] = {"flux": flux, "err": err,
+                               "definition": "[O III] 5007 total (GalSpec)",
+                               "snr": None}
+    return out
+
+
+def qgfit_totals(root: Path):
+    """qgfit/qgfit_lines.csv: total row where present, else the single component."""
+    path = root / "qgfit" / "qgfit_lines.csv"
+    rows = read_csv(path)
+    if not rows:
+        return {}
+    out = {}
+    by = {}
+    for row in rows:
+        by.setdefault(row.get("line", ""), []).append(row)
+    for key, names in (("Hbeta", ("Hbeta",)), ("OIII5007", ("OIII5007",)),
+                       ("MgII", ("MgII",))):
+        candidates = [r for name in names for r in by.get(name, [])]
+        if not candidates:
+            continue
+        total = next((r for r in candidates if r.get("component") == "total"), None)
+        row = total or candidates[0]
+        flux = as_float(row.get("flux_1e17"))
+        err = as_float(row.get("flux_err_1e17"))
+        if flux is None:
+            continue
+        if key == "OIII5007":
+            definition = ("[O III] 5007 total (QGfit)" if total is not None
+                          else "[O III] 5007 narrow component only (QGfit)")
+        elif key == "MgII":
+            definition = "Mg II 2798 blended profile (QGfit)"
+        else:
+            definition = "H-beta total (QGfit)"
+        out[key] = {"flux": flux, "err": err, "definition": definition, "snr": None}
+    return out
+
+
 def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -179,6 +236,8 @@ def main(argv=None):
         "pyqsofit": pyqsofit_totals(root),
         "gandalf": gandalf_totals(root),
         "s3fit": s3fit_totals(root),
+        "galspec": galspec_totals(root),
+        "qgfit": qgfit_totals(root),
     }
     rows = []
     for key in LINE_KEYS:
@@ -219,7 +278,7 @@ def main(argv=None):
         entry = {"pyqsofitspec_flux_1e17": base["flux"],
                  "pyqsofitspec_err_1e17": base.get("err"),
                  "tools": {}}
-        for tool in ("pyqsofit", "gandalf", "s3fit"):
+        for tool in ("pyqsofit", "gandalf", "s3fit", "galspec", "qgfit"):
             other = tools[tool].get(key)
             if not other or other.get("flux") is None:
                 continue

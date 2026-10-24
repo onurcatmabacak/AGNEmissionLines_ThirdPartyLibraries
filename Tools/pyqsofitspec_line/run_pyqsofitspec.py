@@ -62,6 +62,9 @@ DEFAULT_CONFIG = {
     "obs_wave_range": None,
     "flux_unit": "auto",
     "nsmooth": 1,
+    "kmpfit_maxiter": 1500,
+    "kmpfit_ftol": None,
+    "kmpfit_xtol": None,
     "reject_badpix": False,
     "Fe_uv_op": True,
     "poly": True,
@@ -313,7 +316,49 @@ def import_package():
     return PyQSOFitSpec, QSOFit
 
 
+_KMPFIT_INSTALLED = False
+_KMPFIT_CONTROLS = {"maxiter": 1500, "ftol": None, "xtol": None}
+
+
+def install_kmpfit_controls(maxiter, ftol=None, xtol=None):
+    """Raise kmpfit's iteration cap for the line fits.
+
+    PyQSOFitSpec constructs its line ``kmpfit.Fitter`` without ``maxiter``, so
+    the kapteyn default (200 iterations) applies.  The 8-component H-beta /
+    [O III] complex does not converge within 200 iterations (status 5,
+    "Maximum number of iterations reached") and the returned parameters are a
+    truncated iterate rather than the minimum.  kmpfit exposes ``maxiter`` as
+    a Fitter keyword, so wrap the constructor instead of editing the vendored
+    package.  The cap is mutable so a failed realisation can be retried with
+    a larger limit without changing the bootstrap draw.
+    """
+    global _KMPFIT_INSTALLED
+    _KMPFIT_CONTROLS["maxiter"] = int(maxiter)
+    _KMPFIT_CONTROLS["ftol"] = None if ftol is None else float(ftol)
+    _KMPFIT_CONTROLS["xtol"] = None if xtol is None else float(xtol)
+    if _KMPFIT_INSTALLED:
+        return
+    from kapteyn import kmpfit
+
+    original = kmpfit.Fitter
+
+    def fitter_factory(*args, **kwargs):
+        kwargs.setdefault("maxiter", _KMPFIT_CONTROLS["maxiter"])
+        for key in ("ftol", "xtol"):
+            if _KMPFIT_CONTROLS[key] is not None:
+                kwargs.setdefault(key, _KMPFIT_CONTROLS[key])
+        return original(*args, **kwargs)
+
+    fitter_factory.__wrapped__ = original
+    kmpfit.Fitter = fitter_factory
+    _KMPFIT_INSTALLED = True
+
+
 def run_single_fit(QSOFit, lam, flux, err, z, cfg, path, name, fig_dir, plot):
+    install_kmpfit_controls(
+        int(cfg.get("kmpfit_maxiter", 1500)),
+        cfg.get("kmpfit_ftol"), cfg.get("kmpfit_xtol"),
+    )
     q = QSOFit(
         lam, flux, err, z,
         ra=-999.0, dec=-999.0, plateid=0, mjd=0, fiberid=0, path=str(path),
@@ -374,6 +419,82 @@ def fit_quality(q):
     return status
 
 
+def fit_convergence(q):
+    """kmpfit convergence diagnostics for the last line complex fitted.
+
+    kapteyn/kmpfit status codes: 1-3 are convergence (ftol/xtol/both), 4 is
+    ftol <= machine epsilon.  Status 5 is "maximum number of iterations
+    reached", i.e. a truncated iterate, and 0 means invalid input.
+    """
+    fitter = getattr(q, "line_fit", None)
+    if fitter is None:
+        return {"converged": False, "status": None, "message": "no line_fit"}
+    status = int(fitter.status)
+    return {
+        "converged": status in (1, 2, 3, 4),
+        "status": status,
+        "message": str(fitter.message),
+        "niter": int(fitter.niter),
+        "nfev": int(fitter.nfev),
+        "maxiter": int(getattr(fitter, "maxiter", 0)),
+    }
+
+
+MAX_LINE_RED_CHI2 = 15.0
+
+
+def fit_validity(q, max_red_chi2=MAX_LINE_RED_CHI2):
+    """Convergence plus a sanity check on the per-complex reduced chi2.
+
+    A converged kmpfit status is not sufficient: a bad local minimum can sit
+    on a parameter bound with a reduced chi2 orders of magnitude above the
+    data noise level (seen during development with 2-Gaussian H-beta
+    variants).  Such a realisation must not silently enter the bootstrap
+    mean.  The production H-beta/[O III] complex has rchi2 ~ 9-11 because the
+    SDSS IVAR does not include template/sky systematics.  The default validity
+    threshold is 15: it catches the occasional converged-but-wrong local
+    minimum (observed at rchi2 ~ 20 and ~ 227 in the 2026-10 audit) while
+    leaving a 40-70 % margin above the normal fits.
+    """
+    conv = fit_convergence(q)
+    quality = fit_quality(q)
+    statuses = [int(v) for k, v in quality.items()
+                if k.endswith("_line_status") and v is not None]
+    all_converged = bool(statuses) and all(s in (1, 2, 3, 4) for s in statuses)
+    conv["complex_statuses"] = statuses
+    conv["all_complexes_converged"] = all_converged
+    rchi2 = [v for k, v in quality.items()
+             if k.endswith("_line_red_chi2") and v is not None
+             and np.isfinite(v)]
+    max_rchi2 = float(max(rchi2)) if rchi2 else float("nan")
+    valid = bool(conv["converged"] and all_converged and np.isfinite(max_rchi2)
+                 and max_rchi2 <= max_red_chi2)
+    return conv, quality, max_rchi2, valid
+
+
+def component_parameters(q, line):
+    """Concatenate the 4-parameter blocks of every Gaussian in a component.
+
+    ``QSOFit._DoLineFit`` stores one block per Gaussian
+    (scale, ln(center), ln(sigma), skewness) as ``<linename>_<i>_scale`` in
+    ``gauss_result``.  A component with ``ngauss > 1`` must be evaluated as the
+    sum of all its blocks; taking only block 1 would silently report a
+    fraction of its flux.
+    """
+    names = [str(n) for n in np.atleast_1d(q.gauss_result_name)]
+    values = np.asarray(q.gauss_result, dtype=float)
+    lname = str(line["linename"])
+    ngauss = int(line.get("ngauss", 1))
+    blocks = []
+    for i in range(1, ngauss + 1):
+        key = f"{lname}_{i}_scale"
+        if key not in names:
+            raise RuntimeError(f"fitted parameters for {lname} (Gaussian {i}) not found")
+        idx = names.index(key)
+        blocks.append(values[idx: idx + 4])
+    return np.concatenate(blocks)
+
+
 def extract_line_properties(q, cfg):
     """Per-component line properties from the converged kpmfit parameters.
 
@@ -384,22 +505,46 @@ def extract_line_properties(q, cfg):
     the package's broad/narrow classification.
     """
     out = {}
-    names = [str(n) for n in np.atleast_1d(q.gauss_result_name)]
-    values = np.asarray(q.gauss_result, dtype=float)
+    table_by_name = {str(line["linename"]): line for line in cfg["line_table"]}
     for line in cfg["line_table"]:
         lname = str(line["linename"])
-        key = f"{lname}_1_scale"
-        if key not in names:
-            raise RuntimeError(f"fitted parameters for {lname} not found in gauss_result")
-        idx = names.index(key)
-        pp = np.asarray(values[idx: idx + 4], dtype=float)
+        pp = component_parameters(q, line)
         if not np.all(np.isfinite(pp)):
             out[lname] = {p: float("nan") for p in PROP_NAMES}
+            out[lname].update({"linetype": "", "width_class": "",
+                               "ln_sigma": float("nan"),
+                               "ln_sigma_min": float("nan"),
+                               "ln_sigma_max": float("nan")})
             continue
-        linetype = "broad" if pp[2] > BROAD_LOG_SIGMA else "narrow"
+        sig = pp[2::4]
+        # Declared kind comes from the config (the prior bounds / explicit
+        # "kind"), not from the fitted width: an intermediate-width NLR
+        # component is still a "narrow" (non-BLR) component even when its
+        # fitted sigma crosses the package's 512 km/s line_prop cut.
+        declared = str(line.get("kind", "")).lower()
+        bounds = sigval_bounds(line, table_by_name)
+        if declared in ("broad", "narrow"):
+            linetype = declared
+        elif bounds is not None and bounds[0] >= BROAD_LOG_SIGMA:
+            linetype = "broad"
+        elif bounds is not None and bounds[1] <= BROAD_LOG_SIGMA:
+            linetype = "narrow"
+        else:
+            linetype = "broad" if np.all(sig > BROAD_LOG_SIGMA) else "narrow"
+        # line_prop selects the Gaussian blocks with its own 0.0017 cut and
+        # excludes blocks after the 16th parameter.  Pick the branch that
+        # selects every block of this component; a mixed-width multi-Gaussian
+        # component cannot be selected as a whole and is flagged below.
+        classes = {"broad" if s > BROAD_LOG_SIGMA else "narrow" for s in sig}
+        if len(classes) == 1:
+            width_class = classes.pop()
+        else:
+            width_class = linetype
+            print(f"  [warn] {lname}: Gaussians span the broad/narrow cut; "
+                  "line_prop will only report one class")
         try:
             fwhm, sigma, skew, ew, peak, area = q.line_prop(
-                float(line["lambda"]), pp, linetype
+                float(line["lambda"]), pp, width_class
             )
         except Exception as exc:  # noqa: BLE001 - a failed component must not kill the run
             print(f"  [warn] line_prop failed for {lname}: {exc}")
@@ -408,8 +553,12 @@ def extract_line_properties(q, cfg):
             "fwhm": float(fwhm), "sigma": float(sigma), "skew": float(skew),
             "ew": float(ew), "peak": float(peak), "area": float(area),
             "linetype": linetype,
+            "width_class": width_class,
             "scale": float(pp[0]), "ln_center": float(pp[1]),
-            "ln_sigma": float(pp[2]), "skew_par": float(pp[3]),
+            "ln_sigma": float(np.mean(sig)),
+            "ln_sigma_min": float(np.min(sig)),
+            "ln_sigma_max": float(np.max(sig)),
+            "skew_par": float(np.mean(pp[3::4])),
         }
     return out
 
@@ -497,20 +646,52 @@ def sigval_bounds(line, table_by_name, depth=0):
     return None
 
 
+def width_mode(line):
+    """How the component width is determined: free, fixed, or tied.
+
+    * ``[min, max]`` -> free within the prior bounds;
+    * ``[value]``     -> fixed (the package sets a +-0.1 % range); used for the
+      NLR anchor;
+    * ``OTHER*r``     -> width and velocity tied to another component.
+    """
+    sigval = str(line.get("sigval", ""))
+    if "*" in sigval:
+        return "tied:" + sigval.split("*")[0]
+    if sigval.startswith("[") and sigval.endswith("]"):
+        inner = sigval.strip("[]")
+        if "," not in inner:
+            return "fixed"
+    return "free"
+
+
 def line_note(line, samples, table_by_name):
-    """Flag widths that are pinned by the prior rather than measured."""
+    """Describe fixed/tied widths and flag free widths pinned by a prior.
+
+    A free component is considered pinned when the bootstrap-median width sits
+    on a ``sigval`` bound (within 2 %).  The check uses the *per-Gaussian*
+    widths (``ln_sigma_max`` for the upper bound, ``ln_sigma_min`` for the
+    lower) so a multi-Gaussian component is not hidden by its mean.
+    """
+    mode = width_mode(line)
+    if mode.startswith("tied:"):
+        return f"width and velocity tied to {mode.split(':', 1)[1]}; not an independent measurement"
+    if mode == "fixed":
+        return "width fixed by configuration (NLR anchor); not a fitted parameter"
     bounds = sigval_bounds(line, table_by_name)
     if bounds is None:
         return ""
-    ln_sigmas = np.array([row.get("ln_sigma", np.nan) for row in samples], dtype=float)
-    ln_sigmas = ln_sigmas[np.isfinite(ln_sigmas)]
-    if ln_sigmas.size == 0:
+    upper = np.array([row.get("ln_sigma_max", row.get("ln_sigma", np.nan))
+                      for row in samples], dtype=float)
+    lower = np.array([row.get("ln_sigma_min", row.get("ln_sigma", np.nan))
+                      for row in samples], dtype=float)
+    upper = upper[np.isfinite(upper)]
+    lower = lower[np.isfinite(lower)]
+    if upper.size == 0 or lower.size == 0:
         return ""
-    mean = float(np.mean(ln_sigmas))
     lo, hi = bounds
-    if abs(mean - hi) <= 0.02 * max(abs(hi), 1e-6):
+    if abs(float(np.median(upper)) - hi) <= 0.02 * max(abs(hi), 1e-6):
         return "FWHM pinned at the prior upper bound; only the flux is measured"
-    if abs(mean - lo) <= 0.02 * max(abs(lo), 1e-6):
+    if abs(float(np.median(lower)) - lo) <= 0.02 * max(abs(lo), 1e-6):
         return "FWHM pinned at the prior lower bound; only the flux is measured"
     return ""
 
@@ -603,6 +784,28 @@ def make_bootstrap_figures(samples, groups, out_dir: Path, nboot: int,
     return False
 
 
+def save_model_csv(q, out_dir: Path):
+    """Save the realisation-0 continuum/line decomposition for auditing.
+
+    Columns: rest wavelength [A], noisy flux, error, continuum, line model,
+    total model.  All fluxes are in 1e-17 erg s-1 cm-2 A-1.  This is the same
+    decomposition as the fit figure and lets the H-beta continuum offset be
+    recomputed without re-running the fit.
+    """
+    wave = np.asarray(q.wave, dtype=float)
+    pp = np.asarray(getattr(q, "gauss_result", []), dtype=float)
+    if pp.size:
+        line = np.asarray(q.MultiLine_Model(q.linemodel)(np.log(wave), pp), dtype=float)
+    else:
+        line = np.zeros_like(wave)
+    conti = np.asarray(q.f_conti_model, dtype=float)
+    data = np.column_stack([wave, np.asarray(q.flux, dtype=float),
+                            np.asarray(q.err, dtype=float), conti, line, conti + line])
+    np.savetxt(out_dir / "pyqsofitspec_model.csv", data, delimiter=",",
+               fmt="%.10g", header="wave,flux,err,conti,line,model", comments="")
+    return "pyqsofitspec_model.csv"
+
+
 def save_fit_figure(out_dir: Path, name: str):
     import matplotlib.pyplot as plt
 
@@ -614,6 +817,9 @@ def save_fit_figure(out_dir: Path, name: str):
         png = out_dir / f"spec-{name}_fit{suffix}.png"
         fig.savefig(png, dpi=140, bbox_inches="tight")
         saved.append(png.name)
+        pdf = out_dir / f"spec-{name}_fit{suffix}.pdf"
+        if pdf.exists():
+            saved.append(pdf.name)
     plt.close("all")
     return saved
 
@@ -700,6 +906,9 @@ def _main(args, out_dir: Path, t_start: float):
           f"{work / 'qsopar2.fits'}")
     print(f"  bootstrap      : nboot={nboot}, seed={seed}, parametric (flux + N(0, err))")
     print(f"  error floor    : {floor:g} x flux (0 = calibrated errors only)")
+    print(f"  kmpfit         : maxiter={cfg.get('kmpfit_maxiter', 1500)}, "
+          f"ftol={cfg.get('kmpfit_ftol')}, xtol={cfg.get('kmpfit_xtol')}, "
+          f"max_line_red_chi2={cfg.get('max_line_red_chi2', MAX_LINE_RED_CHI2)}")
 
     components = [str(line["linename"]) for line in cfg["line_table"]]
     table_by_name = {str(line["linename"]): line for line in cfg["line_table"]}
@@ -708,9 +917,11 @@ def _main(args, out_dir: Path, t_start: float):
 
     np.random.seed(seed)
     samples = {lname: [] for lname in components}
+    valid_flags = []
     iteration_info = []
     fig_files = []
     fit_status = None
+    model_saved = False
     for nb in range(nboot):
         t0 = time.time()
         # Exactly the package's bootstrap step (main.py):
@@ -718,37 +929,91 @@ def _main(args, out_dir: Path, t_start: float):
         flux_noise = np.array([np.random.normal(f, fe) for f, fe in zip(flux, err)])
         plot = bool(cfg.get("plot_fit_figure", True)) and nb == 0
         q = run_single_fit(QSOFit, lam, flux_noise, err, z, cfg, work, name, out_dir, plot)
+        rchi2_limit = float(cfg.get("max_line_red_chi2", MAX_LINE_RED_CHI2))
+        conv, quality, max_rchi2, valid = fit_validity(q, rchi2_limit)
+        retried = False
+        if not valid and not conv["all_complexes_converged"]:
+            # A truncated iterate is a solver failure, not a model failure:
+            # retry the *same* bootstrap draw with a larger iteration cap.
+            retry_cfg = dict(cfg)
+            retry_cfg["kmpfit_maxiter"] = min(4 * int(cfg.get("kmpfit_maxiter", 1500)), 6000)
+            print(f"  [warn] boot {nb + 1}: kmpfit status {conv['status']} "
+                  f"({conv['message']}); retrying with maxiter={retry_cfg['kmpfit_maxiter']}")
+            q = run_single_fit(QSOFit, lam, flux_noise, err, z, retry_cfg, work,
+                               name, out_dir, False)
+            conv, quality, max_rchi2, valid = fit_validity(q, rchi2_limit)
+            retried = True
         props = extract_line_properties(q, cfg)
         for lname in components:
             samples[lname].append(props[lname])
+        valid_flags.append(bool(valid))
         if fit_status is None:
-            fit_status = fit_quality(q)
+            fit_status = quality
         if plot:
             fig_files = save_fit_figure(out_dir, name)
+        if valid and not model_saved:
+            save_model_csv(q, out_dir)
+            model_saved = True
         dt = time.time() - t0
         iteration_info.append({
             "iteration": nb,
             "wall_seconds": round(dt, 2),
             "figure": bool(plot),
+            "converged": bool(conv["converged"]),
+            "all_complexes_converged": bool(conv["all_complexes_converged"]),
+            "complex_statuses": conv["complex_statuses"],
+            "valid": bool(valid),
+            "retried": bool(retried),
+            "kmpfit_status": conv["status"],
+            "kmpfit_message": conv["message"],
+            "kmpfit_niter": conv.get("niter"),
+            "kmpfit_nfev": conv.get("nfev"),
+            "kmpfit_maxiter": conv.get("maxiter"),
+            "max_line_red_chi2": round(float(max_rchi2), 4)
+            if np.isfinite(max_rchi2) else None,
+            "fit_quality": {k: (round(v, 6) if np.isfinite(v) else None)
+                            for k, v in quality.items()},
             "area_1e17": {ln: round(props[ln]["area"], 6) for ln in components},
         })
-        print(f"  [boot {nb + 1}/{nboot}] {dt:6.2f} s  " + "  ".join(
-            f"{ln}={props[ln]['area']:.1f}" for ln in components))
+        flag = "" if valid else "  [INVALID]"
+        print(f"  [boot {nb + 1}/{nboot}] {dt:6.2f} s  status={conv['status']} "
+              f"rchi2={max_rchi2:6.2f}{flag}  " + "  ".join(
+                  f"{ln}={props[ln]['area']:.1f}" for ln in components))
 
-    summary = bootstrap_summary(samples, component_of)
+    n_converged = int(sum(1 for it in iteration_info
+                          if it["converged"] and it["all_complexes_converged"]))
+    n_valid = int(sum(valid_flags))
+    if n_valid == 0:
+        raise RuntimeError("no valid bootstrap realisation; see run.log")
+    if n_valid < nboot:
+        print(f"  [warn] {nboot - n_valid}/{nboot} realisations were invalid and are\n"
+              "         excluded from the bootstrap statistics (see run.json)")
+    valid_index = [i for i, ok in enumerate(valid_flags) if ok]
+    samples_valid = {ln: [rows[i] for i in valid_index] for ln, rows in samples.items()}
+    nboot_valid = len(valid_index)
+
+    summary = bootstrap_summary(samples_valid, component_of)
     groups = cfg["comparison"]["totals"]
 
     # ---- compact per-line table -----------------------------------------
     line_rows = []
     for lname in components:
         s = summary[lname]
-        rows = samples[lname]
+        rows = samples_valid[lname]
         lt = next((r.get("linetype", "") for r in rows if "linetype" in r), "")
+        width_class = next((r.get("width_class", "") for r in rows if "width_class" in r), "")
+        ln_sig = np.array([r.get("ln_sigma", np.nan) for r in rows], dtype=float)
+        ln_min = np.array([r.get("ln_sigma_min", np.nan) for r in rows], dtype=float)
+        ln_max = np.array([r.get("ln_sigma_max", np.nan) for r in rows], dtype=float)
         area = s["area"]
         snr = area["mean"] / area["std"] if area["std"] > 0 else float("nan")
+        mode = width_mode(table_by_name[lname])
+        note = line_note(table_by_name[lname], rows, table_by_name)
         line_rows.append({
             "line": lname,
             "component": lt,
+            "width_class": width_class,
+            "width_mode": mode,
             "complex": component_of[lname],
             "rest_wavelength_angstrom": f"{rest_wave[lname]:.2f}",
             "flux_1e17": fmt(area["mean"]),
@@ -769,7 +1034,11 @@ def _main(args, out_dir: Path, t_start: float):
             "peak_err_1e17": fmt(s["peak"]["std"], 8),
             "snr": fmt(snr, 6),
             "stable": is_stable(area["mean"], area["p16"], area["p84"]),
-            "note": line_note(table_by_name[lname], rows, table_by_name),
+            "note": note,
+            "pinned_at_bound": bool(note.startswith("FWHM pinned")),
+            "fitted_ln_sigma": fmt(np.nanmean(ln_sig), 8),
+            "fitted_ln_sigma_min": fmt(np.nanmin(ln_min), 8),
+            "fitted_ln_sigma_max": fmt(np.nanmax(ln_max), 8),
             "nboot": area["n"],
         })
     write_csv(out_dir / "pyqsofitspec_lines.csv", line_rows)
@@ -780,7 +1049,7 @@ def _main(args, out_dir: Path, t_start: float):
     # component name (MgII_br, Hb_na, ...) and <comp> is broad/narrow as fitted.
     native = {"spectra": name}
     for lname in components:
-        comp = "br" if samples[lname][0].get("linetype") == "broad" else "na"
+        comp = "br" if samples_valid[lname][0].get("linetype") == "broad" else "na"
         for prop in ("fwhm", "sigma", "skew", "ew", "peak", "area"):
             key = f"{lname}_{prop}_{comp}"
             native[key] = fmt(summary[lname][prop]["mean"])
@@ -791,12 +1060,15 @@ def _main(args, out_dir: Path, t_start: float):
     boot_rows = []
     for i in range(nboot):
         for lname in components:
-            row = {"iteration": i, "line": lname,
+            row = {"iteration": i, "valid": bool(valid_flags[i]), "line": lname,
                    "component": component_of[lname],
+                   "width_class": samples[lname][i].get("width_class", ""),
+                   "width_mode": width_mode(table_by_name[lname]),
                    "rest_wavelength_angstrom": f"{rest_wave[lname]:.2f}"}
             for prop in PROP_NAMES:
                 row[prop] = fmt(samples[lname][i][prop], 10)
-            for key in ("scale", "ln_center", "ln_sigma", "skew_par"):
+            for key in ("scale", "ln_center", "ln_sigma", "ln_sigma_min",
+                        "ln_sigma_max", "skew_par"):
                 row[key] = fmt(samples[lname][i].get(key), 10)
             boot_rows.append(row)
     write_csv(out_dir / "pyqsofitspec_bootstrap.csv", boot_rows)
@@ -804,7 +1076,7 @@ def _main(args, out_dir: Path, t_start: float):
     # ---- totals (broad+narrow) for cross-tool comparison ----------------
     total_rows = []
     for label, members in groups.items():
-        series = total_series(samples, {label: members})[label]
+        series = total_series(samples_valid, {label: members})[label]
         finite = series[np.isfinite(series)]
         mean = float(np.mean(finite)) if finite.size else float("nan")
         std = float(np.std(finite)) if finite.size else float("nan")
@@ -825,7 +1097,7 @@ def _main(args, out_dir: Path, t_start: float):
     write_csv(out_dir / "pyqsofitspec_totals.csv", total_rows)
 
     corner_ok = make_bootstrap_figures(
-        samples, groups, out_dir, nboot,
+        samples_valid, groups, out_dir, nboot_valid,
         corner_keys=cfg["comparison"].get("corner"),
         display=cfg["comparison"].get("labels", {}),
     )
@@ -843,7 +1115,13 @@ def _main(args, out_dir: Path, t_start: float):
             "error_floor_frac": floor,
             "rest_coverage_angstrom": [round(rest_lo, 1), round(rest_hi, 1)],
             "nboot_fit": nboot,
+            "nboot_valid": nboot_valid,
+            "n_converged": n_converged,
             "seed": seed,
+            "kmpfit_maxiter": int(cfg.get("kmpfit_maxiter", 1500)),
+            "kmpfit_ftol": cfg.get("kmpfit_ftol"),
+            "kmpfit_xtol": cfg.get("kmpfit_xtol"),
+            "max_line_red_chi2": float(cfg.get("max_line_red_chi2", MAX_LINE_RED_CHI2)),
             "package": str(pkg.__file__),
             "upstream_commit": "aa326ed0b13003b22588a0ad9c8a369d9a2de6dd",
         }
@@ -851,14 +1129,53 @@ def _main(args, out_dir: Path, t_start: float):
     with (out_dir / "config.effective.json").open("w") as fh:
         json.dump(effective, fh, indent=2)
 
+    fixed_components = [str(line["linename"]) for line in cfg["line_table"]
+                        if width_mode(line) == "fixed"]
+    tied_by_ref = {}
+    for line in cfg["line_table"]:
+        mode = width_mode(line)
+        if mode.startswith("tied:"):
+            tied_by_ref.setdefault(mode.split(":", 1)[1], []).append(
+                str(line["linename"]))
+    tied_components = [name for names in tied_by_ref.values() for name in names]
+    anchor_line = next((line for line in cfg["line_table"]
+                        if str(line["linename"]) == "OIII5007c"), None)
+    if anchor_line is None or width_mode(anchor_line) != "fixed":
+        anchor_line = next((line for line in cfg["line_table"]
+                            if width_mode(line) == "fixed"), None)
+    nlr_anchor = None
+    if anchor_line is not None:
+        anchor_sig = float(str(anchor_line["sigval"]).strip("[]"))
+        nlr_anchor = {
+            "component": str(anchor_line["linename"]),
+            "sigval_ln_sigma": anchor_sig,
+            "fwhm_kms": round(2.355 * anchor_sig * 299792.458, 1),
+            "method": (
+                "single-Gaussian fit to [O III] 5007 with a linear local "
+                "continuum on this spectrum (FWHM 998 +/- 38 km/s, "
+                "sigma = 7.08 A); adopted ln_sigma = 0.0014 (989 km/s)"
+            ),
+            "applied_to": fixed_components + tied_by_ref.get(
+                str(anchor_line["linename"]), []),
+        }
+
     run = {
         "tool": "pyqsofitspec_line",
         "tool_version": "PyQSOFitSpec @ aa326ed0b13003b22588a0ad9c8a369d9a2de6dd",
         "method": {
-            "continuum": "Fe II (UV+optical) + Balmer continuum + power law + polynomial",
-            "lines": cfg["linemodel"] + " (skew-normal) profiles, kmpfit least squares",
+            "continuum": (
+                "Fe II (UV+optical Vestergaard & Wilkes template) + power law + "
+                "polynomial"
+                + (" + Balmer continuum (on)" if cfg.get("BC")
+                   else " (Balmer continuum off)")
+            ),
+            "lines": cfg["linemodel"] + " profiles, kmpfit least squares",
             "uncertainty": "parametric bootstrap: flux + N(0, sigma) refit, mean/std over nboot",
             "n_internal_mc_trials_per_fit": 0,
+            "kmpfit_maxiter": int(cfg.get("kmpfit_maxiter", 1500)),
+            "kmpfit_ftol": cfg.get("kmpfit_ftol"),
+            "kmpfit_xtol": cfg.get("kmpfit_xtol"),
+            "max_line_red_chi2": float(cfg.get("max_line_red_chi2", MAX_LINE_RED_CHI2)),
         },
         "versions": {
             "python": platform.python_version(),
@@ -874,10 +1191,32 @@ def _main(args, out_dir: Path, t_start: float):
         "redshift": z,
         "rest_coverage_angstrom": [round(rest_lo, 1), round(rest_hi, 1)],
         "nboot_fit": nboot,
+        "nboot_valid": nboot_valid,
+        "n_converged": n_converged,
+        "bootstrap": {
+            "requested": nboot,
+            "valid": nboot_valid,
+            "converged": n_converged,
+            "invalid": nboot - nboot_valid,
+            "seed": seed,
+            "resampling": "flux_i + N(0, err_i) per pixel, full continuum+line refit",
+            "statistic": "mean and standard deviation over valid realisations",
+            "max_line_red_chi2_allowed": float(
+                cfg.get("max_line_red_chi2", MAX_LINE_RED_CHI2)),
+        },
         "seed": seed,
         "error_floor_frac": floor,
         "fit_quality": fit_status,
+        "fit_quality_all": [it["fit_quality"] for it in iteration_info],
         "iterations": iteration_info,
+        "line_definitions": {
+            label: {
+                "components": members,
+                "definition": "sum of the listed component fluxes per realisation",
+            }
+            for label, members in groups.items()
+        },
+        "nlr_width_anchor": nlr_anchor,
         "runtime_seconds": round(total_seconds, 2),
         "runtime_per_iteration_seconds": [it["wall_seconds"] for it in iteration_info],
         "lines": line_rows,
@@ -891,6 +1230,7 @@ def _main(args, out_dir: Path, t_start: float):
             "bootstrap_png": "pyqsofitspec_bootstrap.png",
             "corner_png": "pyqsofitspec_corner.png" if corner_ok else None,
             "fit_figure": fig_files,
+            "model_csv": "pyqsofitspec_model.csv",
             "config_effective": "config.effective.json",
             "run_log": "run.log",
         },
@@ -898,18 +1238,42 @@ def _main(args, out_dir: Path, t_start: float):
             "Reported line values are bootstrap means; errors are the bootstrap "
             "standard deviation (upstream PyQSOFitSpec convention), not a "
             "covariance matrix.",
-            f"Only {nboot} bootstrap realisations were run, so the uncertainties "
-            "are themselves noisy at the ~1/sqrt(2*(nboot-1)) level.",
+            f"{nboot_valid} valid bootstrap realisations were used (requested "
+            f"{nboot}); the uncertainty of the uncertainty is ~"
+            f"{100.0 / np.sqrt(2 * max(nboot_valid - 1, 1)):.0f} %.",
             "Ugriz-type flux calibration slippage and Fe II template systematics "
             "dominate over the statistical error; the bootstrap captures neither.",
             "PyQSOFitSpec fits a single skewed profile per listed component; the "
             "Mg II 2796/2804 doublet is a single blended component, and the "
-            "[O III] 5007 total is core + broad wing.",
-            "Component type (broad/narrow) is assigned by the fitted sigma "
-            "(log10 sigma > 0.0017 -> broad), matching QSOFit.line_prop.",
+            "[O III] 5007 total is core + broad wing (and, if present, any "
+            "intermediate component listed in line_definitions).",
+            "The broad/narrow label is the component's declared kind from the "
+            "config (kind field), not the fitted width; QSOFit.line_prop still "
+            "uses its 0.0017 log10(sigma) cut internally to select profiles.",
+            "The H-beta total is Hb_br+Hb_na.  It is larger than GANDALF/S3Fit "
+            "because PyQSOFitSpec fits one skew-normal broad component on a "
+            "different Fe II continuum; the data-minus-continuum integral in "
+            "4640-4940 A is ~10-20 % larger with this continuum.  The offset is "
+            "a model/continuum definition difference, not a units error.",
+            "The optical table has no separate He II 4687 component: He II 4687 "
+            "is absorbed by Hb_br.  PyQSOFit fits HeII4687_br/_na explicitly, "
+            "so its H-beta broad flux is not defined identically.",
         ],
     }
-    pinned = [row["line"] for row in line_rows if row.get("note")]
+    fixed = [row["line"] for row in line_rows if row["width_mode"] == "fixed"]
+    tied = [row["line"] for row in line_rows if row["width_mode"].startswith("tied:")]
+    if fixed:
+        run["caveats"].append(
+            "Widths fixed by configuration (NLR anchor) for " + ", ".join(fixed) +
+            ": their fluxes are measured, but their widths are not fitted "
+            "parameters (see line_definitions.nlr_width_anchor)."
+        )
+    for ref, names in tied_by_ref.items():
+        run["caveats"].append(
+            f"Widths and velocities tied to {ref} for " + ", ".join(names) +
+            "; they are not independent measurements."
+        )
+    pinned = [row["line"] for row in line_rows if row.get("pinned_at_bound")]
     if pinned:
         run["caveats"].append(
             "FWHM pinned at a sigval prior bound for " + ", ".join(pinned) +
@@ -927,7 +1291,8 @@ def _main(args, out_dir: Path, t_start: float):
         json.dump(run, fh, indent=2)
 
     print("")
-    print(f"Done in {total_seconds:.1f} s ({nboot} bootstrap fits). Outputs in {out_dir}")
+    print(f"Done in {total_seconds:.1f} s ({nboot_valid}/{nboot} valid bootstrap fits). "
+          f"Outputs in {out_dir}")
     for row in total_rows:
         print(f"  {row['total']:<10} {row['flux_1e17']:>12} +/- {row['flux_err_1e17']:<12} "
               f"(1e-17 erg/s/cm2)  S/N={row['snr']}")
