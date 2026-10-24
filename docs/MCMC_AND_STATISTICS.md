@@ -64,6 +64,6 @@ per-realization line fluxes.  This is labelled MC, not MCMC.
 S3Fit, GANDALF and PAHFIT; `docs/line_ratio_scatter.csv` reports the
 inter-tool log scatter.  After the production reruns, the 04592649654
 Hβ/[O III] 5007 values are: ZLINE 1.57, S3Fit 1.83, PyQSOFit 1.96,
-GalSpec 2.21, GANDALF 2.07, PyQSOFitSpec 2.11, QGfit 2.50 and SHEAP 2.02.
+GalSpec 2.21, GANDALF 2.07, PyQSOFitSpec 2.15, QGfit 2.50 and SHEAP 2.02.
 The full lens is regenerated in `docs/line_ratio_scatter.csv`; the
 well-tested trio (PyQSOFit/S3Fit/GANDALF) still agrees at 0.05 dex.

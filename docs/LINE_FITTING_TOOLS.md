@@ -103,7 +103,7 @@ These four community 1-D codes were added and run on the real
 | tool | fitted region/model | result |
 |---|---|---|
 | `galspec_line` | full-continuum global model, Fe II + Gaussian components | emcee MCMC, 37,334 saved samples; Hβ/[O III] = 2.21 (not 50-tau converged) |
-| `pyqsofitspec_line` | UV/optical Fe II/Balmer + skew-normal lines | 53/55 valid parametric-bootstrap fits; Hβ/[O III] = 2.11 |
+| `pyqsofitspec_line` | UV/optical Fe II/Balmer + skew-normal lines | 53/55 valid parametric-bootstrap fits; Hβ/[O III] = 2.15 (Hβ 3525, [O III] 1639) |
 | `qgfit` | AGN power law + Fe II + host + line complexes | long continuum MCMC, LSQ lines; Hβ/[O III] = 2.50 |
 | `sheap_line` | Hβ/[O III] SPAF/JAX model, 4450-5450 Å, Fe II + 2 narrow components | 50-draw parametric bootstrap; Hβ/[O III] = 2.02, χ²_ν = 2.9; production |
 

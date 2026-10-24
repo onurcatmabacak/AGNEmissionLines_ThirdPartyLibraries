@@ -69,7 +69,7 @@ The production matrix uses real data only:
 | **GANDALF** | `spSpec-51908-0277-120` z=0.0859 | native GDL, pPXF + all Hα/Hβ/[O III]/[N II] lines | pPXF **accepted** (V=72.5, σ=79.9 km/s); Hα 1391, Hβ 244, [O III] 79.7 |
 | **PAHFIT** | VV114, PDS 456, NGC 4151, NGC 253 | full MIRI/IRS, covariance/bootstrap, 100–200 draws | rms VV114 **0.195**, PDS short/long/both **0.0088/0.017/0.038**, NGC 4151 **0.031**, NGC 253 **0.25** (still systematics-limited) |
 | **GalSpec** | `04592649654` | full-continuum global model + `emcee`, 39 parameters | 224,000 samples, 37,334 saved; Hβ 3718, [O III] 1681, ratio **2.21** |
-| **PyQSOFitSpec** | `04592649654` | full Fe II/Balmer + skew-normal lines, 55 bootstrap draws | 53 valid; Hβ 3439, [O III] 1631, ratio **2.11** |
+| **PyQSOFitSpec** | `04592649654` | full Fe II/Balmer + skew-normal lines, 55 bootstrap draws | 53 valid; Hβ **3525**, [O III] **1639**, ratio **2.15** |
 | **QGfit** | `04592649654` | long continuum MCMC + line complexes | 2334 s; Hβ/[O III] **2.50**; line errors LSQ |
 | **SHEAP** | `04592649654` | Hβ/[O III] SPAF/JAX, 50 bootstrap draws | Hβ/[O III] **2.02**, χ²ν 2.9 |
 | **PyQSOFit** | `04592649654` | 100-realization MC (`mc/`); fixed `emcee` initialization | MCMC fit completes; sample persistence fixed in `mcmc_fixed/` |
@@ -79,7 +79,7 @@ The cross-tool 04592649654 Hβ/[O III] 5007 values are:
 
 ```text
 ZLINE 1.57 | S3Fit 1.83 | PyQSOFit 1.96 | GalSpec 2.21
-GANDALF 2.07 | PyQSOFitSpec 2.11 | SHEAP 2.02 | QGfit 2.50
+GANDALF 2.07 | PyQSOFitSpec 2.15 | SHEAP 2.02 | QGfit 2.50
 median 2.05, log-scatter 0.13 dex
 ```
 
