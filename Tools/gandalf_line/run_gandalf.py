@@ -88,9 +88,13 @@ def read_spectrum(path: Path) -> dict:
         d = hdul[0].data
         if d is not None and np.ndim(d) == 2 and np.shape(d)[0] >= 3:
             arr = np.asarray(d, float)
-            crval = float(hdr0.get("CRVAL1", 3.5))
-            cdelt = float(hdr0.get("CD1_1", hdr0.get("CDELT1", 1e-4)))
-            wave = 10.0 ** (crval + cdelt * np.arange(arr.shape[1]))
+            crval = hdr0.get("CRVAL1", hdr0.get("COEFF0", 3.5))
+            if not crval and "COEFF0" in hdr0:
+                crval = hdr0["COEFF0"]
+            cdelt = hdr0.get("CD1_1") or hdr0.get("CDELT1") or hdr0.get("COEFF1") or 1e-4
+            crpix = float(hdr0.get("CRPIX1", 1.0)) or 1.0
+            wave = 10.0 ** (float(crval) + float(cdelt)
+                            * (np.arange(arr.shape[1]) - (crpix - 1.0)))
             return {"wave": wave, "flux": arr[0], "err": np.abs(arr[2]),
                     "z": z, **meta}
 
@@ -348,7 +352,8 @@ def write_gdl_batch(work: Path, in_fits: Path, setup: Path, cfg: dict):
         "mdegree={}, degree={}, int_disp={}, "
         "ppxf_mask_sigma={}, gandalf_mask_sigma={}, use_ppxf={}, "
         "ppxf_degree={}, ppxf_mdegree={}, fixed_v={}, fixed_sigma={}, "
-        "ppxf_sigma_min={}, ppxf_sigma_max={}, ppxf_v_max={}"
+        "ppxf_sigma_min={}, ppxf_sigma_max={}, ppxf_v_max={}, "
+        "ppxf_chi2_max={}, ppxf_sigma_snr_min={}, ppxf_min_templates={}"
     ).format(
         in_fits, work, setup,
         int(cfg["mdegree"]), int(cfg["degree"]), float(cfg["int_disp_kms"]),
@@ -356,7 +361,8 @@ def write_gdl_batch(work: Path, in_fits: Path, setup: Path, cfg: dict):
         use_ppxf, int(cfg["ppxf_degree"]), int(cfg["ppxf_mdegree"]),
         float(cfg["stellar_velocity_kms"]), float(cfg["stellar_sigma_kms"]),
         float(cfg["ppxf_sigma_min_kms"]), float(cfg["ppxf_sigma_max_kms"]),
-        float(cfg["ppxf_v_max_kms"]),
+        float(cfg["ppxf_v_max_kms"]), float(cfg["ppxf_chi2_max"]),
+        float(cfg["ppxf_sigma_snr_min"]), int(cfg["ppxf_min_templates"]),
     )
     lines += [call, "exit"]
     batch = work / "run_gandalf.gdl"
@@ -403,7 +409,8 @@ def parse_meta(path: Path) -> dict:
                 meta[k] = int(float(meta[k]))
             except Exception:
                 pass
-    for k in ("ppxf_v", "ppxf_sigma", "ppxf_chi2", "stellar_v",
+    for k in ("ppxf_v", "ppxf_sigma", "ppxf_v_err", "ppxf_sigma_err",
+              "ppxf_sigma_snr", "ppxf_chi2", "stellar_v",
               "stellar_sigma", "l0_gal", "lstep_gal", "velscale"):
         if k in meta:
             try:
@@ -418,34 +425,93 @@ def parse_raw(path: Path) -> list[dict]:
         return list(csv.DictReader(fh))
 
 
+SATELLITE_NAMES = ("OII3726", "OIII4959", "NII6548", "SII6730")
+
+
+def read_setup_index(path: Path) -> dict:
+    """Map the GANDALF setup line index to its line name."""
+    names = {}
+    for line in path.read_text().splitlines():
+        parts = line.strip().split()
+        if len(parts) < 9 or not parts[0].lstrip("+-").isdigit():
+            continue
+        try:
+            names[int(parts[0])] = parts[1]
+        except ValueError:
+            continue
+    return names
+
+
+def read_setup_satellites(path: Path) -> list[dict]:
+    """Return the GANDALF ``d#`` multiplet satellites with their flux ratios.
+
+    GANDALF solves only the main (``l``) lines and fixes the satellites through
+    the ``A_i`` ratio in the setup.  The values returned here are therefore
+    derived, not independent measurements.
+    """
+    entries = {}
+    for line in path.read_text().splitlines():
+        parts = line.strip().split()
+        if len(parts) < 9 or not parts[0].lstrip("+-").isdigit():
+            continue
+        try:
+            idx = int(parts[0])
+            entries[idx] = {
+                "name": parts[1], "lambda": float(parts[2]),
+                "kind": parts[4], "ratio": float(parts[5]),
+            }
+        except (TypeError, ValueError):
+            continue
+    out = []
+    for idx, e in entries.items():
+        if not e["kind"].startswith("d") or e["name"] not in SATELLITE_NAMES:
+            continue
+        try:
+            parent_idx = int(e["kind"][1:])
+        except ValueError:
+            continue
+        parent = entries.get(parent_idx)
+        if parent is None:
+            continue
+        out.append({**e, "parent_name": parent["name"]})
+    return out
+
+
 # ---------------------------------------------------------------------------
 # Line table
 # ---------------------------------------------------------------------------
 DISPLAY = {
     "OII3729": ("[OII]3729", "narrow"),
+    "OII3726": ("[OII]3726", "narrow"),
     "NeIII3869": ("[NeIII]3869", "narrow"),
     "NeIII3967": ("[NeIII]3967", "narrow"),
     "Hb": ("Hbeta", "narrow"),
     "Hb_br": ("Hbeta", "broad"),
+    "OIII4959": ("[OIII]4959", "narrow"),
     "OIII5007": ("[OIII]5007", "narrow"),
     "OI6300": ("[OI]6300", "narrow"),
     "Ha": ("Halpha", "narrow"),
     "Ha_br": ("Halpha", "broad"),
+    "NII6548": ("[NII]6548", "narrow"),
     "NII6584": ("[NII]6584", "narrow"),
     "SII6716": ("[SII]6716", "narrow"),
+    "SII6730": ("[SII]6730", "narrow"),
 }
 
 
 def _f(row, key, default=float("nan")):
     try:
-        return float(row.get(key, default))
+        val = float(row.get(key, default))
     except Exception:
         return default
+    return 0.0 if val == 0.0 else val
 
 
-def build_line_rows(raw_rows, rest_min, rest_max, int_disp, snr_min):
+def build_line_rows(raw_rows, rest_min, rest_max, int_disp, snr_min,
+                    satellites=None, setup_index=None):
     rows = []
     by_key = {}
+    by_raw_name = {}
     for r in raw_rows:
         name = r.get("name", "").strip()
         line, comp = DISPLAY.get(name, (name, "narrow"))
@@ -498,6 +564,44 @@ def build_line_rows(raw_rows, rest_min, rest_max, int_disp, snr_min):
         }
         rows.append(row)
         by_key.setdefault((line, comp), row)
+        by_raw_name[name] = row
+
+    # GANDALF fixes multiplet satellites with the setup ``d#`` ratio.  Add the
+    # in-coverage satellites as derived rows so the table reports both members
+    # of [O II], [O III], [N II] and [S II].
+    for sat in satellites or []:
+        parent = by_raw_name.get(sat["parent_name"])
+        if parent is None or not np.isfinite(parent.get("flux_1e17", float("nan"))):
+            continue
+        line, comp = DISPLAY.get(sat["name"], (sat["name"], "narrow"))
+        if (line, comp) in by_key:
+            continue
+        ratio = float(sat["ratio"])
+        flux = ratio * parent["flux_1e17"]
+        eflux = ratio * parent["flux_err_1e17"]
+        ampl = ratio * parent["amplitude"] if np.isfinite(parent["amplitude"]) else float("nan")
+        eampl = ratio * parent["amplitude_err"] if np.isfinite(parent["amplitude_err"]) else float("nan")
+        snr = flux / eflux if np.isfinite(eflux) and eflux > 0 else 0.0
+        sigma = parent["sigma_kms"]
+        status = "ok" if snr >= snr_min else "weak"
+        row = {
+            "line": line, "component": comp, "lambda_rest": float(sat["lambda"]),
+            "flux_1e17": flux, "flux_err_1e17": eflux,
+            "flux_erg_s_cm2": flux * 1e-17, "flux_err_erg_s_cm2": eflux * 1e-17,
+            "amplitude": ampl, "amplitude_err": eampl,
+            "velocity_kms": parent["velocity_kms"],
+            "velocity_err_kms": parent["velocity_err_kms"],
+            "sigma_kms": sigma, "sigma_err_kms": parent["sigma_err_kms"],
+            "sigma_obs_kms": math.sqrt(sigma ** 2 + int_disp ** 2)
+                             if np.isfinite(sigma) else float("nan"),
+            "snr": snr, "detected": bool(status == "ok"),
+            "status": status, "method": "gandalf_gdl_multiplet_ratio",
+            "notes": (f"multiplet satellite; flux fixed by GANDALF d# ratio "
+                      f"{ratio:g} to {parent['line']}; kinematics inherited"),
+            "_fit_kind": parent.get("_fit_kind", ""), "_kind": "",
+        }
+        rows.append(row)
+        by_key[(line, comp)] = row
 
     required = [
         ("Hbeta", "narrow"), ("Hbeta", "broad"), ("Hbeta", "total"),
@@ -554,6 +658,29 @@ def build_line_rows(raw_rows, rest_min, rest_max, int_disp, snr_min):
     extra.sort(key=lambda r: (r["lambda_rest"] if np.isfinite(r["lambda_rest"]) else 0.0,
                               r["component"]))
     out.extend(extra)
+
+    # GANDALF sets the formal errors of tied kinematics to zero.  A zero error
+    # is not a measurement: inherit the parent line's formal error instead.
+    if setup_index:
+        by_display = {(r["line"], r["component"]): r for r in out}
+        for r in out:
+            fk = r.get("_fit_kind", "")
+            if fk[:1] not in ("t", "v", "s"):
+                continue
+            try:
+                parent_name = setup_index.get(int(fk[1:]))
+            except ValueError:
+                continue
+            if not parent_name:
+                continue
+            parent = by_display.get(DISPLAY.get(parent_name, (parent_name, "narrow")))
+            if parent is None:
+                continue
+            r["velocity_err_kms"] = parent.get("velocity_err_kms", float("nan"))
+            r["sigma_err_kms"] = parent.get("sigma_err_kms", float("nan"))
+            note = f"kinematic errors inherited from {parent['line']}"
+            r["notes"] = (r["notes"] + "; " if r["notes"] else "") + note
+
     for r in out:
         r.pop("_fit_kind", None)
         r.pop("_kind", None)
@@ -568,13 +695,19 @@ def _finite(a):
 
 
 def make_figures(out: Path, wave, galaxy, bestfit, emission, residual, err,
-                 goodpix, rows, info, meta):
+                 goodpix, rows, info, meta, cfg):
     stellar = bestfit - emission
     wave = np.asarray(wave, float)
     good = np.asarray(goodpix, int)
     resid_chi2 = float("nan")
     if good.size > 10:
-        dof = max(1, good.size - (3 * max(1, len(rows)) + 4))
+        # Free parameters: 3 per fitted main line (amplitude, V, sigma), the
+        # two stellar-LOSVD parameters, and the additive/multiplicative
+        # polynomial coefficients.  The d# satellites are fixed by their flux
+        # ratio and add no free parameters.
+        n_main = int(meta.get("nlines", 0)) or max(1, len(rows))
+        n_poly = int(cfg.get("mdegree", 3)) + int(cfg.get("degree", 0)) + 1
+        dof = max(1, good.size - (3 * n_main + 2 + n_poly))
         resid_chi2 = float(np.nansum((residual[good] / err[good]) ** 2) / dof)
     has_ha = any(r["line"] == "Halpha" and r["status"] != "not_covered" for r in rows)
 
@@ -590,7 +723,8 @@ def make_figures(out: Path, wave, galaxy, bestfit, emission, residual, err,
         a.plot(wave[q], emission[q], color="C1", lw=1.0, label="gas emission")
         for lam, lab in [(HB, r"H$\beta$"), (4958.83, "[O III] 4959"),
                          (OIII, "[O III] 5007"), (HA, r"H$\alpha$"),
-                         (NII, "[N II] 6584")]:
+                         (NII, "[N II] 6584"), (6716.31, "[S II] 6716"),
+                         (6730.68, "[S II] 6730")]:
             if lo <= lam <= hi:
                 a.axvline(lam, color="0.55", lw=0.6, ls=":")
         a.set_ylabel(r"flux (10$^{-17}$ erg s$^{-1}$ cm$^{-2}$ A$^{-1}$)")
@@ -697,25 +831,36 @@ def _limitations(rows, meta, cfg, info):
         "Line fluxes are integrated Gaussian fluxes.  No aperture correction "
         "or reddening correction is applied; GANDALF v1.5 forbids REDDENING "
         "together with MDEGREE>0.",
-        "Stellar templates are BC03/Tremonti04 at SDSS resolution "
-        "(int_disp=61.5 km/s); higher-resolution data must be degraded first.",
+        "Stellar templates are BC03/Tremonti04 at SDSS resolution.  The "
+        "instrumental LSF is a single 61.5 km/s Gaussian, taken from GANDALF's "
+        "SDSS example; the real SDSS LSF varies with wavelength.  Intrinsic "
+        "sigmas below ~80 km/s are LSF-dominated.",
     ]
     ha = next((r for r in rows if r["line"] == "Halpha"), None)
     if ha is None or ha["status"] == "not_covered":
-        lims.insert(2, "H-alpha and [N II] 6584 are outside the observed/rest-frame "
+        lims.insert(2, "H-alpha, [N II] and [S II] are outside the observed/rest-frame "
                        "coverage of this spectrum; they are reported as not_covered, "
                        "not as non-detections.")
     else:
-        lims.insert(2, "H-alpha and [N II] 6584 are covered; the broad H-alpha "
-                       "component is included only when GANDALF detects it.")
+        lims.insert(2, "H-alpha, [N II] and [S II] are covered.  Multiplet "
+                       "satellites ([O II] 3726, [O III] 4959, [N II] 6548, "
+                       "[S II] 6730) are derived from the GANDALF d# ratio, not "
+                       "independent measurements.")
     if int(meta.get("ppxf_ok", 0)):
         lims.insert(3, "PPXF supplied the stellar kinematics used to convolve the "
-                       "templates.")
+                       "templates (V=%.1f +/- %.1f km/s, sigma=%.1f +/- %.1f km/s, "
+                       "chi2/dof=%.3f, %d nonzero templates)."
+                       % (float(meta.get("ppxf_v", float("nan"))),
+                          float(meta.get("ppxf_v_err", float("nan"))),
+                          float(meta.get("ppxf_sigma", float("nan"))),
+                          float(meta.get("ppxf_sigma_err", float("nan"))),
+                          float(meta.get("ppxf_chi2", float("nan"))),
+                          int(meta.get("ppxf_nz", 0))))
     else:
-        lims.insert(3, "PPXF could not constrain the stellar kinematics of this "
-                       "AGN-dominated continuum; a fixed %.0f km/s stellar LOSVD was "
-                       "used.  The gas fit is still native GANDALF." %
-                       float(cfg["stellar_sigma_kms"]))
+        lims.insert(3, "PPXF was rejected (%s); a fixed %.0f km/s stellar LOSVD was "
+                       "used.  The gas fit is still native GANDALF."
+                       % (meta.get("ppxf_message", "unknown reason"),
+                          float(cfg["stellar_sigma_kms"])))
     return lims
 
 
@@ -762,9 +907,11 @@ def main(argv=None):
 
         meta = parse_meta(work / "gandalf_meta.txt")
         raw_rows = parse_raw(work / "gandalf_lines_raw.csv")
-        rows = build_line_rows(raw_rows, info["rest_min"], info["rest_max"],
-                               float(cfg["int_disp_kms"]),
-                               float(cfg.get("detection_snr", 3.0)))
+        rows = build_line_rows(
+            raw_rows, info["rest_min"], info["rest_max"],
+            float(cfg["int_disp_kms"]), float(cfg.get("detection_snr", 3.0)),
+            satellites=read_setup_satellites(setup_src),
+            setup_index=read_setup_index(setup_src))
 
         with fits.open(work / "gandalf_fit.fits", memmap=False) as h:
             galaxy = np.asarray(h[0].data, float).ravel()
@@ -811,18 +958,31 @@ def main(argv=None):
         shutil.copy2(batch, args.output / "gandalf_batch.gdl")
 
         resid_chi2 = make_figures(args.output, wave, galaxy, bestfit, emission,
-                                  residual, eg, goodpix, rows, info, meta)
+                                  residual, eg, goodpix, rows, info, meta, cfg)
         make_uncertainty(args.output, rows, {**info, **cfg})
 
-        # Run summary
+        # Run summary.  H-beta uses the narrow+broad total; the forbidden
+        # lines use their narrow component.  Satellites are derived from the
+        # GANDALF ``d#`` ratio and are labelled as such in the table.
         line_yield = {}
-        for key in ("Hbeta", "OIII5007", "Halpha", "NII6584"):
-            line = {"OIII5007": "[OIII]5007", "NII6584": "[NII]6584"}.get(key, key)
-            prefer = "total" if key == "Hbeta" else "narrow"
+        yield_lines = (
+            ("Hbeta", "Hbeta", "total"),
+            ("OIII5007", "[OIII]5007", "narrow"),
+            ("OIII4959", "[OIII]4959", "narrow"),
+            ("Halpha", "Halpha", "narrow"),
+            ("NII6584", "[NII]6584", "narrow"),
+            ("NII6548", "[NII]6548", "narrow"),
+            ("SII6716", "[SII]6716", "narrow"),
+            ("SII6730", "[SII]6730", "narrow"),
+        )
+        for key, line, prefer in yield_lines:
             cand = [r for r in rows if r["line"] == line and r["component"] == prefer]
-            if not cand:
+            if not cand and key == "Hbeta":
                 cand = [r for r in rows if r["line"] == line
                         and r["component"] in ("total", "narrow")]
+            if not cand:
+                cand = [r for r in rows if r["line"] == line
+                        and r["component"] == "narrow"]
             if cand:
                 r = cand[0]
                 line_yield[key] = {
@@ -831,9 +991,43 @@ def main(argv=None):
                     "flux_err_1e17": r["flux_err_1e17"],
                     "sigma_kms": r["sigma_kms"],
                     "sigma_err_kms": r["sigma_err_kms"],
+                    "method": r["method"],
                 }
             else:
-                line_yield[key] = {"status": "not_covered"}
+                lam = {"OIII4959": 4958.83, "NII6548": 6547.96,
+                       "SII6716": 6716.31, "SII6730": 6730.68}.get(key)
+                covered = (lam is not None and info["rest_min"] <= lam <= info["rest_max"])
+                line_yield[key] = {"status": "not_fitted" if covered else "not_covered"}
+
+        # Human-readable line-yield table (also present in run.json).
+        def _fmt(v):
+            if v is None:
+                return ""
+            try:
+                val = float(v)
+            except (TypeError, ValueError):
+                return str(v)
+            if not np.isfinite(val):
+                return ""
+            return f"{0.0 if val == 0.0 else val:.6g}"
+
+        with (args.output / "line_yield_summary.txt").open("w", newline="") as fh:
+            fh.write(f"# GANDALF v1.5 native/GDL line yield: {info.get('object')} "
+                     f"z={info['z']:.7f}\n")
+            fh.write(f"# rest coverage {info['rest_min']:.1f}-{info['rest_max']:.1f} A; "
+                     f"stellar kinematics: "
+                     f"{'PPXF' if int(meta.get('ppxf_ok', 0)) else 'fixed'}\n")
+            writer = csv.writer(fh, lineterminator="\n")
+            writer.writerow(["line", "component", "flux_1e17", "flux_err_1e17",
+                             "sigma_kms", "sigma_err_kms", "snr", "status",
+                             "method", "notes"])
+            for r in rows:
+                writer.writerow([
+                    r["line"], r["component"], _fmt(r.get("flux_1e17")),
+                    _fmt(r.get("flux_err_1e17")), _fmt(r.get("sigma_kms")),
+                    _fmt(r.get("sigma_err_kms")), _fmt(r.get("snr")),
+                    r.get("status", ""), r.get("method", ""), r.get("notes", ""),
+                ])
 
         try:
             _v = subprocess.run(["gdl", "--version"], capture_output=True,
@@ -870,10 +1064,20 @@ def main(argv=None):
             "fit_controls": {
                 "int_disp_kms": cfg["int_disp_kms"],
                 "mdegree": cfg["mdegree"], "degree": cfg["degree"],
+                "ppxf_degree": cfg["ppxf_degree"],
                 "ppxf_mask_sigma_kms": cfg["ppxf_mask_sigma_kms"],
                 "gandalf_mask_sigma_kms": cfg["gandalf_mask_sigma_kms"],
                 "use_ppxf": cfg["use_ppxf"], "reddening": None,
                 "for_errors": True,
+            },
+            "input_lsf": {
+                "int_disp_kms": cfg["int_disp_kms"],
+                "assumption": "constant Gaussian instrumental sigma",
+                "source": ("GANDALF v1.5 SDSS example (gandalf_SDSS.pro); "
+                           "BC03/Tremonti04 templates distributed at SDSS resolution"),
+                "note": ("SDSS spSpec/COADD R~2000; the real LSF varies with "
+                         "wavelength and is not Gaussian.  sigma_kms is intrinsic "
+                         "after subtracting this value in quadrature."),
             },
             "ppxf": {
                 "attempted": bool(meta.get("ppxf_attempted", 0)),
@@ -881,20 +1085,35 @@ def main(argv=None):
                 "message": meta.get("ppxf_message", ""),
                 "n_good_pixels": meta.get("ppxf_npix"),
                 "v_kms": meta.get("ppxf_v"),
+                "v_err_kms": meta.get("ppxf_v_err"),
                 "sigma_kms": meta.get("ppxf_sigma"),
+                "sigma_err_kms": meta.get("ppxf_sigma_err"),
+                "sigma_over_error": meta.get("ppxf_sigma_snr"),
                 "chi2": meta.get("ppxf_chi2"),
+                "chi2_dof": meta.get("ppxf_chi2"),
                 "n_nonzero_templates": meta.get("ppxf_nz"),
+                "acceptance": {
+                    "sigma_min_kms": cfg["ppxf_sigma_min_kms"],
+                    "sigma_max_kms": cfg["ppxf_sigma_max_kms"],
+                    "v_max_kms": cfg["ppxf_v_max_kms"],
+                    "chi2_max": cfg["ppxf_chi2_max"],
+                    "sigma_over_error_min": cfg["ppxf_sigma_snr_min"],
+                    "min_templates": cfg["ppxf_min_templates"],
+                },
             },
             "stellar_kinematics": {
                 "source": "ppxf" if int(meta.get("ppxf_ok", 0)) else "fixed_fallback",
                 "v_kms": meta.get("stellar_v"),
                 "sigma_kms": meta.get("stellar_sigma"),
+                "v_err_kms": meta.get("ppxf_v_err") if int(meta.get("ppxf_ok", 0)) else None,
+                "sigma_err_kms": meta.get("ppxf_sigma_err") if int(meta.get("ppxf_ok", 0)) else None,
                 "fixed_sigma_kms": float(cfg["stellar_sigma_kms"]),
-                "note": ("PPXF constrained the stellar kinematics."
+                "note": ("PPXF constrained the stellar kinematics; the gas fit uses "
+                         "the PPXF V and sigma."
                          if int(meta.get("ppxf_ok", 0)) else
-                         "PPXF did not pass the acceptance cuts for this AGN-dominated "
-                         "continuum; a fixed %.0f km/s stellar LOSVD was used.  The gas "
-                         "fit is still native GANDALF." % float(cfg["stellar_sigma_kms"])),
+                         "PPXF did not pass the acceptance cuts for this spectrum; "
+                         "a fixed %.0f km/s stellar LOSVD was used.  The gas fit is "
+                         "still native GANDALF." % float(cfg["stellar_sigma_kms"])),
             },
             "line_measurements": [
                 {k: v for k, v in r.items() if k in fields} for r in rows

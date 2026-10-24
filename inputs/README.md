@@ -25,6 +25,7 @@ input policy: one source, one raw payload, one manifest.
 | `04592566733_z_1.8297` | 1.8297 | SDSS DR18 eFEDS QSO | `spectrum` | ir, pyqsofit_uv, ppxf_host, cigale_sed, agnfitter_sed |
 | `04592649654_z_0.5874` | 0.5874 | SDSS DR18 eFEDS QSO | `spectrum` | ir, pyqsofit_uv, ppxf_host, cigale_sed, agnfitter_sed |
 | `04592933676_z_0.6506` | 0.6506 | SDSS DR18 eFEDS QSO | `spectrum` | ir, pyqsofit_uv, ppxf_host, cigale_sed, agnfitter_sed |
+| `spSpec-51908-0277-120_z_0.0859` | 0.0859 | SDSS legacy spSpec (GANDALF example) | `spectrum` | gandalf_line |
 | `J0100p2802_z_6.3270` | 6.327 | JWST/NIRSpec G395H | `spectrum`, `centered` | nir_linefit (pipeline + QSO-centred), ir_linefit |
 | `VV114_z_0.0200` | 0.020 | JWST/MIRI MRS (PAHFIT example) | `spectra` (12 s1d) | pahfit_mir, ir_linefit |
 | `PDS456_z_0.1840` | 0.184 | JWST/MIRI MRS | `spectra` (short/long) | pahfit_mir (short/long/both), ir_linefit |
@@ -42,6 +43,9 @@ input policy: one source, one raw payload, one manifest.
 * SDSS five: SDSS DR18 eFEDS SAS (`spec-*.fits`); see `catalogs/sdss_zgt05.csv`.
   Photometry is derived by `pipeline/build_photometry.py` from `SPALL`
   (`MAG`, `WISE_MAG`) with nominal 0.05 mag (SDSS) / 0.125 mag (WISE) errors.
+* `spSpec-51908-0277-120`: public GANDALF v1.5 `SDSS_example` low-z galaxy
+  (plate 277, MJD 51908, fiber 120, z=0.0858772), copied unmodified.  See the
+  directory README for the header-level provenance and MD5.
 * J0100+2802: JWST/NIRSpec G395H pipeline `x1d` plus a QSO-centred 3×3 extraction from the public MAST `s3d` cube (`pipeline/extract_nir_aperture.py`).  The raw cube is not committed.
 * VV114: PAHFIT's packaged MIRI MRS example (`*_s1d.fits`).
 * PDS 456: JWST/MIRI MRS short/long `x1d`.

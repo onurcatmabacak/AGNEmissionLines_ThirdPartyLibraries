@@ -1,18 +1,22 @@
-# GANDALF SDSS-example validation
+# GANDALF low-z SDSS production validation
 
-This directory contains a validation run of `Tools/gandalf_line/` on the
-public GANDALF v1.5 SDSS example `spSpec-51908-0277-120.fit` (z=0.0859), not on
-the repository's eFEDS QSO target.  It demonstrates the H-alpha / [N II]
-branch, which is outside the observed coverage of the z=0.587 target.
+This directory mirrors the headline products of the canonical low-z run of
+`Tools/gandalf_line/` on the public GANDALF v1.5 SDSS example
+`spSpec-51908-0277-120.fit` (z=0.0858772).  The authoritative, complete output
+is `outputs/spSpec-51908-0277-120_z_0.0859/gandalf_line/`; the raw input and
+provenance are in `inputs/spSpec-51908-0277-120_z_0.0859/`.
 
-Command (from the repository root):
+The copied files are `gandalf_lines.csv`, `gandalf_fit.png`, `run.json` and
+`line_yield_summary.txt`.  Regenerate all of them with:
 
 ```bash
-cp /tmp/gandalf_release_v1.5/SDSS_example/spSpec-51908-0277-120.fit /tmp/gandalf_sdss_in/spectrum.fits
-bash Pipelines/run_gandalf_line_docker.sh /tmp/gandalf_sdss_in /tmp/gandalf_sdss_out gandalf_sdss_51908
+.venv/bin/python pipeline/run_new_tools.py \
+  --only spSpec-51908-0277-120_z_0.0859 --tools gandalf_line --force
 ```
 
-The committed files are the line table, fit figure and run summary from that
-temporary output directory.  PPXF accepted the
-stellar kinematics (V=75.9 km/s, sigma=62.9 km/s, 7 templates, chi2=0.605)
-and the GANDALF gas fit reached residual chi2_nu=0.852.
+Result: pPXF accepted the stellar kinematics (V=72.54 +/- 6.50 km/s,
+sigma=79.87 +/- 9.80 km/s, 5 nonzero templates, chi2/dof=0.720, 3439 good
+pixels), and the native GANDALF gas fit reached residual chi2_nu=0.847.
+H-alpha is measured at 1390.85 +/- 16.86 and H-beta at 244.00 +/- 4.43
+(1e-17 erg s^-1 cm^-2).  GDL runtime is 70.6 s; pipeline wall time is 81.7 s
+(59-71 s GDL across repeated runs, depending on host load).

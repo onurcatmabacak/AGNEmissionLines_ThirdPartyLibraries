@@ -831,6 +831,12 @@ if keyword_set(err) then begin
     if keyword_set(reddening) then esol_final = dblarr(nlines*4+n_elements(reddening))
     k=0 & h=0
 
+    ; Repository patch: fix the random seed for the MC flux-error propagation
+    ; below.  Upstream GANDALF leaves SEED undefined, so GDL/IDL seeds from the
+    ; system clock and the formal flux errors change between identical runs.
+    ; The model parameters and fluxes are unaffected by this seed.
+    seed = 20250101L
+
     if not keyword_set(for_errors) then begin
         ; MPFIT errors only from V_gas and S_gas fit 
         for i=0,nlines-1 do begin
