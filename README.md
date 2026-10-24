@@ -52,10 +52,51 @@ under `work/prepared/`.
 |---|---|
 | SDSS z>0.5 QSOs (5) | `ir_linefit`, `pyqsofit_uv`, `pyqsofitspec_line`, `ppxf_host`, `gandalf_line`, `s3fit_line`, `galspec_line`, `qgfit`, `sheap_line`, `cigale_sed`, `agnfitter_sed` |
 | J0100+2802 | `nir_linefit` (pipeline, 3×3, PSF), `ir_linefit` |
-| VV114 / PDS 456 | `pahfit_mir`, `cafe_line` (PDS), `ir_linefit` |
+| VV114 / PDS 456 | `pahfit_mir`, `cafe_line`, `ir_linefit` |
+| Low-z SDSS GANDALF example | `gandalf_line` (Hα/Hβ coverage) |
 | NGC 1068 / NGC 253 / NGC 4151 | `pahfit_mir`, `fir_linefit`, `ir_linefit`; cross-band for NGC 253/4151 |
 | Mrk 231 | `pahfit_mir`, `ir_linefit`, `crossband` |
 | synthetic FIR / multiband | `fir_linefit` + `ir_linefit` / `crossband` |
+
+## Production-quality test run
+
+The production matrix uses real data only:
+
+| tool | suitable object | production mode | result |
+|---|---|---|---|
+| **CAFE** | VV114, full 12 MIRI `s1d` channels | AGN/SB continuum + selected MIR lines/PAHs, 200 covariance draws | rms **0.143**, χ²ν 2.68; Ar II, Ne II, Ne III, S IV, etc. detected |
+| **S3Fit** | `04592649654` SDSS QSO | **spec+sed**, 8 bands, 10 mock spectra, 8 threads | χ²ν **1.035**; MC χ² 1.605±0.112; Hβ/[O III] **1.83**; 58 min |
+| **GANDALF** | `spSpec-51908-0277-120` z=0.0859 | native GDL, pPXF + all Hα/Hβ/[O III]/[N II] lines | pPXF **accepted** (V=72.5, σ=79.9 km/s); Hα 1391, Hβ 244, [O III] 79.7 |
+| **PAHFIT** | VV114, PDS 456, NGC 4151, NGC 253 | full MIRI/IRS, covariance/bootstrap, 100–200 draws | rms VV114 **0.195**, PDS short/long/both **0.0088/0.017/0.038**, NGC 4151 **0.031**, NGC 253 **0.25** (still systematics-limited) |
+| **GalSpec** | `04592649654` | full-continuum global model + `emcee`, 39 parameters | 224,000 samples, 37,334 saved; Hβ 3718, [O III] 1681, ratio **2.21** |
+| **PyQSOFitSpec** | `04592649654` | full Fe II/Balmer + skew-normal lines, 55 bootstrap draws | 53 valid; Hβ 3439, [O III] 1631, ratio **2.11** |
+| **QGfit** | `04592649654` | long continuum MCMC + line complexes | 2334 s; Hβ/[O III] **2.50**; line errors LSQ |
+| **SHEAP** | `04592649654` | Hβ/[O III] SPAF/JAX, 50 bootstrap draws | Hβ/[O III] **2.02**, χ²ν 2.9 |
+| **PyQSOFit** | `04592649654` | 100-realization MC (`mcmc/`); MCMC diagnostic | MC failures fixed; MCMC cap documented |
+| **SDSS ZLINE** | five SDSS QSOs | official `ZLINE` HDU | 045926 ratio **1.57** |
+
+The cross-tool 04592649654 Hβ/[O III] 5007 values are:
+
+```text
+ZLINE 1.57 | S3Fit 1.83 | PyQSOFit 1.96 | GalSpec 2.21
+GANDALF 2.07 | PyQSOFitSpec 2.11 | SHEAP 2.02 | QGfit 2.50
+median 2.05, log-scatter 0.13 dex
+```
+
+## Failure audit and fixes
+
+| failure | fix / outcome |
+|---|---|
+| CAFE PDS 456 had only four MRS L sub-bands and one detected line | added a 12-file MIRI `s1d` adapter; VV114 now has full 5–28 µm coverage and multiple MIR detections. The PDS gap remains documented. |
+| S3Fit was pure-spectrum with only 3 mocks | full **spec+sed** run with **10 mocks**, 8 threads; χ²ν 1.035. |
+| GANDALF had no Hα coverage and pPXF was rejected | added a real low-z SDSS spectrum; pPXF accepted; Hα/Hβ/[O III]/[N II] measured. |
+| PAHFIT PDS long/both had poor rms; NGC 253 was 11.5 | normalization/warm-start fixes gave **0.017/0.038** and **0.25**; NGC 253 remains systematics-limited. |
+| GalSpec only fit a reduced Hβ/[O III] window | full-continuum 39-parameter `emcee` model; 37,334 saved samples. |
+| PyQSOFitSpec only 10 bootstraps and pinned widths | 55-draw bootstrap; width anchors and tied components documented. Hβ remains ~18% above GANDALF/S3Fit because of continuum/model definition. |
+| QGfit used a very short continuum MCMC | 2334 s production run with long continuum MCMC and expanded [O III] template; line errors remain LSQ. |
+| SHEAP failed at χ² 46 and Hβ/[O III]=4.00 | model/region/profile repair; now **2.02**, χ²ν 2.9, 50-draw MC. |
+| PyQSOFit line-stage `emcee` condition-number failure | diagnostic/repair agent assigned; MC fallback remains labelled. |
+| Official SDSS DAPs, AMARU, ELFO, AGNdecompose, pyspeckit | excluded with explicit data/model reasons; see `docs/OFFICIAL_PIPELINES_AND_XRAY.md`. |
 
 ## Statistics and caveats
 
@@ -70,6 +111,9 @@ under `work/prepared/`.
 * `docs/OFFICIAL_PIPELINES_AND_XRAY.md` — official SDSS DAP/HEASOFT exclusions and integration plan.
 * `docs/line_tool_comparison.png` — cross-tool line-ratio comparison.
 * `docs/line_ratio_scatter.csv` — inter-tool scatter and bootstrap intervals.
+* `docs/line_tool_comparison.png` — official ZLINE + eight independent fitters.
+* `docs/SHEAP_ASSESSMENT.md` — SHEAP repair and quality gates.
+* `docs/GANDALF_ASSESSMENT.md` — low-z GDL/pPXF validation.
 
 ## Legacy optical v1
 
