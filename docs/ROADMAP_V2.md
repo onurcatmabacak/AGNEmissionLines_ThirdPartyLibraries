@@ -43,7 +43,7 @@ band, rest-frame line coverage, data type and science goal (SED vs lines).
 
 Pinned upstream `rudolffu/qsofitmore` v1.2.2 at commit
 `4c5f6e497b306aaf50b502a8e4b27ed9dfe89421` (GPL-3.0), lmfit backend, no
-Kapteyn.  The image `qsofitmore_line` is 1,501,705,246 bytes (1.50 GB), bakes
+Kapteyn.  The final image `qsofitmore_line` is 1,501,705,328 bytes (1.50 GB); the production run used the code-identical 1,501,705,246-byte image.  It bakes
 and MD5-verifies the SFD98 map (DOI `10.7910/DVN/EWCNL5`), and records the map
 version in `/app/cache/dustmaps/sfd/VERSION.json`.
 

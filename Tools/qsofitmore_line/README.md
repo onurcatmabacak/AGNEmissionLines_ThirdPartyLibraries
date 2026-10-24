@@ -17,7 +17,7 @@ extinction, and the package's native Monte Carlo uncertainty path.
 | fitting backend | `lmfit==1.3.2` (`QSOFITMORE_USE_LMFIT=true`) |
 | Python | 3.12 (image `python:3.12-slim`) |
 | dust map | SFD98, DOI `10.7910/DVN/EWCNL5`, MD5-verified; `dustmaps==1.0.12` |
-| image | `qsofitmore_line:latest`, 1,501,698,779 bytes (1.50 GB) at build time |
+| image | `qsofitmore_line:latest`, 1,501,705,328 bytes (1.50 GB) at final build time |
 
 The SFD98 `ngp`/`sgp` maps are downloaded at build time into
 `/app/cache/dustmaps/sfd` and verified against the Dataverse MD5s
