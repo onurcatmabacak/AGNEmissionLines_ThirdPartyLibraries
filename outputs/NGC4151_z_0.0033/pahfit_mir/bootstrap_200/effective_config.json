@@ -1,0 +1,77 @@
+{
+  "config_file": "/app/configs/pahfit_mir/ngc4151/config.json",
+  "config_name": "ngc4151",
+  "input": {
+    "mode": "tbl",
+    "instrument": "spitzer.irs.sl.2,spitzer.irs.sl.1,spitzer.irs.ll.2,spitzer.irs.ll.1",
+    "segment": "both",
+    "s1d": false,
+    "tbl": true,
+    "aperture_arcsec2": 0.04,
+    "tbl_aperture_arcsec2": 1.0,
+    "min_wave_um": 5.0,
+    "max_wave_um": 38.0,
+    "files": [
+      {
+        "file": "ngc4151_irs.tbl",
+        "n_total": 366,
+        "n_good": 363,
+        "n_flagged": 3,
+        "unit_in": "Jy",
+        "conversion_to_MJy_sr": 42545.170296152195,
+        "aperture_arcsec2": 1.0,
+        "wave_min_um": 5.21725,
+        "wave_max_um": 37.86356
+      }
+    ],
+    "coverage": {
+      "gaps": [],
+      "max_gap_um": 0.0,
+      "gap_total_um": 0.0
+    }
+  },
+  "preprocess": {
+    "smooth_um": 0.1,
+    "clip_nmad": 0.0,
+    "clip_iterations": 1,
+    "n_clipped": 0
+  },
+  "fit": {
+    "maxiter": 2000,
+    "passes": 2,
+    "no_guess": false,
+    "init_from": null,
+    "normalize": true,
+    "flux_scale": 171384.02878126514,
+    "converged": true,
+    "ierr": 1,
+    "quality": "systematics_limited",
+    "quality_flags": [
+      "formal_chi2_mismatch",
+      "bootstrap_frozen_features"
+    ],
+    "chi2_red": 338.78714739137325,
+    "dof": 201
+  },
+  "monte_carlo": {
+    "enabled": true,
+    "samples": 200,
+    "method": "bootstrap",
+    "resolved_method": "bootstrap",
+    "seed": 12350,
+    "rcond": 1e-10,
+    "maxiter": 500,
+    "bootstrap_mode": "parametric",
+    "scale": "none",
+    "save_samples": true,
+    "fallback_reason": null
+  },
+  "metadata": {
+    "z": 0.003319,
+    "wave_min_um": 5.2626100000000005,
+    "wave_max_um": 37.86356,
+    "n_pixels": 254,
+    "n_input_pixels": 366,
+    "flux_unit": "MJy/sr"
+  }
+}

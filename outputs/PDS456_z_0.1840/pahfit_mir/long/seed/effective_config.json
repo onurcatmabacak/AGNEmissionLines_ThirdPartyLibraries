@@ -8,36 +8,69 @@
     "s1d": false,
     "tbl": false,
     "aperture_arcsec2": 0.04,
+    "tbl_aperture_arcsec2": 1.0,
     "min_wave_um": 5.0,
-    "max_wave_um": 18.0
+    "max_wave_um": 18.0,
+    "files": [
+      {
+        "file": "jw02547001001_02101_00001_mirifulong_x1d.fits",
+        "n_total": 2486,
+        "n_good": 781,
+        "n_flagged": 1237,
+        "unit_in": "Jy",
+        "conversion_to_MJy_sr": 1063629.257403805,
+        "aperture_arcsec2": 0.04,
+        "wave_min_um": 15.407740592956543,
+        "wave_max_um": 17.99233627319336
+      }
+    ],
+    "coverage": {
+      "gaps": [],
+      "max_gap_um": 0.0,
+      "gap_total_um": 0.0
+    }
   },
   "preprocess": {
-    "smooth_um": 0.05
+    "smooth_um": 0.05,
+    "clip_nmad": 0.0,
+    "clip_iterations": 1,
+    "n_clipped": 0
   },
   "fit": {
-    "maxiter": 1000,
-    "passes": 1,
+    "maxiter": 5000,
+    "passes": 2,
     "no_guess": false,
     "init_from": null,
-    "normalize": false,
-    "flux_scale": 1.0
+    "normalize": true,
+    "flux_scale": 540709.1107920324,
+    "converged": true,
+    "ierr": 2,
+    "quality": "systematics_limited",
+    "quality_flags": [
+      "formal_chi2_mismatch"
+    ],
+    "chi2_red": 21.789066763639994,
+    "dof": 39
   },
   "monte_carlo": {
     "enabled": false,
     "samples": 0,
     "method": "auto",
+    "resolved_method": null,
     "seed": 12345,
     "rcond": 1e-10,
     "maxiter": 500,
     "bootstrap_mode": "parametric",
     "scale": "none",
-    "save_samples": true
+    "save_samples": true,
+    "fallback_reason": null
   },
   "metadata": {
     "z": 0.184,
     "wave_min_um": 15.432361125946045,
     "wave_max_um": 17.97520351409912,
     "n_pixels": 52,
+    "n_input_pixels": 2486,
     "flux_unit": "MJy/sr"
   }
 }

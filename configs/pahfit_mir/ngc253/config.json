@@ -1,0 +1,41 @@
+{
+  "schema_version": 1,
+  "name": "ngc253",
+  "description": "NGC 253 starburst stress test: Spitzer IRS SL/LL, 0.1 um bin, 5-30 um. The 35.8-37.9 um unflagged edge island is excluded as a data-quality artefact; the fit remains flagged for model mismatch.",
+  "input": {
+    "instrument": [
+      "spitzer.irs.sl.2",
+      "spitzer.irs.sl.1",
+      "spitzer.irs.ll.2",
+      "spitzer.irs.ll.1"
+    ],
+    "segment": "both",
+    "s1d": false,
+    "tbl": true,
+    "smooth_um": 0.1,
+    "min_wave": 5.0,
+    "max_wave": 30.0,
+    "aperture_arcsec2": 0.04,
+    "tbl_aperture_arcsec2": 1.0
+  },
+  "fit": {
+    "maxiter": 5000,
+    "passes": 3,
+    "no_guess": false,
+    "init_from": null,
+    "normalize": true,
+    "clip_nmad": 0.0,
+    "clip_iterations": 1
+  },
+  "monte_carlo": {
+    "enabled": false,
+    "samples": 100,
+    "method": "auto",
+    "seed": 12351,
+    "rcond": 1e-10,
+    "maxiter": 500,
+    "bootstrap_mode": "parametric",
+    "scale": "none",
+    "save_samples": true
+  }
+}

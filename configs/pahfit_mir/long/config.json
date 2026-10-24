@@ -1,5 +1,7 @@
 {
   "schema_version": 1,
+  "name": "long",
+  "description": "PDS 456 MIRI long production fit: 0.05 um bin, rest 5-28 um, warm-started from a normalized pipeline seed, 100 MC.",
   "input": {
     "instrument": [
       "jwst.miri.mrs.ch1.A",
@@ -21,14 +23,17 @@
     "smooth_um": 0.05,
     "min_wave": 5.0,
     "max_wave": 28.0,
-    "aperture_arcsec2": 0.04
+    "aperture_arcsec2": 0.04,
+    "tbl_aperture_arcsec2": 1.0
   },
   "fit": {
-    "maxiter": 1000,
-    "passes": 1,
+    "maxiter": 5000,
+    "passes": 2,
     "no_guess": false,
     "init_from": "seed/pahfit_output.ecsv",
-    "normalize": null
+    "normalize": true,
+    "clip_nmad": 0.0,
+    "clip_iterations": 1
   },
   "monte_carlo": {
     "enabled": false,
@@ -36,13 +41,11 @@
     "method": "auto",
     "seed": 12347,
     "rcond": 1e-10,
-    "maxiter": 500,
+    "maxiter": 2000,
     "bootstrap_mode": "parametric",
     "scale": "none",
     "save_samples": true
   },
-  "name": "long",
-  "description": "PDS 456 MIRI long segment: 0.05 um bin, rest 5-28 um, warm-started from the pipeline seed fit.",
   "warm_start": {
     "mode": "pipeline_seed",
     "from_variant": "long",
@@ -52,8 +55,13 @@
       "--smooth-um",
       "0.05",
       "--max-wave",
-      "18.0"
+      "18.0",
+      "--normalize-fit",
+      "--maxiter",
+      "5000",
+      "--fit-passes",
+      "2"
     ],
-    "note": "pipeline/run_new_tools.py runs the seed fit and copies its ECSV to <output>/seed/."
+    "note": "pipeline/run_new_tools.py runs the normalized seed fit and copies its ECSV to <output>/seed/."
   }
 }

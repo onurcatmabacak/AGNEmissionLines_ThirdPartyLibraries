@@ -1,0 +1,105 @@
+{
+  "config_file": "/app/configs/pahfit_mir/both/config.json",
+  "config_name": "both",
+  "input": {
+    "mode": "x1d",
+    "instrument": "jwst.miri.mrs.ch1.A,jwst.miri.mrs.ch1.B,jwst.miri.mrs.ch1.C,jwst.miri.mrs.ch2.A,jwst.miri.mrs.ch2.B,jwst.miri.mrs.ch2.C,jwst.miri.mrs.ch3.A,jwst.miri.mrs.ch3.B,jwst.miri.mrs.ch3.C,jwst.miri.mrs.ch4.A,jwst.miri.mrs.ch4.B,jwst.miri.mrs.ch4.C",
+    "segment": "both",
+    "s1d": false,
+    "tbl": false,
+    "aperture_arcsec2": 0.04,
+    "tbl_aperture_arcsec2": 1.0,
+    "min_wave_um": 5.0,
+    "max_wave_um": 28.0,
+    "files": [
+      {
+        "file": "jw02547001001_02101_00001_mirifulong_x1d.fits",
+        "n_total": 2486,
+        "n_good": 1192,
+        "n_flagged": 1237,
+        "unit_in": "Jy",
+        "conversion_to_MJy_sr": 1063629.257403805,
+        "aperture_arcsec2": 0.04,
+        "wave_min_um": 15.407740592956543,
+        "wave_max_um": 27.994897842407227
+      },
+      {
+        "file": "jw02547001001_02101_00001_mirifushort_x1d.fits",
+        "n_total": 4068,
+        "n_good": 2204,
+        "n_flagged": 1864,
+        "unit_in": "Jy",
+        "conversion_to_MJy_sr": 1063629.257403805,
+        "aperture_arcsec2": 0.04,
+        "wave_min_um": 6.529533863067627,
+        "wave_max_um": 11.700483322143555
+      }
+    ],
+    "coverage": {
+      "gaps": [
+        {
+          "start_um": 7.64514946937561,
+          "end_um": 10.015673637390137,
+          "width_um": 2.3705241680145264
+        },
+        {
+          "start_um": 11.665855884552002,
+          "end_um": 15.41787052154541,
+          "width_um": 3.752014636993408
+        },
+        {
+          "start_um": 17.961898803710938,
+          "end_um": 24.410371780395508,
+          "width_um": 6.44847297668457
+        }
+      ],
+      "max_gap_um": 6.44847297668457,
+      "gap_total_um": 12.571011781692505
+    }
+  },
+  "preprocess": {
+    "smooth_um": 0.1,
+    "clip_nmad": 0.0,
+    "clip_iterations": 1,
+    "n_clipped": 0
+  },
+  "fit": {
+    "maxiter": 5000,
+    "passes": 3,
+    "no_guess": false,
+    "init_from": "/app/output/seed/pahfit_output.ecsv",
+    "normalize": true,
+    "flux_scale": 556243.460259802,
+    "converged": true,
+    "ierr": 1,
+    "quality": "systematics_limited",
+    "quality_flags": [
+      "formal_chi2_mismatch",
+      "coverage_gap",
+      "bootstrap_frozen_features"
+    ],
+    "chi2_red": 1164.3509595597018,
+    "dof": 50
+  },
+  "monte_carlo": {
+    "enabled": true,
+    "samples": 100,
+    "method": "auto",
+    "resolved_method": "bootstrap",
+    "seed": 12348,
+    "rcond": 1e-10,
+    "maxiter": 2000,
+    "bootstrap_mode": "parametric",
+    "scale": "none",
+    "save_samples": true,
+    "fallback_reason": "covariance_ill_conditioned_rank_12_of_24_cond_1.14e+04_ndata_94"
+  },
+  "metadata": {
+    "z": 0.184,
+    "wave_min_um": 6.579213619232178,
+    "wave_max_um": 27.962820053100586,
+    "n_pixels": 94,
+    "n_input_pixels": 6554,
+    "flux_unit": "MJy/sr"
+  }
+}

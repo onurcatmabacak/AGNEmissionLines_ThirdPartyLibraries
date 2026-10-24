@@ -1,5 +1,7 @@
 {
   "schema_version": 1,
+  "name": "both",
+  "description": "PDS 456 joint short+long production fit: 0.10 um bin, rest 5-28 um, warm-started from the short production fit, 100 MC.",
   "input": {
     "instrument": [
       "jwst.miri.mrs.ch1.A",
@@ -21,14 +23,17 @@
     "smooth_um": 0.1,
     "min_wave": 5.0,
     "max_wave": 28.0,
-    "aperture_arcsec2": 0.04
+    "aperture_arcsec2": 0.04,
+    "tbl_aperture_arcsec2": 1.0
   },
   "fit": {
-    "maxiter": 1000,
-    "passes": 1,
+    "maxiter": 5000,
+    "passes": 3,
     "no_guess": false,
     "init_from": "seed/pahfit_output.ecsv",
-    "normalize": null
+    "normalize": true,
+    "clip_nmad": 0.0,
+    "clip_iterations": 1
   },
   "monte_carlo": {
     "enabled": false,
@@ -36,13 +41,11 @@
     "method": "auto",
     "seed": 12348,
     "rcond": 1e-10,
-    "maxiter": 500,
+    "maxiter": 2000,
     "bootstrap_mode": "parametric",
     "scale": "none",
     "save_samples": true
   },
-  "name": "both",
-  "description": "PDS 456 joint short+long fit: 0.10 um bin, rest 5-28 um, warm-started from the short fit.",
   "warm_start": {
     "mode": "pipeline_seed_from_variant",
     "from_variant": "short",
