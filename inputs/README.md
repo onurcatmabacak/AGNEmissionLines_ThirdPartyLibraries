@@ -27,8 +27,8 @@ input policy: one source, one raw payload, one manifest.
 | `04592933676_z_0.6506` | 0.6506 | SDSS DR18 eFEDS QSO | `spectrum` | ir, pyqsofit_uv, ppxf_host, cigale_sed, agnfitter_sed |
 | `spSpec-51908-0277-120_z_0.0859` | 0.0859 | SDSS legacy spSpec (GANDALF example) | `spectrum` | gandalf_line |
 | `J0100p2802_z_6.3270` | 6.327 | JWST/NIRSpec G395H | `spectrum`, `centered` | nir_linefit (pipeline + QSO-centred), ir_linefit |
-| `VV114_z_0.0200` | 0.020 | JWST/MIRI MRS (PAHFIT example) | `spectra` (12 s1d) | pahfit_mir, ir_linefit |
-| `PDS456_z_0.1840` | 0.184 | JWST/MIRI MRS | `spectra` (short/long) | pahfit_mir (short/long/both), ir_linefit |
+| `VV114_z_0.0200` | 0.020 | JWST/MIRI MRS (PAHFIT example) | `spectra` (12 s1d) | cafe_line, pahfit_mir, ir_linefit |
+| `PDS456_z_0.1840` | 0.184 | JWST/MIRI MRS | `spectra` (short/long) | cafe_line (sparse regression), pahfit_mir (short/long/both), ir_linefit |
 | `NGC1068_z_0.0038` | 0.003793 | Herschel PACS + HIFI | `pacs`, `spectrum` | fir_linefit, ir_linefit |
 | `NGC4151_z_0.0033` | 0.003319 | Spitzer IRS + Herschel PACS | `mir_table`, `pacs` | pahfit_mir, fir_linefit, ir_linefit, crossband |
 | `Mrk231_z_0.0422` | 0.04217 | Spitzer IRS | `mir_table` | pahfit_mir, ir_linefit, crossband |

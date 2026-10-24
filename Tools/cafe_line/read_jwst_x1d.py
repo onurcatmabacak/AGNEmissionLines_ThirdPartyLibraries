@@ -1,14 +1,20 @@
 #!/usr/bin/env python3
-"""Adapter: JWST/MIRI MRS ``x1d`` FITS -> CAFE 3-column text spectrum.
+"""Adapter: JWST/MIRI MRS ``x1d``/``s1d`` FITS -> CAFE 3-column spectrum.
 
 CAFE (``specmod.read_spec``) accepts a plain text table with columns
 
     wave_um   flux_Jy   flux_unc_Jy
 
-This module reads the canonical ``EXTRACT1D`` table of JWST/MIRI ``x1d``
-products, keeps the real pipeline uncertainties, applies an optional
-fractional error floor, removes blanked (DQ != 0) rows, and combines the
-short/long detector files into one ascending spectrum.  It also records the
+This module reads either
+
+* the canonical ``EXTRACT1D`` table of JWST/MIRI ``x1d`` products (``WAVELENGTH``,
+  ``FLUX``/``FLUX_ERROR`` in Jy, ``DQ``), or
+* the PAHFIT-style MIRI ``s1d`` table (``wavelength`` in um, ``flux`` and
+  ``uncertainty`` in MJy; the 12 VV114 channel files are of this form).
+
+It keeps the real uncertainties, applies an optional fractional error floor,
+removes blanked (DQ != 0) rows, trims redundant overlaps between MRS channels,
+and combines all inputs into one ascending spectrum.  It also records the
 contiguous wavelength segments so the fitter can mask features that fall in
 the zeroed detector gaps instead of silently interpolating across them.
 
@@ -17,11 +23,17 @@ The adapter is deliberately conservative:
 * ``DQ == 0`` is required by default (``--dq-policy good``).  In the PDS 456
   x1d files the DQ=1 rows are exactly the blanked rows with FLUX=0 and
   FLUX_ERROR=0, i.e. the MRS sub-bands that were not extracted.
+* Flux units are converted explicitly.  ``s1d`` files in this repo carry the
+  FITS column unit ``MJy`` (not ``MJy/sr``), so they are converted with
+  ``1 MJy = 1e6 Jy``.  Surface-brightness inputs require an aperture.
 * Non-finite values, non-positive errors and duplicated wavelengths are
   removed.
 * A fractional error floor (default 1 per cent) is applied because the
   pipeline per-pixel errors are formal statistical errors only and because
   CAFE v1.0.1's ``ErrSpec`` option is not implemented in the released code.
+* Adjacent MRS channels overlap by ~1-3 % in wavelength.  By default the
+  overlap is cut at its midpoint so that no spectral region is counted twice
+  (``--overlap-policy trim``); ``keep`` retains both samples.
 * Binning is optional and off by default.  CAFE derives the line widths from
   the instrument resolving power, so binning the data more coarsely than the
   instrument biases narrow-line fluxes; only use ``--bin-kms`` with care.
@@ -49,12 +61,26 @@ def sha256(path: Path) -> str:
 
 
 def _find_table_hdu(hdul: fits.HDUList):
+    """Return the first table HDU with a wavelength-like column."""
     if "EXTRACT1D" in hdul:
         return hdul["EXTRACT1D"]
     for hdu in hdul:
-        if getattr(hdu, "columns", None) is not None and "WAVELENGTH" in hdu.columns.names:
+        cols = getattr(hdu, "columns", None)
+        if cols is None:
+            continue
+        upper = {str(n).upper() for n in cols.names}
+        if "WAVELENGTH" in upper or any("WAVE" in n for n in upper):
             return hdu
     raise KeyError("no EXTRACT1D/WAVELENGTH table extension in FITS file")
+
+
+def _column_map(hdu) -> dict:
+    return {str(n).lower(): n for n in hdu.data.columns.names}
+
+
+def _column_vector(data, name: str) -> np.ndarray:
+    """Flatten scalar-row or vector-column FITS table data."""
+    return np.ravel(np.asarray(data[name], dtype=float))
 
 
 def _column_unit(col, default: str) -> u.Unit:
@@ -167,6 +193,164 @@ def read_x1d(path: Path, dq_policy: str = "good",
             "dq": dq[use], "meta": meta}
 
 
+def _s1d_band_metadata(path: Path) -> dict:
+    """Infer MIRI channel/sub-band from a PAHFIT/MIRI s1d filename."""
+    name = path.name.upper()
+    channel = None
+    for ch in (1, 2, 3, 4):
+        if f"CH{ch}" in name:
+            channel = ch
+            break
+    band = None
+    for b in ("SHORT", "MEDIUM", "LONG"):
+        if b in name:
+            band = b
+            break
+    module = ("short" if channel in (1, 2) else
+              "long" if channel in (3, 4) else None)
+    return {"channel": channel, "band": band, "module": module}
+
+
+def read_s1d(path: Path, dq_policy: str = "good",
+             sb_aperture_arcsec2: float | None = None) -> dict:
+    """Read one MIRI/PAHFIT ``s1d`` file into wave [um], flux/err [Jy].
+
+    The VV114 example files have columns ``wavelength`` [um], ``flux`` [MJy]
+    and ``uncertainty`` [MJy].  Surface-brightness columns (``MJy/sr``) are
+    accepted only when an aperture is supplied, exactly as for x1d
+    ``SURF_BRIGHT`` data.
+    """
+    path = Path(path)
+    with fits.open(path, memmap=False) as hdul:
+        hdu = _find_table_hdu(hdul)
+        data = hdu.data
+        lower = _column_map(hdu)
+
+        if "wavelength" in lower:
+            wname = lower["wavelength"]
+        else:
+            cand = [k for k in lower if k.startswith("wave")]
+            if not cand:
+                raise KeyError(f"{path}: no wavelength column in s1d table")
+            wname = lower[cand[0]]
+        fname = lower.get("flux")
+        if fname is None:
+            cand = [k for k in lower if k.startswith("flux") and "err" not in k]
+            fname = lower[cand[0]] if cand else None
+        ename = lower.get("uncertainty") or lower.get("error") \
+            or lower.get("flux_error")
+        if fname is None or ename is None:
+            raise KeyError(
+                f"{path}: s1d table needs wavelength, flux and "
+                "uncertainty/error columns; found {list(data.columns.names)}")
+
+        wcol = data[wname]
+        fcol = data[fname]
+        ecol = data[ename]
+        wunit = _column_unit(wcol, "um")
+        funit = _column_unit(fcol, "MJy")
+        eunit = _column_unit(ecol, funit)
+
+        wave = _column_vector(data, wname)
+        flux = _column_vector(data, fname)
+        err = _column_vector(data, ename)
+        n = min(len(wave), len(flux), len(err))
+        if not (len(wave) == len(flux) == len(err)):
+            raise ValueError(f"{path}: s1d columns have unequal lengths")
+        wave, flux, err = wave[:n], flux[:n], err[:n]
+        try:
+            wave = (wave * wunit).to_value(u.um)
+        except Exception as exc:
+            raise ValueError(
+                f"{path}: cannot convert wavelength unit {wunit} to um") from exc
+
+        flux_unit = str(funit)
+        omega_sr = None
+        if sb_aperture_arcsec2 and sb_aperture_arcsec2 > 0:
+            omega_sr = float(sb_aperture_arcsec2) * (np.pi / 180.0 / 3600.0) ** 2
+        if funit.is_equivalent(u.Jy):
+            flux = (flux * funit).to_value(u.Jy)
+            err = (err * eunit).to_value(u.Jy)
+            flux_kind = "FLUX_DENSITY"
+        elif funit.is_equivalent(u.MJy / u.sr):
+            if omega_sr is None:
+                raise ValueError(
+                    f"{path}: flux unit {funit} is surface brightness; pass "
+                    "--sb-aperture-arcsec2 to convert to Jy")
+            flux = (flux * funit).to_value(u.MJy / u.sr) * omega_sr * 1e6
+            err = (err * eunit).to_value(u.MJy / u.sr) * omega_sr * 1e6
+            flux_kind = "SURF_BRIGHT"
+        else:
+            raise ValueError(
+                f"{path}: unsupported s1d flux unit {funit}; expected Jy, "
+                "MJy, Jy/sr or MJy/sr")
+
+        if "dq" in lower:
+            dq = np.ravel(np.asarray(data[lower["dq"]], dtype=int))[:n]
+        else:
+            dq = np.zeros(n, dtype=int)
+        header = hdul[0].header
+        ext_header = hdu.header
+        meta = {
+            "path": str(path.resolve()),
+            "sha256": sha256(path),
+            "bytes": path.stat().st_size,
+            "flux_kind": flux_kind,
+            "native_flux_unit": flux_unit,
+            "n_rows": int(n),
+            "dq_counts": {int(k): int(v) for k, v in
+                          zip(*np.unique(dq, return_counts=True))},
+            "n_pixels_median": None,
+            "hdu": hdu.name,
+            "header": {
+                key: (header.get(key) if header.get(key) is not None
+                      else ext_header.get(key))
+                for key in ("TARGNAME", "OBJECT", "INSTRUME", "DETECTOR",
+                            "BAND", "CHANNEL", "SRCTYPE", "DATE-OBS",
+                            "PROGRAM", "OBSERVTN", "RA", "DEC")
+                if (header.get(key) is not None or ext_header.get(key) is not None)
+            },
+            "band_info": _s1d_band_metadata(path),
+        }
+
+    finite = np.isfinite(wave) & np.isfinite(flux) & np.isfinite(err)
+    positive = err > 0
+    nonzero = ~((flux == 0) & (err == 0))
+    if dq_policy == "good":
+        use = finite & positive & nonzero & (dq == 0)
+    elif dq_policy == "all":
+        use = finite & positive & nonzero
+    else:
+        raise ValueError(f"unknown dq_policy: {dq_policy}")
+
+    meta["n_used"] = int(use.sum())
+    meta["n_rejected_dq"] = int((finite & positive & nonzero & (dq != 0)).sum())
+    meta["n_rejected_nonfinite"] = int((~finite).sum())
+    meta["n_rejected_zero_error"] = int((~(positive & nonzero)).sum())
+    if use.sum() == 0:
+        raise ValueError(f"{path}: no usable rows after DQ/finite/error cuts")
+    return {"wave": wave[use], "flux": flux[use], "err": err[use],
+            "dq": dq[use], "meta": meta}
+
+
+def _read_one(path: Path, dq_policy: str,
+              sb_aperture_arcsec2: float | None) -> dict:
+    """Dispatch x1d vs s1d from the filename and table columns."""
+    with fits.open(path, memmap=False) as hdul:
+        cols = set()
+        for hdu in hdul:
+            if getattr(hdu, "columns", None) is not None:
+                cols |= {str(c).upper() for c in hdu.columns.names}
+    name = path.name.lower()
+    if "s1d" in name or ("WAVELENGTH" in cols and "FLUX" in cols
+                          and "FLUX_ERROR" not in cols
+                          and "SURF_BRIGHT" not in cols):
+        return read_s1d(path, dq_policy=dq_policy,
+                        sb_aperture_arcsec2=sb_aperture_arcsec2)
+    return read_x1d(path, dq_policy=dq_policy,
+                    sb_aperture_arcsec2=sb_aperture_arcsec2)
+
+
 def _combine_duplicates(wave: np.ndarray, flux: np.ndarray, err: np.ndarray,
                         tol: float = 1e-6):
     """Inverse-variance combine samples closer than ``tol`` micron."""
@@ -245,30 +429,98 @@ def _log_bin(wave, flux, err, bin_kms: float):
             int(len(wave) - len(ww)))
 
 
+def _trim_overlaps(parts):
+    """Cut redundant MRS channel overlaps at their midpoint.
+
+    Adjacent MIRI channels overlap by a small wavelength interval.  Simply
+    concatenating both samples double-weights that interval and can imprint
+    a channel-to-channel calibration step.  For every adjacent pair of
+    wavelength-ordered inputs, keep the red part of the blue channel up to
+    the midpoint of the overlap and the blue part of the red channel after
+    it.  Returns the trimmed parts and the number of removed samples.
+    """
+    parts = [p for p in parts if len(p["wave"])]
+    order = np.argsort([float(np.median(p["wave"])) for p in parts])
+    parts = [parts[i] for i in order]
+    n_removed = 0
+    for i in range(len(parts) - 1):
+        a, b = parts[i], parts[i + 1]
+        wa, wb = np.asarray(a["wave"], float), np.asarray(b["wave"], float)
+        overlap_lo = max(float(np.min(wa)), float(np.min(wb)))
+        overlap_hi = min(float(np.max(wa)), float(np.max(wb)))
+        if overlap_hi <= overlap_lo:
+            continue
+        # Do not trim a chance one-pixel touch; require a real overlap.
+        n_a = int(np.sum((wa >= overlap_lo) & (wa <= overlap_hi)))
+        n_b = int(np.sum((wb >= overlap_lo) & (wb <= overlap_hi)))
+        if n_a < 3 or n_b < 3:
+            continue
+        mid = 0.5 * (overlap_lo + overlap_hi)
+        keep_a = wa <= mid
+        keep_b = wb > mid
+        if keep_a.sum() < 3 or keep_b.sum() < 3:
+            continue
+        n_removed += int((~keep_a).sum() + (~keep_b).sum())
+        parts[i] = {**a,
+                    "wave": wa[keep_a], "flux": np.asarray(a["flux"])[keep_a],
+                    "err": np.asarray(a["err"])[keep_a]}
+        parts[i + 1] = {**b,
+                        "wave": wb[keep_b], "flux": np.asarray(b["flux"])[keep_b],
+                        "err": np.asarray(b["err"])[keep_b]}
+    return parts, n_removed
+
+
+def _select_paths(paths, segment: str):
+    """Apply the short/long module selection to x1d and s1d filenames."""
+    if segment == "both":
+        return paths
+    if segment not in ("short", "long"):
+        raise ValueError(f"unknown segment: {segment}")
+    out = []
+    for p in paths:
+        name = p.name.lower()
+        if "x1d" in name:
+            keep = ("mirifushort" in name if segment == "short"
+                    else "mirifulong" in name)
+        else:
+            # s1d files: SHORT is MIRI channels 1-2, LONG is channels 3-4.
+            ch = None
+            for c in (1, 2, 3, 4):
+                if f"ch{c}" in name:
+                    ch = c
+                    break
+            keep = (ch in (1, 2) if segment == "short" else ch in (3, 4))
+        if keep:
+            out.append(p)
+    return out
+
+
 def build_spectrum(inputs, z: float, segment: str = "both",
                    dq_policy: str = "good", min_wave: float | None = None,
                    max_wave: float | None = None, error_floor: float = 0.01,
                    bin_kms: float = 0.0, edge_trim: int = 2,
                    gap_factor: float = 10.0, duplicate_tol_um: float = 1e-6,
-                   sb_aperture_arcsec2: float | None = None) -> dict:
-    """Read and combine one or more x1d files into a CAFE-ready spectrum."""
+                   sb_aperture_arcsec2: float | None = None,
+                   overlap_policy: str = "trim") -> dict:
+    """Read and combine one or more x1d/s1d files into a CAFE spectrum."""
+    if overlap_policy not in ("trim", "keep"):
+        raise ValueError(f"unknown overlap_policy: {overlap_policy}")
     paths = [Path(p) for p in inputs]
     if len(paths) == 1 and paths[0].is_dir():
-        paths = sorted(paths[0].glob("*_x1d.fits"))
-    if segment == "short":
-        paths = [p for p in paths if "mirifushort" in p.name.lower()]
-    elif segment == "long":
-        paths = [p for p in paths if "mirifulong" in p.name.lower()]
-    elif segment != "both":
-        raise ValueError(f"unknown segment: {segment}")
-    paths = [p for p in paths if p.is_file()]
+        paths = sorted(paths[0].glob("*_x1d.fits")) + \
+            sorted(paths[0].glob("*_s1d.fits"))
+    paths = _select_paths([p for p in paths if p.is_file()], segment)
     if not paths:
         raise FileNotFoundError(
-            f"no *_x1d.fits inputs found (segment={segment}, inputs={inputs})"
+            f"no *_x1d.fits or *_s1d.fits inputs found "
+            f"(segment={segment}, inputs={inputs})"
         )
 
-    parts = [read_x1d(p, dq_policy=dq_policy,
-                      sb_aperture_arcsec2=sb_aperture_arcsec2) for p in paths]
+    parts = [_read_one(p, dq_policy=dq_policy,
+                       sb_aperture_arcsec2=sb_aperture_arcsec2) for p in paths]
+    n_overlap = 0
+    if overlap_policy == "trim" and len(parts) > 1:
+        parts, n_overlap = _trim_overlaps(parts)
     wave = np.concatenate([p["wave"] for p in parts])
     flux = np.concatenate([p["flux"] for p in parts])
     err = np.concatenate([p["err"] for p in parts])
@@ -313,6 +565,8 @@ def build_spectrum(inputs, z: float, segment: str = "both",
         "max_wave_um": float(np.max(wave)),
         "n_pixels": int(len(wave)),
         "n_duplicates_combined": int(n_duplicates),
+        "n_overlap_trimmed": int(n_overlap),
+        "overlap_policy": overlap_policy,
         "n_binned": int(n_binned),
         "n_error_floor_applied": int(n_floor),
         "error_floor": float(error_floor),
@@ -346,12 +600,18 @@ def write_cafe_text(path: Path, wave, flux, err, header: str | None = None):
 def main(argv=None):
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument("--input", nargs="+", required=True,
-                   help="x1d FITS file(s) or a directory containing *_x1d.fits")
+                   help="x1d/s1d FITS file(s) or a directory containing "
+                        "*_x1d.fits / *_s1d.fits")
     p.add_argument("--output", required=True, type=Path,
                    help="output 3-column text spectrum")
     p.add_argument("--z", required=True, type=float)
-    p.add_argument("--segment", choices=["both", "short", "long"], default="both")
+    p.add_argument("--segment", choices=["both", "short", "long"], default="both",
+                   help="short/long MIRI module; for s1d, short=ch1+ch2 and "
+                        "long=ch3+ch4")
     p.add_argument("--dq-policy", choices=["good", "all"], default="good")
+    p.add_argument("--overlap-policy", choices=["trim", "keep"], default="trim",
+                   help="trim redundant MRS channel overlaps at their midpoint "
+                        "(default) or keep both samples")
     p.add_argument("--min-wave", type=float, default=None)
     p.add_argument("--max-wave", type=float, default=None)
     p.add_argument("--error-floor", type=float, default=0.01,
@@ -371,6 +631,7 @@ def main(argv=None):
         error_floor=args.error_floor, bin_kms=args.bin_kms,
         edge_trim=args.edge_trim, gap_factor=args.gap_factor,
         sb_aperture_arcsec2=args.sb_aperture_arcsec2,
+        overlap_policy=args.overlap_policy,
     )
     write_cafe_text(args.output, spec["wave"], spec["flux"], spec["err"],
                     header=(f"CAFE input from JWST x1d; z={args.z}; "
