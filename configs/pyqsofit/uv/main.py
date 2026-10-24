@@ -28,6 +28,11 @@ import emcee  # optional, for MCMC
 print(emcee.__version__)
 print(pyqsofit.__path__)
 
+# Safe emcee initialization and production diagnostics.  PyQSOFit itself
+# calls lmfit's emcee integrator; mcmc_support only replaces the walker start
+# (see the module docstring for the exact failure it fixes).
+import mcmc_support
+
 
 # Load the spectrum from the FITS file
 def load_spectrum(fits_file):
@@ -298,6 +303,36 @@ print(wavelength, flux, error, z)
 # Prepare data
 q_mle = QSOFit(wavelength, flux, error, z, path=path_ex)
 
+# ---------------------------------------------------------------------------
+# Uncertainty mode.  MC and MCMC are mutually exclusive in PyQSOFit.
+# ---------------------------------------------------------------------------
+MC_ENABLED = os.environ.get("PYQSOFIT_MC", "0") == "1"
+MCMC_ENABLED = os.environ.get("PYQSOFIT_MCMC", "0") == "1"
+if MC_ENABLED and MCMC_ENABLED:
+    raise SystemExit("PYQSOFIT_MC=1 and PYQSOFIT_MCMC=1 are mutually exclusive")
+MCMC_CFG = mcmc_support.mcmc_env_config()
+NSAMP = int(os.environ.get("PYQSOFIT_NSAMP", "50"))
+NBURN = int(os.environ.get("PYQSOFIT_NBURN", "20"))
+NTHIN = int(os.environ.get("PYQSOFIT_NTHIN", "10"))
+MCMC_RUNS = []
+if MCMC_ENABLED:
+    if NSAMP <= NBURN:
+        raise SystemExit(
+            f"PYQSOFIT_NSAMP={NSAMP} must exceed PYQSOFIT_NBURN={NBURN}"
+        )
+    import pyqsofit.PyQSOFit as _pyqsofit_module
+
+    MCMC_RUNS = mcmc_support.install_safe_emcee(
+        _pyqsofit_module,
+        nwalkers=MCMC_CFG["nwalkers"],
+        seed=MCMC_CFG["seed"],
+        progress=False,
+    )
+    print(
+        "MCMC enabled: nsamp=%d nburn=%d nthin=%d nwalkers=%d seed=%s"
+        % (NSAMP, NBURN, NTHIN, MCMC_CFG["nwalkers"], MCMC_CFG["seed"])
+    )
+
 # Double check the installation path with the PCA / Fe template files
 # print('install path:', q_mle.install_path)
 
@@ -345,18 +380,18 @@ q_mle.Fit(name='result',  # customize the name of given targets. Default: plate-
           # fitting method selection
           # PYQSOFIT_MC=1 turns on Monte-Carlo resampling for parameter/flux
           # uncertainties (off during the search for speed).
-          MC=(os.environ.get("PYQSOFIT_MC", "0") == "1"),
+          MC=MC_ENABLED,
           # If True, do Monte Carlo resampling of the spectrum based on the input error array to produce the MC error array
           # PYQSOFIT_MCMC=1 turns on full emcee MCMC sampling of the posterior.
-          MCMC=(os.environ.get("PYQSOFIT_MCMC", "0") == "1"),
+          MCMC=MCMC_ENABLED,
           # If True, do Markov Chain Monte Carlo sampling of the posterior probability densities to produce the error array
-          nsamp=int(os.environ.get("PYQSOFIT_NSAMP", "50")),
+          nsamp=NSAMP,
           # The number of trials of the MC process (if MC=True) or number samples to run MCMC chain (if MCMC=True)
 
           # advanced fitting parameters
           param_file_name='qsopar.fits',  # Name of the qso fitting parameter FITS file.
-          nburn=int(os.environ.get("PYQSOFIT_NBURN", "20")),  # The number of burn-in samples to run MCMC chain
-          nthin=int(os.environ.get("PYQSOFIT_NTHIN", "10")),  # To set the MCMC chain returns every n samples
+          nburn=NBURN,  # The number of burn-in samples to run MCMC chain
+          nthin=NTHIN,  # To set the MCMC chain returns every n samples
           epsilon_jitter=0.,
           # Initial jitter for every initial guass to avoid local minimum. (Under test, not recommanded to change)
 
@@ -366,7 +401,7 @@ q_mle.Fit(name='result',  # customize the name of given targets. Default: plate-
           save_fits_path="./",  # The output path of the result fits
           plot_fig=True,  # If True, the fitting results will be plotted
           save_fig=True,  # If True, the figure will be saved
-          plot_corner=True,  # Whether or not to plot the corner plot results if MCMC=True
+          plot_corner=False,  # production corner/trace figures are written below, not left as unsaved pyplot objects
 
           # debugging mode
           verbose=True,  # turn on (True) or off (False) debugging output
@@ -376,12 +411,211 @@ q_mle.Fit(name='result',  # customize the name of given targets. Default: plate-
               'save_fig_path': './',  # The output path of the figure
               'broad_fwhm'   : narrow_line_velocity_limit  # km/s, lower limit that code decide if a line component belongs to broad component
           },
-          kwargs_conti_emcee={},
-          kwargs_line_emcee={})
+          kwargs_conti_emcee={'seed': MCMC_CFG["seed"]},
+          kwargs_line_emcee={'seed': MCMC_CFG["seed"]})
 
 end = timeit.default_timer()
 
 print(f'Fitting finished in {np.round(end - start, 1)}s')
+
+# ---------------------------------------------------------------------------
+# Production MCMC products.  PyQSOFit keeps the emcee chains only in memory;
+# the patched minimizer records them so we can persist a reproducible audit
+# trail (chains, acceptance, autocorrelation time, run metadata).
+# ---------------------------------------------------------------------------
+if MCMC_ENABLED:
+    import csv as _csv
+    import json as _json
+    import platform as _platform
+
+    _mcmc_lines = [
+        ("Hb_br", "broad"), ("Hb_na", "narrow"),
+        ("OIII5007w", "broad"), ("OIII5007c", "narrow"),
+        ("MgII_br", "broad"), ("MgII_na", "narrow"),
+    ]
+    _npost = int(len(q_mle.gauss_result_all)) if len(getattr(q_mle, "gauss_result_all", [])) else 0
+    # line_prop_from_name integrates and splines each component, so evaluating
+    # it on every one of the (often >10^5) posterior rows is needlessly slow.
+    # Use a reproducible random subset for the line-flux posterior; the full
+    # parameter chains stay in the npz.
+    _line_n = min(int(os.environ.get("PYQSOFIT_MCMC_LINE_SAMPLES", "2000")), _npost)
+    _line_idx = (
+        np.sort(np.random.default_rng(int(MCMC_CFG["seed"])).choice(_npost, _line_n, replace=False))
+        if _line_n > 0 else np.array([], int)
+    )
+    _line_post = {
+        f"{_nm}__{_ct}": {"area": np.full(_line_n, np.nan),
+                          "fwhm": np.full(_line_n, np.nan),
+                          "snr": np.full(_line_n, np.nan)}
+        for _nm, _ct in _mcmc_lines
+    }
+    # Recompute tied/expression parameters per draw.  PyQSOFit's own
+    # gauss_result_all freezes e.g. [O III] 5007 at its MLE, so using it
+    # directly would report a zero-width posterior for every tied line.
+    _original_gauss_all = q_mle.gauss_result_all
+    q_mle.gauss_result_all = mcmc_support.corrected_line_samples(q_mle, MCMC_RUNS, _line_idx)
+    for _j in range(_line_n):
+        for _nm, _ct in _mcmc_lines:
+            try:
+                _f, _s, _e, _p, _a, _sn = q_mle.line_prop_from_name(_nm, _ct, sample_index=_j)
+                _key = f"{_nm}__{_ct}"
+                _line_post[_key]["area"][_j] = float(_a)
+                _line_post[_key]["fwhm"][_j] = float(_f)
+                _line_post[_key]["snr"][_j] = float(_sn)
+            except Exception:
+                pass
+    q_mle.gauss_result_all = _original_gauss_all
+
+    # Full posterior line-flux arrays live in the compressed npz.
+    _extra = {}
+    for _key, _vals in _line_post.items():
+        for _prop, _arr in _vals.items():
+            _extra[f"line_{_key}__{_prop}"] = _arr
+    _extra["line_keys"] = np.array(list(_line_post), dtype=object)
+    _extra["line_posterior_index"] = _line_idx
+    mcmc_support.write_npz(MCMC_RUNS, "pyqsofit_mcmc_samples.npz", extra=_extra)
+
+    # The CSV is a readable, reproducible thinning of the full posterior; the
+    # npz remains the authoritative full-resolution product.
+    _csv_n = min(5000, _line_n)
+    _csv_idx = np.unique(np.linspace(0, max(_line_n - 1, 0), _csv_n).astype(int)) if _csv_n else np.array([], int)
+    _sample_rows = []
+    for _j in _csv_idx:
+        for _nm, _ct in _mcmc_lines:
+            _vals = _line_post[f"{_nm}__{_ct}"]
+            _sample_rows.append({
+                "sample": int(_line_idx[_j]),
+                "line": _nm,
+                "component": _ct,
+                "area_1e17": float(_vals["area"][_j]),
+                "fwhm_kms": float(_vals["fwhm"][_j]),
+                "snr": float(_vals["snr"][_j]),
+                "weight": 1.0,
+                "full_posterior_size": int(_npost),
+            })
+    if _sample_rows:
+        with open("pyqsofit_mcmc_samples.csv", "w", newline="") as _fh:
+            _w = _csv.DictWriter(_fh, fieldnames=list(_sample_rows[0]))
+            _w.writeheader()
+            _w.writerows(_sample_rows)
+
+    # Summary table, including the committed MC values when they are present
+    # in the sibling ../mc directory (the default production layout).
+    _mc_summary_path = os.environ.get(
+        "PYQSOFIT_MC_SUMMARY", os.path.join("..", "mc", "pyqsofit_mc_summary.csv")
+    )
+    _mc_rows = {}
+    if os.path.exists(_mc_summary_path):
+        try:
+            with open(_mc_summary_path, newline="") as _fh:
+                for _row in _csv.DictReader(_fh):
+                    _mc_rows[(_row.get("line"), _row.get("component"))] = _row
+        except Exception as _e:
+            print("could not read MC summary for comparison:", _e)
+
+    _summary_rows = []
+    for _nm, _ct in _mcmc_lines:
+        _arr = _line_post[f"{_nm}__{_ct}"]["area"]
+        _finite = _arr[np.isfinite(_arr)]
+        if _finite.size == 0:
+            continue
+        _mle_f, _mle_s, _mle_e, _mle_p, _mle_a, _mle_sn = q_mle.line_prop_from_name(_nm, _ct)
+        _row = {
+            "line": _nm,
+            "component": _ct,
+            "n_posterior": int(_finite.size),
+            "mcmc_median": float(np.nanmedian(_finite)),
+            "mcmc_p16": float(np.nanpercentile(_finite, 16)),
+            "mcmc_p84": float(np.nanpercentile(_finite, 84)),
+            "mcmc_mean": float(np.nanmean(_finite)),
+            "mcmc_std": float(np.nanstd(_finite)),
+            "mle_area": float(_mle_a),
+        }
+        _mc = _mc_rows.get((_nm, _ct))
+        if _mc:
+            _row.update({
+                "mc_n": _mc.get("n"),
+                "mc_median": _mc.get("median"),
+                "mc_p16": _mc.get("p16"),
+                "mc_p84": _mc.get("p84"),
+            })
+        _summary_rows.append(_row)
+    if _summary_rows:
+        with open("pyqsofit_mcmc_summary.csv", "w", newline="") as _fh:
+            _fieldnames = sorted({key for row in _summary_rows for key in row})
+            _w = _csv.DictWriter(_fh, fieldnames=_fieldnames)
+            _w.writeheader()
+            _w.writerows(_summary_rows)
+
+    # Corner and trace figures.  Full multipage PDFs cover every complex;
+    # compact PNGs use the first non-continuum complex (MgII in this config).
+    # Figure failures must not discard the chains/diagnostics written above.
+    try:
+        mcmc_support.save_corner_pdf(MCMC_RUNS, "pyqsofit_mcmc_corner.pdf")
+        mcmc_support.save_trace_pdf(MCMC_RUNS, "pyqsofit_mcmc_trace.pdf")
+        _line_runs = [run for run in MCMC_RUNS if run["label"] != "continuum"]
+        _main_run = _line_runs[0] if _line_runs else (MCMC_RUNS[0] if MCMC_RUNS else None)
+        if _main_run is not None:
+            mcmc_support.save_corner_png(_main_run, "pyqsofit_mcmc_corner.png")
+            mcmc_support.save_trace_png(_main_run, "pyqsofit_mcmc_trace.png")
+        _line_corner = {
+            f"{_nm} ({_ct})": _line_post[f"{_nm}__{_ct}"]["area"]
+            for _nm, _ct in _mcmc_lines
+            if np.any(np.isfinite(_line_post[f"{_nm}__{_ct}"]["area"]))
+        }
+        if _line_corner:
+            mcmc_support.save_line_corner(_line_corner, "pyqsofit_mcmc_line_corner.png")
+    except Exception as _e:
+        print("MCMC figure generation failed:", _e)
+
+    _summary = mcmc_support.summarize_runs(MCMC_RUNS)
+    _meta = {
+        "tool": "pyqsofit_uv",
+        "engine": "PyQSOFit emcee (lmfit Minimizer.emcee)",
+        "versions": {
+            "python": _platform.python_version(),
+            "pyqsofit": pyqsofit.__version__,
+            "lmfit": lmfit.__version__,
+            "emcee": emcee.__version__,
+            "astropy": astropy.__version__,
+        },
+        "input_spectrum": os.environ.get("PYQSOFIT_INPUT", "spectrum.fits"),
+        "source_key": os.environ.get("PYQSOFIT_SOURCE_KEY", ""),
+        "image": os.environ.get("PYQSOFIT_IMAGE", ""),
+        "git_commit": os.environ.get("PYQSOFIT_GIT_COMMIT", ""),
+        "redshift": float(z),
+        "wave_range_observed": [float(np.nanmin(wavelength.value)), float(np.nanmax(wavelength.value))],
+        "mcmc_config": {
+            "nsamp": int(NSAMP), "nburn": int(NBURN), "nthin": int(NTHIN),
+            "nwalkers": int(MCMC_CFG["nwalkers"]), "seed": int(MCMC_CFG["seed"]),
+            "retained_steps": int((NSAMP - NBURN) // NTHIN),
+            "line_posterior_samples": int(_line_n),
+        },
+        "fit_wall_seconds": float(end - start),
+        "outputs": [
+            "pyqsofit_mcmc_samples.csv", "pyqsofit_mcmc_samples.npz",
+            "pyqsofit_mcmc_summary.csv", "pyqsofit_mcmc_corner.pdf",
+            "pyqsofit_mcmc_corner.png", "pyqsofit_mcmc_trace.pdf",
+            "pyqsofit_mcmc_trace.png", "pyqsofit_mcmc_line_corner.png",
+            "pyqsofit_mcmc_config.json", "run.json",
+        ],
+    }
+    _run = mcmc_support.write_run_json(MCMC_RUNS, "run.json", meta=_meta)
+    mcmc_support.write_effective_config(
+        "pyqsofit_mcmc_config.json",
+        {"status": _run["status"], "created_utc": _run["created_utc"],
+         "mcmc_config": _meta["mcmc_config"], "versions": _meta["versions"],
+         "input_spectrum": _meta["input_spectrum"], "source_key": _meta["source_key"],
+         "redshift": _meta["redshift"], "convergence": _summary},
+    )
+    print("MCMC diagnostics (acceptance / tau / ESS):")
+    for _label, _diag in _summary.items():
+        print(
+            f"  {_label}: nvarys={_diag['nvarys']} acc={_diag['acceptance_mean']:.3f}"
+            f"+/-{_diag['acceptance_std']:.3f} tau_max={_diag['tau_max']}"
+            f" ess_min={_diag['ess_min']} converged={_diag['converged']}"
+        )
+    print("wrote pyqsofit_mcmc_samples.csv/.npz, summary, corner/trace figures, run.json")
 
 # Dump the total model and its continuum/line parts on the (rest-frame) fitting
 # grid.  The cross-tool scorer (pipeline/score_fits.py) reads this to compute a
@@ -519,7 +753,7 @@ print("SNR", np.round(snr, 1))
 # in memory; write compact per-realization line fluxes so the uncertainty is
 # inspectable instead of only being collapsed into a single error bar.
 try:
-    if (getattr(q_mle, "MC", False) or getattr(q_mle, "MCMC", False)) and len(getattr(q_mle, "gauss_result_all", [])):
+    if getattr(q_mle, "MC", False) and len(getattr(q_mle, "gauss_result_all", [])):
         import csv as _csv
         import numpy as _np
         _mc_lines = [("Hb_br", "broad"), ("Hb_na", "narrow"),
