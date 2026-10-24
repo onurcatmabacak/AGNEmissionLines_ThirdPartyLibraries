@@ -21,7 +21,7 @@ stage is completed before the next starts, with the same acceptance gates:
 |---|---|---|---|---|
 | 1 | **QSOFITMORE** | UV/optical AGN spectrum fit | real SDSS QSO `04592649654` | **complete** |
 | 2 | **MaNGA DAP** | `sdss-mangadap` official IFU DAP | real MaNGA AGN cube | **complete (official subset; all-spaxel time-limited)** |
-| 3 | **XMM-Newton** | SAS + XGA/XSPEC | real XMM/EPIC AGN observation | planned |
+| 3 | **XMM-Newton** | PPS + HEASoft/PyXspec | real XMM/EPIC AGN observation | **complete (PPS+XSPEC; SAS raw reduction not run)** |
 | 4 | **RXTE** | HEASoft + PyXspec | real RXTE/PCA AGN spectrum | planned |
 | 5 | cross-mission | X-ray/optical/SED comparison | combined source products | planned |
 
@@ -34,7 +34,7 @@ stage is completed before the next starts, with the same acceptance gates:
 | NIR | CAFE, S3Fit, nir_linefit, GANDALF | JWST/NIRSpec |
 | MIR | CAFE, PAHFIT | JWST/MIRI, Spitzer IRS |
 | FIR | fir_linefit, crossband | Herschel/PACS, ALMA/ADMIT |
-| X-ray | none yet | XMM/SAS+XGA, RXTE/HEASoft+PyXspec |
+| X-ray | `xmm_xspec` (XMM-Newton EPIC PPS) | RXTE/HEASoft+PyXspec; Swift/XRT; SAS raw reduction |
 
 No single code covers all bands.  The decision engine must route by observed
 band, rest-frame line coverage, data type and science goal (SED vs lines).
@@ -113,3 +113,66 @@ gives Hα ratio 2.37, [N II] 0.53, BPT agreement 41% and a +175 km/s gas
 velocity offset.  It is confined to `aux_fastmode/` with
 `QUALITY='FASTMODE_NOT_PRODUCTION'`, `PRODSTAT='AUXILIARY'`, `ACCEPT=0` and is
 not an acceptance product.
+
+## Stage 3 result — XMM-Newton EPIC (PPS + PyXspec)
+
+Pinned **HEASoft/XSPEC 13.0.0** from the official HEASARC conda channel
+(`xspec=13.0.0=hb0f4dca_2`, Python 3.12), called through **PyXspec**.  The
+`xmm_xspec` image is **4.35 GB** (exact byte size in
+`outputs/PDS456_z_0.1840/xmm_xspec/run.json`); the production fit ran
+in **19.9 s** (≈25 s wall including container start).  The image sources
+`headas-init.sh` and sets `HEADAS`/`LHEA_DATA` and uses a writable `PFILES`; no SAS
+image is included.
+
+Source: **PDS 456**, XMM-Newton ObsID **0721010201**, PN Large Window Thin1,
+**100.4 ks**, **341,004 PN counts**; MOS1/MOS2 108.1/108.3 ks and
+123,867/127,738 counts.  The production inputs are the **official PPS source
+spectra, background spectra and source ARFs** plus the official CCF responses
+(PN `epn_e2_lw20_sdY9_v22.0.rmf`; MOS 15 eV canned matrices).  The PPS MOS
+spectra are 2400 channels at 5 eV; they are rebinned 3:1 to 800 channels at
+15 eV to match the matrices named in the PPS headers.  The PN spectrum/RMF are
+used directly at 4096 channels.
+
+Model (joint PN+MOS1+MOS2, 0.5–10 keV observed):
+
+```text
+constant * tbabs * (zpowerlw + zgauss)
+constant_PN = 1 (fixed); constant_MOS1/MOS2 free
+zgauss: E_rest = 6.4 keV, sigma = 50 eV (narrow core, fixed)
+```
+
+**Accepted result.**  The joint `tbabs*zpowerlw` baseline gives
+**χ²/dof = 879.03/516 = 1.704**, **Γ = 2.0221 ± 0.0041** and
+**N_H = (2.304 ± 0.018) × 10²¹ cm⁻²** (wilm abundances).  Adding the 50 eV
+Fe Kα Gaussian gives **χ²/dof = 862.64/515 = 1.675**, **Δχ² = 16.39 for 1 dof
+(4.05σ)**, line normalization **(2.32 ± 0.57) × 10⁻⁶ photons cm⁻² s⁻¹**,
+observed line flux **(2.01 ± 0.50) × 10⁻¹⁴ erg cm⁻² s⁻¹**, and rest-frame
+**EW = 30.7 ± 7.6 eV**.  The MOS/PN cross-calibration constants are
+**1.0514 ± 0.0038** (MOS1) and **1.0422 ± 0.0037** (MOS2).
+
+Independent narrow-line fits: PN Δχ² = 9.78 (3.13σ, EW_rest 32.7 eV),
+MOS2 Δχ² = 6.02 (2.45σ, EW_rest 37.7 eV), MOS1 Δχ² = 1.21 (1.10σ, EW_rest
+17.3 eV).  The line normalizations agree within 0.7σ; PN and MOS Γ differ by
+2.9σ (MOS1), a cross-calibration systematic that is reported, not hidden.
+
+**Systematic checks.**  A blackbody soft-excess baseline
+(`tbabs*(zbbody+zpowerlw)`) gives χ²/dof = 780.19/514 = 1.518; adding the same
+narrow line gives Δχ² = 17.83 (4.22σ) and EW_rest = 32.3 eV.  A free-centroid
+fit (σ fixed) gives E_rest = 6.179 ± 0.027 keV and Δχ² = 28.21 for 2 dof
+(4.95σ), i.e. the single-Gaussian centroid is below the neutral 6.4 keV value,
+consistent with a redshifted/broad Fe Kα complex.  A free-width fit prefers
+σ = 1.157 ± 0.142 keV and EW_rest ≈ 425 eV (Δχ² = 121.5), but the width is at
+the fit bound and degenerate with continuum curvature; it is reported only as
+a broad-excess diagnostic, not as a resolved line width.  The simple
+one-power-law baseline leaves χ²/dof ≈ 1.7 because the soft excess and Compton
+reflection are not modeled.
+
+**SAS/PPS caveat.**  SAS `epproc`/`especget`/`specgroup`/`epatplot` were **not
+run**.  PPS spectra are official SAS pipeline products (header
+`xmmsas_20241108_1150-21.0.0`); re-running the 16.5 GB SAS image and ~2.9 GB
+CCF was outside the test budget.  The optional raw-ODF commands are documented
+in `Tools/xmm_xspec/SAS_RAW_PATH.md`.  The PN RMF is the current CCF v22.0
+matrix, later than the 2024 PPS reduction; this is a response-version
+systematic.  There is no MCMC: errors are XSPEC covariance 1σ and the line
+significance is Δχ².  The full products are in
+`outputs/PDS456_z_0.1840/xmm_xspec/`.

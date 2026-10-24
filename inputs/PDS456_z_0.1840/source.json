@@ -4,6 +4,26 @@
     "spectra": [
       "raw/jw02547001001_02101_00001_mirifulong_x1d.fits",
       "raw/jw02547001001_02101_00001_mirifushort_x1d.fits"
+    ],
+    "xray_spectrum": [
+      "xray/xmm_0721010201/pps/PN/P0721010201PNS003SRSPEC0001.fits",
+      "xray/xmm_0721010201/pps/MOS1/P0721010201M1S001SRSPEC0001.fits",
+      "xray/xmm_0721010201/pps/MOS2/P0721010201M2S002SRSPEC0001.fits"
+    ],
+    "xray_background": [
+      "xray/xmm_0721010201/pps/PN/P0721010201PNS003BGSPEC0001.fits",
+      "xray/xmm_0721010201/pps/MOS1/P0721010201M1S001BGSPEC0001.fits",
+      "xray/xmm_0721010201/pps/MOS2/P0721010201M2S002BGSPEC0001.fits"
+    ],
+    "xray_arf": [
+      "xray/xmm_0721010201/pps/PN/P0721010201PNS003SRCARF0001.fits",
+      "xray/xmm_0721010201/pps/MOS1/P0721010201M1S001SRCARF0001.fits",
+      "xray/xmm_0721010201/pps/MOS2/P0721010201M2S002SRCARF0001.fits"
+    ],
+    "xray_rmf": [
+      "xray/xmm_0721010201/responses/epn_e2_lw20_sdY9_v22.0.rmf",
+      "xray/xmm_0721010201/responses/m1_e15_im_pall_c.rmf",
+      "xray/xmm_0721010201/responses/m2_e15_im_pall_c.rmf"
     ]
   },
   "key": "PDS456_z_0.1840",
@@ -66,7 +86,46 @@
   "tools": [
     "cafe_line",
     "ir_linefit",
-    "pahfit_mir"
+    "pahfit_mir",
+    "xmm_xspec"
   ],
-  "z": 0.184
+  "z": 0.184,
+  "xray": {
+    "dir": "xray/xmm_0721010201",
+    "mission": "XMM-Newton",
+    "obsid": "0721010201",
+    "reduction": "PPS official products; SAS epproc/especget/specgroup NOT run",
+    "pps_sas_version": "xmmsas_20241108_1150-21.0.0",
+    "exposure_s": {
+      "PN": 100408.969698906,
+      "MOS1": 108125.799398839,
+      "MOS2": 108269.784590781
+    },
+    "counts_total": {
+      "PN": 341004,
+      "MOS1": 123867,
+      "MOS2": 127738
+    },
+    "products": {
+      "PN": {
+        "spectrum": "xray/xmm_0721010201/pps/PN/P0721010201PNS003SRSPEC0001.fits",
+        "background": "xray/xmm_0721010201/pps/PN/P0721010201PNS003BGSPEC0001.fits",
+        "arf": "xray/xmm_0721010201/pps/PN/P0721010201PNS003SRCARF0001.fits",
+        "rmf": "xray/xmm_0721010201/responses/epn_e2_lw20_sdY9_v22.0.rmf"
+      },
+      "MOS1": {
+        "spectrum": "xray/xmm_0721010201/pps/MOS1/P0721010201M1S001SRSPEC0001.fits",
+        "background": "xray/xmm_0721010201/pps/MOS1/P0721010201M1S001BGSPEC0001.fits",
+        "arf": "xray/xmm_0721010201/pps/MOS1/P0721010201M1S001SRCARF0001.fits",
+        "rmf": "xray/xmm_0721010201/responses/m1_e15_im_pall_c.rmf"
+      },
+      "MOS2": {
+        "spectrum": "xray/xmm_0721010201/pps/MOS2/P0721010201M2S002SRSPEC0001.fits",
+        "background": "xray/xmm_0721010201/pps/MOS2/P0721010201M2S002BGSPEC0001.fits",
+        "arf": "xray/xmm_0721010201/pps/MOS2/P0721010201M2S002SRCARF0001.fits",
+        "rmf": "xray/xmm_0721010201/responses/m2_e15_im_pall_c.rmf"
+      }
+    },
+    "notes": "PN Large Window Thin1, 100.4 ks, 341,004 PN counts. PPS SRSPEC/BGSPEC/SRCARF are official SAS pipeline products. MOS PPS spectra are 2400 channels at 5 eV; the 15 eV canned RMFs named in the PPS headers require a 3:1 rebin to 800 channels. PN RMF is CCF v22.0."
+  }
 }

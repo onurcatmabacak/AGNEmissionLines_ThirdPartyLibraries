@@ -1,0 +1,76 @@
+# XMM-Newton EPIC spectral fitting with HEASoft/PyXspec.
+#
+# Build context is the repository root:
+#   docker build --network=host -f Tools/xmm_xspec/dockerfile -t xmm_xspec .
+# or:
+#   bash Pipelines/build_images.sh xmm_xspec
+#
+# The image contains the official HEASARC conda XSPEC 13.0.0 package, which
+# also provides the HEASoft runtime (HEADAS) and PyXspec.  It does NOT contain
+# SAS: the production path uses the official XMM-Newton PPS reduced products.
+FROM mambaorg/micromamba:1.5.10
+
+ARG XSPEC_VERSION=13.0.0
+ARG XSPEC_BUILD=hb0f4dca_2
+
+LABEL org.opencontainers.image.title="xmm_xspec" \
+      org.opencontainers.image.description="Official XMM-Newton EPIC PPS spectra fitted with HEASoft/PyXspec (tbabs*zpowerlw + Fe K-alpha)" \
+      org.opencontainers.image.source="https://heasarc.gsfc.nasa.gov/xanadu/xspec/" \
+      org.opencontainers.image.version="${XSPEC_VERSION}" \
+      org.opencontainers.image.licenses="NASA/GSFC HEASoft; see THIRD_PARTY_LICENSES.md" \
+      int.agne.fitting.stage="X-ray EPIC spectral fit" \
+      int.agne.reduction="PPS official products; SAS not included"
+
+ENV PYTHONUNBUFFERED=1 \
+    MPLBACKEND=Agg \
+    MPLCONFIGDIR=/tmp/mpl \
+    HOME=/tmp \
+    PFILES=/tmp/pfiles \
+    HEADAS=/opt/conda/heasoft \
+    LHEA_DATA=/opt/conda/heasoft/refdata \
+    XSPEC_VERSION=${XSPEC_VERSION} \
+    XSPEC_BUILD=${XSPEC_BUILD}
+
+USER root
+RUN apt-get update && apt-get install -y --no-install-recommends \
+      ca-certificates curl procps less && \
+    rm -rf /var/lib/apt/lists/*
+
+# The HEASARC channel provides XSPEC and its data; conda-forge provides the
+# Python scientific stack.  The exact XSPEC build is pinned.
+RUN micromamba install -y -n base \
+      -c https://heasarc.gsfc.nasa.gov/FTP/software/conda \
+      -c conda-forge \
+      python=3.12 \
+      xspec=${XSPEC_VERSION}=${XSPEC_BUILD} \
+      astropy \
+      scipy \
+      matplotlib \
+ && micromamba clean --all --yes \
+ && rm -rf /opt/conda/pkgs
+
+WORKDIR /app
+RUN mkdir -p /app/run /app/config /app/input /app/output /tmp/pfiles /tmp/mpl && \
+    chmod 777 /app/output /tmp/pfiles /tmp/mpl
+
+COPY Tools/xmm_xspec/run_xmm_xspec.py /app/run/run_xmm_xspec.py
+COPY Tools/xmm_xspec/entrypoint.sh /app/run/entrypoint.sh
+COPY Tools/xmm_xspec/README.md /app/run/README.md
+COPY Tools/xmm_xspec/SAS_RAW_PATH.md /app/SAS_RAW_PATH.md
+COPY Tools/xmm_xspec/THIRD_PARTY_LICENSES.md /app/THIRD_PARTY_LICENSES.md
+COPY configs/xmm_xspec/default /app/config
+RUN chmod 755 /app/run/entrypoint.sh /app/run/run_xmm_xspec.py
+
+# Fail the build if PyXspec cannot start or the scientific stack is incomplete.
+RUN /app/run/entrypoint.sh python -c "\
+import xspec, astropy, scipy, numpy, matplotlib; \
+print('PyXspec import OK'); \
+print('astropy', astropy.__version__, 'scipy', scipy.__version__, 'numpy', numpy.__version__)" && \
+    rm -rf /tmp/.xspec /tmp/xmm_xspec_home /tmp/pfiles /tmp/mpl
+
+WORKDIR /app/run
+ENTRYPOINT ["/app/run/entrypoint.sh"]
+CMD ["python", "/app/run/run_xmm_xspec.py", \
+     "--input-dir", "/app/input", \
+     "--out", "/app/output", \
+     "--config", "/app/config"]

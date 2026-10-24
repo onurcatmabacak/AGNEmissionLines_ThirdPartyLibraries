@@ -42,7 +42,7 @@ SPITZER_IRS = ",".join([
 ALL_TOOLS = ("ir_linefit", "pyqsofit_uv", "qsofitmore_line", "pyqsofitspec_line", "ppxf_host",
              "gandalf_line", "nir_linefit", "pahfit_mir", "fir_linefit", "cafe_line",
              "crossband", "cigale_sed", "agnfitter_sed", "s3fit_line", "galspec_line",
-             "qgfit", "sheap_line", "manga_dap")
+             "qgfit", "sheap_line", "manga_dap", "xmm_xspec")
 
 
 def log(msg: str):
@@ -135,6 +135,20 @@ def tool_manga_dap(src: dict, out: Path, logp: Path) -> int:
     cmd = [str(ROOT / "Pipelines" / "run_manga_dap_docker.sh"),
            str(Path(src["_path"])), str(out),
            "--reference", str(refs[0]), "--n-bins", "9"]
+    return run(cmd, logp)
+
+
+def tool_xmm_xspec(src: dict, out: Path, logp: Path, config: str | None = None) -> int:
+    """Official XMM-Newton EPIC PPS spectra + HEASoft/PyXspec."""
+    xr = src.get("xray") or {}
+    xdir = Path(src["_path"]) / xr.get("dir", "xray/xmm_0721010201")
+    if not (xdir / "pps").exists():
+        return _skip("no XMM PPS products")
+    cmd = [str(ROOT / "Pipelines" / "run_xmm_xspec_docker.sh"),
+           str(xdir), str(out), "--source-key", str(src["key"]),
+           "--redshift", str(src["z"])]
+    if config:
+        cmd += ["--config", str(config)]
     return run(cmd, logp)
 
 
@@ -389,6 +403,8 @@ def main(argv=None):
                    help="GalSpec config directory (default: configs/galspec_line/default)")
     p.add_argument("--galspec-sampler", choices=("mcmc", "nested", "lsq"), default=None,
                    help="GalSpec sampling mode override")
+    p.add_argument("--xmm-config", default=None,
+                   help="XMM/PyXspec config directory (default: configs/xmm_xspec/default)")
     args = p.parse_args(argv)
     if args.list:
         for s in iter_sources():
@@ -426,6 +442,7 @@ def main(argv=None):
                                                                args.pyqsofitspec_nboot,
                                                                args.pyqsofitspec_config),
                 "manga_dap": lambda: tool_manga_dap(src, out, logp),
+                "xmm_xspec": lambda: tool_xmm_xspec(src, out, logp, args.xmm_config),
                 "ppxf_host": lambda: tool_ppxf(src, out, logp),
                 "gandalf_line": lambda: tool_gandalf(src, out, logp),
                 "galspec_line": lambda: tool_galspec(src, out, logp,

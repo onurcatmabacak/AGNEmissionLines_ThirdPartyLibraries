@@ -17,6 +17,7 @@ Pipelines/
   run_pyqsofitspec_line_docker.sh # PyQSOFitSpec bootstrap
   run_qgfit_docker.sh          # QGfit AGN/host/line fit
   run_sheap_line_docker.sh     # SHEAP JAX AGN decomposition
+  run_xmm_xspec_docker.sh      # XMM-Newton EPIC PPS + HEASoft/PyXspec
   legacy_optical/              # archived optical-v1 drivers
 ```
 
@@ -34,6 +35,12 @@ bash Pipelines/build_images.sh cafe_line
 bash Pipelines/run_cafe_line_docker.sh \
   inputs/PDS456_z_0.1840/raw outputs/PDS456_z_0.1840/cafe_line 0.184 \
   --max-wave 27.8 --no-outlier-clip --mc-samples 200
+
+# XMM-Newton EPIC PPS spectra + PyXspec (0.5-10 keV, Fe K-alpha)
+bash Pipelines/run_xmm_xspec_docker.sh \
+  inputs/PDS456_z_0.1840/xray/xmm_0721010201 \
+  outputs/PDS456_z_0.1840/xmm_xspec \
+  --source-key PDS456_z_0.1840 --redshift 0.184
 ```
 
 The Python implementation remains in `pipeline/`; the scientific tool code/images

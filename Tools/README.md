@@ -24,5 +24,6 @@ Dockerized fitting engines and their Dockerfiles.  See `Pipelines/build_images.s
 | `crossband/` | `crossband` |
 | `cigale_sed/` | `cigale_sed` |
 | `agnfitter_sed/` | `agnfitter_sed` |
+| `xmm_xspec/` | `xmm_xspec` (official XMM-Newton EPIC PPS + HEASoft/PyXspec) |
 | `pyqsofit/` | local PyQSOFit source, no image |
 | `sculptor/` | legacy GUI-only source, no image |
