@@ -20,6 +20,7 @@ broad-band SED code is not a line fitter.
 | `galspec_line` | emcee (`MCMC_Fit`, full-continuum global model); dynesty optional | yes (production) | `galspec_uncertainty.*`, `galspec_corner.*`, saved posterior in `galspec_mcmc.npz` |
 | `ir_linefit` / `nir_linefit` / `fir_linefit` | `least_squares`/`curve_fit` covariance | no | per-line `flux_err`, `fwhm_err` |
 | `manga_dap` | official DAP/SASUKE formal covariance (`1/sqrt(IVAR)`); no MCMC | no | `subset_comparison.json`, formal flux/kinematic errors; 9 central bins |
+| `xmm_xspec` | XSPEC χ² minimisation + covariance (1σ); Δχ² line significance | no | `xmm_fit.csv`, `xmm_lines.csv`, `xmm_consistency.json`, `xspec.log` |
 | `ppxf_host` | pPXF formal errors | no | `sigma_err_kms`, host error |
 | `crossband` | analytic ratio propagation | no | `err` per ratio |
 
@@ -117,3 +118,43 @@ the published MAPS is the all-spaxel reference.  A fast fixed-continuum
 all-spaxel run is kept only as an auxiliary diagnostic with
 `FASTMODE_NOT_PRODUCTION`; it fails the validation (Hα ratio 2.37, BPT 41%)
 and is not an error or posterior model.
+
+
+## XMM-Newton XSPEC (`xmm_xspec`)
+
+`xmm_xspec` is a frequentist XSPEC/PyXspec fit, not an MCMC sampler.  The
+grouped PPS spectra are fitted by minimising χ² (Levenberg–Marquardt); the
+1σ parameter errors are from the XSPEC covariance matrix.  No posterior or
+chain is produced.
+
+The line detection is a **nested-model Δχ² test**:
+
+* baseline `tbabs*zpowerlw` versus baseline + `zgauss` at 6.4 keV rest;
+* the narrow-core fit has one extra parameter (line normalization), so the
+  Gaussian-equivalent significance is √Δχ²; the production fit gives
+  Δχ² = 16.39, i.e. **4.05σ**;
+* the free-centroid fit has two extra parameters (energy and normalization);
+  the p-value is from the χ² distribution with 2 dof, and the reported
+  significance is the equivalent one-sided Gaussian;
+* the free-width fit is a diagnostic only: its width runs to the fit bound and
+  is degenerate with the continuum, so it is not used for the production
+  line flux/EW.
+
+The flux and EW are derived from the fitted `zgauss` normalization:
+
+```text
+F_line = norm * E_obs * 1.602e-9 erg cm^-2 s^-1
+EW_rest = norm * (1+z) / F_ph,cont(E_obs)
+```
+
+where `E_obs = 6.4/(1+z)` keV and `F_ph,cont` is the fitted power-law photon
+flux density at `E_obs`.  XSPEC's `eqwidth` value is also recorded; it is
+slightly lower because it evaluates the total model (including the line) at
+the line peak.  The PN/MOS consistency is quantified with pulls on Γ, N_H and
+the line normalization, plus the fitted cross-calibration constants.
+
+The absolute χ²/dof (1.70 for the simple baseline, 1.68 with the line) is poor
+because the soft excess and Compton reflection are not modeled; this is a
+diagnostic, not an acceptance gate.  The line significance is relative to the
+same baseline and is checked against a blackbody soft-excess baseline
+(Δχ² = 17.83, 4.22σ).

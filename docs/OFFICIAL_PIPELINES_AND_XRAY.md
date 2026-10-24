@@ -2,8 +2,9 @@
 
 This note records what was adopted and what was deliberately excluded.  The
 current sample is **1-D AGN spectroscopy** (SDSS single-fiber QSOs, JWST NIR/MIR,
-Spitzer IRS, PACS/HIFI); it is not a MaNGA/LVM IFU sample and contains no X-ray
-event files.
+Spitzer IRS, PACS/HIFI) plus a real **XMM-Newton EPIC** X-ray spectrum.  It is
+not a MaNGA/LVM IFU sample and contains no X-ray event files: the X-ray branch
+starts from the official PPS reduced spectra.
 
 ## Decision table
 
@@ -20,7 +21,7 @@ event files.
 | **ELFO** | CSST-IFS emission-line fitting | **exclude** | IFS-only; no 1-D path. |
 | **AGNdecompose** | 2-D AGN/host image decomposition | **exclude** | Image decomposition, not spectral line fitting. |
 | **pyspeckit** | general 1-D line fitting | **exclude** | Redundant with GLEAM/BADASS/local-Gaussian/PyQSOFit; no AGN-specific advantage. |
-| **HEASOFT** | X-ray data reduction/analysis | **exclude from line matrix** | X-ray branch; no event/spectrum inputs here. See below. |
+| **HEASOFT / XSPEC** | X-ray spectral fitting | **implemented as `xmm_xspec`** | Official XMM-Newton PPS spectra, source ARFs, backgrounds and CCF responses; HEASoft/PyXspec 13.0.0.  This is an X-ray branch, not an optical line tool.  SAS raw reduction and Swift/EP event pipelines remain future work. |
 
 ## Official SDSS pipelines: what is and is not usable
 
@@ -59,11 +60,59 @@ limitation, not a hidden success.  Do not feed single-fiber spectra into the
 MaNGA DAP, and do not call the fast fixed-continuum all-spaxel product the
 production DAP.
 
-## HEASOFT / X-ray
+## XMM-Newton EPIC (implemented) and Swift/EP (future)
 
-HEASOFT is the right tool for the X-ray part of the paper (Swift/XRT and UVOT,
-and Einstein Probe follow-up), but it is **not** an optical emission-line
-fitter.  The paper's tasks are:
+HEASOFT is the right tool for the X-ray part of the paper, and the XMM-Newton
+branch is now **implemented** with real data.  It is not an optical
+emission-line fitter and is kept outside the line-tool matrix.
+
+### Implemented: `xmm_xspec` (PPS + PyXspec)
+
+The production test is **PDS 456**, XMM-Newton ObsID `0721010201`, PN Large
+Window Thin1, 100.4 ks, 341,004 PN counts.  Inputs are the official PPS source
+spectra, background spectra and source ARFs, plus the CCF responses (PN
+`epn_e2_lw20_sdY9_v22.0.rmf`, MOS 15 eV canned matrices).  The MOS PPS spectra
+are 2400 channels at 5 eV and are rebinned 3:1 to 800 channels at 15 eV to
+match the matrices named in the PPS headers; PN is used directly at 4096
+channels.
+
+```text
+inputs/PDS456_z_0.1840/xray/xmm_0721010201/
+  -> PPS spectra + backgrounds + ARFs (official SAS products)
+  -> PN direct; MOS 5 eV -> 15 eV channel rebin
+  -> PyXspec 13.0.0: constant*tbabs*(zpowerlw + zgauss), 0.5-10 keV
+  -> outputs/PDS456_z_0.1840/xmm_xspec/
+```
+
+The joint PN+MOS fit gives χ²/dof = 879.03/516 = 1.704, Γ = 2.0221 ± 0.0041,
+N_H = (2.304 ± 0.018) × 10²¹ cm⁻², and a 50 eV Fe Kα line at 6.4 keV rest with
+Δχ² = 16.39 (4.05σ), flux (2.01 ± 0.50) × 10⁻¹⁴ erg cm⁻² s⁻¹ and rest-frame
+EW 30.7 ± 7.6 eV.  A blackbody soft-excess baseline still requires the line at
+4.22σ.  The free-width fit prefers a broad component but the width is at the
+fit bound and degenerate with the continuum; it is not a resolved line width.
+
+**SAS was not run.**  The PPS spectra are official SAS pipeline products
+(header `xmmsas_20241108_1150-21.0.0`); re-running the ~16.5 GB SAS image and
+~2.9 GB CCF was outside this test's budget.  The optional raw-ODF path is
+documented in `Tools/xmm_xspec/SAS_RAW_PATH.md`:
+
+```bash
+# inside a SAS + HEASoft container with ODF/CCF mounted (NOT run here)
+epproc
+especget eventset=PN_events.fits srcregionfile=... backregfile=... ...
+specgroup spectrumset=mos1_source.fits groupedset=mos1_source_15eV.fits ...
+epatplot set=pn_source.fits
+```
+
+The PN RMF is the current CCF v22.0 matrix, later than the 2024 PPS reduction;
+this is a response-version systematic.  The PPS MOS 5 eV -> 15 eV rebin and the
+`RMF FILTER=Medium` vs observation `Thin1` warning are documented in the tool
+README and `run.json`.  There is no MCMC: errors are XSPEC covariance 1σ and
+the line significance is Δχ².
+
+### Future: Swift/XRT, UVOT and Einstein Probe
+
+The paper's other HEASOFT tasks remain separate:
 
 ```text
 xrtpipeline   # Swift/XRT event screening and exposure maps
@@ -73,40 +122,19 @@ uvotsource    # UVOT aperture photometry
 FXTDAS/fxtchain  # Einstein Probe follow-up
 ```
 
-A reproducible integration would be a separate image, not part of `Tools/` line
-matrix:
+They need event files and CALDB, not PPS spectra.  A future image can follow the
+same pattern:
 
 ```text
-heasoft_xray/
+Tools/swift_xrt/
   Dockerfile       # HEASOFT + CALDB + HEASoftPy
   run_xray.py      # xrtpipeline -> xrtproducts; UVOT branch
-  configs/heasoft_xray/default/
-```
-
-with inputs such as:
-
-```text
+configs/swift_xrt/default/
 inputs/<source>/xray/swift_xrt/event.fits.gz
-inputs/<source>/xray/swift_uvot/image.fits.gz
+outputs/<source>/swift_xrt/{spectrum,response,lightcurve,uvot_photometry}/
 ```
 
-and outputs:
-
-```text
-outputs/<source>/heasoft_xray/{spectrum,response,lightcurve,uvot_photometry}/
-```
-
-The Python entry point is `heasoftpy`:
-
-```python
-from heasoftpy import heasoftpy
-res = heasoftpy.xrtpipeline(indir="...", outdir="...", steminputs="...")
-```
-
-Requirements: HEASOFT (6.36+), CALDB, `HEADAS`/`CALDB` environment, and Swift/EP
-data.  Since this repository has no X-ray event files, adding a 10+ GB HEASOFT
-image now would not produce a tested science result.  The X-ray branch is
-therefore documented, not faked.
+with `heasoftpy.xrtpipeline(...)`.  This is planned, not implemented.
 
 ## Implemented in this pass
 
@@ -117,6 +145,7 @@ therefore documented, not faked.
 | QGfit | `feat/qgfit-sheap` / `08d5a814` | `outputs/04592649654_z_0.5874/qgfit/` |
 | SHEAP | `feat/qgfit-sheap` / `08d5a814`; audited/repaired (see `docs/SHEAP_ASSESSMENT.md`) | `outputs/04592649654_z_0.5874/sheap_line/` |
 | MaNGA DAP | `feat/manga-dap` (this work) | `outputs/NGC1194_z_0.0136/manga_dap/` |
+| XMM-Newton EPIC | `xmm_xspec` (this work) | `outputs/PDS456_z_0.1840/xmm_xspec/` |
 
 The line-ratio comparison now includes all implemented tools; the spread is
 `docs/line_ratio_scatter.csv`.

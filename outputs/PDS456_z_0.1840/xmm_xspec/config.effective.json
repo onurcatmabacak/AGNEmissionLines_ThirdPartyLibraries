@@ -1,0 +1,96 @@
+{
+  "redshift": 0.184,
+  "band_keV": [
+    0.5,
+    10.0
+  ],
+  "statistic": "chi",
+  "fit_iterations": 500,
+  "xspec_chatter": 10,
+  "zoom_keV": [
+    4.0,
+    8.0
+  ],
+  "plot_dpi": 140,
+  "baseline_model": "tbabs*zpowerlw",
+  "line_model": "zgauss",
+  "line_rest_energy_keV": 6.4,
+  "line_sigma_keV": 0.05,
+  "line_sigma_free": false,
+  "line_sigma_free_bounds_keV": [
+    0.01,
+    1.0
+  ],
+  "soft_excess_check": true,
+  "independent_fits": [
+    "PN",
+    "MOS1",
+    "MOS2"
+  ],
+  "mos_rebin_factor": 3,
+  "source_name": "PDS 456",
+  "cross_calibration": {
+    "reference": "PN",
+    "MOS1_bounds": [
+      0.5,
+      1.5
+    ],
+    "MOS2_bounds": [
+      0.5,
+      1.5
+    ]
+  },
+  "notes": "Production model: constant*tbabs*(zpowerlw + zgauss) in 0.5-10 keV. PN constant fixed to 1; MOS constants free. Fe K-alpha rest energy 6.4 keV, narrow-core sigma fixed to 50 eV. A free-width and a free-centroid fit are diagnostics; a blackbody soft-excess baseline is the continuum systematic check.",
+  "resolved": {
+    "input_dir": "/app/input",
+    "products": {
+      "PN": {
+        "spectrum": "/app/input/pps/PN/P0721010201PNS003SRSPEC0001.fits",
+        "background": "/app/input/pps/PN/P0721010201PNS003BGSPEC0001.fits",
+        "arf": "/app/input/pps/PN/P0721010201PNS003SRCARF0001.fits",
+        "rmf": "/app/input/responses/epn_e2_lw20_sdY9_v22.0.rmf"
+      },
+      "MOS1": {
+        "spectrum": "/app/input/pps/MOS1/P0721010201M1S001SRSPEC0001.fits",
+        "background": "/app/input/pps/MOS1/P0721010201M1S001BGSPEC0001.fits",
+        "arf": "/app/input/pps/MOS1/P0721010201M1S001SRCARF0001.fits",
+        "rmf": "/app/input/responses/m1_e15_im_pall_c.rmf"
+      },
+      "MOS2": {
+        "spectrum": "/app/input/pps/MOS2/P0721010201M2S002SRSPEC0001.fits",
+        "background": "/app/input/pps/MOS2/P0721010201M2S002BGSPEC0001.fits",
+        "arf": "/app/input/pps/MOS2/P0721010201M2S002SRCARF0001.fits",
+        "rmf": "/app/input/responses/m2_e15_im_pall_c.rmf"
+      }
+    },
+    "prepared": {
+      "PN": {
+        "source": "/app/output/prepared/pn_source.fits",
+        "background": "/app/output/prepared/pn_background.fits"
+      },
+      "MOS1": {
+        "source": "/app/output/prepared/mos1_source.fits",
+        "background": "/app/output/prepared/mos1_background.fits"
+      },
+      "MOS2": {
+        "source": "/app/output/prepared/mos2_source.fits",
+        "background": "/app/output/prepared/mos2_background.fits"
+      }
+    }
+  },
+  "software": {
+    "xspec": "13.0.0",
+    "xspec_conda_package": {
+      "name": "xspec",
+      "version": "13.0.0",
+      "build": "hb0f4dca_2"
+    },
+    "python": "3.12.14",
+    "numpy": "2.5.4",
+    "astropy": "8.0.2",
+    "matplotlib": "3.11.2",
+    "heasoft_headas": "/opt/conda/heasoft",
+    "scipy": "1.18.1"
+  },
+  "timestamp_utc": "2026-10-24T14:03:13Z"
+}
