@@ -42,7 +42,7 @@ SPITZER_IRS = ",".join([
 ALL_TOOLS = ("ir_linefit", "pyqsofit_uv", "qsofitmore_line", "pyqsofitspec_line", "ppxf_host",
              "gandalf_line", "nir_linefit", "pahfit_mir", "fir_linefit", "cafe_line",
              "crossband", "cigale_sed", "agnfitter_sed", "s3fit_line", "galspec_line",
-             "qgfit", "sheap_line", "manga_dap", "rxte_xspec")
+             "qgfit", "sheap_line", "manga_dap", "xmm_xspec", "rxte_xspec")
 
 
 def log(msg: str):
@@ -135,6 +135,19 @@ def tool_manga_dap(src: dict, out: Path, logp: Path) -> int:
     cmd = [str(ROOT / "Pipelines" / "run_manga_dap_docker.sh"),
            str(Path(src["_path"])), str(out),
            "--reference", str(refs[0]), "--n-bins", "9"]
+    return run(cmd, logp)
+
+
+def tool_xmm(src: dict, out: Path, logp: Path) -> int:
+    """Official XMM-Newton EPIC PPS fit (HEASoft/PyXspec)."""
+    xray = src.get("xray", {}).get("dir")
+    if not xray:
+        return _skip("no XMM xray directory")
+    inp = Path(src["_path"]) / xray
+    cmd = [str(ROOT / "Pipelines" / "run_xmm_xspec_docker.sh"),
+           str(inp), str(out), "--source-key", str(src["key"])]
+    if src.get("z") is not None:
+        cmd += ["--redshift", str(src["z"])]
     return run(cmd, logp)
 
 
@@ -443,6 +456,7 @@ def main(argv=None):
                                                                args.pyqsofitspec_nboot,
                                                                args.pyqsofitspec_config),
                 "manga_dap": lambda: tool_manga_dap(src, out, logp),
+                "xmm_xspec": lambda: tool_xmm(src, out, logp),
                 "rxte_xspec": lambda: tool_rxte(src, out, logp),
                 "ppxf_host": lambda: tool_ppxf(src, out, logp),
                 "gandalf_line": lambda: tool_gandalf(src, out, logp),

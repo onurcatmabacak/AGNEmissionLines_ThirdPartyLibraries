@@ -21,7 +21,7 @@ stage is completed before the next starts, with the same acceptance gates:
 |---|---|---|---|---|
 | 1 | **QSOFITMORE** | UV/optical AGN spectrum fit | real SDSS QSO `04592649654` | **complete** |
 | 2 | **MaNGA DAP** | `sdss-mangadap` official IFU DAP | real MaNGA AGN cube | **complete (official subset; all-spaxel time-limited)** |
-| 3 | **XMM-Newton** | SAS + XGA/XSPEC | real XMM/EPIC AGN observation | planned |
+| 3 | **XMM-Newton** | PPS + HEASoft/PyXspec | real XMM/EPIC AGN observation | **complete (PPS+XSPEC; SAS raw reduction not run)** |
 | 4 | **RXTE** | HEASoft + PyXspec | real RXTE/PCA AGN spectrum | **complete (3C 120 + MCG-6-30-15)** |
 | 5 | cross-mission | X-ray/optical/SED comparison | combined source products | planned |
 
@@ -34,7 +34,7 @@ stage is completed before the next starts, with the same acceptance gates:
 | NIR | CAFE, S3Fit, nir_linefit, GANDALF | JWST/NIRSpec |
 | MIR | CAFE, PAHFIT | JWST/MIRI, Spitzer IRS |
 | FIR | fir_linefit, crossband | Herschel/PACS, ALMA/ADMIT |
-| X-ray | **RXTE/PCA (`rxte_xspec`)**, existing XMM/EPIC `xmm_xspec` image | Swift/XRT+UVOT, Einstein Probe |
+| X-ray | **XMM/EPIC (`xmm_xspec`)**, **RXTE/PCA (`rxte_xspec`)** | Swift/XRT+UVOT, Einstein Probe; SAS raw reduction |
 
 No single code covers all bands.  The decision engine must route by observed
 band, rest-frame line coverage, data type and science goal (SED vs lines).

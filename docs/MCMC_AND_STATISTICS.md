@@ -20,6 +20,7 @@ broad-band SED code is not a line fitter.
 | `galspec_line` | emcee (`MCMC_Fit`, full-continuum global model); dynesty optional | yes (production) | `galspec_uncertainty.*`, `galspec_corner.*`, saved posterior in `galspec_mcmc.npz` |
 | `ir_linefit` / `nir_linefit` / `fir_linefit` | `least_squares`/`curve_fit` covariance | no | per-line `flux_err`, `fwhm_err` |
 | `manga_dap` | official DAP/SASUKE formal covariance (`1/sqrt(IVAR)`); no MCMC | no | `subset_comparison.json`, formal flux/kinematic errors; 9 central bins |
+| `xmm_xspec` | XSPEC chi-square (Levenberg-Marquardt); covariance; PN+MOS joint; `Delta chi^2` line significance | no | `xmm_fit.csv`, `xmm_lines.csv`, full `xspec.log`; no posterior |
 | `rxte_xspec` | XSPEC chi-square (Levenberg-Marquardt); covariance; `Delta chi^2` line significance | no | `rxte_fit.csv`, `rxte_lines.csv`, full `xspec.log`; no posterior |
 | `ppxf_host` | pPXF formal errors | no | `sigma_err_kms`, host error |
 | `crossband` | analytic ratio propagation | no | `err` per ratio |
@@ -42,8 +43,8 @@ consistent with PyQSOFit/GANDALF.  The component-level split is degenerate;
 the total is the stable quantity.  The production result is Hβ
 3076.6±100.1, [O III] 5007 1505.3±57.3, Hβ/[O III] **2.044±0.102** (MC
 p16–p84 1.960–2.103), and Mg II 2540.8±209.4; all 1,000 line-complex
-realizations were valid.  The cross-tool median Hβ/[O III] is 2.074 with
-0.060 dex scatter.  **The MC distributions are not Gaussian.**  Mg II is
+realizations were valid.  The cross-tool nine-fitter median Hβ/[O III] is 2.04 with
+0.12 dex scatter.  **The MC distributions are not Gaussian.**  Mg II is
 bimodal: a high-quality mode near 2560 (best fit, χ²_r=1.38) and a lower
 local-minimum mode near 2130 where both broad Gaussians hit the 0.004 ln-width
 bound (χ²_r≈2.4).  The 16–84% interval 2133–2603 is the appropriate
@@ -122,6 +123,7 @@ not a statistical error bar.
 | PAHFIT | PDS 456 short/long/both, VV114, NGC 4151, NGC 253 | 100-200 each | full-rank covariance or full-refit bootstrap | `outputs/<source>/pahfit_mir/pahfit_uncertainty.png` |
 | AGNfitter | 5 QSOs | nested sampling | `ultranest` | `outputs/<source>/agnfitter_sed/OUTPUT/.../SED_manyrealizations...pdf` |
 | CIGALE | 5 QSOs × 2 tori | Bayesian `pdf_analysis` | posterior grid | `outputs/<source>/cigale_sed/*/sed_fit.png` |
+| XMM-Newton | PDS 456 | none (XSPEC chi-square) | covariance + `Delta chi^2` line significance; PN+MOS | `outputs/PDS456_z_0.1840/xmm_xspec/xmm_fe_ka_zoom.png` |
 | RXTE/PCA | 3C 120 + MCG-6-30-15 | none (XSPEC chi-square) | covariance + `Delta chi^2` line significance | `outputs/<source>/rxte_xspec/rxte_fe_ka_zoom.png` |
 
 `docs/line_tool_comparison.png` combines the line ratios measured by PyQSOFit,

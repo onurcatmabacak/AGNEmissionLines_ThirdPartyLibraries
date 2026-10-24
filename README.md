@@ -21,15 +21,16 @@ work/                   ignored generated inputs/logs
 `Tools/` contains: `badass`, `fantasy_agn`, `Gelato`, `Gleam`, `pyqsofit`,
 `sculptor`, `pipeline_ir`, `pyqsofit_uv`, `qsofitmore_line`, `pyqsofitspec_line`, `ppxf_host`,
 `gandalf_line`, `cafe_line`, `s3fit_line`, `galspec_line`, `qgfit`,
-`sheap_line`, `manga_dap`, `rxte_xspec`, `nir_linefit`, `pahfit_mir`, `fir_linefit`,
+`sheap_line`, `manga_dap`, `xmm_xspec`, `rxte_xspec`, `nir_linefit`, `pahfit_mir`, `fir_linefit`,
 `crossband`, `cigale_sed`, `agnfitter_sed`.
 
 CIGALE and AGNfitter are **SED/torus** codes; they do not measure individual
 lines.  Use `pyqsofit_uv`, `qsofitmore_line`, `pyqsofitspec_line`, `cafe_line`, `s3fit_line`,
 `gandalf_line`, `galspec_line`, `qgfit`, `sheap_line`, `manga_dap`, `pahfit_mir`,
 `nir_linefit` or `ir_linefit` for optical/IR line fluxes and kinematics.  The
-X-ray Fe K-alpha branch is separate: `rxte_xspec` fits official RXTE/PCA
-`stdprod` spectra with HEASoft/PyXspec.
+X-ray Fe K-alpha branch is separate: `xmm_xspec` fits official XMM-Newton
+EPIC PPS spectra and `rxte_xspec` fits official RXTE/PCA `stdprod` spectra
+with HEASoft/PyXspec.
 
 ## Quick start
 
@@ -39,7 +40,7 @@ bash Pipelines/run_new_tools.sh --list
 bash Pipelines/run_new_tools.sh --cigale-models skirtor2016,fritz2006
 ```
 
-All **23 Docker images** in `Pipelines/build_images.sh` build successfully; `rxte_xspec` is a thin layer on the existing `xmm_xspec` XSPEC 13.0.0 base.  The matrix runner writes only to:
+All **24 Docker images** in `Pipelines/build_images.sh` build successfully; `rxte_xspec` is a thin layer on the existing `xmm_xspec` XSPEC 13.0.0 base.  The matrix runner writes only to:
 
 ```text
 outputs/<source_name>_z_<redshift>/<tool_name>/...
@@ -57,6 +58,7 @@ under `work/prepared/`.
 | VV114 / PDS 456 | `pahfit_mir`, `cafe_line`, `ir_linefit` |
 | Low-z SDSS GANDALF example | `gandalf_line` (Hα/Hβ coverage) |
 | MaNGA AGN NGC 1194 (9193-12701) | `manga_dap` (official DAP subset; all-spaxel reference = published MAPS) |
+| XMM-Newton PDS 456 (0721010201) | `xmm_xspec` (official EPIC PPS; PN+MOS; PyXspec) |
 | RXTE/PCA AGN 3C 120, MCG-6-30-15 | `rxte_xspec` (official HEASARC `stdprod`; PyXspec) |
 | NGC 1068 / NGC 253 / NGC 4151 | `pahfit_mir`, `fir_linefit`, `ir_linefit`; cross-band for NGC 253/4151 |
 | Mrk 231 | `pahfit_mir`, `ir_linefit`, `crossband` |
@@ -79,6 +81,8 @@ The production matrix uses real data only:
 | **SHEAP** | `04592649654` | Hβ/[O III] SPAF/JAX, 50 bootstrap draws | Hβ/[O III] **2.02**, χ²ν 2.9 |
 | **PyQSOFit** | `04592649654` | 100-realization MC (`mc/`); short `emcee` MCMC (800 draws, not converged) + 300-step diagnostics | MCMC initialization fixed; acceptance ≈0.37; short-chain samples/corner/trace saved, but MC remains the quantitative product |
 | **SDSS ZLINE** | five SDSS QSOs | official `ZLINE` HDU | 045926 ratio **1.57** |
+| **MaNGA DAP** | NGC 1194, 9193-12701 | official DAP 4.5.0, 9 central bins full SASUKE; all-spaxel reference MAPS | 9/9 BPT agreement; Hα ours/ref **0.9999**; [O III] **1.011**; full all-spaxel run time-limited and rejected fast mode |
+| **XMM-Newton** | PDS 456, 0721010201 | official EPIC PPS, PN+MOS1+MOS2, `tbabs*(zpowerlw+zgauss)`, 0.5-10 keV | χ²/dof **862.64/515**; Γ **2.025**; N_H 2.31e21; Fe Kα Δχ² **16.39 (4.05σ)**, flux 2.01e-14, EW_rest **30.7 eV** |
 | **RXTE/PCA** | 3C 120 (10339-02-01-01), MCG-6-30-15 (20310-01-02-00) | official `stdprod` Standard2; `tbabs*(zpowerlw+zgauss)`, 3-20 keV | 3C 120: χ²/dof **72.02/48**, Γ **1.816**, Fe Kα Δχ² **17.83 (4.22σ)**, EW_rest **90.3 eV**; MCG: χ²/dof **39.41/41**, Δχ² **46.48 (6.82σ)**, EW_rest **263.5 eV** |
 
 The cross-tool 04592649654 Hβ/[O III] 5007 values are:
@@ -86,7 +90,7 @@ The cross-tool 04592649654 Hβ/[O III] 5007 values are:
 ```text
 ZLINE 1.57 | S3Fit 1.83 | PyQSOFit 1.96 | SHEAP 2.02
 QSOFITMORE 2.04 | GANDALF 2.07 | PyQSOFitSpec 2.15 | GalSpec 2.21 | QGfit 2.50
-median 2.04, log-scatter 0.06 dex
+median 2.04, log-scatter 0.12 dex
 ```
 
 ## Failure audit and fixes
@@ -102,6 +106,9 @@ median 2.04, log-scatter 0.06 dex
 | QGfit used a very short continuum MCMC | 2334 s production run with long continuum MCMC and expanded [O III] template; line errors remain LSQ. |
 | SHEAP failed at χ² 46 and Hβ/[O III]=4.00 | model/region/profile repair; now **2.02**, χ²ν 2.9, 50-draw MC. |
 | PyQSOFit line-stage `emcee` condition-number failure | fixed by bounds-aware walker initialization; short MCMC samples/corner/trace saved (800 draws, not converged), plus 300-step diagnostics (acceptance ≈0.37). Full 300-step chains were lost at the container timeout; the 100-realization MC remains quantitative. |
+| MaNGA all-spaxel DAP exceeded the time budget | 9-bin full-DAP subset matches published MAPS (Hα ratio 0.9999, BPT 9/9); fast SASUKE rejected |
+| XMM SAS raw reduction not run | production test uses official XMM EPIC PPS products + PyXspec; SAS `epproc/especget` documented as optional |
+| RXTE PCA raw reduction not run | production test uses official HEASoft `stdprod` products; PCA background/response preserved |
 | Official SDSS DAPs, AMARU, ELFO, AGNdecompose, pyspeckit | excluded with explicit data/model reasons; see `docs/OFFICIAL_PIPELINES_AND_XRAY.md`. |
 
 ## Statistics and caveats
@@ -114,8 +121,8 @@ median 2.04, log-scatter 0.06 dex
 * `docs/CAVEAT_FIXES.md` — what was fixed and what remains.
 * `docs/LINE_FITTING_TOOLS.md` — line-fitting tools vs SED fitting.
 * `docs/MCMC_AND_STATISTICS.md` — MC, nested sampling and covariance modes.
-* `docs/OFFICIAL_PIPELINES_AND_XRAY.md` — official SDSS DAP exclusions, implemented RXTE/PCA branch and HEASOFT integration notes.
-* `docs/line_tool_comparison.png` — official ZLINE + eight independent fitters.
+* `docs/OFFICIAL_PIPELINES_AND_XRAY.md` — official SDSS/XMM/RXTE products, SAS/PPS and HEASoft provenance.
+* `docs/line_tool_comparison.png` — official ZLINE + nine line fitters (QSOFITMORE added).
 * `docs/line_ratio_scatter.csv` — inter-tool scatter and bootstrap intervals.
 * `docs/SHEAP_ASSESSMENT.md` — SHEAP repair and quality gates.
 * `docs/GANDALF_ASSESSMENT.md` — low-z GDL/pPXF validation.

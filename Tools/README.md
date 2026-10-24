@@ -20,10 +20,13 @@ Dockerized fitting engines and their Dockerfiles.  See `Pipelines/build_images.s
 | `pyqsofitspec_line/` | `pyqsofitspec_line` (skew-normal lines + bootstrap) |
 | `qgfit/` | `qgfit` (AGN/host/Fe II + continuum MCMC) |
 | `sheap_line/` | `sheap_line` (SHEAP JAX AGN decomposition) |
+| `qsofitmore_line/` | `qsofitmore_line` (UV/optical QSOFITMORE) |
+| `manga_dap/` | `manga_dap` (official MaNGA DAP) |
+| `xmm_xspec/` | `xmm_xspec` (XMM EPIC PPS + PyXspec) |
+| `rxte_xspec/` | `rxte_xspec` (RXTE PCA stdprod + PyXspec) |
 | `fir_linefit/` | `fir_linefit` |
 | `crossband/` | `crossband` |
 | `cigale_sed/` | `cigale_sed` |
 | `agnfitter_sed/` | `agnfitter_sed` |
-| `xmm_xspec/` | `xmm_xspec` (official XMM-Newton EPIC PPS + HEASoft/PyXspec) |
 | `pyqsofit/` | local PyQSOFit source, no image |
 | `sculptor/` | legacy GUI-only source, no image |

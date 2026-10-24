@@ -17,6 +17,10 @@ Pipelines/
   run_pyqsofitspec_line_docker.sh # PyQSOFitSpec bootstrap
   run_qgfit_docker.sh          # QGfit AGN/host/line fit
   run_sheap_line_docker.sh     # SHEAP JAX AGN decomposition
+  run_qsofitmore_line_docker.sh # QSOFITMORE UV/optical
+  run_manga_dap_docker.sh      # official MaNGA DAP
+  run_xmm_xspec_docker.sh      # XMM EPIC PPS + PyXspec
+  run_rxte_xspec_docker.sh     # RXTE PCA stdprod + PyXspec
   run_rxte_xspec_docker.sh     # official RXTE/PCA stdprod + HEASoft/PyXspec
   legacy_optical/              # archived optical-v1 drivers
 ```
