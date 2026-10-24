@@ -199,6 +199,148 @@ def find_photometry(input_dir: Path, explicit: str | None) -> Path | None:
     return None
 
 
+def _freeze_line_ties(obj) -> None:
+    """Convert nested JSON lists in ``line_ties`` to hashable tuples.
+
+    S3Fit calls ``dict.fromkeys`` on the ``line_ties`` list and later treats
+    each non-string entry as a list of line names.  A JSON array of arrays is
+    therefore not accepted directly; tuples are.
+    """
+    if isinstance(obj, dict):
+        for key, val in obj.items():
+            if key == "line_ties" and isinstance(val, list):
+                obj[key] = [tuple(x) if isinstance(x, list) else x for x in val]
+            else:
+                _freeze_line_ties(val)
+    elif isinstance(obj, list):
+        for item in obj:
+            _freeze_line_ties(item)
+
+
+def line_rest_wavelength(name: str) -> float | None:
+    """Rest wavelength for the emission lines used by the repository configs."""
+    aliases = {
+        "H-alpha": 6564.632,
+        "H-beta": 4862.691,
+        "H-gamma": 4341.691,
+        "H-delta": 4102.899,
+        "H-epsilon": 3971.202,
+        "C III]:1909": 1908.734,
+        "C IV:1548": 1548.187,
+        "C IV:1551": 1550.772,
+        "Ly-alpha": 1215.670,
+    }
+    if name in aliases:
+        return aliases[name]
+    # Most S3Fit names encode the vacuum rest wavelength after the colon.
+    if ":" in name:
+        suffix = name.rsplit(":", 1)[1].strip()
+        try:
+            return float(suffix)
+        except ValueError:
+            pass
+    return None
+
+
+def effective_spec_bounds(fit_cfg: dict, wave: np.ndarray, z: float) -> tuple[float, float]:
+    """Observed-frame wavelength interval actually used by the S3Fit fit."""
+    ranges = fit_cfg.get("spec_valid_range")
+    if not ranges:
+        return float(np.nanmin(wave)), float(np.nanmax(wave))
+    lows, highs = [], []
+    for entry in ranges:
+        if not isinstance(entry, (list, tuple)) or len(entry) < 2:
+            continue
+        lo, hi = float(entry[0]), float(entry[1])
+        unit = str(entry[2]).lower() if len(entry) > 2 else "angstrom"
+        frame = str(entry[3]).lower() if len(entry) > 3 else "obs"
+        if unit not in ("angstrom", "a", "aa"):
+            raise ValueError(f"unsupported spec_valid_range unit: {unit}")
+        if frame == "rest":
+            lo *= 1.0 + z
+            hi *= 1.0 + z
+        lows.append(lo)
+        highs.append(hi)
+    if not lows:
+        return float(np.nanmin(wave)), float(np.nanmax(wave))
+    return max(float(np.nanmin(wave)), min(lows)), min(float(np.nanmax(wave)), max(highs))
+
+
+def restrict_lines_to_coverage(model_config: dict, z: float,
+                               wave_min_obs: float, wave_max_obs: float,
+                               logger: Logger) -> tuple[dict, list[dict]]:
+    """Drop lines whose rest-frame centre lies outside the fitted spectrum.
+
+    S3Fit extends its evaluation range by a velocity tolerance, so a line just
+    beyond the last data pixel can still be assigned a large extrapolated
+    flux.  H-alpha at z=0.587 is the important example: its centre is redward
+    of the SDSS coverage, but S3Fit otherwise uses it as the BLR reference and
+    ties H-beta to it.  Filtering by the actual fitted rest-frame range keeps
+    the BLR reference on a line that is measured rather than extrapolated.
+    """
+    line_cfg = model_config.get("line", {}).get("config")
+    if not isinstance(line_cfg, dict):
+        return model_config, []
+
+    rest_min = wave_min_obs / (1.0 + z)
+    rest_max = wave_max_obs / (1.0 + z)
+    kept: set[str] = set()
+    removed: list[dict] = []
+
+    for comp_name, comp_cfg in line_cfg.items():
+        info = comp_cfg.get("info", {}) if isinstance(comp_cfg, dict) else {}
+        names = info.get("line_used")
+        if names is None:
+            continue
+        if isinstance(names, str):
+            names = [names]
+        new_names = []
+        for name in names:
+            rest = line_rest_wavelength(str(name))
+            if rest is None:
+                logger(f"WARNING: no rest wavelength for line {name}; keeping it")
+                new_names.append(name)
+                kept.add(str(name))
+            elif rest_min <= rest <= rest_max:
+                new_names.append(name)
+                kept.add(str(name))
+            else:
+                removed.append({
+                    "component": str(comp_name),
+                    "line": str(name),
+                    "rest_wavelength_angstrom": rest,
+                    "fitted_rest_min_angstrom": rest_min,
+                    "fitted_rest_max_angstrom": rest_max,
+                })
+        info["line_used"] = new_names
+
+    # Remove ties that reference dropped lines, and ties with fewer than two
+    # surviving members.
+    for comp_name, comp_cfg in line_cfg.items():
+        info = comp_cfg.get("info", {}) if isinstance(comp_cfg, dict) else {}
+        ties = info.get("line_ties")
+        if not isinstance(ties, list):
+            continue
+        new_ties = []
+        for tie in ties:
+            if isinstance(tie, tuple):
+                sub = [x for x in tie if x in kept]
+                if len(sub) >= 2:
+                    new_ties.append(tuple(sub))
+            else:
+                new_ties.append(tie)
+        info["line_ties"] = new_ties
+
+    if removed:
+        names = ", ".join(f"{r['line']} ({r['rest_wavelength_angstrom']:.1f} A)" for r in removed)
+        logger(f"line coverage: fitted rest range {rest_min:.1f}-{rest_max:.1f} A; "
+               f"removed uncovered line(s): {names}")
+    else:
+        logger(f"line coverage: all configured line centres fall inside "
+               f"{rest_min:.1f}-{rest_max:.1f} A rest")
+    return model_config, removed
+
+
 def resolve_model_config(config_path: Path, config_dir: Path, model_root: Path) -> dict:
     """Load model_config.json and inline/abspath its referenced JSON/files.
 
@@ -226,6 +368,7 @@ def resolve_model_config(config_path: Path, config_dir: Path, model_root: Path) 
             pass
         else:
             raise ValueError(f"model '{mod_name}' has no usable 'config' entry")
+        _freeze_line_ties(mod.get("config"))
 
         fname = mod.get("file")
         if isinstance(fname, str):
@@ -469,8 +612,14 @@ def good_loop_mask(ff) -> np.ndarray:
     return mask
 
 
-def extract_lines(ff, step: str, z: float, logger: Logger) -> tuple[list[dict], dict]:
-    """Build per-component and total line rows from S3Fit's line frame."""
+def extract_lines(ff, step: str, z: float, logger: Logger,
+                  coverage: dict | None = None) -> tuple[list[dict], dict]:
+    """Build per-component and total line rows from S3Fit's line frame.
+
+    ``coverage`` maps line name -> {covered, rest_min, rest_max}.  Lines whose
+    centre is not covered are retained in the model but are never labelled as
+    detected.
+    """
     line_mod = ff.model_dict["line"]["spec_mod"]
     out = line_mod.extract_results(
         step=step, if_print_results=False, if_return_results=True
@@ -481,18 +630,33 @@ def extract_lines(ff, step: str, z: float, logger: Logger) -> tuple[list[dict], 
     comps = list(line_mod.cframe.comp_name_c)
     good = good_loop_mask(ff)
 
-    def stats(arr, comp_name):
+    def stats(arr):
         arr = np.asarray(arr, dtype=float)
         mc = arr[1:][good[1:]] if arr.size > 1 else np.asarray([])
         mc = mc[np.isfinite(mc)]
+        err = float(np.std(mc, ddof=1)) * scale if mc.size >= 2 else 0.0
+        p16, p84 = pct(mc, 16) * scale, pct(mc, 84) * scale
+        robust = (p84 - p16) / 2.0 if mc.size >= 2 else 0.0
         return {
             "flux": float(arr[0]) * scale if arr.size else float("nan"),
-            "err": float(np.std(mc, ddof=1)) * scale if mc.size >= 2 else 0.0,
+            "err": err,
+            "err_robust": robust,
             "mc_mean": float(np.mean(mc)) * scale if mc.size else float("nan"),
-            "p16": pct(mc, 16) * scale,
-            "p84": pct(mc, 84) * scale,
+            "p16": p16,
+            "p84": p84,
             "n_mc": int(mc.size),
         }
+
+    def detection(snr: float, n_mc: int, covered: bool) -> tuple[bool, str]:
+        if not covered:
+            return False, "line centre outside fitted spectral coverage"
+        if n_mc < 3:
+            return False, f"insufficient successful MC loops ({n_mc} < 3)"
+        if not np.isfinite(snr):
+            return False, "undefined MC S/N"
+        if snr < 3.0:
+            return False, f"MC S/N {snr:.2f} < 3"
+        return True, f"detected (MC S/N {snr:.2f} >= 3)"
 
     rows: list[dict] = []
     for comp in comps:
@@ -502,16 +666,20 @@ def extract_lines(ff, step: str, z: float, logger: Logger) -> tuple[list[dict], 
         av_arr = np.asarray(values.get("Av", [np.nan]), dtype=float)
         den_arr = np.asarray(values.get("log_e_den", [np.nan]), dtype=float)
         for line in names:
-            s = stats(values[line], comp)
+            s = stats(values[line])
             fwhm_mc = fwhm_arr[1:][good[1:]] if fwhm_arr.size > 1 else np.asarray([])
             voff_mc = voff_arr[1:][good[1:]] if voff_arr.size > 1 else np.asarray([])
             snr = s["flux"] / s["err"] if s["err"] and np.isfinite(s["err"]) else float("nan")
+            cov = (coverage or {}).get(line, {})
+            covered = bool(cov.get("covered", True))
+            detected, note = detection(snr, s["n_mc"], covered)
             rows.append({
                 "component": comp,
                 "line": line,
                 "rest_wavelength_angstrom": rest.get(line, float("nan")),
                 "flux_erg_s_cm2": s["flux"],
                 "flux_err_erg_s_cm2": s["err"],
+                "flux_err_robust_erg_s_cm2": s["err_robust"],
                 "flux_1e17": s["flux"] / 1e-17,
                 "flux_err_1e17": s["err"] / 1e-17,
                 "fwhm_kms": float(fwhm_arr[0]) if fwhm_arr.size else float("nan"),
@@ -525,20 +693,26 @@ def extract_lines(ff, step: str, z: float, logger: Logger) -> tuple[list[dict], 
                 "mc_p84_flux_erg_s_cm2": s["p84"],
                 "snr": snr,
                 "n_mc": s["n_mc"],
-                "detected": bool(np.isfinite(snr) and snr >= 3.0),
+                "covered": covered,
+                "detected": detected,
+                "detection_note": note,
             })
         logger(f"  {comp}: {int(line_mod.mask_free_cn[comps.index(comp)].sum())} free lines, "
                f"FWHM={fwhm_arr[0]:.1f} km/s, voff={voff_arr[0]:.1f} km/s")
 
     for line in names:
-        s = stats(out["tot"]["value_Vl"][line], "tot")
+        s = stats(out["tot"]["value_Vl"][line])
         snr = s["flux"] / s["err"] if s["err"] and np.isfinite(s["err"]) else float("nan")
+        cov = (coverage or {}).get(line, {})
+        covered = bool(cov.get("covered", True))
+        detected, note = detection(snr, s["n_mc"], covered)
         rows.append({
             "component": "total",
             "line": line,
             "rest_wavelength_angstrom": rest.get(line, float("nan")),
             "flux_erg_s_cm2": s["flux"],
             "flux_err_erg_s_cm2": s["err"],
+            "flux_err_robust_erg_s_cm2": s["err_robust"],
             "flux_1e17": s["flux"] / 1e-17,
             "flux_err_1e17": s["err"] / 1e-17,
             "fwhm_kms": float("nan"),
@@ -552,7 +726,9 @@ def extract_lines(ff, step: str, z: float, logger: Logger) -> tuple[list[dict], 
             "mc_p84_flux_erg_s_cm2": s["p84"],
             "snr": snr,
             "n_mc": s["n_mc"],
-            "detected": bool(np.isfinite(snr) and snr >= 3.0),
+            "covered": covered,
+            "detected": detected,
+            "detection_note": note,
         })
 
     rows.sort(key=lambda r: (r["rest_wavelength_angstrom"], r["component"]))
@@ -562,14 +738,15 @@ def extract_lines(ff, step: str, z: float, logger: Logger) -> tuple[list[dict], 
 def write_lines_csv(path: Path, rows: list[dict]) -> None:
     fields = [
         "component", "line", "rest_wavelength_angstrom",
-        "flux_erg_s_cm2", "flux_err_erg_s_cm2", "flux_1e17", "flux_err_1e17",
+        "flux_erg_s_cm2", "flux_err_erg_s_cm2", "flux_err_robust_erg_s_cm2",
+        "flux_1e17", "flux_err_1e17",
         "fwhm_kms", "fwhm_err_kms", "velocity_kms", "velocity_err_kms",
         "av", "log_e_den", "mc_mean_flux_erg_s_cm2",
         "mc_p16_flux_erg_s_cm2", "mc_p84_flux_erg_s_cm2",
-        "snr", "n_mc", "detected",
+        "snr", "n_mc", "covered", "detected", "detection_note",
     ]
     with path.open("w", newline="") as fh:
-        w = csv.DictWriter(fh, fieldnames=fields)
+        w = csv.DictWriter(fh, fieldnames=fields, lineterminator="\n")
         w.writeheader()
         for row in rows:
             w.writerow({k: row.get(k, "") for k in fields})
@@ -668,25 +845,47 @@ def make_fit_figure(path: Path, ff, step: str, z: float, lines: list[dict],
         sed_wave = np.asarray(ff.sed["wave_w"], dtype=float)
         sed_rest_um = sed_wave / (1.0 + z) / 1e4
         sed_tot = _flux_cgs(out["tot"]["fmod"]["sed_lw"][0], scale)
-        axs.plot(sed_rest_um, sed_wave * sed_tot, color="C1", lw=1.8, label="total SED")
+
+        def positive_curve(y):
+            y = np.asarray(y, dtype=float)
+            good = np.isfinite(sed_rest_um) & np.isfinite(y) & (y > 0)
+            return np.where(good, y, np.nan)
+
+        axs.plot(sed_rest_um, positive_curve(sed_wave * sed_tot), color="C1", lw=1.8,
+                 label="total SED")
         for mod, (color, ls, lw) in styles.items():
             if mod in out and "tot" in out[mod] and "sed_lw" in out[mod]["tot"]:
-                axs.plot(sed_rest_um, sed_wave * _flux_cgs(out[mod]["tot"]["sed_lw"][0], scale),
+                axs.plot(sed_rest_um,
+                         positive_curve(sed_wave * _flux_cgs(out[mod]["tot"]["sed_lw"][0], scale)),
                          color=color, ls=ls, lw=lw, label=f"{mod} SED")
         pw = np.asarray(ff.phot["wave_b"], dtype=float)
         pf = _flux_cgs(ff.phot["flux_b"], scale)
         pe = _flux_cgs(ff.phot["ferr_b"], scale)
-        axs.errorbar(pw / (1.0 + z) / 1e4, pw * pf, yerr=pw * pe,
+        yp = pw * pf
+        ype = pw * pe
+        pgood = np.isfinite(pw) & np.isfinite(yp) & (yp > 0) & np.isfinite(ype) & (ype > 0)
+        axs.errorbar(pw[pgood] / (1.0 + z) / 1e4, yp[pgood], yerr=ype[pgood],
                      fmt="o", ms=5, color="k", capsize=2, label="photometry", zorder=5)
         axs.set_xscale("log")
         axs.set_yscale("log")
+        # A log axis must not be driven by zeros/negative line-SED samples or by
+        # the tiny first SED grid point.  Clip to the dynamically relevant range.
+        positive = [v for v in (sed_wave * sed_tot, yp[pgood]) if np.size(v)]
+        vals = np.concatenate([np.asarray(v, dtype=float).ravel() for v in positive])
+        vals = vals[np.isfinite(vals) & (vals > 0)]
+        if vals.size:
+            hi = 2.0 * np.nanmax(vals)
+            lo = max(np.nanmin(vals[vals > 1e-4 * hi]), 1e-6 * np.nanmedian(vals))
+            axs.set_ylim(lo, hi)
         axs.set_xlabel(r"rest wavelength ($\mu$m)")
-        axs.set_ylabel(r"$\lambda F_\lambda$ (erg s$^{-1}$ cm$^{-2}$ s$^{-1}$)")
+        axs.set_ylabel(r"$\lambda F_\lambda$ (erg s$^{-1}$ cm$^{-2}$)")
         axs.legend(ncol=5, fontsize=6.5)
 
     fig.savefig(path, dpi=200, bbox_inches="tight")
+    pdf_path = path.with_suffix(".pdf")
+    fig.savefig(pdf_path, bbox_inches="tight")
     plt.close(fig)
-    logger(f"wrote {path}")
+    logger(f"wrote {path} and {pdf_path}")
 
 
 def make_mc_figure(path: Path, ff, line_rows: list[dict], line_out: dict,
@@ -772,8 +971,10 @@ def make_mc_figure(path: Path, ff, line_rows: list[dict], line_out: dict,
         fig.suptitle("No successful Monte-Carlo loops: histograms are empty", fontsize=9)
     fig.tight_layout()
     fig.savefig(path, dpi=200, bbox_inches="tight")
+    pdf_path = path.with_suffix(".pdf")
+    fig.savefig(pdf_path, bbox_inches="tight")
     plt.close(fig)
-    logger(f"wrote {path}")
+    logger(f"wrote {path} and {pdf_path}")
 
 
 # ---------------------------------------------------------------------------
@@ -834,7 +1035,7 @@ def compare_pyqsofit(pyq_dir: Path | None, line_rows: list[dict],
             s3err = float(np.sqrt(sum(float(r.get("flux_err_erg_s_cm2") or 0.0) ** 2
                                       for r in s3rows)))
             pflux = float(pyqrow["area_1e17"]) * 1e-17
-            if not np.isfinite(s3flux) or pflux <= 0:
+            if not np.isfinite(s3flux) or s3flux <= 0 or pflux <= 0:
                 return
             raw = s3flux / spec_calib_ratio if spec_calib_ratio else s3flux
             note = ("ratio_rawspec = (S3Fit flux / spec_calib_ratio) / PyQSOFit; "
@@ -876,7 +1077,7 @@ def compare_pyqsofit(pyq_dir: Path | None, line_rows: list[dict],
         "difference_rawspec_erg_s_cm2", "spec_calib_ratio", "note",
     ]
     with out_csv.open("w", newline="") as fh:
-        w = csv.DictWriter(fh, fieldnames=fields)
+        w = csv.DictWriter(fh, fieldnames=fields, lineterminator="\n")
         w.writeheader()
         for row in rows:
             w.writerow({k: row.get(k, "") for k in fields})
@@ -1035,6 +1236,26 @@ def main(argv=None) -> int:
     log(f"spectrum: {len(wave)} pixels, {n_bad} masked, "
         f"{wave.min():.1f}-{wave.max():.1f} A obs, R={np.nanmedian(R):.0f}")
 
+    # ---- line-list coverage ----
+    fit_wave_min, fit_wave_max = effective_spec_bounds(fit_cfg, wave, z)
+    rest_min = fit_wave_min / (1.0 + z)
+    rest_max = fit_wave_max / (1.0 + z)
+    model_config, removed_lines = restrict_lines_to_coverage(
+        model_config, z, fit_wave_min, fit_wave_max, log)
+    line_coverage: dict[str, dict] = {}
+    line_cfg = model_config.get("line", {}).get("config", {})
+    if isinstance(line_cfg, dict):
+        for comp_cfg in line_cfg.values():
+            info = comp_cfg.get("info", {}) if isinstance(comp_cfg, dict) else {}
+            for name in info.get("line_used", []) or []:
+                rw = line_rest_wavelength(str(name))
+                line_coverage[str(name)] = {
+                    "covered": bool(rw is not None and rest_min <= rw <= rest_max),
+                    "rest_wavelength_angstrom": rw,
+                    "fitted_rest_min_angstrom": rest_min,
+                    "fitted_rest_max_angstrom": rest_max,
+                }
+
     # ---- photometry ----
     phot_path = find_photometry(input_dir, args.photometry)
     phot = read_photometry(phot_path) if phot_path else {}
@@ -1133,7 +1354,7 @@ def main(argv=None) -> int:
         f"MC={chi2['reduced_chi2_mc_mean']:.3f} +/- {chi2['reduced_chi2_mc_std']:.3f}")
 
     # ---- extract lines / parameters ----
-    line_rows, line_out = extract_lines(ff, step, z, log)
+    line_rows, line_out = extract_lines(ff, step, z, log, coverage=line_coverage)
     write_lines_csv(output_dir / "s3fit_lines.csv", line_rows)
 
     # AGN/torus properties
@@ -1247,16 +1468,53 @@ def main(argv=None) -> int:
     dump_json(output_dir / "fit_config.effective.json", fit_cfg)
 
     used_line_names = [str(x) for x in ff.model_dict["line"]["spec_mod"].linename_n]
-    line_list_note = "H-alpha is present in the fitted line list"
-    if "H-alpha" not in used_line_names:
-        line_list_note = ("H-alpha/[N II]/[S II] are absent from this run's line list "
-                          "because they are outside the SDSS coverage of the validation targets")
+    removed_names = [r["line"] for r in removed_lines]
+    if removed_names:
+        line_list_note = (
+            "lines removed because their rest-frame centres lie outside the fitted "
+            f"spectral coverage ({rest_min:.1f}-{rest_max:.1f} A): "
+            + ", ".join(removed_names)
+        )
+    elif "H-alpha" not in used_line_names:
+        line_list_note = "H-alpha is not in this run's line list"
+    else:
+        line_list_note = "H-alpha is present in the fitted line list"
 
     times = loop_times(getattr(ff, "log_message", []))
     if times["original_attempts_seconds"] is not None:
         times["mc_fit_seconds_wall"] = max(
             0.0, runtime - times["original_attempts_seconds"]
         ) if int(fit_cfg.get("n_mocks", 0)) > 0 else 0.0
+    n_good_loops = int(np.sum(good_loops))
+    n_mocks_completed = max(0, n_good_loops - 1)
+    torus_used = "torus" in str(getattr(ff, "rev_mod_type", "")).split("+")
+    line_used = "line" in ff.model_dict
+    production_grade = bool(
+        mode == "spec+sed" and getattr(ff, "have_phot", False)
+        and n_mocks_completed >= 10 and torus_used and line_used
+        and np.isfinite(chi2.get("reduced_chi2_original", float("nan")))
+    )
+    reductions = []
+    if not bool(fit_cfg.get("if_run_init_annealing", True)):
+        reductions.append("dual-annealing global search disabled (if_run_init_annealing=false)")
+    if int(fit_cfg.get("nlfit_ntry_max", 3)) < 3:
+        reductions.append(f"nlfit_ntry_max={int(fit_cfg.get('nlfit_ntry_max', 3))} (reference default 3)")
+    if float(fit_cfg.get("accept_chi_sq", 3.0)) > 3.0:
+        reductions.append(f"accept_chi_sq={float(fit_cfg.get('accept_chi_sq', 3.0))} to avoid repeated recycle fits")
+
+    caveats = [
+        "S3Fit uncertainties are parametric-bootstrap Monte-Carlo mock refits, not an MCMC posterior.",
+        "The QSO model has no host-galaxy/stellar SSP term; the AGN continuum is powerlaw + Fe II + Balmer continuum + SKIRTOR torus.",
+        "The SKIRTOR torus is constrained by the four WISE bands only (no far-IR/mm data).",
+        "The input spectrum is scaled to the SDSS griz photometry before the joint fit; line fluxes are in that calibrated normalization. Divide by fit.spec_calib_ratio for the raw-SDSS comparison used by PyQSOFit/GANDALF/GalSpec/QGfit.",
+        "Mg II 2796/2804 is fitted as a tied doublet (ratio 1.0, S3Fit's atomic ratio) because the two broad components are blended and individually degenerate.",
+        "Lines whose rest-frame centres fall outside the fitted spectrum are removed before fitting; see scope.line_coverage and line_list_note.",
+    ]
+    if reductions:
+        caveats.append("Runtime compromise (model grid unchanged, 10 mocks retained): " + "; ".join(reductions) + ".")
+    if not production_grade:
+        caveats.append("NON-PRODUCTION: the criteria for a full spec+sed, torus+line, >=10-mock fit were not all met.")
+
     detections = [r for r in line_rows if r["component"] == "total" and r["detected"]]
     run = {
         "tool": "s3fit_line",
@@ -1287,20 +1545,32 @@ def main(argv=None) -> int:
             "pure_spectrum_only": bool(mode == "spec"),
             "joint_spectrum_sed": bool(mode == "spec+sed" and getattr(ff, "have_phot", False)),
             "torus_configured": bool(model_config.get("torus", {}).get("enable", False)),
-            "torus_used": "torus" in str(getattr(ff, "rev_mod_type", "")).split("+"),
+            "torus_used": torus_used,
             "stellar_ssp_used": "stellar" in ff.model_dict,
             "dual_annealing": bool(fit_cfg.get("if_run_init_annealing", True)),
             "nlfit_ntry_max": int(fit_cfg.get("nlfit_ntry_max", 3)),
             "accept_chi_sq": float(fit_cfg.get("accept_chi_sq", 3.0)),
             "line_list_note": line_list_note,
-            "n_mocks_used": int(fit_cfg["n_mocks"]),
+            "line_coverage": {
+                "fitted_rest_min_angstrom": rest_min,
+                "fitted_rest_max_angstrom": rest_max,
+                "n_kept": len(used_line_names),
+                "removed_lines": removed_lines,
+            },
+            "n_mocks_requested": int(fit_cfg["n_mocks"]),
+            "n_mocks_used": n_mocks_completed,
             "mc_threads": int(fit_cfg["threads"]),
+            "production_grade": production_grade,
+            "production_criteria": "spec+sed joint fit, photometry used, SKIRTOR torus, line model, >=10 successful mock loops",
+            "reductions": reductions,
             "note": ("pure-spectrum fallback; photometric SED step not run" if mode == "spec"
                      else "joint spectrum + photometric SED fit"),
         },
         "fit": {
             "n_mocks": int(fit_cfg["n_mocks"]),
+            "n_mocks_completed": n_mocks_completed,
             "n_loops": int(ff.num_loops),
+            "n_good_loops": n_good_loops,
             "seed": int(fit_cfg["seed"]),
             "threads": int(fit_cfg["threads"]),
             "fit_space": str(fit_cfg.get("fit_space", "log")),
@@ -1312,6 +1582,8 @@ def main(argv=None) -> int:
             "spec_calib_ratio": ratio,
             "spec_valid_range": fit_cfg.get("spec_valid_range"),
             "phot_calib_b": fit_cfg.get("phot_calib_b"),
+            "flux_unit_output": "erg s-1 cm-2",
+            "wavelength_unit": "angstrom (vacuum)",
         },
         "model": {
             "models": list(ff.model_dict),
@@ -1340,14 +1612,19 @@ def main(argv=None) -> int:
         "line_summary": {
             "n_rows": len(line_rows),
             "n_total_lines": len([r for r in line_rows if r["component"] == "total"]),
+            "n_covered_total_lines": len([r for r in line_rows if r["component"] == "total" and r["covered"]]),
             "n_detected_total": len(detections),
+            "detection_threshold": "covered and >=3 successful MC loops and MC S/N >= 3",
         },
+        "caveats": caveats,
         "pyqsofit_comparison": comp_summary,
         "native_pickle": pickle_info,
         "files": {
             "lines_csv": "s3fit_lines.csv",
             "fit_png": "s3fit_fit.png",
+            "fit_pdf": "s3fit_fit.pdf",
             "mc_png": "s3fit_mc.png",
+            "mc_pdf": "s3fit_mc.pdf",
             "npz": "s3fit_output.npz",
             "model_config": "model_config.json",
             "fit_config": "fit_config.effective.json",
