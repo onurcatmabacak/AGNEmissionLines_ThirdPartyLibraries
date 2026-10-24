@@ -10,8 +10,9 @@ continuum+line model (`main.py`).
 The fit itself is not reimplemented here: continuum fitting (UV/optical Fe II,
 Balmer continuum, power law, polynomial), the `kmpfit` line fit and the
 skew-normal profile evaluation all run inside the vendored package.  This
-tool only adds a config-driven line table, the optical H-beta / [O III]
-complex, per-component flux extraction and the compact products.
+tool adds a config-driven line table, the optical H-beta / [O III] complex,
+per-component flux extraction, convergence/validity auditing and the compact
+products.
 
 ## Build / run
 
@@ -37,6 +38,15 @@ or through the matrix orchestrator (uses the prepared PyQSOFit spectrum
 Runner options: `--config DIR|FILE` (default
 `configs/pyqsofitspec_line/default`), `--nboot N`, `--seed N`, `--z Z`,
 `--name NAME`, `--flux-unit auto|cgs|1e-17`.
+
+The production default in `configs/pyqsofitspec_line/default/config.json` is
+`nboot_fit = 50`; `--nboot 5` is a smoke test.  With the production
+tolerances (`kmpfit_xtol=1e-6`), a 55-draw run on `04592649654` takes
+**~10.5 min** on one CPU (measured: see the committed-run table below); the
+earlier pass with the library-default `xtol` took 58 min because of failed
+retries.  The driver prints a per-realisation wall time, and `run.json`
+records every iteration, so a run can be stopped and audited if a documented
+time cap is reached.
 
 ## Inputs
 
@@ -64,20 +74,45 @@ the pipeline's `IVAR <= 0` sanitising.
 `newdata` array of upstream `main.py` with a JSON `line_table` that is written
 to `qsopar2.fits` at run time (same 10 columns:
 `lambda, compname, minwav, maxwav, linename, ngauss, sigval, voff, iniskw,
-fvalue`).
+fvalue`; the driver-only `kind` field is not written to FITS).
 
-Default components (rest-frame vacuum wavelengths, matching the sibling
-`pyqsofit_uv` line list):
+Default components (rest-frame vacuum wavelengths):
 
 | complex | window [A] | components |
 |---|---|---|
-| MgII | 2700-2900 | `MgII_br` (skew-normal, `sigval [0.004, 0.05]`), `MgII_na` (`[3.3e-4, 8e-4]`) |
-| Hb | 4640-5100 | `Hb_br` (`[0.004, 0.05]`), `Hb_na` (`[3.3e-4, 1.2e-3]`), `OIII5007c` (narrow core), `OIII4959c` (tied to the 5007 core: width/velocity tie `OIII5007c*1.0`, flux ratio 0.33), `OIII5007w` (broad wing, `[0.003, 0.008]`), `OIII4959w` (tied to the wing) |
+| MgII | 2700-2900 | `MgII_br` (free skew-normal, `sigval [0.004, 0.05]`), `MgII_na` (width **fixed** at the NLR anchor) |
+| Hb | 4640-5100 | `Hb_br` (free skew-normal, `[0.004, 0.012]`, skew `[-5, 5]`), `Hb_na` (tied to `OIII5007c`), `OIII4959c` (tied to `OIII5007c`: width/velocity, flux ratio 0.33), `OIII5007c` (width **fixed** at the NLR anchor), `OIII4959w` (tied to `OIII5007w`: width/velocity, flux ratio 0.33), `OIII5007w` (free wing, `[0.003, 0.008]`, skew `[-5, 5]`) |
 
 `linemodel` is `skewnorm_model` by default; `gauss_model` is available in
-`fit_linemodel.py`.  A component is called *broad* when the fitted
-`log10(sigma) > 0.0017` (`sigma > 512 km/s`), which is the package's own
-`QSOFit.line_prop` classification.
+`fit_linemodel.py`.  The `kind` field declares a component broad or narrow for
+the output tables; `QSOFit.line_prop` still uses its own
+`log10(sigma) > 0.0017` (sigma > 512 km/s) cut internally to select profile
+blocks, so a narrow component whose fitted width crosses that cut is reported
+with `width_class = broad` but keeps `component = narrow` (the declared
+physical kind).
+
+### Fixed NLR width (the old pinning fix)
+
+The previous configuration used `sigval [3.3e-4, 1.2e-3]` for `Hb_na` and
+`OIII5007c`; the fits sat on the 1.2e-3 upper bound (FWHM 848 km/s) in every
+realisation.  That is not a measurement: it is the prior boundary.  The
+production configuration removes the free NLR width altogether and anchors it
+to an independent measurement of the clean [O III] 5007 line in the same
+spectrum:
+
+* single Gaussian + linear local continuum over 4973-5043 A (rest frame):
+  `FWHM = 998 +/- 38 km/s`, `sigma = 7.08 A`;
+* adopted anchor `ln sigma = 0.0014` (`FWHM = 989 km/s`);
+* applied to `MgII_na` and `OIII5007c`, and through the ties to `Hb_na` and
+  `OIII4959c`.
+
+This is the same physical choice as GANDALF and S3Fit (a common NLR
+kinematic component), and it leaves no free narrow width to pin.  The free
+widths (`MgII_br`, `Hb_br`, `OIII5007w`) are interior in the median of the
+53-valid production run; 2/53 realisations put the [O III] wing at its lower
+0.003 bound, while `MgII_br` and `Hb_br` never touch a width bound.  The anchor uncertainty (+/-38 km/s) is a systematic, not a
+bootstrap error: changing the anchor from 0.0013 to 0.0015 changes the narrow
+H-beta flux by about +/-10 %, while the H-beta total changes by < 2 %.
 
 ## The bootstrap (this is not a single least-squares fit)
 
@@ -97,8 +132,53 @@ Each realisation re-fits the continuum and all line complexes from scratch;
 the reported value is the bootstrap mean, the error the bootstrap standard
 deviation (upstream convention), plus 16/84 percentiles.  PyQSOFitSpec's own
 internal Monte Carlo (`MC=True`, `n_trials`) is deliberately **off** inside
-each fit, otherwise the two error estimates would be mixed.
-`nboot_fit=10` is a smoke-sized ensemble; production runs should use 50-100.
+each fit, otherwise the two error estimates would be mixed.  Production uses
+`nboot_fit=50`; the uncertainty of the uncertainty is
+`1/sqrt(2*(nboot-1)) ~ 10 %`.
+
+## Audit findings and fixes (2026-10 production pass)
+
+1. **kmpfit iteration cap (real solver failure).**  PyQSOFitSpec constructs
+   its line `kmpfit.Fitter` without `maxiter`, so kapteyn's default 200
+   applies.  The 8-component H-beta / [O III] complex reached status 5
+   ("Maximum number of iterations reached") in every realisation; the
+   returned parameters were a truncated iterate, not the minimum.
+   The driver now wraps the Fitter constructor and sets
+   `kmpfit_maxiter` (default 1500) plus `kmpfit_ftol=1e-8`,
+   `kmpfit_xtol=1e-6`.  The default kmpfit `xtol` is too strict for this
+   32-parameter complex: in the first 50-realisation pass, 3/50 fits cycled to
+   status 5 at the 1500-iteration cap, and a retry with `maxiter=6000` still
+   failed after 10-14 min.  The same noise draws converge in 7-11 s
+   (status 2, rchi2 10-10.8) with `xtol=1e-6`, which is a parameter accuracy
+   of ~0.3 km/s in the line centres, far below the measurement error.  The
+   looser tolerances are now the production default; a realisation that still
+   fails is retried once with a 4x cap, and a permanently failed realisation
+   is excluded from the bootstrap statistics and reported in `run.json`.
+2. **Pinned narrow widths (prior artefact).**  Fixed by the NLR anchor
+   described above.  `width_mode`/`pinned_at_bound`/`note` in
+   `pyqsofitspec_lines.csv` make the status auditable.
+3. **Latent multi-Gaussian extraction bug.**  The old driver read only
+   `<line>_1_*` from `gauss_result`; for `ngauss > 1` it would have reported
+   only the first Gaussian's flux.  `component_parameters()` now concatenates
+   all blocks and evaluates the summed profile with `line_prop`.  The
+   production table uses `ngauss=1`, so this is a robustness fix, not a
+   change to the committed numbers.
+4. **Broken/truncated fits were trusted.**  A kmpfit status alone is not
+   enough: during development a 2-Gaussian H-beta variant returned
+   status 2 with a reduced chi2 of ~3000, and the 50-realisation production
+   pass found converged local minima at rchi2 ~ 20 (Mg II collapsed) and
+   ~ 227 (all lines collapsed).  `fit_validity()` now requires convergence of
+   **every** fitted complex and a finite per-complex reduced chi2 below
+   `max_line_red_chi2` (default 15, normal fits are 8.8-10.8).  Invalid
+   realisations are excluded and counted (`nboot_valid`, `bootstrap.invalid`).
+   The committed run requested 55 draws so that at least 50 remain after this
+   cut.
+5. **`run.json` was silent about convergence.**  It now records, for every
+   realisation, the kmpfit status/message/niter/nfev/maxiter, the per-complex
+   fit quality and the validity flag, plus a top-level `bootstrap` block and
+   the `nlr_width_anchor`.
+6. **H-beta total offset.**  See the dedicated section below.  It is a
+   model/continuum-definition difference, not a units or summation bug.
 
 ## Outputs
 
@@ -106,85 +186,138 @@ each fit, otherwise the two error estimates would be mixed.
 
 | file | content |
 |---|---|
-| `pyqsofitspec_lines.csv` | compact table: line, component (broad/narrow), complex, rest wavelength, flux, flux error, p16/p84, flux in cgs, FWHM and error, sigma, skewness, EW, peak, S/N, `stable`, note, nboot |
-| `pyqsofitspec_totals.csv` | broad+narrow totals used for the cross-tool comparison (MgII, Hbeta, OIII5007, OIII5007core) |
-| `pyqsofitspec_out.csv` | native-style one-row-per-spectrum table (`<line>_<prop>_<br|na>` and `_err`, mean/std over the bootstrap), i.e. the upstream `pyqsofitspec_out.csv` schema extended with the line area |
-| `pyqsofitspec_bootstrap.csv` | every realisation: scale, ln(center), ln(sigma), skew, FWHM, sigma, EW, peak, area |
+| `pyqsofitspec_lines.csv` | compact table: line, declared component (broad/narrow), fitted `width_class`, `width_mode` (free/fixed/tied), complex, rest wavelength, flux, flux error, p16/p84, flux in cgs, FWHM and error, sigma, skewness, EW, peak, S/N, `stable`, `note`, `pinned_at_bound`, fitted ln(sigma) min/max, nboot |
+| `pyqsofitspec_totals.csv` | the totals used for the cross-tool comparison (`MgII`, `Hbeta`, `Hbeta_broad`, `Hbeta_narrow`, `OIII5007`, `OIII5007core`) |
+| `pyqsofitspec_out.csv` | native-style one-row-per-spectrum table (`<line>_<prop>_<br|na>` and `_err`, mean/std over the valid bootstrap), i.e. the upstream `pyqsofitspec_out.csv` schema extended with the line area |
+| `pyqsofitspec_bootstrap.csv` | every realisation (including invalid ones, flagged `valid=false`): scale, ln(center), ln(sigma), ln(sigma) min/max, width class/mode, skew, FWHM, sigma, EW, peak, area |
 | `spec-<name>_fit.pdf` / `.png` | the package's own fit figure (continuum decomposition + each complex, realisation 0) |
-| `pyqsofitspec_bootstrap.png/.pdf` | bootstrap histograms of the total fluxes (the bimodal [O III] core is visible) |
+| `pyqsofitspec_model.csv` | realisation-0 decomposition: rest wavelength, noisy flux, error, continuum, line model, total model (1e-17 cgs); used to audit the H-beta continuum offset |
+| `pyqsofitspec_bootstrap.png/.pdf` | bootstrap histograms of the total fluxes |
 | `pyqsofitspec_corner.png/.pdf` | corner plot of the H-beta / [O III] 5007 / Mg II totals (scatter mode for `nboot < 20`) |
-| `run.json` | method, versions, input, per-iteration wall times and fluxes, fit status/reduced chi2, line table, caveats |
-| `config.effective.json` | resolved configuration incl. input, z, coverage, seed, nboot |
+| `run.json` | method, versions, input, per-iteration wall times, convergence diagnostics, fluxes, fit status/reduced chi2, line table, `nlr_width_anchor`, line definitions, caveats |
+| `config.effective.json` | resolved configuration incl. input, z, coverage, seed, nboot, kmpfit_maxiter |
 | `run.log` | driver log |
 | `cross_tool_comparison.csv/.json` | added by `compare_outputs.py` (see below) |
 
 S/N is `flux / bootstrap_std`.  `stable=false` marks a component whose 16-84 %
-interval is wider than 25 % of its mean (a multimodal or unconstrained
+interval is wider than 25 % of the mean (a multimodal or unconstrained
 component).
 
-Cross-tool table:
+Cross-tool table (now includes PyQSOFit, GANDALF, S3Fit, GalSpec and QGfit):
 
 ```bash
 python3 Tools/pyqsofitspec_line/compare_outputs.py outputs/<source_key>
 ```
 
-It reads the sibling `pyqsofit_uv`, `gandalf_line` and `s3fit_line` outputs
-and writes `cross_tool_comparison.csv` next to the PyQSOFitSpec products.
+It reads the sibling outputs and writes `cross_tool_comparison.csv` /
+`.json` next to the PyQSOFitSpec products.  Per tool the closest available
+equivalent is used and recorded in the `definition` column; the tools do not
+decompose the blends identically (for example QGfit has no [O III] wing, and
+GalSpec does not fit Mg II).
 
-## Committed demonstration run: `04592649654` (z = 0.5874)
+## Committed production run: `04592649654` (z = 0.5874)
 
 ```bash
 bash Pipelines/run_pyqsofitspec_line_docker.sh \
   inputs/04592649654_z_0.5874/raw \
-  outputs/04592649654_z_0.5874/pyqsofitspec_line --name 04592649654
+  outputs/04592649654_z_0.5874/pyqsofitspec_line --name 04592649654 --nboot 55
 ```
 
-`configs/pyqsofitspec_line/default` (`skewnorm_model`, `nboot_fit=10`,
-`seed=20250101`, no error floor).  Rest-frame coverage 2394-5794 A,
-3840 pixels used, 808 masked (observed frame 3800-9200 A).
+`configs/pyqsofitspec_line/default` (`skewnorm_model`, `seed=20250101`,
+`kmpfit_maxiter=1500`, `kmpfit_ftol=1e-8`, `kmpfit_xtol=1e-6`,
+`max_line_red_chi2=15`, fixed NLR anchor `ln sigma=0.0014`).  The committed
+command requests **55** draws (`--nboot 55`) to guarantee >= 50 valid
+realisations after the validity cut; the config default is 50.
+Rest-frame coverage 2394-5794 A, 3840 pixels used, 808 masked (observed frame
+3800-9200 A).
 
 | quantity | value |
 |---|---:|
 | image size | 1.2 GB |
-| wall time, whole command | 3 m 47 s |
-| driver wall time (10 bootstrap fits) | 221.8 s |
-| per-realisation wall time | 18.5-23.9 s (mean 21.6 s) |
-| Mg II 2798 total | 1932.6 +/- 30.2 (1e-17 erg s-1 cm-2) |
-| H-beta total | 3439.5 +/- 33.6 |
-| [O III] 5007 total (core+wing) | 1630.7 +/- 17.8 |
-| [O III] 5007 core | 776 +/- 244 (bimodal, see caveats) |
-| Mg II broad FWHM | 2847 +/- 50 km/s |
-| H-beta broad FWHM | 3866 +/- 38 km/s |
-| reduced chi2, Mg II complex | 6.01 (302 dof) |
-| reduced chi2, H-beta complex | 10.26 (386 dof) |
+| bootstrap requested / valid | 55 / 53 (2 invalid: rchi2 19.9 and 226.7) |
+| wall time, driver (55 fits) | 632.7 s (10.5 min) |
+| per-realisation wall time | 7.4-17.9 s (median 11.4 s) |
+| Mg II 2798 total | 2029.9 +/- 49.6 |
+| H-beta total (Hb_br+Hb_na) | **3525.1 +/- 33.8** |
+| H-beta broad (Hb_br) | 2720.4 +/- 25.3 |
+| H-beta narrow (Hb_na) | 804.7 +/- 26.0 |
+| [O III] 5007 total | 1638.9 +/- 22.2 |
+| [O III] 5007 core | 761.6 +/- 196.4 (bimodal) |
+| H-beta/[O III] 5007 | 2.151 |
+| Mg II broad FWHM | 3622 km/s (free, interior) |
+| H-beta broad FWHM | 4124 km/s (free, interior) |
+| H-beta narrow FWHM | 968 km/s (tied to the fixed [O III] core) |
+| [O III] core / wing FWHM | 986 / 1893 km/s (core fixed, wing free) |
 
-Cross-tool comparison (1e-17 erg s-1 cm-2; ratio is relative to
-PyQSOFitSpec):
+Fluxes are in `1e-17 erg s-1 cm-2` (rest frame); errors are the bootstrap
+standard deviation over the 53 valid realisations.  The full model integral
+over 4640-4940 A is 3614 (`pyqsofitspec_model.csv`), 2.5 % above the
+component-summed total (the `line_prop` +/-3 sigma truncation).
 
-| line | PyQSOFitSpec | PyQSOFit (`pyqsofit_uv`) | GANDALF | S3Fit |
-|---|---:|---:|---:|---:|
-| Mg II 2798 | 1932.6 +/- 30.2 | 2613.1 (1.35) | — | 1822.5 (0.94) |
-| H-beta | 3439.5 +/- 33.6 | 2905.1 (0.84) | 2950.8 (0.86) | 2761.0 (0.80) |
-| [O III] 5007 | 1630.7 +/- 17.8 | 1479.5 (0.91) | 1422.7 (0.87) | 1506.5 (0.92) |
+FWHM status (the audit criterion): the free widths (`MgII_br`, `Hb_br`,
+`OIII5007w`) are interior in the median; 2/53 realisations put the [O III]
+wing at its lower 0.003 bound, and the wing's median is 0.00496.  `MgII_na`
+and `OIII5007c` are **fixed** at the NLR anchor (989 km/s), and `Hb_na` /
+`OIII4959c` are **tied** to it; their `width_mode` is `fixed`/`tied` and
+`pinned_at_bound=false`, because their widths are not fitted parameters.
+No main-line FWHM is left at an arbitrary prior bound.
 
-Reading the differences:
+## The H-beta total and the 18 % offset
 
-* **[O III] 5007** agrees with all three tools to 8-13 %.  This is the most
-  robust line: the narrow core is resolved and the total is prior-bounded.
-* **H-beta** is 16-25 % higher than PyQSOFit/GANDALF/S3Fit.  The skew-normal
-  broad profile (fitted `a` = -0.65 for H-beta, -2.6 for Mg II, -11 for the
-  [O III] wing, i.e. a red wing) puts more flux in the broad base than a
-  Gaussian; the narrow component adds another ~670.  The spread of the three
-  reference tools (2761-2951) is itself 7 %.
-* **Mg II** is 6 % below S3Fit and 35 % above PyQSOFit.  PyQSOFit's UV fit
-  includes UV Fe II under the Mg II blend and reports a much larger
-  broad component (2517 vs 1835); S3Fit fits the 2796/2804 doublet with a
-  Gaussian BLR profile and lands close to the skew-normal result.  The
-  Mg II "line" is a blend with Fe II emission, so a 30 % inter-tool spread is
-  expected.
-* The bootstrap errors (1-2 %) are far smaller than the inter-tool spread,
-  i.e. they are statistical-only and conditioned on this model; they must not
-  be used to claim a line-flux measurement better than ~10-20 %.
+The reported total is exactly
+
+```
+Hbeta = Hb_br + Hb_na
+```
+
+where `Hb_br` is the single free skew-normal broad component and `Hb_na` is
+the narrow Gaussian tied to the fixed [O III] 5007 width.  `OIII5007` is
+`OIII5007c + OIII5007w`; `MgII` is `MgII_br + MgII_na`.
+
+`line_prop` integrates each component over +/-3 sigma in ln(lambda), so a
+strongly skewed profile loses a small fraction of its analytic tail.  The
+component-summed H-beta total is therefore ~2.5 % below the full model
+integral over 4640-4940 A (`pyqsofitspec_model.csv`): 3525 vs 3614 in the
+production run.  This is the upstream PyQSOFitSpec definition; the sibling
+tools use their own window/area conventions.
+
+The earlier 3439 total (10 realisations, unconverged H-beta complex) was
+~18 % above GANDALF (2951) and ~25 % above S3Fit (2761).  The production
+total, 3525, is ~19.5 % above GANDALF, ~28 % above S3Fit, ~21 % above
+PyQSOFit (2905), ~21 % above QGfit (2915) and only ~9 % above GalSpec
+(3237).  The H-beta/[O III] ratio is 2.15, close to GANDALF (2.07) and
+GalSpec (2.00), so the absolute offset affects both lines similarly and is
+consistent with a continuum/absolute-scale difference rather than a
+line-flux error.
+This is **not** a summation or unit error.  It is driven by the continuum:
+
+* with the PyQSOFitSpec continuum, the data-minus-continuum integral over
+  4640-4940 A is ~4100 (1e-17 erg/s/cm2);
+* with the PyQSOFit continuum (same data) it is ~2990;
+* the PyQSOFitSpec continuum is lower by ~4-5 units (10-12 %) at 4700-4900 A,
+  and the H-beta model absorbs that difference.
+
+This can be recomputed from `pyqsofitspec_model.csv`:
+
+```python
+import numpy as np
+d = np.genfromtxt("outputs/<source>/pyqsofitspec_line/pyqsofitspec_model.csv",
+                  delimiter=",", names=True)
+m = (d["wave"] > 4640) & (d["wave"] < 4940)
+print(np.trapz(d["line"][m], d["wave"][m]))          # model line flux
+print(np.trapz((d["flux"] - d["conti"])[m], d["wave"][m]))  # data - continuum
+```
+
+The two codes use different Fe II templates/continuum implementations
+(PyQSOFitSpec's Vestergaard & Wilkes optical template vs PyQSOFit's own
+templates) and different line profiles (one skew-normal vs two Gaussians).
+PyQSOFitSpec's optical table also has **no separate He II 4687 component**, so
+He II 4687 is absorbed by `Hb_br`; PyQSOFit fits `HeII4687_br`/`_na`
+explicitly.  This is another model-definition difference, not a summation
+bug.  The model totals therefore sit between the two continuum
+definitions.  The offset is a **model/continuum-definition difference**, and
+for line-ratio work the internal ratios (e.g. H-beta/[O III]) are more robust
+than the absolute flux.
 
 ## Compatibility work (no change to the method)
 
@@ -215,40 +348,46 @@ had to be solved:
    `main.py`.
 
 No numpy/scipy/astropy API patch was needed inside the package itself; the
-pinned versions are recent enough for the code as published.
+pinned versions are recent enough for the code as published.  The only
+runtime intervention is the kmpfit `maxiter` wrapper described above, which
+does not change the model or the minimiser, only its iteration cap.
 
 ## Caveats
 
-* **`nboot_fit=10` is a smoke ensemble.**  The uncertainty of the uncertainty
-  is ~1/sqrt(2*(nboot-1)) ~ 24 %; use 50-100 for science.
-* **The [O III] core/wing split is bimodal.**  In 5 of 10 realisations the
-  fit puts ~1030 in the narrow core and ~600 in the wing, in the other 5
-  ~520/~1110.  The *total* 5007 flux is stable (1631 +/- 18), the split is
-  not (`OIII5007c` is flagged `stable=false`).  Use `OIII5007` total, not the
-  core, for line-ratio work.
-* **Narrow-line widths are prior-bounded.**  `Hb_na` and `OIII5007c` sit at
-  the `sigval` upper bound `1.2e-3` (FWHM 848 km/s), i.e. the data want a
-  broader "narrow" component; the same happens in `pyqsofit_uv` (846.8 km/s).
-  Only their fluxes are measurements; `pyqsofitspec_lines.csv` flags this in
-  the `note` column.
-* **Reduced chi2 is 6-10**, not ~1.  The SDSS `IVAR` is a formal per-pixel
-  error and does not include flux-calibration/template systematics; the
-  Fe II pseudo-continuum is also imperfect under H-beta.  The bootstrap
-  inherits those formal errors, which is why the statistical error bars are
-  small compared with the inter-tool spread.
+* **The [O III] core/wing split is still bimodal.**  The total 5007 flux is
+  stable, but individual realisations split it differently between the narrow
+  core and the broad wing (the two components overlap in velocity and width).
+  `OIII5007c` is therefore flagged `stable=false` in some runs; use
+  `OIII5007 = OIII5007c + OIII5007w` for line-ratio work, not the core alone.
+* **The NLR width is fixed, not fitted.**  It is anchored to the [O III] 5007
+  measurement (`FWHM 998 +/- 38 km/s` -> adopted 989 km/s).  The narrow-line
+  fluxes are conditional on that anchor; a +/-40 km/s change moves the narrow
+  H-beta flux by ~10 % and the total by < 2 %.
+* **Reduced chi2 is 8-11**, not ~1.  The SDSS `IVAR` is a formal per-pixel
+  error and does not include flux-calibration/template systematics; the Fe II
+  pseudo-continuum is also imperfect under H-beta.  The bootstrap inherits
+  those formal errors, which is why the statistical error bars are small
+  compared with the inter-tool spread.
 * **Skew-normal degeneracy.**  The skewness parameter is free over
-  [-1000, 1000] for broad components (upstream default) and the fit uses
-  `a ~ -0.7 ... -2.6`; a skewed profile trades peak against wing flux, so the
-  broad FWHM and the broad flux are correlated.  The corner plot shows this.
+  `[-5, 5]` for the broad components (`[-1000, 1000]` is the upstream
+  default).  The fit often sits near the -5 bound (a mildly one-sided
+  profile); a skewed profile trades peak against wing flux, so broad FWHM and
+  broad flux are correlated.  The corner plot shows this.  The bound is a
+  shape prior, not a width prior.
 * **Mg II is a blended doublet** (2796/2804) plus UV Fe II; the model fits one
-  skewed profile per component, so Mg II fluxes are comparable in definition
-  only to tools that also treat the blend as one line (S3Fit sums 2796+2804).
+  skewed profile plus a weak narrow component whose width is fixed to the NLR
+  anchor.  The Mg II broad/narrow split is therefore model-dependent (the
+  fixed 989 km/s narrow component carries 367 of the 2030 total); use the
+  Mg II **total**, not the split, for line-ratio work.  Mg II fluxes are
+  comparable in definition only to tools that also treat the blend as one
+  line (S3Fit sums 2796+2804).
 * **H-beta/[O III] only** for this object: at z = 0.587 the rest-frame
   coverage is 2394-5794 A, so H-alpha/[N II]/[S II] are not observable and
-  C III]/C IV are not in the list (they were dropped from `main.py`'s UV set
-  to keep the run short); add them to `line_table` for higher-z targets.
+  C III]/C IV are not in the list (they were dropped from upstream `main.py`'s
+  UV set to keep the run short); add them to `line_table` for higher-z
+  targets.
 * The fit figure is realisation 0 of the bootstrap (upstream behaviour); the
-  numbers in the tables are means over all realisations.
+  numbers in the tables are means over all valid realisations.
 
 ## Provenance / licence
 

@@ -335,7 +335,7 @@ def main(argv=None):
     p.add_argument("--pyqsofitspec-config", default=None,
                    help="PyQSOFitSpec config directory (default: configs/pyqsofitspec_line/default)")
     p.add_argument("--pyqsofitspec-nboot", type=int, default=None,
-                   help="PyQSOFitSpec bootstrap realisations (default from config.json: 10)")
+                   help="PyQSOFitSpec bootstrap realisations (default from config.json: 50)")
     p.add_argument("--s3fit-config", default=None,
                    help="S3Fit config directory (default: configs/s3fit_line/default)")
     p.add_argument("--s3fit-n-mocks", type=int, default=None,

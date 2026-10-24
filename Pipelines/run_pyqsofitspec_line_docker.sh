@@ -5,7 +5,7 @@
 #
 # Options:
 #   --config DIR       config directory (default: configs/pyqsofitspec_line/default)
-#   --nboot N          bootstrap realisations (default from config.json: 5)
+#   --nboot N          bootstrap realisations (default from config.json: 50)
 #   --seed N           random seed (default from config.json)
 #   --z Z              override systemic redshift
 #   --name NAME        object name used in the figures / run.json

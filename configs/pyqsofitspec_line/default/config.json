@@ -1,8 +1,9 @@
 {
-  "_comment": "PyQSOFitSpec production line fit for the SDSS optical QSO spectra. Flux/err are interpreted in 1e-17 erg s-1 cm-2 A-1 (PyQSOFit native unit); rest-frame vacuum wavelengths in Angstrom.",
+  "_comment": "PyQSOFitSpec production line fit for SDSS optical QSO spectra. Flux/err are in 1e-17 erg s-1 cm-2 A-1 (PyQSOFit native unit); rest-frame vacuum wavelengths in Angstrom. Production defaults: 50 bootstrap realisations, kmpfit maxiter 1500 with xtol 1e-6/ftol 1e-8, NLR width anchored to a direct [O III] 5007 measurement (ln_sigma=0.0014, FWHM 989 km/s) and H-beta/[O III] NLR kinematics tied to that anchor.",
   "linemodel": "skewnorm_model",
-  "nboot_fit": 10,
+  "nboot_fit": 50,
   "seed": 20250101,
+  "kmpfit_maxiter": 1500,
   "error_floor_frac": 0.0,
   "obs_wave_range": [
     3800.0,
@@ -28,6 +29,12 @@
         "Hb_br",
         "Hb_na"
       ],
+      "Hbeta_broad": [
+        "Hb_br"
+      ],
+      "Hbeta_narrow": [
+        "Hb_na"
+      ],
       "OIII5007": [
         "OIII5007c",
         "OIII5007w"
@@ -43,7 +50,9 @@
     ],
     "labels": {
       "MgII": "Mg II 2798 total",
-      "Hbeta": "H-beta total",
+      "Hbeta": "H-beta total (broad+narrow)",
+      "Hbeta_broad": "H-beta broad",
+      "Hbeta_narrow": "H-beta narrow (tied to [O III])",
       "OIII5007": "[O III] 5007 total",
       "OIII5007core": "[O III] 5007 core"
     }
@@ -59,7 +68,8 @@
       "sigval": "[0.004, 0.05]",
       "voff": 0.015,
       "iniskw": "0",
-      "fvalue": "0.05"
+      "fvalue": "0.05",
+      "kind": "broad"
     },
     {
       "lambda": 2798.75,
@@ -68,10 +78,11 @@
       "maxwav": 2900.0,
       "linename": "MgII_na",
       "ngauss": 1,
-      "sigval": "[3.3e-4, 8.e-4]",
+      "sigval": "[0.0014]",
       "voff": 0.01,
       "iniskw": "0",
-      "fvalue": "0.002"
+      "fvalue": "0.002",
+      "kind": "narrow"
     },
     {
       "lambda": 4862.68,
@@ -80,10 +91,11 @@
       "maxwav": 5100.0,
       "linename": "Hb_br",
       "ngauss": 1,
-      "sigval": "[0.004, 0.05]",
-      "voff": 0.015,
-      "iniskw": "0",
-      "fvalue": "0.05"
+      "sigval": "[0.004, 0.012]",
+      "voff": 0.006,
+      "iniskw": "[-5, 5]",
+      "fvalue": "0.05",
+      "kind": "broad"
     },
     {
       "lambda": 4862.68,
@@ -92,10 +104,11 @@
       "maxwav": 5100.0,
       "linename": "Hb_na",
       "ngauss": 1,
-      "sigval": "[3.3e-4, 1.2e-3]",
-      "voff": 0.01,
+      "sigval": "OIII5007c*1.0",
+      "voff": 0.006,
       "iniskw": "0",
-      "fvalue": "0.002"
+      "fvalue": "0.002",
+      "kind": "narrow"
     },
     {
       "lambda": 4960.3,
@@ -105,9 +118,10 @@
       "linename": "OIII4959c",
       "ngauss": 1,
       "sigval": "OIII5007c*1.0",
-      "voff": 0.01,
+      "voff": 0.006,
       "iniskw": "0",
-      "fvalue": "OIII5007c*0.33"
+      "fvalue": "OIII5007c*0.33",
+      "kind": "narrow"
     },
     {
       "lambda": 5008.24,
@@ -116,10 +130,11 @@
       "maxwav": 5100.0,
       "linename": "OIII5007c",
       "ngauss": 1,
-      "sigval": "[3.3e-4, 1.2e-3]",
-      "voff": 0.01,
+      "sigval": "[0.0014]",
+      "voff": 0.006,
       "iniskw": "0",
-      "fvalue": "0.002"
+      "fvalue": "0.002",
+      "kind": "narrow"
     },
     {
       "lambda": 4960.3,
@@ -129,9 +144,10 @@
       "linename": "OIII4959w",
       "ngauss": 1,
       "sigval": "OIII5007w*1.0",
-      "voff": 0.015,
+      "voff": 0.006,
       "iniskw": "0",
-      "fvalue": "OIII5007w*0.33"
+      "fvalue": "OIII5007w*0.33",
+      "kind": "broad"
     },
     {
       "lambda": 5008.24,
@@ -141,9 +157,19 @@
       "linename": "OIII5007w",
       "ngauss": 1,
       "sigval": "[0.003, 0.008]",
-      "voff": 0.015,
-      "iniskw": "0",
-      "fvalue": "0.002"
+      "voff": 0.006,
+      "iniskw": "[-5, 5]",
+      "fvalue": "0.002",
+      "kind": "broad"
     }
-  ]
+  ],
+  "nlr_width_anchor": {
+    "component": "OIII5007c",
+    "sigval_ln_sigma": 0.0014,
+    "fwhm_kms": 989.0,
+    "method": "single-Gaussian fit to [O III] 5007 with a linear local continuum on 04592649654: FWHM 998 +/- 38 km/s (sigma 7.08 A); adopted 0.0014"
+  },
+  "kmpfit_ftol": 1e-08,
+  "kmpfit_xtol": 1e-06,
+  "max_line_red_chi2": 15.0
 }

@@ -1,6 +1,6 @@
 {
   "linemodel": "skewnorm_model",
-  "nboot_fit": 10,
+  "nboot_fit": 55,
   "seed": 20250101,
   "error_floor_frac": 0.0,
   "obs_wave_range": [
@@ -9,6 +9,9 @@
   ],
   "flux_unit": "auto",
   "nsmooth": 1,
+  "kmpfit_maxiter": 1500,
+  "kmpfit_ftol": 1e-08,
+  "kmpfit_xtol": 1e-06,
   "reject_badpix": false,
   "Fe_uv_op": true,
   "poly": true,
@@ -28,7 +31,8 @@
       "sigval": "[0.004, 0.05]",
       "voff": 0.015,
       "iniskw": "0",
-      "fvalue": "0.05"
+      "fvalue": "0.05",
+      "kind": "broad"
     },
     {
       "lambda": 2798.75,
@@ -37,10 +41,11 @@
       "maxwav": 2900.0,
       "linename": "MgII_na",
       "ngauss": 1,
-      "sigval": "[3.3e-4, 8.e-4]",
+      "sigval": "[0.0014]",
       "voff": 0.01,
       "iniskw": "0",
-      "fvalue": "0.002"
+      "fvalue": "0.002",
+      "kind": "narrow"
     },
     {
       "lambda": 4862.68,
@@ -49,10 +54,11 @@
       "maxwav": 5100.0,
       "linename": "Hb_br",
       "ngauss": 1,
-      "sigval": "[0.004, 0.05]",
-      "voff": 0.015,
-      "iniskw": "0",
-      "fvalue": "0.05"
+      "sigval": "[0.004, 0.012]",
+      "voff": 0.006,
+      "iniskw": "[-5, 5]",
+      "fvalue": "0.05",
+      "kind": "broad"
     },
     {
       "lambda": 4862.68,
@@ -61,10 +67,11 @@
       "maxwav": 5100.0,
       "linename": "Hb_na",
       "ngauss": 1,
-      "sigval": "[3.3e-4, 1.2e-3]",
-      "voff": 0.01,
+      "sigval": "OIII5007c*1.0",
+      "voff": 0.006,
       "iniskw": "0",
-      "fvalue": "0.002"
+      "fvalue": "0.002",
+      "kind": "narrow"
     },
     {
       "lambda": 4960.3,
@@ -74,9 +81,10 @@
       "linename": "OIII4959c",
       "ngauss": 1,
       "sigval": "OIII5007c*1.0",
-      "voff": 0.01,
+      "voff": 0.006,
       "iniskw": "0",
-      "fvalue": "OIII5007c*0.33"
+      "fvalue": "OIII5007c*0.33",
+      "kind": "narrow"
     },
     {
       "lambda": 5008.24,
@@ -85,10 +93,11 @@
       "maxwav": 5100.0,
       "linename": "OIII5007c",
       "ngauss": 1,
-      "sigval": "[3.3e-4, 1.2e-3]",
-      "voff": 0.01,
+      "sigval": "[0.0014]",
+      "voff": 0.006,
       "iniskw": "0",
-      "fvalue": "0.002"
+      "fvalue": "0.002",
+      "kind": "narrow"
     },
     {
       "lambda": 4960.3,
@@ -98,9 +107,10 @@
       "linename": "OIII4959w",
       "ngauss": 1,
       "sigval": "OIII5007w*1.0",
-      "voff": 0.015,
+      "voff": 0.006,
       "iniskw": "0",
-      "fvalue": "OIII5007w*0.33"
+      "fvalue": "OIII5007w*0.33",
+      "kind": "broad"
     },
     {
       "lambda": 5008.24,
@@ -110,9 +120,10 @@
       "linename": "OIII5007w",
       "ngauss": 1,
       "sigval": "[0.003, 0.008]",
-      "voff": 0.015,
-      "iniskw": "0",
-      "fvalue": "0.002"
+      "voff": 0.006,
+      "iniskw": "[-5, 5]",
+      "fvalue": "0.002",
+      "kind": "broad"
     }
   ],
   "comparison": {
@@ -129,6 +140,12 @@
         "OIII5007c",
         "OIII5007w"
       ],
+      "Hbeta_broad": [
+        "Hb_br"
+      ],
+      "Hbeta_narrow": [
+        "Hb_na"
+      ],
       "OIII5007core": [
         "OIII5007c"
       ]
@@ -140,11 +157,20 @@
     ],
     "labels": {
       "MgII": "Mg II 2798 total",
-      "Hbeta": "H-beta total",
+      "Hbeta": "H-beta total (broad+narrow)",
+      "Hbeta_broad": "H-beta broad",
+      "Hbeta_narrow": "H-beta narrow (tied to [O III])",
       "OIII5007": "[O III] 5007 total",
       "OIII5007core": "[O III] 5007 core"
     }
   },
+  "nlr_width_anchor": {
+    "component": "OIII5007c",
+    "sigval_ln_sigma": 0.0014,
+    "fwhm_kms": 989.0,
+    "method": "single-Gaussian fit to [O III] 5007 with a linear local continuum on 04592649654: FWHM 998 +/- 38 km/s (sigma 7.08 A); adopted 0.0014"
+  },
+  "max_line_red_chi2": 15.0,
   "_resolved": {
     "spectrum": "/app/input/spec-00000-59345-04592649654.fits",
     "layout": "sdss_table",
@@ -156,9 +182,15 @@
       2393.9,
       5794.4
     ],
-    "nboot_fit": 10,
+    "nboot_fit": 55,
+    "nboot_valid": 53,
+    "n_converged": 55,
     "seed": 20250101,
+    "kmpfit_maxiter": 1500,
     "package": "/app/pyqsofitspec/PyQSOFitSpec.py",
-    "upstream_commit": "aa326ed0b13003b22588a0ad9c8a369d9a2de6dd"
+    "upstream_commit": "aa326ed0b13003b22588a0ad9c8a369d9a2de6dd",
+    "kmpfit_ftol": 1e-08,
+    "kmpfit_xtol": 1e-06,
+    "max_line_red_chi2": 15.0
   }
 }
