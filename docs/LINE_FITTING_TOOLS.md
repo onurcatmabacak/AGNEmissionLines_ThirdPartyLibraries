@@ -11,6 +11,7 @@ CAFE, S3Fit, GANDALF, PAHFIT and the generic Gaussian fitters operate on
 | tool | family | rest-frame coverage | decomposition | uncertainty |
 |---|---|---|---|---|
 | `pyqsofit_uv` | line | UV–optical | power-law/Fe II continuum + broad/narrow Gaussians | covariance, optional MC/`emcee` |
+| `qsofitmore_line` | line | UV–optical | broken PL + V09 Fe II + Balmer continuum/high-order Balmer + broad/narrow Gaussians | lmfit parametric MC (200 draws), no MCMC |
 | `ir_linefit` | line | UV–FIR | local continuum + Gaussians, doublet/kinematic ties | covariance |
 | `nir_linefit` | line | NIR | x1d/PSF spectrum + local continuum + Gaussians | covariance |
 | `cafe_line` | line | NIR–MIR | stellar/dust/AGN continua + PAH + H/atomic/molecular lines | LMFIT covariance + MC |
@@ -29,6 +30,31 @@ CAFE, S3Fit, GANDALF, PAHFIT and the generic Gaussian fitters operate on
 | `agnfitter_sed` | **SED** | UV–MIR | BC03 + S17 + THB21 BBB + SKIRTOR torus | `ultranest` posterior |
 
 ## What each new line tool measures
+
+### QSOFITMORE
+
+Public `rudolffu/qsofitmore` v1.2.2 at commit
+`4c5f6e497b306aaf50b502a8e4b27ed9dfe89421` (GPL-3.0), a standalone
+PyQSOFit-derived UV/optical QSO fitter.  The `qsofitmore_line` image uses the
+package's default lmfit backend (no Kapteyn), the Verner et al. (2009) Fe II
+template, the broken power law, the Dietrich et al. (2002) Balmer continuum
+and the Storey & Hummer (1995) high-order Balmer series, and the package's
+Monte Carlo error path (`MC=True, n_trails=200`).  qsofitmore 1.2.2 has no
+`emcee`/MCMC sampler; the MC is a parametric bootstrap of the calibrated
+errors, not a posterior.
+
+The effective line table is the upstream example table with the [O III]
+4959/5007 and outflow doublet ratios tied to 0.33.  H-alpha, C III] and C IV
+are outside the `04592649654` SDSS rest-frame coverage (2247–6510 Å) and are
+reported as `not_covered`.  The compact table recomputes each physical line
+total from all Gaussian components because the package's
+`<complex>_whole_br_area` column applies a 1200 km/s classifier and can omit
+Gaussians that belong to the broad template.  On `04592649654`: Hβ
+3076.6±100.1, [O III] 5007 1505.3±57.3, Hβ/[O III] **2.044±0.102**, Mg II
+2540.8±209.4; the Hβ complex χ²_r is 17.9 (model mismatch, not a flux
+failure).  The cross-tool median Hβ/[O III] is 2.074 with 0.060 dex scatter.
+See `docs/MCMC_AND_STATISTICS.md` and
+`outputs/04592649654_z_0.5874/qsofitmore_line/README.md`.
 
 ### CAFE
 

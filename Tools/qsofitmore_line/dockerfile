@@ -1,0 +1,92 @@
+# QSOFITMORE UV/optical AGN spectrum fitting
+#
+# Build context is the repository root:
+#   docker build -f Tools/qsofitmore_line/dockerfile -t qsofitmore_line .
+#
+# The upstream package is installed from a pinned public commit.  The SFD98
+# dust map is downloaded and MD5-verified at build time under /app/cache;
+# Tools/qsofitmore_line/fetch_sfd.sh is also kept in the image so a run can
+# repair an incomplete cache at runtime.
+FROM python:3.12-slim
+
+ARG QSOFITMORE_COMMIT=4c5f6e497b306aaf50b502a8e4b27ed9dfe89421
+ARG QSOFITMORE_VERSION=1.2.2
+ARG SFD_DOI=10.7910/DVN/EWCNL5
+
+LABEL org.opencontainers.image.title="qsofitmore_line" \
+      org.opencontainers.image.description="QSOFITMORE UV/optical AGN continuum and emission-line fitting (pinned upstream, lmfit + Monte Carlo)" \
+      org.opencontainers.image.source="https://github.com/rudolffu/qsofitmore" \
+      org.opencontainers.image.revision="${QSOFITMORE_COMMIT}" \
+      org.opencontainers.image.version="${QSOFITMORE_VERSION}" \
+      org.opencontainers.image.licenses="GPL-3.0" \
+      int.agne.fitting.backend="lmfit" \
+      int.agne.dustmap="SFD98 (${SFD_DOI})"
+
+ENV PYTHONUNBUFFERED=1 \
+    MPLBACKEND=Agg \
+    MPLCONFIGDIR=/tmp/mpl \
+    HOME=/tmp \
+    QSOFITMORE_USE_LMFIT=true \
+    QSOFITMORE_WAVE_SCALE=log \
+    QSOFITMORE_VELOCITY_UNITS=lnlambda \
+    QSOFITMORE_NARROW_MAX_KMS=1200 \
+    QSOFITMORE_COMMIT=${QSOFITMORE_COMMIT} \
+    QSOFITMORE_VERSION=${QSOFITMORE_VERSION} \
+    QSOFITMORE_DUSTMAP=/app/cache/dustmaps/sfd
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+      ca-certificates curl git && \
+    rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+
+COPY Tools/qsofitmore_line/requirements.txt /app/requirements.txt
+RUN pip install --no-cache-dir --upgrade pip && \
+    pip install --no-cache-dir -r /app/requirements.txt
+
+# Pin the upstream source by commit, verify the checkout, then install.  A
+# partial clone keeps the image from carrying the upstream history.
+RUN git clone --filter=blob:none --no-checkout \
+        https://github.com/rudolffu/qsofitmore.git /tmp/qsofitmore && \
+    cd /tmp/qsofitmore && \
+    git checkout --detach "${QSOFITMORE_COMMIT}" && \
+    test "$(git rev-parse HEAD)" = "${QSOFITMORE_COMMIT}" && \
+    pip install --no-cache-dir . && \
+    cd / && rm -rf /tmp/qsofitmore
+
+# Record and verify the installed upstream version/commit without Kapteyn.
+RUN python - <<'PY'
+import importlib.metadata as md
+import qsofitmore
+print("qsofitmore package:", qsofitmore.__file__)
+print("qsofitmore version:", md.version("qsofitmore"))
+print("lmfit version:", md.version("lmfit"))
+PY
+
+# SFD98 map + provenance sidecar.  The runner can also call this script if a
+# cache is ever incomplete; /app/cache is intentionally group/world writable.
+COPY Tools/qsofitmore_line/fetch_sfd.sh /app/fetch_sfd.sh
+RUN bash /app/fetch_sfd.sh /app/cache/dustmaps/sfd && \
+    python - <<'PY'
+from dustmaps.sfd import SFDQuery
+from astropy.coordinates import SkyCoord
+import astropy.units as u
+q = SFDQuery(map_dir="/app/cache/dustmaps/sfd")
+ebv = q(SkyCoord(142.43091*u.deg, 0.69092798*u.deg, frame="icrs"))
+print("SFD98 E(B-V) at 04592649654:", float(ebv))
+PY
+
+COPY Tools/qsofitmore_line/main.py /app/run/main.py
+COPY configs/qsofitmore_line/default/config.json /app/config/config.json
+COPY configs/qsofitmore_line/default/line_table.csv /app/config/line_table.csv
+COPY configs/qsofitmore_line/default/README.md /app/config/README.md
+
+WORKDIR /app/run
+RUN mkdir -p /app/input /app/output /app/cache/dustmaps/sfd && \
+    chmod 777 /app/run /app/output /app/cache /app/cache/dustmaps /app/cache/dustmaps/sfd && \
+    chmod -R a+rX /app/cache/dustmaps/sfd /app/config
+
+CMD ["python", "/app/run/main.py", \
+     "--input-dir", "/app/input", \
+     "--out", "/app/output", \
+     "--config", "/app/config"]

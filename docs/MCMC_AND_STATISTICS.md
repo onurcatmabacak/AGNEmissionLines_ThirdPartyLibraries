@@ -7,6 +7,7 @@ broad-band SED code is not a line fitter.
 | tool | native method | MCMC? | what is saved |
 |---|---|---|---|
 | `pyqsofit_uv` | least-squares; optional `emcee`; optional MC resampling | optional | `pyqsofit_mc_samples.csv`, `pyqsofit_mc.png` (100 MC realizations); MCMC corner only when stable |
+| `qsofitmore_line` | least-squares; `MC=True` lmfit parametric bootstrap (200 realizations) | no | `qsofitmore_mc_samples.csv`, `qsofitmore_mc_summary.csv`, `qsofitmore_corner.png`, `qsofitmore_uncertainty.png` |
 | `agnfitter_sed` | `ultranest` nested sampling | yes (nested) | posterior quantiles, realization PDFs |
 | `cigale_sed` | `pdf_analysis` Bayesian likelihood/posterior | no | `sed_fit.png`, `sed_summary.csv`, model-family spread |
 | `pahfit_mir` | least-squares + covariance/bootstrap MC (100-200 draws) | no | `pahfit_uncertainties.csv`, `pahfit_uncertainty.png` |
@@ -20,6 +21,33 @@ broad-band SED code is not a line fitter.
 | `ir_linefit` / `nir_linefit` / `fir_linefit` | `least_squares`/`curve_fit` covariance | no | per-line `flux_err`, `fwhm_err` |
 | `ppxf_host` | pPXF formal errors | no | `sigma_err_kms`, host error |
 | `crossband` | analytic ratio propagation | no | `err` per ratio |
+
+## QSOFITMORE: native Monte Carlo, no MCMC
+
+`qsofitmore` 1.2.2 exposes `MC=True, n_trails=N`: it adds `N(0, err)` to the
+calibrated spectrum and refits the continuum and each line complex with lmfit.
+This is a frequentist parametric bootstrap, not an `emcee`/MCMC posterior; the
+package has no MCMC sampler.  The production run uses **200 realizations**,
+seed `20250101`, and records the H-beta/[O III] ratio from the same H-beta
+complex draws (correlated errors) plus an independent Mg II complex.
+
+The package's `<complex>_whole_br_area` column sums only Gaussians above its
+1200 km/s classifier.  A multi-Gaussian broad template can contain narrower
+Gaussians, so the compact table recomputes each physical line total from all
+components.  This matters: for `04592649654` the package's H-beta broad column
+is about half of the total H-beta flux, while the all-component total is
+consistent with PyQSOFit/GANDALF.  The component-level split is degenerate;
+the total is the stable quantity.  The production result is Hβ
+3076.6±100.1, [O III] 5007 1505.3±57.3, Hβ/[O III] **2.044±0.102** (MC
+p16–p84 1.960–2.103), and Mg II 2540.8±209.4; all 1,000 line-complex
+realizations were valid.  The cross-tool median Hβ/[O III] is 2.074 with
+0.060 dex scatter.  **The MC distributions are not Gaussian.**  Mg II is
+bimodal: a high-quality mode near 2560 (best fit, χ²_r=1.38) and a lower
+local-minimum mode near 2130 where both broad Gaussians hit the 0.004 ln-width
+bound (χ²_r≈2.4).  The 16–84% interval 2133–2603 is the appropriate
+uncertainty; the std 209 spans both modes.  Hβ total is mildly bimodal (modes
+near 2900 and 3070; 16–84% 2895–3089).  These are template degeneracies, not
+Gaussian errors.
 
 ## PyQSOFit: MCMC initialization fixed, short chain retained
 
@@ -53,6 +81,7 @@ remains the **100-realization MC**.  Both statuses are explicit in
 | tool | run | realizations | method | figure |
 |---|---|---:|---|---|
 | PyQSOFit | `04592649654` | 100 | MC error-array resampling | `outputs/04592649654_z_0.5874/pyqsofit/mc/pyqsofit_mc.png` |
+| QSOFITMORE | `04592649654` | **200** | lmfit parametric bootstrap (continuum + line complexes) | `outputs/04592649654_z_0.5874/qsofitmore_line/qsofitmore_corner.png` |
 | PyQSOFit MCMC | `04592649654` | 800 (10-step validation) | `emcee`, **not converged**; 300-step diagnostics | `outputs/04592649654_z_0.5874/pyqsofit/mcmc/pyqsofit_mcmc_corner.png` |
 | S3Fit | `04592649654` | **10** | mock spectra (spec+sed) | `outputs/04592649654_z_0.5874/s3fit_line/s3fit_mc.png` |
 | GalSpec | `04592649654` | 37,334 saved samples (thin 6; 224,000 post-burn draws) | full-continuum `emcee`, 80 walkers x 4000 steps, tau_max 342.6 | `outputs/04592649654_z_0.5874/galspec_line/galspec_corner.png` |

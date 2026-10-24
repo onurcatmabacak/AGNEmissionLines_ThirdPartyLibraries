@@ -10,7 +10,7 @@ Pipelines/               shell entry points (new tools + archived optical)
 pipeline/                Python orchestration, layout helpers, input preparation
 Tools/                   Dockerized tool source and Dockerfiles
   pipeline_ir/           generic IR line router/fitter
-  pyqsofit_uv/ ppxf_host/ UV/host tool images
+  pyqsofit_uv/ qsofitmore_line/ ppxf_host/ UV/host tool images
   gandalf_line/          native GANDALF v1.5 under GDL
   cafe_line/ s3fit_line/ galspec_line/ NIR/MIR/optical spectrum+SED line tools
   nir_linefit/ pahfit_mir/ fir_linefit/ crossband/

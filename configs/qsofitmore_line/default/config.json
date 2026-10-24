@@ -1,0 +1,110 @@
+{
+  "_comment": "Effective QSOFITMORE configuration for the SDSS/eFEDS QSO 04592649654_z_0.5874. The executable runner is Tools/qsofitmore_line/main.py; this file is the reviewable switch record. Every fit switch below is passed explicitly to qsofitmore.QSOFitNew.Fit.",
+  "tool": "qsofitmore_line",
+  "variant": "default",
+  "upstream": {
+    "repo": "https://github.com/rudolffu/qsofitmore",
+    "commit": "4c5f6e497b306aaf50b502a8e4b27ed9dfe89421",
+    "version": "1.2.2",
+    "license": "GPL-3.0",
+    "citation": "Fu et al., qsofitmore (PyQSOFit derivative); see upstream CITATION and README"
+  },
+  "line_table": {
+    "path": "line_table.csv",
+    "wave_scale": "log",
+    "velocity_units": "lnlambda",
+    "narrow_max_kms": 1200.0,
+    "source": "qsofitmore/examples/output/qsopar_log.csv at the pinned commit, with the [O III] 4959/5007 and outflow doublet flux ratios tied (findex=1/2, fvalue=0.33/1.00) and narrow C III]/C IV rows added for UV coverage. H-alpha/C III]/C IV rows are retained for general use and are automatically skipped when their rest wavelength is outside the observed rest-frame coverage."
+  },
+  "fit": {
+    "deredden": true,
+    "dust_map": "sfd",
+    "dust_law": "Fitzpatrick (1999) f99law, R_V=3.1, as implemented in qsofitmore.extinction",
+    "decomposition_host": false,
+    "include_iron": true,
+    "iron_temp_name": "V09",
+    "Fe_verner09": true,
+    "poly": false,
+    "broken_pl": true,
+    "BC": true,
+    "rej_abs": false,
+    "nsmooth": 1,
+    "wave_range": [
+      2247.0,
+      6510.4
+    ],
+    "Fe_flux_range": [
+      [
+        2250.0,
+        2700.0
+      ],
+      [
+        4434.0,
+        4684.0
+      ],
+      [
+        5100.0,
+        5600.0
+      ]
+    ],
+    "tie_lambda": true,
+    "tie_width": true,
+    "tie_flux_1": true,
+    "tie_flux_2": true,
+    "narrow_max_kms": 1200.0,
+    "pl_pivot_A": 3000.0,
+    "log10_electron_density": 9.0,
+    "linefit": true,
+    "save_result": true,
+    "plot_fig": true,
+    "save_fig": true,
+    "wave_range_note": "Rest-frame clean coverage of the SDSS COADD after dropping zero-IVAR pixels. The upper edge is set just below H-alpha/NII6549 so a prepared PyQSOFit copy (which sanitises zero-IVAR pixels) cannot pull the H-alpha complex into the fit."
+  },
+  "uncertainty": {
+    "mode": "parametric Monte Carlo: add N(0, err) to every fitted pixel and refit the continuum and each line complex with lmfit",
+    "n_trails": 200,
+    "seed": 20250101,
+    "mcmc": false,
+    "mcmc_note": "qsofitmore 1.2.2 does not implement an emcee/MCMC sampler. Its native uncertainty mode is the lmfit Monte Carlo refit used here; no MCMC is claimed.",
+    "package_broad_narrow_note": "qsofitmore classifies every fitted Gaussian by sigma > 1200 km/s for its <comp>_whole_br_area columns. Multi-Gaussian broad templates can contain individual Gaussians below that cut. The compact table therefore recomputes each physical line total from all of its Gaussian components; the package columns are retained in qsofitmore_result.csv and qsofitmore_components.csv for inspection."
+  },
+  "coverage": {
+    "rest_min_A": 2247.0,
+    "rest_max_A": 6510.4,
+    "covered": [
+      "Mg II 2798.75",
+      "Ne V 3426.84",
+      "O II 3728.48",
+      "H gamma 4341.68",
+      "H beta 4862.68",
+      "[O III] 4959/5007"
+    ],
+    "not_covered": [
+      "H alpha 6564.61",
+      "C III] 1908.73 (plus satellites)",
+      "C IV 1549.06",
+      "He II 1640.42"
+    ],
+    "coverage_note": "The SDSS COADD spans 3567-10335 A observed, i.e. 2247-6510 A at z=0.587413. H-alpha (6564.61 A rest) and the UV C III]/C IV complexes fall outside this range. They remain in the table for UV/higher-z spectra and are skipped by qsofitmore's complex selection."
+  },
+  "switches": {
+    "deredden": "SFD98 E(B-V) at the source coordinates, Fitzpatrick (1999) R_V=3.1 extinction; line fluxes are dereddened. The measured E(B-V) is recorded in qsofitmore_continuum.csv.",
+    "include_iron": "Enables the Fe II pseudo-continuum. With iron_temp_name=V09 the Verner et al. (2009) template (2000-10000 A) is used.",
+    "Fe_verner09": "Kept True together with iron_temp_name=V09 so qsofitmore.Fe_line_prop uses the V09 template when integrating the requested Fe II bands. This is the package's compatibility switch; qsofitmore warns that it is ignored when iron_temp_name is set, but the flag is still stored and is required for the Fe II band-flux columns.",
+    "broken_pl": "Two-slope power law. The 4661 A break lies inside 2247-6510 A, so qsofitmore selects its optical profile (3000 A pivot, 4661 A break). The blue and red slopes are both free.",
+    "BC": "Balmer continuum (Dietrich et al. 2002) plus the Storey & Hummer (1995) high-order Balmer series (n_upper=6-50) at log10(n_e)=9. This is the package's Balmer-continuum/high-order-Balmer capability.",
+    "poly": "Disabled because the broken power law already provides the large-scale curvature and an extra polynomial is not identifiable over this short lever arm.",
+    "decomposition_host": "Disabled. qsofitmore's Yip+2004 host decomposition restricts the rest-frame grid to about >=3450 A and would remove Mg II; the host is measured independently by pPXF in the repo.",
+    "rej_abs": "Disabled; the SDSS mask and calibrated errors already remove bad pixels. Enabling it did not change the H-beta/Mg II totals in the pre-run checks.",
+    "tie_lambda": "Ties line centres within a kinematics group to the first member of the group.",
+    "tie_width": "Ties Gaussian widths within a kinematics group. H-beta narrow and [O III] share group 1; the [O III] outflow wings share group 2.",
+    "tie_flux_1": "Ties the [O III] 4959 core amplitude to 0.33 of 5007 (group 1).",
+    "tie_flux_2": "Ties the [O III] 4959 outflow amplitude to 0.33 of 5007 (group 2).",
+    "n_trails": "Number of independent noise realizations per fitted complex (and for the continuum MC). 200 is 200x the package default of 1 and twice the PyQSOFit MC in this repo."
+  },
+  "systematics": {
+    "enabled": true,
+    "iron_template_alternate": "BG92-VW01",
+    "note": "After the primary V09 run the runner also performs a least-squares (MC off) BG92-VW01 fit to quantify the Fe II template systematic. The alternate result is written to systematics/ and is not used for the headline measurements."
+  }
+}
