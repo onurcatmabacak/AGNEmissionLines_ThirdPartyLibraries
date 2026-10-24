@@ -62,7 +62,7 @@ TOOLS: tuple[Tool, ...] = (
     Tool("qgfit", "line", ("UV", "optical"), "continuum MCMC + LSQ line errors", True,
          "configs/qgfit/default", "Pipelines/run_qgfit_docker.sh",
          "QGfit AGN/host/Fe II + multi-component lines"),
-    Tool("sheap_line", "line", ("UV", "optical"), "JAX optimisation + covariance MC", False,
+    Tool("sheap_line", "line", ("UV", "optical"), "JAX optimisation + parametric-bootstrap MC", False,
          "configs/sheap_line/default", "Pipelines/run_sheap_line_docker.sh",
          "SHEAP AGN spectral decomposition / BH mass"),
     Tool("ppxf_host", "host", ("optical", "NIR"), "pPXF formal errors", False,

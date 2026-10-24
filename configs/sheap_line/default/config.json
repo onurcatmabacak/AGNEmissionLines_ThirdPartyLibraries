@@ -1,22 +1,68 @@
 {
-  "_comment": "SHEAP 0.0.11 JAX fit of the H-beta/[O III] 4959,5007 region. The committed demonstration run uses CPU JAX, Adam for 1000 steps, and 50 covariance Monte-Carlo draws. SHEAP is not an MCMC code; see Tools/sheap_line/README.md.",
+  "_comment": "SHEAP 0.0.11 JAX fit of the rest-frame H-beta/[O III] 4959,5007 region. Production model (2026-08 audit): 4450-5450 A, two narrow SPAF components (NLR core + blueshifted [O III] wing), one broad H-beta/He II component, SHEAP Fe II template, power-law continuum, Adam 4000+1000 steps, parametric-bootstrap MC. The original 4600-5150 A / one-narrow / 600 km/s cap / no-Fe-II model gave chi2_nu=46 and H-beta/[O III]=4.00 for 04592649654; see docs/SHEAP_ASSESSMENT.md.",
   "z": null,
   "mask_and_mask": true,
   "sheap": {
-    "region_rest": [4600.0, 5150.0],
+    "region_rest": [4450.0, 5450.0],
     "n_broad": 1,
-    "n_narrow": 1,
-    "fe_mode": "None",
-    "continuum_profile": "brokenpowerlaw",
+    "n_narrow": 2,
+    "fe_mode": "template",
+    "continuum_profile": "powerlaw",
     "add_balmer_continuum": false,
     "add_balmerhighorder_continuum": false,
-    "num_steps": 1000,
-    "learning_rate": 0.01,
+    "add_outflow": false,
+    "num_steps": [4000, 1000],
+    "learning_rate": [0.01, 0.01],
     "method": "adam",
     "profile": "gaussian",
     "covariance_error": true,
     "montecarlo_samples": 50,
-    "seed": 42
+    "seed": 42,
+    "limits_overrides": {
+      "narrow": {
+        "upper_fwhm_kms": 2000.0,
+        "lower_fwhm_kms": 100.0,
+        "vshift_kms": 2000.0
+      },
+      "broad": {
+        "vshift_kms": 3000.0
+      }
+    },
+    "variants": [
+      {
+        "name": "narrow_fwhm_cap_1000",
+        "limits_overrides": {
+          "narrow": {"upper_fwhm_kms": 1000.0, "lower_fwhm_kms": 100.0, "vshift_kms": 2000.0},
+          "broad": {"vshift_kms": 3000.0}
+        }
+      },
+      {
+        "name": "single_narrow_component",
+        "n_narrow": 1
+      },
+      {
+        "name": "no_fe_template",
+        "fe_mode": "None"
+      },
+      {
+        "name": "red_end_5250",
+        "region_rest": [4450.0, 5250.0]
+      },
+      {
+        "name": "broken_powerlaw_continuum",
+        "continuum_profile": "brokenpowerlaw"
+      }
+    ]
+  },
+  "quality_gates": {
+    "max_chi2_red": 8.0,
+    "ratio_min": 1.8,
+    "ratio_max": 2.5,
+    "max_broad_hbeta_fwhm_kms": 7000.0,
+    "max_reference_deviation": 0.30,
+    "min_reference_tools": 2,
+    "oiii_doublet_min": 2.5,
+    "oiii_doublet_max": 3.8
   },
   "reference_tools": ["pyqsofit_uv", "gandalf_line", "s3fit_line"]
 }

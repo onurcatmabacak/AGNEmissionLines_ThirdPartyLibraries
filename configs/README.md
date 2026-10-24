@@ -44,7 +44,7 @@ the broad-band SED with templates.
 | `s3fit_line` | least-squares + mock-spectrum Monte Carlo (`num_mocks`) |
 | `galspec_line` | `emcee` posterior (GalSpec `MCMC_Fit`); optional `dynesty` nested sampling; LSQ covariance for auxiliary windows |
 | `qgfit` | short continuum `emcee` MCMC; line LSQ covariance |
-| `sheap_line` | JAX optimisation + covariance MC (not MCMC) |
+| `sheap_line` | JAX optimisation + parametric-bootstrap MC (not MCMC) |
 | `gandalf_line` | native MPFIT covariance/`FOR_ERRORS`; fallback bootstrap if GDL unavailable |
 | `ir_linefit`/`nir_linefit`/`fir_linefit` | covariance from `least_squares`/`curve_fit` |
 | `ppxf_host` | pPXF formal errors |

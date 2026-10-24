@@ -45,8 +45,11 @@
   about 18% above GANDALF/S3Fit.  The bootstrap errors are statistical only.
 * **QGfit** uses a short continuum MCMC and least-squares line errors; its
   Hβ/[O III] = 2.50, at the upper edge of the optical-tool spread.
-* **SHEAP** gives Hβ/[O III] = 4.00; it is retained as an experimental branch,
-  not a default scientific recommendation.
+* **SHEAP** originally gave Hβ/[O III] = 4.00 because its 4600-5150 Å /
+  single-narrow / 600 km/s-cap / no-Fe-II model could not describe this object
+  (χ²_ν = 46).  The 2026-08 audit replaced that model; the production fit now
+  gives 2.02 with χ²_ν = 2.9 (see `docs/SHEAP_ASSESSMENT.md`).  A hard quality
+  gate prevents a failing SHEAP fit from entering the cross-tool comparison.
 * **Official SDSS DAPs** (MaNGA/LVM) require IFU cubes and are excluded from
   this single-fiber sample; **AMARU**, **ELFO**, **AGNdecompose**, **pyspeckit**
   and **HEASOFT** are excluded for the reasons in

@@ -15,7 +15,7 @@ event files.
 | **GalSpec** | community 1-D AGN/galaxy line fit | **implemented** | `galspec_line`; emcee MCMC on reduced Hβ/[O III] window; real SDSS fit. |
 | **PyQSOFitSpec** | community 1-D QSO line fit | **implemented** | `pyqsofitspec_line`; skew-normal profiles + 10-fit parametric bootstrap. |
 | **QGfit** | community 1-D AGN/host/Fe II line fit | **implemented** | `qgfit`; real SDSS fit; short continuum MCMC and LSQ line errors. |
-| **SHEAP** | community JAX AGN spectral decomposition | **implemented** | `sheap_line`; real Hβ/[O III] fit; JAX + 50-draw covariance MC (not MCMC). |
+| **SHEAP** | community JAX AGN spectral decomposition | **implemented** | `sheap_line`; real Hβ/[O III] fit; JAX + 50-draw parametric-bootstrap MC (not MCMC). |
 | **AMARU** | automated pPXF model selection | **exclude** | Public `amaru_v01` is not the updated release; needs external EMILES/Fe II/Balmer templates and a developer request. |
 | **ELFO** | CSST-IFS emission-line fitting | **exclude** | IFS-only; no 1-D path. |
 | **AGNdecompose** | 2-D AGN/host image decomposition | **exclude** | Image decomposition, not spectral line fitting. |
@@ -41,7 +41,7 @@ the LVM binning, maps and calibration are meaningless.
 produces the `ZLINE` HDU found in our `spec-*.fits` files.  We do **not** re-run
 the IDL reduction; we use the already-produced **`ZLINE`** measurements as the
 official SDSS anchor in `pipeline/compare_line_tools.py`.  For `04592649654`,
-ZLINE gives Hβ/[O III] 5007 = **1.57 ± 0.014**, compared with 1.83–4.00 from
+ZLINE gives Hβ/[O III] 5007 = **1.57 ± 0.014**, compared with 1.83–2.50 from
 the independent fitters.
 
 If a MaNGA/LVM branch is added later, the correct design is:
@@ -111,7 +111,7 @@ therefore documented, not faked.
 | GalSpec | `galspec-line` / `4503e140` | `outputs/04592649654_z_0.5874/galspec_line/` |
 | PyQSOFitSpec | `pi-agent-0616...` / `228a497e` | `outputs/04592649654_z_0.5874/pyqsofitspec_line/` |
 | QGfit | `feat/qgfit-sheap` / `08d5a814` | `outputs/04592649654_z_0.5874/qgfit/` |
-| SHEAP | `feat/qgfit-sheap` / `08d5a814` | `outputs/04592649654_z_0.5874/sheap_line/` |
+| SHEAP | `feat/qgfit-sheap` / `08d5a814`; audited/repaired (see `docs/SHEAP_ASSESSMENT.md`) | `outputs/04592649654_z_0.5874/sheap_line/` |
 
 The line-ratio comparison now includes all four; the spread is
 `docs/line_ratio_scatter.csv`.
