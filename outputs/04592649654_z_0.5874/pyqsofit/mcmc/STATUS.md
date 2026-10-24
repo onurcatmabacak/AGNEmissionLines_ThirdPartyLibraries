@@ -61,10 +61,23 @@ call:
 | `../mc/*` | committed 100-realization MC; still the recommended uncertainty product |
 
 The 300-step run used
-`NSAMP=300, NBURN=80, NTHIN=1, NWALKERS=100, SEED=20240517`.  Its outer shell
-timed out after `Fitting finished in 1400.6s` and before the container copied
-the chains; the preserved `result.pdf`, `output.fits` and `qsopar.fits` are
-that run.  This is a runner timeout, not a sampler failure.
+`NSAMP=300, NBURN=80, NTHIN=1, NWALKERS=100, SEED=20240517`, retaining 220
+steps per walker (22,000 draws).  Its outer shell timed out after
+`Fitting finished in 1400.6s` and before the container copied the chains; the
+preserved `result.pdf`, `output.fits` and `qsopar.fits` are that run.  This is
+a runner timeout, not a sampler failure.
+
+The 300-step log diagnostics were:
+
+| stage | nvarys | acceptance mean ± std | tau mean | tau max | retained steps / tau_max |
+| --- | --- | --- | --- | --- | --- |
+| continuum | 11 | 0.367 ± 0.036 | 24.5 | 36.0 | 6.1 |
+| Mg II | 9 | 0.406 ± 0.040 | 21.6 | 29.0 | 7.6 |
+| Hβ | 17 | 0.317 ± 0.035 | 28.0 | 38.1 | 5.8 |
+| Hα | 12 | 0.361 ± 0.040 | 25.4 | 35.2 | 6.3 |
+
+Those chains are still short of the 20–50 tau convergence target (220 retained
+steps vs tau_max 29–38); a longer run needs roughly 600–800 retained steps.
 
 ## Short-run convergence diagnostics
 

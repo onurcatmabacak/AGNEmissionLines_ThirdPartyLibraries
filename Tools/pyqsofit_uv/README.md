@@ -100,7 +100,9 @@ run.json                        # status, versions, acceptance, tau, ESS, runtim
 * A 300-step capped run completed the PyQSOFit fit in **1400.6 s** and its
   fit figure/output are preserved as
   `outputs/04592649654_z_0.5874/pyqsofit/mcmc/pyqsofit_mcmc_fit.pdf` and
-  `output.fits`/`qsopar.fits`.
+  `output.fits`/`qsopar.fits`.  Its 220 retained steps gave acceptance
+  0.37/0.41/0.32/0.36 (continuum/Mg II/Hβ/Hα) and tau_max 36/29/38/35,
+  i.e. only 5.8–7.6 steps per tau; it is not converged either.
 * The outer shell timed out after the fit and before the container copied the
   chains, so the 300-step samples were not persisted.  This is a runner
   timeout, not an MCMC failure.
