@@ -14,7 +14,7 @@ The two families are deliberately separate:
 | family | tools | output |
 |---|---|---|
 | Broad-band SED / torus | `cigale_sed`, `agnfitter_sed` | stellar mass, AGN fraction, torus luminosity, model-family spread |
-| Spectral line fitting | `pyqsofit_uv`, `pyqsofitspec_line`, `ir_linefit`, `nir_linefit`, `fir_linefit`, `pahfit_mir`, `cafe_line`, `s3fit_line`, `gandalf_line`, `galspec_line`, `qgfit`, `sheap_line`, `crossband` | line flux, FWHM, velocity, equivalent width, ratios |
+| Spectral line fitting | `pyqsofit_uv`, `qsofitmore_line`, `pyqsofitspec_line`, `ir_linefit`, `nir_linefit`, `fir_linefit`, `pahfit_mir`, `cafe_line`, `s3fit_line`, `gandalf_line`, `galspec_line`, `qgfit`, `sheap_line`, `crossband` | line flux, FWHM, velocity, equivalent width, ratios |
 | Host/continuum decomposition | `ppxf_host` | stellar velocity dispersion, host fraction |
 
 `gandalf_line/default/` is a complete tool configuration rather than a tuning
@@ -23,6 +23,10 @@ variant: it contains the GANDALF emission-line setup and the fit controls
 `galspec_line/default/` is likewise a complete configuration: main/aux windows,
 continuum and Fe II, Gaussian component bounds, fitter, error floor and
 emcee/dynesty controls. See `configs/galspec_line/README.md`.
+`qsofitmore_line/default/` is a complete configuration: the effective line
+table, the V09 Fe II / broken power law / Balmer-continuum switches, the
+SFD98+F99 extinction choice, the 1200 km/s narrow-line cap, and the 200-draw
+lmfit Monte Carlo mode. See `configs/qsofitmore_line/default/README.md`.
 
 Legacy `pipeline/auto_tune.py` (wrapper `analyze.sh`) generated variants under
 `configs/<tool>/auto_<tool>_<knob values>/`; those search artifacts were removed
@@ -36,6 +40,7 @@ the broad-band SED with templates.
 | tool | statistical method |
 |---|---|
 | `pyqsofit_uv` | covariance; optional MC resampling and `emcee` MCMC (`PYQSOFIT_MC`, `PYQSOFIT_MCMC`) |
+| `qsofitmore_line` | lmfit parametric Monte Carlo (`MC=True`, `n_trails=200`); no MCMC sampler in qsofitmore 1.2.2 |
 | `pyqsofitspec_line` | parametric bootstrap: `flux + N(0, err)` refit, mean/std over `nboot_fit` (no covariance/MC inside a fit) |
 | `agnfitter_sed` | `ultranest` nested sampling (Bayesian posterior) |
 | `cigale_sed` | `pdf_analysis` Bayesian likelihood/posterior; not MCMC |
@@ -56,6 +61,9 @@ the broad-band SED with templates.
 configs/
   pyqsofit/uv/main.py              # executable
   pyqsofit/uv/config.json          # effective settings snapshot
+  qsofitmore_line/default/config.json    # fit switches + uncertainty mode
+  qsofitmore_line/default/line_table.csv # effective editable line table
+  qsofitmore_line/default/README.md      # switch-by-switch notes
   pyqsofitspec_line/default/config.json  # executable line table + bootstrap controls
   badass/{best,nbasin20}/main.py
   ...

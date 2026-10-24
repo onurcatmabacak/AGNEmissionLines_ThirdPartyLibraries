@@ -23,7 +23,7 @@ input policy: one source, one raw payload, one manifest.
 | `04545014975_z_1.1289` | 1.1289 | SDSS DR18 eFEDS QSO | `spectrum` | ir, pyqsofit_uv, ppxf_host, cigale_sed, agnfitter_sed |
 | `04570952937_z_0.9901` | 0.9901 | SDSS DR18 eFEDS QSO | `spectrum` | ir, pyqsofit_uv, ppxf_host, cigale_sed, agnfitter_sed |
 | `04592566733_z_1.8297` | 1.8297 | SDSS DR18 eFEDS QSO | `spectrum` | ir, pyqsofit_uv, ppxf_host, cigale_sed, agnfitter_sed |
-| `04592649654_z_0.5874` | 0.5874 | SDSS DR18 eFEDS QSO | `spectrum` | ir, pyqsofit_uv, ppxf_host, cigale_sed, agnfitter_sed |
+| `04592649654_z_0.5874` | 0.5874 | SDSS DR18 eFEDS QSO | `spectrum` | ir, pyqsofit_uv, qsofitmore_line, ppxf_host, cigale_sed, agnfitter_sed |
 | `04592933676_z_0.6506` | 0.6506 | SDSS DR18 eFEDS QSO | `spectrum` | ir, pyqsofit_uv, ppxf_host, cigale_sed, agnfitter_sed |
 | `spSpec-51908-0277-120_z_0.0859` | 0.0859 | SDSS legacy spSpec (GANDALF example) | `spectrum` | gandalf_line |
 | `J0100p2802_z_6.3270` | 6.327 | JWST/NIRSpec G395H | `spectrum`, `centered` | nir_linefit (pipeline + QSO-centred), ir_linefit |

@@ -19,13 +19,13 @@ work/                   ignored generated inputs/logs
 ```
 
 `Tools/` contains: `badass`, `fantasy_agn`, `Gelato`, `Gleam`, `pyqsofit`,
-`sculptor`, `pipeline_ir`, `pyqsofit_uv`, `pyqsofitspec_line`, `ppxf_host`,
+`sculptor`, `pipeline_ir`, `pyqsofit_uv`, `qsofitmore_line`, `pyqsofitspec_line`, `ppxf_host`,
 `gandalf_line`, `cafe_line`, `s3fit_line`, `galspec_line`, `qgfit`,
 `sheap_line`, `nir_linefit`, `pahfit_mir`, `fir_linefit`, `crossband`,
 `cigale_sed`, `agnfitter_sed`.
 
 CIGALE and AGNfitter are **SED/torus** codes; they do not measure individual
-lines.  Use `pyqsofit_uv`, `pyqsofitspec_line`, `cafe_line`, `s3fit_line`,
+lines.  Use `pyqsofit_uv`, `qsofitmore_line`, `pyqsofitspec_line`, `cafe_line`, `s3fit_line`,
 `gandalf_line`, `galspec_line`, `qgfit`, `sheap_line`, `pahfit_mir`,
 `nir_linefit` or `ir_linefit` for line fluxes and kinematics.
 
@@ -50,7 +50,7 @@ under `work/prepared/`.
 
 | source group | tools |
 |---|---|
-| SDSS z>0.5 QSOs (5) | `ir_linefit`, `pyqsofit_uv`, `pyqsofitspec_line`, `ppxf_host`, `gandalf_line`, `s3fit_line`, `galspec_line`, `qgfit`, `sheap_line`, `cigale_sed`, `agnfitter_sed` |
+| SDSS z>0.5 QSOs (5) | `ir_linefit`, `pyqsofit_uv`, `qsofitmore_line` (04592649654), `pyqsofitspec_line`, `ppxf_host`, `gandalf_line`, `s3fit_line`, `galspec_line`, `qgfit`, `sheap_line`, `cigale_sed`, `agnfitter_sed` |
 | J0100+2802 | `nir_linefit` (pipeline, 3×3, PSF), `ir_linefit` |
 | VV114 / PDS 456 | `pahfit_mir`, `cafe_line`, `ir_linefit` |
 | Low-z SDSS GANDALF example | `gandalf_line` (Hα/Hβ coverage) |
@@ -69,6 +69,7 @@ The production matrix uses real data only:
 | **GANDALF** | `spSpec-51908-0277-120` z=0.0859 | native GDL, pPXF + all Hα/Hβ/[O III]/[N II] lines | pPXF **accepted** (V=72.5, σ=79.9 km/s); Hα 1391, Hβ 244, [O III] 79.7 |
 | **PAHFIT** | VV114, PDS 456, NGC 4151, NGC 253 | full MIRI/IRS, covariance/bootstrap, 100–200 draws | rms VV114 **0.195** (flagged hot-dust mismatch), PDS short/long/both **0.0088/0.017/0.038**, NGC 4151 **0.031**, NGC 253 **0.25**; all PAHFIT production runs are `flagged=true` / systematics-limited |
 | **GalSpec** | `04592649654` | full-continuum global model + `emcee`, 39 parameters | 224,000 samples, 37,334 saved; Hβ 3718, [O III] 1681, ratio **2.21** |
+| **QSOFITMORE** | `04592649654` | V09 Fe II + broken PL + Balmer continuum + broad/narrow lines, **200 MC draws** | Hβ ~3077, [O III] 5007 ~1505, ratio ~2.04; Mg II ~2541; no MCMC (package has none) |
 | **PyQSOFitSpec** | `04592649654` | full Fe II/Balmer + skew-normal lines, 55 bootstrap draws | 53 valid; Hβ **3525**, [O III] **1639**, ratio **2.15** |
 | **QGfit** | `04592649654` | long continuum MCMC + line complexes | 2334 s; Hβ/[O III] **2.50**; line errors LSQ |
 | **SHEAP** | `04592649654` | Hβ/[O III] SPAF/JAX, 50 bootstrap draws | Hβ/[O III] **2.02**, χ²ν 2.9 |
@@ -78,9 +79,9 @@ The production matrix uses real data only:
 The cross-tool 04592649654 Hβ/[O III] 5007 values are:
 
 ```text
-ZLINE 1.57 | S3Fit 1.83 | PyQSOFit 1.96 | GalSpec 2.21
-GANDALF 2.07 | PyQSOFitSpec 2.15 | SHEAP 2.02 | QGfit 2.50
-median 2.05, log-scatter 0.13 dex
+ZLINE 1.57 | S3Fit 1.83 | PyQSOFit 1.96 | SHEAP 2.02
+QSOFITMORE 2.04 | GANDALF 2.07 | PyQSOFitSpec 2.15 | GalSpec 2.21 | QGfit 2.50
+median 2.04, log-scatter 0.06 dex
 ```
 
 ## Failure audit and fixes

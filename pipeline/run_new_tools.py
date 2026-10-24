@@ -39,9 +39,9 @@ SPITZER_IRS = ",".join([
     "spitzer.irs.sl.2", "spitzer.irs.sl.1",
     "spitzer.irs.ll.2", "spitzer.irs.ll.1",
 ])
-ALL_TOOLS = ("ir_linefit", "pyqsofit_uv", "pyqsofitspec_line", "ppxf_host", "gandalf_line",
-             "nir_linefit", "pahfit_mir", "fir_linefit", "cafe_line", "crossband",
-             "cigale_sed", "agnfitter_sed", "s3fit_line", "galspec_line",
+ALL_TOOLS = ("ir_linefit", "pyqsofit_uv", "qsofitmore_line", "pyqsofitspec_line", "ppxf_host",
+             "gandalf_line", "nir_linefit", "pahfit_mir", "fir_linefit", "cafe_line",
+             "crossband", "cigale_sed", "agnfitter_sed", "s3fit_line", "galspec_line",
              "qgfit", "sheap_line")
 
 
@@ -93,6 +93,26 @@ def tool_pyqsofit(src: dict, out: Path, logp: Path) -> int:
         logp,
         env={"PYQSOFIT_SOURCE_KEY": str(src["key"])},
     )
+
+
+def tool_qsofitmore(src: dict, out: Path, logp: Path, config: str | None = None,
+                    mc_trails: int | None = None) -> int:
+    """QSOFITMORE UV/optical fit on the raw SDSS spectrum.
+
+    The raw COADD is used rather than the PyQSOFit prepared copy because the
+    preparation sanitises zero-IVAR pixels to the median variance, which would
+    silently extend the red end past 6564 A and pull in the H-alpha complex.
+    """
+    raw = Path(src["_path"]) / "raw"
+    if not raw.exists():
+        raw = prep_pyqsofit(src)
+    cmd = [str(ROOT / "Pipelines" / "run_qsofitmore_line_docker.sh"),
+           str(raw), str(out)]
+    if config:
+        cmd += ["--config", str(config)]
+    if mc_trails is not None:
+        cmd += ["--mc-trails", str(mc_trails)]
+    return run(cmd, logp, env={"QSOFITMORE_SOURCE_KEY": str(src["key"])})
 
 
 def tool_pyqsofitspec(src: dict, out: Path, logp: Path, nboot: int | None = None,
@@ -340,6 +360,10 @@ def main(argv=None):
     p.add_argument("--dry-run", action="store_true")
     p.add_argument("--cigale-models", default="skirtor2016",
                    help="comma-separated CIGALE AGN models")
+    p.add_argument("--qsofitmore-config", default=None,
+                   help="QSOFITMORE config directory (default: configs/qsofitmore_line/default)")
+    p.add_argument("--qsofitmore-mc-trails", type=int, default=None,
+                   help="QSOFITMORE Monte Carlo realizations (default from config.json: 200)")
     p.add_argument("--pyqsofitspec-config", default=None,
                    help="PyQSOFitSpec config directory (default: configs/pyqsofitspec_line/default)")
     p.add_argument("--pyqsofitspec-nboot", type=int, default=None,
@@ -384,6 +408,9 @@ def main(argv=None):
             fn = {
                 "ir_linefit": lambda: tool_ir(src, out, logp),
                 "pyqsofit_uv": lambda: tool_pyqsofit(src, out, logp),
+                "qsofitmore_line": lambda: tool_qsofitmore(src, out, logp,
+                                                           args.qsofitmore_config,
+                                                           args.qsofitmore_mc_trails),
                 "pyqsofitspec_line": lambda: tool_pyqsofitspec(src, out, logp,
                                                                args.pyqsofitspec_nboot,
                                                                args.pyqsofitspec_config),

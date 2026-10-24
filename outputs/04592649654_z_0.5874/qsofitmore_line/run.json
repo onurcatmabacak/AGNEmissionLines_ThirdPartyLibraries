@@ -1,0 +1,383 @@
+{
+  "command": [
+    "/app/run/main.py",
+    "--input-dir",
+    "/app/input",
+    "--out",
+    "/app/output",
+    "--config",
+    "/app/config",
+    "--mc-trails",
+    "200",
+    "--seed",
+    "20250101",
+    "--source-key",
+    "04592649654_z_0.5874"
+  ],
+  "config": {
+    "file": "/app/config/config.json",
+    "fit": {
+      "BC": true,
+      "Fe_flux_range": [
+        [
+          2250.0,
+          2700.0
+        ],
+        [
+          4434.0,
+          4684.0
+        ],
+        [
+          5100.0,
+          5600.0
+        ]
+      ],
+      "Fe_verner09": true,
+      "broken_pl": true,
+      "decomposition_host": false,
+      "deredden": true,
+      "dust_law": "Fitzpatrick (1999) f99law, R_V=3.1, as implemented in qsofitmore.extinction",
+      "dust_map": "sfd",
+      "include_iron": true,
+      "iron_temp_name": "V09",
+      "linefit": true,
+      "log10_electron_density": 9.0,
+      "narrow_max_kms": 1200.0,
+      "nsmooth": 1,
+      "pl_pivot_A": 3000.0,
+      "plot_fig": true,
+      "poly": false,
+      "rej_abs": false,
+      "save_fig": true,
+      "save_result": true,
+      "tie_flux_1": true,
+      "tie_flux_2": true,
+      "tie_lambda": true,
+      "tie_width": true,
+      "wave_range": [
+        2247.0,
+        6510.4
+      ],
+      "wave_range_note": "Rest-frame clean coverage of the SDSS COADD after dropping zero-IVAR pixels. The upper edge is set just below H-alpha/NII6549 so a prepared PyQSOFit copy (which sanitises zero-IVAR pixels) cannot pull the H-alpha complex into the fit."
+    },
+    "line_table": "/app/config/line_table.csv",
+    "line_table_meta": {
+      "narrow_max_kms": 1200.0,
+      "path": "line_table.csv",
+      "source": "qsofitmore/examples/output/qsopar_log.csv at the pinned commit, with the [O III] 4959/5007 and outflow doublet flux ratios tied (findex=1/2, fvalue=0.33/1.00) and narrow C III]/C IV rows added for UV coverage. H-alpha/C III]/C IV rows are retained for general use and are automatically skipped when their rest wavelength is outside the observed rest-frame coverage.",
+      "velocity_units": "lnlambda",
+      "wave_scale": "log"
+    },
+    "line_table_sha256": "9d0615785b272ac2b9ecc6046b0007c706523cee7d2b13f0e349fcee29505a18",
+    "sha256": "bdb0c0b5977a2a3aed749797defaebb760492c7e713d3efceb28cb1a724c8b4f"
+  },
+  "cross_tool_comparison": {
+    "Hbeta": {
+      "mean_log10_ratio": -0.05023319605068263,
+      "median_ratio": 0.9591226644177948,
+      "n": 8,
+      "qsofitmore_err_1e17": 100.05384562933983,
+      "qsofitmore_flux_1e17": 3076.584861844761,
+      "ratios": {
+        "galspec_line": 1.2086378302597238,
+        "gandalf_line": 0.9591226644177948,
+        "pyqsofit_uv": 0.9412934592884213,
+        "pyqsofitspec_line": 1.145773426150944,
+        "qgfit": 0.9475524856454591,
+        "qsofitmore_line": null,
+        "s3fit_line": 0.44187061358402246,
+        "sdss_zline": 0.7715503849133789,
+        "sheap_line": 0.9814713362718991
+      },
+      "scatter_dex": 0.13638861797689375
+    },
+    "Hbeta_OIII5007": {
+      "mean_log10_ratio": -0.004328304549846534,
+      "median_ratio": 2.0740421192968665,
+      "n": 8,
+      "qsofitmore_ratio": 2.0438869649365707,
+      "qsofitmore_ratio_err": 0.10228078983160503,
+      "scatter_dex": 0.059578939951254156,
+      "tool_ratios": {
+        "galspec_line": 2.2126065053191537,
+        "gandalf_line": 2.0740421192968665,
+        "pyqsofit_uv": 1.9580275784439536,
+        "pyqsofitspec_line": 2.1508148526760063,
+        "qgfit": 2.4983419845299855,
+        "s3fit_line": 1.8301401632376633,
+        "sdss_zline": 1.5717713433547598,
+        "sheap_line": 2.0246938433956037
+      }
+    },
+    "MgII": {
+      "mean_log10_ratio": -0.18535054594451858,
+      "median_ratio": 0.7989300207785702,
+      "n": 6,
+      "qsofitmore_err_1e17": 209.38418436961027,
+      "qsofitmore_flux_1e17": 2540.7660460947945,
+      "ratios": {
+        "galspec_line": 0.6448303318694264,
+        "gandalf_line": null,
+        "pyqsofit_uv": 1.0339106999961982,
+        "pyqsofitspec_line": 0.7989300207785702,
+        "qgfit": 0.8310379257233597,
+        "qsofitmore_line": null,
+        "s3fit_line": 0.34830972226568874,
+        "sdss_zline": 0.5010407572577047,
+        "sheap_line": null
+      },
+      "scatter_dex": 0.17101397265730597
+    },
+    "OIII5007": {
+      "mean_log10_ratio": -0.045904891500836126,
+      "median_ratio": 0.990775211377505,
+      "n": 8,
+      "qsofitmore_err_1e17": 57.25163218053942,
+      "qsofitmore_flux_1e17": 1505.2617461847938,
+      "ratios": {
+        "galspec_line": 1.116474664906918,
+        "gandalf_line": 0.9451776766439776,
+        "pyqsofit_uv": 0.982569118433245,
+        "pyqsofitspec_line": 1.088811232434518,
+        "qgfit": 0.7751901805262066,
+        "qsofitmore_line": null,
+        "s3fit_line": 0.4934778250509474,
+        "sdss_zline": 1.0033022813295545,
+        "sheap_line": 0.990775211377505
+      },
+      "scatter_dex": 0.11575119285213582
+    }
+  },
+  "dust_map": {
+    "citation": "Schlegel, Finkbeiner & Davis (1998), ApJ 500, 525",
+    "dataverse_url": "https://doi.org/10.7910/DVN/EWCNL5",
+    "directory": "/app/cache/dustmaps/sfd",
+    "doi": "10.7910/DVN/EWCNL5",
+    "downloaded_utc": "2026-10-24T06:47:50+00:00",
+    "dustmaps_version": "1.0.12",
+    "files": {
+      "SFD_dust_4096_ngp.fits": {
+        "dataverse_file_id": 2902687,
+        "md5": "6f3a89528bba7d1b7bd55838da86b639"
+      },
+      "SFD_dust_4096_sgp.fits": {
+        "dataverse_file_id": 2902695,
+        "md5": "60f7c43d51bccaff82961de3e9f9e789"
+      }
+    },
+    "map": "SFD98",
+    "note": "SFD98 E(B-V); qsofitmore applies Fitzpatrick (1999) R_V=3.1 extinction.",
+    "queried_by": "dustmaps.sfd.SFDQuery(map_dir=...)"
+  },
+  "fit": {
+    "complex_diagnostics": {
+      "Hb_line_min_chi2": 7056.170491665626,
+      "Hb_line_red_chi2": 17.909062161587883,
+      "Hb_line_status": 1.0,
+      "Hb_ndof": 394.0,
+      "Hb_niter": 437.0,
+      "Hg_line_min_chi2": 327.5702458723284,
+      "Hg_line_red_chi2": 1.7802730753930893,
+      "Hg_line_status": 1.0,
+      "Hg_ndof": 184.0,
+      "Hg_niter": 115.0,
+      "LINE_MED_SN_Hb": 52.36883153098931,
+      "LINE_MED_SN_Hg": 56.21030098853819,
+      "LINE_MED_SN_MgII": 51.07816630728128,
+      "LINE_MED_SN_NeV": 53.41741473970311,
+      "LINE_MED_SN_OII": 53.93530002206319,
+      "LINE_NPIX_Hb": 410.0,
+      "LINE_NPIX_Hg": 190.0,
+      "LINE_NPIX_MgII": 302.0,
+      "LINE_NPIX_NeV": 126.0,
+      "LINE_NPIX_OII": 175.0,
+      "MgII_line_min_chi2": 403.72991569600725,
+      "MgII_line_red_chi2": 1.3779178010102637,
+      "MgII_line_status": 1.0,
+      "MgII_ndof": 293.0,
+      "MgII_niter": 1710.0,
+      "NeV_line_min_chi2": 300.5774058342741,
+      "NeV_line_red_chi2": 2.4437187466201147,
+      "NeV_line_status": 1.0,
+      "NeV_ndof": 123.0,
+      "NeV_niter": 9.0,
+      "OII_line_min_chi2": 684.4854122696651,
+      "OII_line_red_chi2": 3.9795663504050296,
+      "OII_line_status": 1.0,
+      "OII_ndof": 172.0,
+      "OII_niter": 51.0
+    },
+    "ebv": 0.0494355708360672,
+    "line_table_path": "/app/config/line_table.csv",
+    "linefit": true,
+    "n_complex": 5
+  },
+  "image": "qsofitmore_line",
+  "image_size_bytes": 1501705246,
+  "input": {
+    "bunit": "1E-17 erg s-1 cm-2 Ang-1",
+    "dec_deg": 0.69092798,
+    "errors": "calibrated SDSS errors (1/sqrt(IVAR)); no error floor",
+    "file": "/app/input/spec-00000-59345-04592649654.fits",
+    "layout": "sdss_coadd",
+    "median_snr": 51.014765772931774,
+    "n_pixels_masked": 27,
+    "n_pixels_raw": 4648,
+    "n_pixels_used": 4621,
+    "ra_deg": 142.43091000000004,
+    "sha256": "f608fba96439bfdb1f768c05f88051f3f964e06040f3119906aca12aa7b092c6",
+    "unit_scale_to_1e17": 1.0,
+    "wave_obs_range_A": [
+      3566.9742678444672,
+      10334.747480679587
+    ],
+    "wave_rest_range_A": [
+      2247.035966532327,
+      6510.433647773366
+    ],
+    "z": 0.5874130725860596
+  },
+  "method": {
+    "continuum": "broken power law + Verner et al. (2009) Fe II + Balmer continuum + high-order Balmer series (Storey & Hummer 1995)",
+    "lines": "broad and narrow Gaussians, lmfit least squares, tied [O III] doublet/outflow kinematics and 0.33 flux ratio",
+    "mcmc": false,
+    "uncertainty": "parametric Monte Carlo: flux + N(0, err) per fitted pixel, full lmfit continuum and line-complex refit; 200 realizations requested"
+  },
+  "postprocessing": "pipeline/compare_qsofitmore.py appended cross_tool_comparison.* and the generated README section after the container run",
+  "products": [
+    "config.effective.json",
+    "cross_tool_comparison.csv",
+    "cross_tool_comparison.json",
+    "cross_tool_comparison.md",
+    "cross_tool_comparison.pdf",
+    "cross_tool_comparison.png",
+    "qsofitmore_components.csv",
+    "qsofitmore_continuum.csv",
+    "qsofitmore_corner.pdf",
+    "qsofitmore_corner.png",
+    "qsofitmore_fit.jpg",
+    "qsofitmore_fit.pdf",
+    "qsofitmore_fit.png",
+    "qsofitmore_hb_oiii_mc.csv",
+    "qsofitmore_lines.csv",
+    "qsofitmore_mc_components.csv",
+    "qsofitmore_mc_samples.csv",
+    "qsofitmore_mc_summary.csv",
+    "qsofitmore_mgii_corner.pdf",
+    "qsofitmore_mgii_corner.png",
+    "qsofitmore_result.csv",
+    "qsofitmore_result.fits",
+    "qsofitmore_uncertainty.pdf",
+    "qsofitmore_uncertainty.png",
+    "qsopar.fits",
+    "systematics/qsofitmore_lines_bg92.csv",
+    "systematics/qsofitmore_result_bg92.fits",
+    "systematics/systematic.json"
+  ],
+  "repo_commit": "7b526929bcfa66914e7e3fbfea6e59b372070395",
+  "repo_commit_note": "run executed from the stage-1 worktree based on repo commit 7b526929bcfa66914e7e3fbfea6e59b372070395; the final stage-1 commit is reported in the handoff and git log",
+  "runtime_sec": {
+    "fit": 1619.2221848964691,
+    "total": 1640.8337712287903
+  },
+  "status": "ok",
+  "systematics": {
+    "Hbeta_1e17": 3231.5773691418467,
+    "Hbeta_OIII5007": 2.3377435579269297,
+    "MgII_1e17": 3064.0347021013627,
+    "OIII5007_1e17": 1382.3489570462352,
+    "enabled": true,
+    "iron_template": "BG92-VW01",
+    "note": "Least-squares fit only (MC off), same line table and switches; quantifies the Fe II template systematic, not a second production uncertainty.",
+    "runtime_sec": 8.264068365097046
+  },
+  "tool": "qsofitmore_line",
+  "uncertainty": {
+    "Hbeta_OIII5007": {
+      "median": 2.030342785122954,
+      "n": 200,
+      "p16": 1.9599784285623727,
+      "p84": 2.1027117063852865,
+      "std": 0.08367584848778545
+    },
+    "bimodality_note": "Mg II total is bimodal in the 200 draws (best-fit mode ~2560, local-minimum mode ~2130 where both broad Gaussians hit the 0.004 ln-width bound); use the 16-84% interval 2133-2603. Hbeta total is mildly bimodal (16-84% 2895-3089). These are multi-Gaussian template degeneracies, not Gaussian errors.",
+    "line_mc_attempted": {
+      "Hb": 200,
+      "Hg": 200,
+      "MgII": 200,
+      "NeV": 200,
+      "OII": 200
+    },
+    "line_mc_rows": 3000,
+    "line_mc_summary": {
+      "Hbeta": {
+        "area_median_1e17": 3018.316912083078,
+        "area_p16_1e17": 2895.033427943828,
+        "area_p84_1e17": 3089.227969525819,
+        "area_std_1e17": 100.05384562933983,
+        "n": 200.0
+      },
+      "Hgamma": {
+        "area_median_1e17": 1399.0383517949103,
+        "area_p16_1e17": 1376.2304111360042,
+        "area_p84_1e17": 1418.4980358035095,
+        "area_std_1e17": 37.24054722905092,
+        "n": 200.0
+      },
+      "MgII": {
+        "area_median_1e17": 2554.723728557424,
+        "area_p16_1e17": 2133.143561061229,
+        "area_p84_1e17": 2603.0883027175837,
+        "area_std_1e17": 209.38418436961027,
+        "n": 200.0
+      },
+      "OIII5007": {
+        "area_median_1e17": 1486.8938783802869,
+        "area_p16_1e17": 1425.663165491756,
+        "area_p84_1e17": 1525.177004201844,
+        "area_std_1e17": 57.25163218053942,
+        "n": 200.0
+      }
+    },
+    "line_mc_valid": {
+      "Hb": 200,
+      "Hg": 200,
+      "MgII": 200,
+      "NeV": 200,
+      "OII": 200
+    },
+    "mcmc": false,
+    "method": "lmfit Monte Carlo refit",
+    "note": "Line-complex MC draws are independent between complexes; H-beta/[O III] is correlated because both are in the same Hb complex. Mg II has its own independent MC.",
+    "requested_trails": 200,
+    "seed": 20250101
+  },
+  "upstream": {
+    "commit": "4c5f6e497b306aaf50b502a8e4b27ed9dfe89421",
+    "license": "GPL-3.0",
+    "repo": "https://github.com/rudolffu/qsofitmore",
+    "version": "1.2.2"
+  },
+  "versions": {
+    "astropy": "7.0.1",
+    "corner": "2.2.3",
+    "dustmaps": "1.0.12",
+    "lmfit": "1.3.2",
+    "matplotlib": "3.11.1",
+    "numpy": "1.26.4",
+    "pandas": "2.2.3",
+    "python": "3.12.15",
+    "qsofitmore": "1.2.2",
+    "scipy": "1.15.1",
+    "uncertainties": "3.2.2"
+  },
+  "warnings": [
+    "'Fe_verner09' is deprecated and ignored when 'iron_temp_name' is set.",
+    "'reject_badpix' is deprecated; rely on SDSS masks or 'wave_mask' for pixel rejection.",
+    "Conversion of an array with ndim > 0 to a scalar is deprecated, and will error in future. Ensure you extract a single element from your array before performing this operation. (Deprecated NumPy 1.25.)",
+    "Conversion of an array with ndim > 0 to a scalar is deprecated, and will error in future. Ensure you extract a single element from your array before performing this operation. (Deprecated NumPy 1.25.)",
+    "Conversion of an array with ndim > 0 to a scalar is deprecated, and will error in future. Ensure you extract a single element from your array before performing this operation. (Deprecated NumPy 1.25.)",
+    "Conversion of an array with ndim > 0 to a scalar is deprecated, and will error in future. Ensure you extract a single element from your array before performing this operation. (Deprecated NumPy 1.25.)",
+    "Conversion of an array with ndim > 0 to a scalar is deprecated, and will error in future. Ensure you extract a single element from your array before performing this operation. (Deprecated NumPy 1.25.)"
+  ]
+}
