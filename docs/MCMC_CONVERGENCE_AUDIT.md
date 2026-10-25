@@ -13,12 +13,12 @@ plus ESS and a dimension-appropriate acceptance check.
 | PyQSOFit | `pyqsofit/mcmc` | emcee | 8 | not estimable | — | **initialization test only** |
 | PyQSOFit | `pyqsofit/mcmc_long` | emcee | 1,900 | 255.2 (Hb) | 7.4 (Hb) | **not converged** |
 | PyQSOFit | `pyqsofit/mcmc_converged` | emcee | 12,900 | 801.8 (Hb) | 16.1 (Hb) | **not converged**; Mg II and 1-D [N II] pass |
-| PyQSOFit | `pyqsofit/mcmc_long_55k` | emcee | 54,900 | running | running | **in progress** |
+| PyQSOFit | `pyqsofit/mcmc_long_65k` | emcee | 50,000 | running | running | **in progress** (65,000 steps, 15,000 burn) |
 | GalSpec | `galspec_line` | emcee | 2,800 | 342.6 | 8.2 | **not converged**; production caveat |
 | GalSpec | `galspec_line_long` | emcee | 20,000 | 1156.1 | 17.3 | **not converged** |
-| GalSpec | `galspec_long_70k` | emcee | 65,000 | running | running | **in progress** |
+| GalSpec | `work/galspec_long_70k` | emcee | 60,000 | running | running | **in progress** (80,000 steps, 20,000 burn) |
 | QGfit | `qgfit` continuum | emcee | 800 | 99.5 | 8.0 | **not converged**; chain is not used for the continuum error |
-| QGfit | `work/qgfit_long` | emcee | 5,300 | running | running | **in progress** (5,500 steps, 200 burn) |
+| QGfit | `work/qgfit_long` | emcee | 5,000 | running | running | **in progress** (6,500 steps, 1,500 burn) |
 | SHEAP | `sheap_line` | JAX Adam + bootstrap | n/a | n/a | n/a | **not an MCMC** |
 | PAHFIT | `pahfit_mir` | least-squares + bootstrap | n/a | n/a | n/a | **not an MCMC**; convergence counts are MC refits |
 | PyQSOFitSpec | `pyqsofitspec_line` | parametric bootstrap | n/a | n/a | n/a | **not an MCMC** |
@@ -49,12 +49,45 @@ PyQSOFitSpec and PAHFIT use covariance or Monte-Carlo refits.  Those are not
 chains and must not be described with tau/N_tau.  Their own convergence or
 validity flags still matter, but they are out of scope for this gate.
 
+## Diagnosis: why longer alone was not the answer
+
+The old chains were not merely short.  They had **burn-in shorter than the
+measured autocorrelation time**, and some weakly constrained line
+parameters had a real initial transient.  Rhat (split-walker) and Geweke
+(first 10% versus last 50%) on the old products:
+
+| chain | burn | tau_max | burn/tau | Rhat max | worst drift |
+|---|---:|---:|---:|---:|---|
+| PyQSOFit H-beta | 100 | 801.8 | 0.12 | 1.073 | `HeII4687_br_1_sigma`; scale changes from ~0.98 to ~0.01 |
+| PyQSOFit continuum | 100 | 521.2 | 0.19 | 1.077 | `conti_a_0`; PL slope drifts |
+| PyQSOFit Mg II | 100 | 144.6 | 0.69 | 1.012 | weak, but not fully burned |
+| PyQSOFit [N II] | 100 | 27.4 | 3.7 | 1.002 | none significant |
+| GalSpec | 5,000 | 1156.1 | 4.3 | 1.271 | amplitudes 9/23, dv 5; acceptance 0.168 |
+| QGfit | 200 | 99.5 | 2.0 | 1.973 | `f_old`, `host_shift`, `sigma`, `m_s`; strong drift |
+
+The QGfit and PyQSOFit cases show that **adding steps while keeping a tiny
+burn-in does not remove the transient**; it only mixes it into the retained
+chain and inflates tau.  GalSpec's low acceptance and amplitude drift point to
+the same combination of short burn and weak-line parameterisation.
+
+The corrective runs therefore change the burn-in, not only the total:
+
+| chain | total steps | burn | retained | burn/tau at old tau |
+|---|---:|---:|---:|---:|
+| PyQSOFit | 65,000 | 15,000 | 50,000 | 18.7 |
+| GalSpec | 80,000 | 20,000 | 60,000 | 17.3 |
+| QGfit | 6,500 | 1,500 | 5,000 | 15.1 |
+
+These are still checks.  If Rhat remains >1.01 or the drift persists, the next
+action is to diagnose the specific parameter (weak-line prior, initialization,
+or multimodal likelihood), not another blind step increase.
+
 ## Open corrections
 
 - QGfit's committed continuum chain is still 8 tau; its README and `run.json`
   explicitly say it is not converged and it is not used as the continuum
-  error.  A 5,500-step run is now active; it is not a completed correction
-  until its tau is checked.
+  error.  A 6,500-step/1,500-burn run is now active; it is not a completed
+  correction until its tau and Rhat are checked.
 - GalSpec's production 4,000-step output remains a documented caveat until the
   70,000-step run is complete.
 - PyQSOFit's 55,000-step run is in progress; its result must be checked, not
