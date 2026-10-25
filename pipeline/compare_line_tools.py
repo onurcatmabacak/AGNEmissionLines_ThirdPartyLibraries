@@ -255,7 +255,10 @@ def ratios(rows):
                 tot = [x for x in recs if x["component"] == "total"]
                 use = tot[:1] if tot else recs
                 f = sum(x["flux"] for x in use)
-                e = math.sqrt(sum((x["flux_err"] or 0) ** 2 for x in use))
+                errs = [x["flux_err"] for x in use]
+                if any(v is None or not np.isfinite(v) for v in errs):
+                    return f, None
+                e = math.sqrt(sum(v ** 2 for v in errs))
                 return f, e
 
             ta, tb = total_flux(a), total_flux(b)
@@ -266,7 +269,7 @@ def ratios(rows):
             val = fa / fb
             if not (0.02 <= val <= 50.0):
                 continue
-            err = abs(val) * math.sqrt((ea / fa) ** 2 + (eb / fb) ** 2) if fa and eb >= 0 else None
+            err = abs(val) * math.sqrt((ea / fa) ** 2 + (eb / fb) ** 2) if ea is not None and eb is not None and fa and fb else None
             out.append(dict(source=source, tool=tool, ratio=label, value=val, err=err,
                             quality="ok"))
     return out

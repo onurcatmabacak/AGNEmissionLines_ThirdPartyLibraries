@@ -16,6 +16,7 @@ ENV LHEASOFT=/opt/conda/heasoft \
 
 ARG SAS_URL=https://xmm-tools.cosmos.esa.int/external/xmm_sas/sas/22.1.0/Linux/Ubuntu22.04/sas_22.1.0-a8f2c2afa-20250304-ubuntu22.04-gcc13.3.0-x86_64.tgz
 WORKDIR /opt/sas
+COPY Tools/xmm_sas_raw/fit_raw_pn.py /app/run/fit_raw_pn.py
 RUN curl -k -L --retry 4 --max-time 1800 -o sas.tgz "$SAS_URL" && \
     tar -xzf sas.tgz && \
     PATH=/opt/conda/bin:$PATH SAS_PERL=/usr/bin/perl ./install.sh && \

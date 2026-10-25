@@ -456,10 +456,9 @@ def _feature_flux(model, name: str, kind: str, wl: float, fwhm: float,
     """Physical flux of one fitted feature.
 
     PAHFIT's fittable components return F_nu in MJy/sr.  The line table
-    reports the integrated F_nu over wavelength (MJy/sr um), evaluated on
-    the same profile grid as the peak and EW.  PAHFIT's ``power`` parameter
-    in the ECSV is a different internal quantity (integral over frequency)
-    and is deliberately not copied into this table.
+    reports PAHFIT's integrated line power (the frequency integral, MJy/sr
+    THz).  This is the quantity that preserves physical line ratios; the old
+    ``∫F_nu dλ`` convention biased every ratio by ``(λ2/λ1)^2``.
     """
     out = {
         "flux_observed": float("nan"), "flux_intrinsic": float("nan"),
@@ -467,13 +466,19 @@ def _feature_flux(model, name: str, kind: str, wl: float, fwhm: float,
         "ew_um": float("nan"), "attenuation_at_feature": float("nan"),
     }
     if kind in ("line", "dust_feature"):
+        # PAHFIT's ``power`` is the integrated line power over frequency.
+        # The old table copied ∫F_nu dλ instead; that is not a physical line
+        # flux and every line ratio was biased by (λ2/λ1)^2.  Use the
+        # PAHFIT power (intrinsic) multiplied by the attenuation at the line
+        # for the observed value.  Ratios are now independent of λ².
         fwhm = fwhm if np.isfinite(fwhm) and fwhm > 0 else 0.1 * max(wl, 1e-3)
         half = max(8.0 * abs(fwhm), 1e-4 * max(abs(wl), 1e-3))
         grid = np.linspace(max(wl - half, 1e-4), wl + half, 401)
         comp = _component(model, name, grid)
         att = _attenuation(model, grid)
-        out["flux_intrinsic"] = _trapz(comp, grid)
-        out["flux_observed"] = _trapz(comp * att, grid)
+        power = _feature_power(model, name, kind)
+        out["flux_intrinsic"] = float(power)
+        out["flux_observed"] = float(power) * float(_attenuation(model, np.array([wl]))[0])
         if np.isfinite(comp).any():
             out["flux_peak_intrinsic"] = float(np.nanmax(comp))
             out["flux_peak_observed"] = float(np.nanmax(comp * att)) / (1.0 + z)
@@ -555,10 +560,11 @@ def compute_feature_records(model, spec, z, flux_scale=1.0):
 
         if kind in ("line", "dust_feature"):
             values = _feature_flux(model, name, kind, wl, fwhm, z)
-            rec["quantity"] = "integrated_intensity"
-            rec["unit"] = "MJy/sr um"
-            rec["notes"] = ("integrated F_nu dlambda (MJy/sr um); "
-                            "observed = S07-attenuated, intrinsic = unattenuated")
+            rec["quantity"] = "integrated_line_power"
+            rec["unit"] = "MJy/sr THz"
+            rec["notes"] = ("PAHFIT integrated line power (frequency integral); "
+                            "observed = S07-attenuated, intrinsic = unattenuated; "
+                            "not ∫F_nu dlambda")
         elif kind in ("dust_continuum", "starlight"):
             values = _feature_flux(model, name, kind, ref, fwhm, z)
             rec["quantity"] = f"flux_density_{ref:g}um"
@@ -765,8 +771,8 @@ def _quantity_specs(model, records, z):
             fwhm = float(rec["fwhm_um"])
             specs.append({"record": idx, "name": name, "kind": kind,
                           "mode": "integrated", "wl": wl, "fwhm": fwhm,
-                          "ref": wl, "unit": "MJy/sr um",
-                          "quantity": "integrated_intensity"})
+                          "ref": wl, "unit": "MJy/sr THz",
+                          "quantity": "integrated_line_power"})
         elif kind in ("dust_continuum", "starlight"):
             ref = float(rec["reference_wavelength_um"])
             specs.append({"record": idx, "name": name, "kind": kind,
@@ -1432,7 +1438,7 @@ def plot_uncertainties(path: Path, records, specs, mc, method, n_samples,
     )
     fig.text(0.01, 0.005,
              "Flux units follow the input spectrum (MJy/sr); integrated "
-             "intensities are MJy/sr um. observed = S07-attenuated model; "
+             "line powers are MJy/sr THz. observed = S07-attenuated model; "
              "intrinsic = attenuation removed.",
              fontsize=7, color="0.35")
     fig.tight_layout(rect=(0, 0.02, 1, 0.94))

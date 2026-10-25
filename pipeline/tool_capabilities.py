@@ -17,7 +17,7 @@ THREADS = {
     # can use them where available.
     "pyqsofit_uv": 1, "qsofitmore_line": 1, "pyqsofitspec_line": 1,
     "xmm_xspec": 1, "rxte_xspec": 1, "crossmission": 1, "crossband": 1,
-    "fir_linefit": 1, "nir_linefit": 1, "cigale_sed": 1, "sdss_zline": 0,
+    "fir_linefit": 1, "nir_linefit": 1, "cigale_sed": 4, "xmm_sas_raw": 1, "sdss_zline": 0,
 }
 LONG = {
     "s3fit_line", "galspec_line", "qgfit", "cafe_line",
@@ -48,6 +48,7 @@ FULL_CAPABILITY = {
     "agnfitter_sed": "SED/torus nested posterior",
     "sdss_zline": "official SDSS reference product; not a rerun",
     "manga_dap": "official 9-bin subset; all-spaxel reference is published MAPS",
+    "xmm_sas_raw": "PN-only raw SAS 22.1 reduction and XSPEC Fe K-alpha fit",
 }
 DEPENDENT_TOOLS = {"crossmission", "crossband"}
 

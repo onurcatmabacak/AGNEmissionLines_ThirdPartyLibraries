@@ -55,7 +55,7 @@ ALL_TOOLS = ("ir_linefit", "pyqsofit_uv", "qsofitmore_line", "pyqsofitspec_line"
              "gandalf_line", "nir_linefit", "pahfit_mir", "fir_linefit", "cafe_line",
              "crossband", "cigale_sed", "agnfitter_sed", "s3fit_line", "galspec_line",
              "qgfit", "sheap_line", "manga_dap", "xmm_xspec", "rxte_xspec",
-             "crossmission", "optical_linefit", "manga_dap_full")
+             "crossmission", "optical_linefit", "manga_dap_full", "xmm_sas_raw")
 
 # Tools that can use more than one CPU thread.  They are run one at a time in
 # --phased mode so that they get the full machine; the remaining tools are then
@@ -184,6 +184,14 @@ def tool_manga_dap(src: dict, out: Path, logp: Path, full: bool = False) -> int:
     else:
         cmd += ["--n-bins", "9"]
     return run(cmd, logp)
+
+
+def tool_xmm_sas_raw(src: dict, out: Path, logp: Path) -> int:
+    files = source_files(src, "xray_spectrum")
+    if not files:
+        return _skip("no raw SAS products")
+    return run([str(ROOT / "Pipelines" / "run_xmm_sas_fit_docker.sh"),
+                str(out), "--z", str(src["z"])], logp)
 
 
 def tool_xmm(src: dict, out: Path, logp: Path) -> int:
@@ -577,9 +585,16 @@ def _run_phased(sources: list[dict], args) -> int:
     def parent_log(logp: Path) -> Path:
         return logp.with_name(logp.stem + ".runner.log")
 
+    failed_deps = set()
     for src, tool, out, logp in producer_jobs:
         log(f"[producer] {src['key']}/{tool}")
-        rc |= run(command(src, tool, 1), parent_log(logp), env_for_threads(1))
+        r = run(command(src, tool, 1), parent_log(logp), env_for_threads(1))
+        if r:
+            failed_deps.add((src["key"], tool))
+            rc = 1
+    # A consumer whose producer failed must not run against stale data.
+    jobs = [j for j in jobs
+            if not any((j[0]["key"], d) in failed_deps for d in PREREQUISITES.get(j[1], []))]
     # Multicore phase: one tool at a time, full thread budget.
     for src, tool, out, logp in jobs:
         if tool not in multi:
@@ -716,12 +731,14 @@ def main(argv=None):
             if args.dry_run:
                 continue
             backup = None
-            if args.force and out.exists():
+            if args.force and out.exists() and tool != "xmm_sas_raw":
                 import shutil
                 backup = out.with_name(out.name + ".preforce")
                 if backup.exists():
                     shutil.rmtree(backup)
                 out.rename(backup)
+            elif args.force and tool == "xmm_sas_raw":
+                log("[force] xmm_sas_raw: preserving raw spectra; overwriting fit products only")
             ensure_output(key, tool)
             # Serial mode must honour the same producer graph as --phased and
             # Snakemake.  A consumer must never silently use a missing/stale
@@ -764,6 +781,7 @@ def main(argv=None):
                 "manga_dap": lambda: tool_manga_dap(src, out, logp),
                 "manga_dap_full": lambda: tool_manga_dap(src, out, logp, full=True),
                 "xmm_xspec": lambda: tool_xmm(src, out, logp),
+                "xmm_sas_raw": lambda: tool_xmm_sas_raw(src, out, logp),
                 "rxte_xspec": lambda: tool_rxte(src, out, logp),
                 "crossmission": lambda: tool_crossmission(src, out, logp),
                 "ppxf_host": lambda: tool_ppxf(src, out, logp),

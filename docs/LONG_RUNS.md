@@ -91,12 +91,16 @@ and raw PCA reductions remain external, instrument-team-style reductions:
 
 - `Tools/xmm_xspec/SAS_RAW_PATH.md` documents the exact `epproc`/`especget`
   commands and the SAS/CCF size.
-- RXTE raw event data are not distributed with `stdprod`; raw `pcabackest` /
-  `saextrct` requires the mission event/obc files and a separate provenance
-  chain.
+- RXTE raw Standard-2 arrays are in the `pca/` sibling of `stdprod/`, not
+  inside `stdprod`; raw `pcabackest`/`saextrct` also needs the mission
+  housekeeping/obc files, a HEASoft build with those tools, and a working
+  HEASARC endpoint.  `stdprod` is the current production path.
 
-They are not silently marked as done.  The production path is reproducible;
-the raw path is optional and documented.
+The raw XMM PN path has now been run end-to-end for PDS 456; see
+`docs/XMM_RAW_SAS_RESULT.md` and `outputs/PDS456_z_0.1840/xmm_sas_raw/`.
+It is a PN-only cross-check, not a replacement for joint PPS.  Raw RXTE PCA
+remains unavailable from the current network and would require a separate
+full-HEASoft image.
 
 ## Registry digests
 

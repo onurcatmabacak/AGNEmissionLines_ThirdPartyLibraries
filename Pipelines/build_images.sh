@@ -12,8 +12,8 @@ ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 DOCKER="${DOCKER:-docker}"
 # Tools with a Dockerfile; image name -> source directory (case-sensitive!)
 # rxte_xspec is FROM xmm_xspec; build the xmm_xspec base image first if missing.
-DOCKER_TOOLS=(badass fantasy_agn gelato gleam ir_linefit pyqsofit_uv qsofitmore_line pyqsofitspec_line ppxf_host gandalf_line nir_linefit pahfit_mir fir_linefit cafe_line crossband cigale_sed agnfitter_sed s3fit_line galspec_line qgfit sheap_line manga_dap xmm_xspec rxte_xspec optical_linefit)
-declare -A TOOL_SRC=( [badass]=Tools/badass [fantasy_agn]=Tools/fantasy_agn [gelato]=Tools/Gelato [gleam]=Tools/Gleam [ir_linefit]=Tools/pipeline_ir [pyqsofit_uv]=Tools/pyqsofit_uv [qsofitmore_line]=Tools/qsofitmore_line [pyqsofitspec_line]=Tools/pyqsofitspec_line [ppxf_host]=Tools/ppxf_host [gandalf_line]=Tools/gandalf_line [nir_linefit]=Tools/nir_linefit [pahfit_mir]=Tools/pahfit_mir [fir_linefit]=Tools/fir_linefit [cafe_line]=Tools/cafe_line [crossband]=Tools/crossband [cigale_sed]=Tools/cigale_sed [agnfitter_sed]=Tools/agnfitter_sed [s3fit_line]=Tools/s3fit_line [galspec_line]=Tools/galspec_line [qgfit]=Tools/qgfit [sheap_line]=Tools/sheap_line [manga_dap]=Tools/manga_dap [xmm_xspec]=Tools/xmm_xspec [rxte_xspec]=Tools/rxte_xspec [optical_linefit]=Tools/optical_linefit )
+DOCKER_TOOLS=(badass fantasy_agn gelato gleam ir_linefit pyqsofit_uv qsofitmore_line pyqsofitspec_line ppxf_host gandalf_line nir_linefit pahfit_mir fir_linefit cafe_line crossband cigale_sed agnfitter_sed s3fit_line galspec_line qgfit sheap_line manga_dap xmm_xspec rxte_xspec optical_linefit xmm_sas_raw)
+declare -A TOOL_SRC=( [badass]=Tools/badass [fantasy_agn]=Tools/fantasy_agn [gelato]=Tools/Gelato [gleam]=Tools/Gleam [ir_linefit]=Tools/pipeline_ir [pyqsofit_uv]=Tools/pyqsofit_uv [qsofitmore_line]=Tools/qsofitmore_line [pyqsofitspec_line]=Tools/pyqsofitspec_line [ppxf_host]=Tools/ppxf_host [gandalf_line]=Tools/gandalf_line [nir_linefit]=Tools/nir_linefit [pahfit_mir]=Tools/pahfit_mir [fir_linefit]=Tools/fir_linefit [cafe_line]=Tools/cafe_line [crossband]=Tools/crossband [cigale_sed]=Tools/cigale_sed [agnfitter_sed]=Tools/agnfitter_sed [s3fit_line]=Tools/s3fit_line [galspec_line]=Tools/galspec_line [qgfit]=Tools/qgfit [sheap_line]=Tools/sheap_line [manga_dap]=Tools/manga_dap [xmm_xspec]=Tools/xmm_xspec [rxte_xspec]=Tools/rxte_xspec [optical_linefit]=Tools/optical_linefit [xmm_sas_raw]=Tools/xmm_sas_raw )
 # These tools need the repo root as context (they copy repo-level code/configs).
 declare -A TOOL_CTX=( [ir_linefit]="$ROOT" [pyqsofit_uv]="$ROOT" [qsofitmore_line]="$ROOT" [pyqsofitspec_line]="$ROOT" [ppxf_host]="$ROOT" [gandalf_line]="$ROOT" [nir_linefit]="$ROOT" [pahfit_mir]="$ROOT" [fir_linefit]="$ROOT" [cafe_line]="$ROOT" [crossband]="$ROOT" [cigale_sed]="$ROOT" [agnfitter_sed]="$ROOT" [s3fit_line]="$ROOT" [galspec_line]="$ROOT" [qgfit]="$ROOT" [sheap_line]="$ROOT" [manga_dap]="$ROOT" [xmm_xspec]="$ROOT" [optical_linefit]="$ROOT" )
 
@@ -31,6 +31,13 @@ for tool in "${tools[@]}"; do
   srcdir="${TOOL_SRC[$tool]:-$tool}"
   df="$ROOT/$srcdir/dockerfile"
   [ -f "$df" ] || { echo "skip $tool (no $srcdir/dockerfile)"; continue; }
+  # CIGALE is sourced from gitlab.lam.fr, which is unreachable from the
+  # final audit network.  Keep the validated image if it is already present;
+  # a clean build still needs a reachable GitLab mirror.
+  if [ "$tool" = "cigale_sed" ] && $DOCKER image inspect cigale_sed >/dev/null 2>&1; then
+    echo "==> using cached image 'cigale_sed' (GitLab source unreachable)"
+    continue
+  fi
   echo "==> building image '$tool' from $df"
   ctx="${TOOL_CTX[$tool]:-$ROOT/$srcdir}"
   if ! $DOCKER build --network=host -t "$tool" -f "$df" "$ctx"; then

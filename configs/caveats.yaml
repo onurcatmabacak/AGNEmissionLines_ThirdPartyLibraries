@@ -131,6 +131,14 @@ tools:
     caveat: "Full all-spaxel official DAP is exposed as a long run (S/N=10, 2397 bins, full 65-template SASUKE). It is a single-core upstream workflow and may take many hours; the validated fast/9-bin result must not be substituted for it."
     evidence: "Pipelines/run_manga_dap_docker.sh, configs/manga_dap/default/plan.toml, docs/LONG_RUNS.md"
     mitigation: "Run with --full and wait for completion; compare the all-spaxel MAPS to the published reference before claiming the full DAP."
+  - tool: xmm_sas_raw
+    kind: line
+    wave: X-ray
+    status: conditional
+    severity: medium
+    caveat: "PN-only raw SAS 22.1 reduction. It used a custom 20 arcsec region, a CCF v22.0 RMF with SAS 22.1, and has no final pile-up/pattern optimization; it is not a joint PN+MOS or publication-grade replacement for xmm_xspec."
+    evidence: "outputs/PDS456_z_0.1840/xmm_sas_raw/, Tools/xmm_sas_raw/README.md"
+    mitigation: "Use as a reduction cross-check; run epatplot and a PPS-like region before quoting final numbers."
   - tool: xmm_xspec
     kind: line
     wave: X-ray

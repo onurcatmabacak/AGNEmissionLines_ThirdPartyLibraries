@@ -40,7 +40,7 @@ Do **not** start with `snakemake all`; some tools take tens of minutes.
 
 ## What this repository is
 
-- **A tool matrix:** 25 Docker images for line/SED/host/IFU/X-ray analyses.
+- **A tool matrix:** 26 Docker images for line/SED/host/IFU/X-ray analyses.
 - **A canonical data layout:** one source directory in, one tool directory out.
 - **A source-aware planner:** recommends tools from the data actually present.
 - **A validation system:** output schema, SHA-256 artifact catalogue, pytest
@@ -146,6 +146,8 @@ python pipeline/statistical_report.py
 | [`docs/ROADMAP_V2.md`](docs/ROADMAP_V2.md) | implementation history and open items |
 | [`docs/PINNING.md`](docs/PINNING.md) | image/upstream provenance |
 | [`docs/LITERATURE_COVERAGE.md`](docs/LITERATURE_COVERAGE.md) | what is covered and what is genuinely missing |
+| [`docs/XMM_RAW_SAS_RESULT.md`](docs/XMM_RAW_SAS_RESULT.md) | raw SAS PN cross-check of the PPS X-ray result |
+| [`docs/UNRESOLVED_ITEMS.md`](docs/UNRESOLVED_ITEMS.md) | remaining blockers with evidence and owners |
 | [`docs/RUN_MANIFEST.md`](docs/RUN_MANIFEST.md) | normalized run/catalog status |
 | [`workflow/README.md`](workflow/README.md) | Snakemake graph |
 
@@ -153,7 +155,7 @@ python pipeline/statistical_report.py
 
 - Host dependencies: `requirements-host.txt`
 - QA tools: `requirements-dev.txt`
-- Docker images: `Pipelines/build_images.sh` (25 tools)
+- Docker images: `Pipelines/build_images.sh` (26 tools)
 - Tests: 27 pytest tests plus schema/hash validation
 
 ```bash

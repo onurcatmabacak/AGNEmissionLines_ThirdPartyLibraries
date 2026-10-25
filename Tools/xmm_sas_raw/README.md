@@ -49,7 +49,10 @@ export SAS_CCF=/out/ccf.cif
 epproc instexpids=PNS003
 ```
 
-The current attempt reached a PN event list but `epproc` exceeded a 31-minute
-test budget and `evselect`/`especget` hit an upstream header/attribute issue.
-No raw SAS spectrum is therefore claimed as a production product.  The
-production `xmm_xspec` result continues to use official PPS products.
+A full uncapped `epproc instexpids=PNS003` run completed with exit 0.  Use the
+final `*_ImagingEvts.ds`; the intermediate `*_Evts.ds` has an unfinalized
+exposure structure and makes `evselect` write `EXPOSURE=inf`.  The tested
+`especget` command uses the final event list, a 20″ source region and a
+40–60″ background annulus.  See `docs/XMM_RAW_SAS_RESULT.md` for the result.
+The raw reduction is a PN-only cross-check; joint PPS remains the production
+path.

@@ -112,7 +112,8 @@ Notes on the table:
    requested aperture (9 arcsec^2 for `vv114`).  Files that really are
    `MJy/sr` are left alone.
 3. **Line/PAH flux convention.**  `pahfit_lines.csv` reports the integrated
-   `F_nu` over wavelength, `integral F_nu dlambda`, in MJy/sr um, evaluated on
+   PAHFIT's integrated line power (the frequency integral), in MJy/sr THz,
+   evaluated on
    the same profile grid as the peak and EW.  PAHFIT's internal `power`
    parameter in the ECSV is a different quantity (integral over frequency);
    it is deliberately **not** copied into the line table.  The audit verified
@@ -177,7 +178,7 @@ Notes on the table:
 `pahfit_lines.csv` always has `flux_observed` (S07-attenuated) and
 `flux_intrinsic` (attenuation removed), `quantity`, `unit`, `status`,
 `at_bound`, `extrapolated`, `reference_wavelength_um`, and `snr`.
-Gas lines and PAH features are integrated intensities in `MJy/sr um`; dust
+Gas lines and PAH features are integrated line powers in `MJy/sr THz`; dust
 continuum and starlight are flux densities in `MJy/sr` at a reference rest
 wavelength (20 um and 5 um or the red edge, respectively), not integrated
 fluxes.  `flux_observed` for continuum/starlight includes the `1/(1+z)`
