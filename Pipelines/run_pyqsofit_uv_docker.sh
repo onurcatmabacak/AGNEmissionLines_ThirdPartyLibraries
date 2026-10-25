@@ -16,6 +16,10 @@ mkdir -p "$OUT"
 exec docker run --rm \
   --user "$(id -u):$(id -g)" \
   -e MPLCONFIGDIR=/tmp/mpl \
+  -e OMP_NUM_THREADS="${OMP_NUM_THREADS:-1}" \
+  -e OPENBLAS_NUM_THREADS="${OPENBLAS_NUM_THREADS:-1}" \
+  -e MKL_NUM_THREADS="${MKL_NUM_THREADS:-1}" \
+  -e NUMEXPR_NUM_THREADS="${NUMEXPR_NUM_THREADS:-1}" \
   -e PYQSOFIT_MC="${PYQSOFIT_MC:-0}" \
   -e PYQSOFIT_MCMC="${PYQSOFIT_MCMC:-0}" \
   -e PYQSOFIT_NSAMP="${PYQSOFIT_NSAMP:-50}" \

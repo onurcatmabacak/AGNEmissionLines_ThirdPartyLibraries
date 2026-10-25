@@ -152,7 +152,7 @@ python pipeline/statistical_report.py
 - Host dependencies: `requirements-host.txt`
 - QA tools: `requirements-dev.txt`
 - Docker images: `Pipelines/build_images.sh` (25 tools)
-- Tests: 20 pytest tests plus schema/hash validation
+- Tests: 22 pytest tests plus schema/hash validation
 
 ```bash
 pytest -q

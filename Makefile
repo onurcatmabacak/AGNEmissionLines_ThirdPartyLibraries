@@ -1,4 +1,4 @@
-.PHONY: help test validate catalog plan smoke docker-smoke
+.PHONY: help test validate audit catalog plan smoke docker-smoke
 
 help:
 	@echo "make test        - pytest"
@@ -14,6 +14,9 @@ test:
 validate:
 	.venv/bin/python pipeline/validate_outputs.py
 
+audit:
+	.venv/bin/python pipeline/audit_repo.py
+
 catalog:
 	.venv/bin/python pipeline/build_output_manifest.py
 
@@ -26,4 +29,4 @@ docker-smoke:
 	docker run --rm -v "$$PWD/inputs/PDS456_z_0.1840/raw":/app/input:ro -v /tmp/agn-smoke:/app/output optical_linefit --fits /app/input/ADP.2023-04-20T08:25:01.842_XSHOOTER_VIS.fits --out /app/output --z 0.184 --name smoke
 	test -s /tmp/agn-smoke/optical_lines_summary.json
 
-smoke: plan test validate
+smoke: audit plan test validate

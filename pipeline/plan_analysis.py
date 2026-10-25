@@ -31,6 +31,7 @@ if str(ROOT) not in sys.path:
 
 from pipeline.io_layout import iter_sources, load_source, source_files  # noqa: E402
 from pipeline.tool_registry import BY_NAME  # noqa: E402
+from pipeline.tool_capabilities import is_long  # noqa: E402
 
 # Cost is a coarse wall-clock class, not a promise.  It lets a beginner avoid
 # accidentally launching a 1-hour fit while still allowing the full science run.
@@ -185,7 +186,7 @@ def make_plan(src: dict, goal: str = DEFAULT_GOAL, max_cost: str = "long",
     for c in candidates:
         if COST_ORDER[c.cost] > COST_ORDER[max_cost]:
             skipped.append({"tool": c.tool, "reason": f"cost {c.cost} > max_cost {max_cost}"})
-        elif c.cost == "long" and not include_expensive and not c.required and goal == "auto":
+        elif c.cost == "long" and not include_expensive and goal != "all":
             skipped.append({"tool": c.tool, "reason": "long run; use --include-expensive or --goal all"})
         else:
             selected.append(asdict(c))

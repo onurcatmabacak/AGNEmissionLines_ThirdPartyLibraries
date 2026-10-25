@@ -30,6 +30,13 @@ from pipeline.io_layout import (  # noqa: E402
     output_dir, prepared_dir, source_files,
 )
 from pipeline.plan_analysis import make_plan  # noqa: E402
+from pipeline.tool_capabilities import THREADS, is_threaded, DEPENDENT_TOOLS  # noqa: E402
+
+PREREQUISITES = {
+    "s3fit_line": ["pyqsofit_uv"],
+    "crossmission": ["optical_linefit", "pyqsofit_uv"],
+    "crossband": ["pahfit_mir", "fir_linefit"],
+}
 
 MIRI_ALL = ",".join([
     "jwst.miri.mrs.ch1.A", "jwst.miri.mrs.ch1.B", "jwst.miri.mrs.ch1.C",
@@ -50,8 +57,7 @@ ALL_TOOLS = ("ir_linefit", "pyqsofit_uv", "qsofitmore_line", "pyqsofitspec_line"
 # Tools that can use more than one CPU thread.  They are run one at a time in
 # --phased mode so that they get the full machine; the remaining tools are then
 # run concurrently at one thread each.
-MULTICORE_TOOLS = {"s3fit_line", "galspec_line", "qgfit", "pahfit_mir",
-                   "cafe_line", "manga_dap", "manga_dap_full", "agnfitter_sed"}
+MULTICORE_TOOLS = {t for t, n in THREADS.items() if n > 1}
 
 
 def log(msg: str):
@@ -465,9 +471,16 @@ def _run_phased(sources: list[dict], args) -> int:
             logp = WORK_ROOT.parent / "logs" / key / f"{tool}.log"
             jobs.append((src, tool, out, logp))
     if args.dry_run:
+        have = {(s["key"], t) for s, t, _, _ in jobs}
         for src, tool, out, logp in jobs:
-            phase = "multicore" if tool in multi else "parallel"
-            log(f"[{phase}] {src['key']}/{tool} -> {out.relative_to(ROOT)}")
+            stage = ("multicore" if tool in multi else
+                     "final" if tool in DEPENDENT_TOOLS else "parallel")
+            log(f"[{stage}] {src['key']}/{tool} -> {out.relative_to(ROOT)}")
+        for src, tool, out, logp in jobs:
+            for dep in PREREQUISITES.get(tool, []):
+                if dep in src.get("tools", []) and (src["key"], dep) not in have:
+                    log(f"[producer] {src['key']}/{dep} -> {output_dir(src['key'], dep).relative_to(ROOT)}")
+                    have.add((src["key"], dep))
         return 0
     base = [sys.executable, str(ROOT / "pipeline" / "run_new_tools.py")]
     common = []
@@ -515,14 +528,33 @@ def _run_phased(sources: list[dict], args) -> int:
         }
 
     rc = 0
+    # Dependencies that are not explicitly in the selected job list are run
+    # first, serially, so S3Fit and crossmission never read a stale/missing
+    # producer product.
+    have = {(s["key"], t) for s, t, _, _ in jobs}
+    producer_jobs = []
+    for src, tool, _, _ in jobs:
+        for dep in PREREQUISITES.get(tool, []):
+            if dep not in src.get("tools", []) or (src["key"], dep) in have:
+                continue
+            out = output_dir(src["key"], dep)
+            logp = WORK_ROOT.parent / "logs" / src["key"] / f"{dep}.log"
+            producer_jobs.append((src, dep, out, logp))
+            have.add((src["key"], dep))
+    for src, tool, out, logp in producer_jobs:
+        log(f"[producer] {src['key']}/{tool}")
+        rc |= run(command(src, tool), logp, env_for(1))
     # Multicore phase: one tool at a time, full thread budget.
     for src, tool, out, logp in jobs:
         if tool not in multi:
             continue
         log(f"[multicore {args.threads}] {src['key']}/{tool}")
         rc |= run(command(src, tool), logp, env=env_for(args.threads))
-    # Single-core phase: parallel, one thread per worker.
-    singles = [(s, t, o, l) for s, t, o, l in jobs if t not in multi]
+    # Single-core phase: parallel, one thread per worker.  Post-processing
+    # tools that consume another tool's output run after this phase.
+    singles = [(s, t, o, l) for s, t, o, l in jobs
+               if t not in multi and t not in DEPENDENT_TOOLS]
+    final = [(s, t, o, l) for s, t, o, l in jobs if t in DEPENDENT_TOOLS]
     if singles:
         log(f"[parallel {min(args.jobs, len(singles))}] {len(singles)} single-core jobs")
         with ThreadPoolExecutor(max_workers=max(1, args.jobs)) as ex:
@@ -540,6 +572,10 @@ def _run_phased(sources: list[dict], args) -> int:
                     rc = 1
                 else:
                     log(f"[ok] {s['key']}/{t}")
+    # Dependency-bearing post-processing runs only after the producers.
+    for s, t, o, l in final:
+        log(f"[final] {s['key']}/{t}")
+        rc |= run(command(s, t), l, env_for(1))
     return rc
 
 

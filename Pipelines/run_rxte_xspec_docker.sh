@@ -85,6 +85,10 @@ docker run --rm \
   -e HOME=/tmp \
   -e PFILES=/tmp/pfiles \
   -e MPLCONFIGDIR=/tmp/mpl \
+  -e OMP_NUM_THREADS="${OMP_NUM_THREADS:-1}" \
+  -e OPENBLAS_NUM_THREADS="${OPENBLAS_NUM_THREADS:-1}" \
+  -e MKL_NUM_THREADS="${MKL_NUM_THREADS:-1}" \
+  -e NUMEXPR_NUM_THREADS="${NUMEXPR_NUM_THREADS:-1}" \
   -e RXTE_XSPEC_HOME=/tmp/rxte_xspec_home \
   -e RXTE_XSPEC_IMAGE=rxte_xspec \
   -e RXTE_XSPEC_IMAGE_SIZE="$IMAGE_SIZE" \

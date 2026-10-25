@@ -27,3 +27,8 @@ def test_caveat_matrix_covers_every_registered_tool():
     assert {t.name for t in TOOLS} <= have
     assert Path("docs/CAVEAT_MATRIX.md").is_file()
     assert Path("docs/caveat_matrix.json").is_file()
+
+
+def test_repository_consistency_audit():
+    from pipeline.audit_repo import main as audit
+    assert audit() == 0

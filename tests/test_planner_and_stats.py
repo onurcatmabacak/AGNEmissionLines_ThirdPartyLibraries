@@ -32,3 +32,11 @@ def test_statistical_report_is_small_n_and_does_not_fit_a_correlation():
     assert all(x["sample_size"] == 2 for x in d["crossmission"])
     assert "no correlation" in " ".join(d["warnings"]).lower()
     assert d["pds456_local_hbeta"]["quality"] == "provisional"
+
+
+def test_every_registered_tool_has_capabilities():
+    from pipeline.tool_registry import TOOLS
+    from pipeline.tool_capabilities import THREADS, FULL_CAPABILITY
+    names = {t.name for t in TOOLS}
+    assert names <= set(THREADS)
+    assert names <= set(FULL_CAPABILITY)

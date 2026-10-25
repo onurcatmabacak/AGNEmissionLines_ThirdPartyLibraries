@@ -15,7 +15,7 @@ bash Pipelines/build_images.sh
 bash Pipelines/record_image_digests.sh
 ```
 
-`docs/image_digests.json` records, for each of the 25 images:
+`docs/image_digests.json` records, for each of the 25 image entries:
 
 - image tag,
 - local image ID,
@@ -38,3 +38,12 @@ The third-party code pins are documented in the per-tool READMEs.  Examples:
 
 If you add a tool, record its upstream URL and commit/tag in the tool README
 and in the caveat matrix.
+
+## Why 25 image entries but 24 registered tools?
+
+The build list includes four **legacy optical images** (`badass`,
+`fantasy_agn`, `gelato`, `gleam`) retained for the migrated legacy outputs.
+The current registry has 24 tools: 21 use images, `manga_dap_full` reuses the
+`manga_dap` image, `crossmission` is host post-processing, and `sdss_zline` is
+an official reference product rather than a rerun.  `pipeline/audit_repo.py`
+enforces this accounting.

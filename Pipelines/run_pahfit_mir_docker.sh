@@ -12,6 +12,10 @@ mkdir -p "$OUT"
 exec docker run --rm \
   --user "$(id -u):$(id -g)" \
   -e MPLCONFIGDIR=/tmp/mpl \
+  -e OMP_NUM_THREADS="${OMP_NUM_THREADS:-1}" \
+  -e OPENBLAS_NUM_THREADS="${OPENBLAS_NUM_THREADS:-1}" \
+  -e MKL_NUM_THREADS="${MKL_NUM_THREADS:-1}" \
+  -e NUMEXPR_NUM_THREADS="${NUMEXPR_NUM_THREADS:-1}" \
   -v "$(realpath "$IN")":/app/input:ro \
   -v "$(realpath "$OUT")":/app/output \
   -v "$REPO_ROOT/configs/pahfit_mir":/app/configs/pahfit_mir:ro \

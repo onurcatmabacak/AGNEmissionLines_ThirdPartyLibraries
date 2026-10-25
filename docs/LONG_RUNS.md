@@ -35,8 +35,7 @@ The default `mcmc.nsteps=4000` reaches only ~11.7 τ.  A longer run:
 
 ```bash
 python pipeline/run_new_tools.py --source 04592649654_z_0.5874 \
-  --tools galspec_line --galspec-mcmc-steps 20000 \
-  --galspec-nwalkers 80 --galspec-nburn 2000 \
+  --tools galspec_line --galspec-config configs/galspec_line/long \
   --phased --threads 8
 ```
 

@@ -10,6 +10,10 @@ EXTRA=()
 if [ -n "$OBJ" ]; then EXTRA=(-e "GANDALF_OBJECT=$OBJ"); fi
 mkdir -p "$OUT"
 exec docker run --rm \
+  -e OMP_NUM_THREADS="${OMP_NUM_THREADS:-1}" \
+  -e OPENBLAS_NUM_THREADS="${OPENBLAS_NUM_THREADS:-1}" \
+  -e MKL_NUM_THREADS="${MKL_NUM_THREADS:-1}" \
+  -e NUMEXPR_NUM_THREADS="${NUMEXPR_NUM_THREADS:-1}" \
   --user "$(id -u):$(id -g)" \
   -e MPLCONFIGDIR=/tmp/mpl "${EXTRA[@]}" \
   -v "$(realpath "$IN")":/app/input:ro \

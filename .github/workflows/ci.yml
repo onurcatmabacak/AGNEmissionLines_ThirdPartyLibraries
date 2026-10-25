@@ -31,6 +31,8 @@ jobs:
         run: pytest -q
       - name: Output catalogue and SHA-256 validation
         run: python pipeline/validate_outputs.py
+      - name: Repository consistency audit
+        run: python pipeline/audit_repo.py
       - name: Planner smoke test
         run: python pipeline/plan_analysis.py --source 3C120_z_0.0330 --goal auto
       - name: Statistical report regeneration

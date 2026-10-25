@@ -101,6 +101,10 @@ fi
 exec docker run --rm \
   --user "$(id -u):$(id -g)" \
   -e MPLCONFIGDIR=/tmp/mpl \
+  -e OMP_NUM_THREADS="${OMP_NUM_THREADS:-1}" \
+  -e OPENBLAS_NUM_THREADS="${OPENBLAS_NUM_THREADS:-1}" \
+  -e MKL_NUM_THREADS="${MKL_NUM_THREADS:-1}" \
+  -e NUMEXPR_NUM_THREADS="${NUMEXPR_NUM_THREADS:-1}" \
   -e HOME=/tmp \
   -e QSOFITMORE_IMAGE=qsofitmore_line \
   -e QSOFITMORE_IMAGE_SIZE="$IMAGE_SIZE" \
