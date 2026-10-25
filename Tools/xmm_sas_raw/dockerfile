@@ -1,0 +1,25 @@
+# Official XMM-Newton SAS 22.1.0 raw-reduction image.
+# Based on the existing HEASoft/XSPEC image so the raw products can be fitted
+# with the same XSPEC branch.  The SAS package is downloaded at build time and
+# is NOT stored in Git.
+FROM xmm_xspec:latest
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+      libxext6 libsm6 libice6 libxft2 libxrender1 libx11-6 libxmu6 libcurl3-gnutls libcurl4 \
+    && rm -rf /var/lib/apt/lists/*
+
+ENV LHEASOFT=/opt/conda/heasoft \
+    SAS_DIR=/opt/sas/xmmsas_22.1.0-a8f2c2afa-20250304 \
+    SAS_PATH=/opt/sas/xmmsas_22.1.0-a8f2c2afa-20250304 \
+    PATH=/opt/conda/bin:/opt/sas/xmmsas_22.1.0-a8f2c2afa-20250304/bin:/usr/local/bin:/usr/bin:/bin \
+    SAS_PERL=/usr/bin/perl
+
+ARG SAS_URL=https://xmm-tools.cosmos.esa.int/external/xmm_sas/sas/22.1.0/Linux/Ubuntu22.04/sas_22.1.0-a8f2c2afa-20250304-ubuntu22.04-gcc13.3.0-x86_64.tgz
+WORKDIR /opt/sas
+RUN curl -k -L --retry 4 --max-time 1800 -o sas.tgz "$SAS_URL" && \
+    tar -xzf sas.tgz && \
+    PATH=/opt/conda/bin:$PATH SAS_PERL=/usr/bin/perl ./install.sh && \
+    rm -f sas.tgz
+
+ENTRYPOINT ["/bin/bash", "/app/run/entrypoint.sh"]
+CMD ["bash"]

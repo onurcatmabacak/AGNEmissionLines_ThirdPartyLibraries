@@ -44,7 +44,7 @@ def main():
     cfg["sed_modules"] = ["sfhdelayed", "bc03", "dustatt_modified_starburst",
                           "dl2014", agn_model, "redshifting"]
     cfg["analysis_method"] = "pdf_analysis"
-    cfg["cores"] = str(max(1, int(os.environ.get("CIGALE_CORES", os.environ.get("OMP_NUM_THREADS", "4")))))
+    cfg["cores"] = "4"
     cfg.write()
     call(["-c", str(cfg_path), "genconf"])
 
