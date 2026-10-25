@@ -1,61 +1,26 @@
 {
-  "key": "NGC1194_z_0.0136",
-  "name": "NGC 1194",
-  "ra": 45.954624,
-  "dec": -1.10375,
-  "z": 0.0136253,
-  "kind": "manga",
   "catalog": "MaNGA AGN Catalog VAC (Comerford et al. 2020)",
-  "plate": 9193,
-  "ifu_design": 12701,
-  "plateifu": "9193-12701",
-  "mangaid": "1-37440",
-  "morphology": "SA(s)0/a? Sy2",
-  "redshift_note": "NSA v1_0_1 z=0.0136253 from DRPall v3_1_1 (rounded key uses 0.0136). SIMBAD gives cz=0.0135689; the DAP uses the NSA systemic redshift so velocities are relative to the same zero point as the published MAPS.",
   "coordinates_note": "IFU centre from the LOGCUBE primary header. SIMBAD optical position is 45.95463501, -1.10372642.",
-  "files": {
-    "manga_cube": "raw/manga-9193-12701-LOGCUBE.fits.gz",
-    "manga_rss": "raw/manga-9193-12701-LOGRSS.fits.gz",
-    "manga_maps_reference": "raw/manga-9193-12701-MAPS-HYB10-MILESHC-MASTARHC2.fits.gz"
-  },
+  "dec": -1.10375,
+  "download_script": "download.sh",
   "file_sizes_bytes": {
     "raw/manga-9193-12701-LOGCUBE.fits.gz": 207992431,
     "raw/manga-9193-12701-LOGRSS.fits.gz": 169194046,
     "raw/manga-9193-12701-MAPS-HYB10-MILESHC-MASTARHC2.fits.gz": 10775592
   },
-  "sha256": {
-    "raw/manga-9193-12701-LOGCUBE.fits.gz": "7810f4c94db2fbb677e1bc92bc91a866e88d421c24c8c52273aa5277b9b5f764",
-    "raw/manga-9193-12701-LOGRSS.fits.gz": "812000fdc1946193f8aa0e2e96878555ec370fa30b3a41df20cd76b0bad497bd",
-    "raw/manga-9193-12701-MAPS-HYB10-MILESHC-MASTARHC2.fits.gz": "f47f16b90c45fc668e0105e9b2a2241d6c28104924056bcfa493f84e1f200f49"
+  "files": {
+    "manga_cube": "raw/manga-9193-12701-LOGCUBE.fits.gz",
+    "manga_maps_reference": "raw/manga-9193-12701-MAPS-HYB10-MILESHC-MASTARHC2.fits.gz",
+    "manga_rss": "raw/manga-9193-12701-LOGRSS.fits.gz"
   },
-  "urls": {
-    "manga_cube": "https://data.sdss.org/sas/dr17/manga/spectro/redux/v3_1_1/9193/stack/manga-9193-12701-LOGCUBE.fits.gz",
-    "manga_rss": "https://data.sdss.org/sas/dr17/manga/spectro/redux/v3_1_1/9193/stack/manga-9193-12701-LOGRSS.fits.gz",
-    "manga_maps_reference": "https://data.sdss.org/sas/dr17/manga/spectro/analysis/v3_1_1/3.1.0/HYB10-MILESHC-MASTARHC2/9193/12701/manga-9193-12701-MAPS-HYB10-MILESHC-MASTARHC2.fits.gz"
-  },
-  "products": {
-    "drp_version": "v3_1_1",
-    "drp_versdrp3": "v3_1_1",
-    "dap_version_reference": "3.1.0",
-    "daptype_reference": "HYB10-MILESHC-MASTARHC2",
-    "cube_shape": [
-      4563,
-      74,
-      74
-    ],
-    "wavelength_range_observed_A": [
-      3621.59598486,
-      10353.80544415
-    ],
-    "spaxel_scale_arcsec": 0.5,
-    "ifu_diameter_arcsec": 32.0,
-    "ebv_galactic": 0.0764222,
-    "drp3qual": 0,
-    "manga_target1": 0,
-    "manga_target2": 0,
-    "manga_target3": 6,
-    "manga_target3_note": "MNGTARG3=6 means the object was observed through an ancillary target selection (the exact ancillary bit label is survey metadata, not a DAP input). NGC 1194 is independently a catalogued Seyfert 2 and is included in the MaNGA AGN Catalog VAC used here."
-  },
+  "files_note": "LOGCUBE and LOGRSS are Git-ignored (>100 MB each) and fetched/verified by download.sh; the published MAPS is committed.",
+  "ifu_design": 12701,
+  "key": "NGC1194_z_0.0136",
+  "kind": "manga",
+  "mangaid": "1-37440",
+  "morphology": "SA(s)0/a? Sy2",
+  "name": "NGC 1194",
+  "notes": "Real MaNGA DR17 LOGCUBE and LOGRSS, downloaded unmodified from the public SDSS SAS. The LOGCUBE is the DAP datacube; LOGRSS is loaded by the official MaNGADataCube to compute the spatial covariance matrix used by the Voronoi binning, not fit as a spectrum. The published DAP MAPS is the independent all-spaxel reference; it is stored unmodified and is never described as the output of this repository's DAP run. The full all-spaxel 2397-bin DAP emission-line stage exceeded the 58 min wall-clock budget; the accepted product is the official full-method SASUKE fit on 9 central single-spaxel bins, with the published MAPS as the all-spaxel reference.",
   "papers": [
     {
       "bibcode": "2020ApJ...901..157C",
@@ -88,10 +53,46 @@
       "role": "NSA redshift, effective radius, ellipticity and position angle used as DAP metadata"
     }
   ],
-  "notes": "Real MaNGA DR17 LOGCUBE and LOGRSS, downloaded unmodified from the public SDSS SAS. The LOGCUBE is the DAP datacube; LOGRSS is loaded by the official MaNGADataCube to compute the spatial covariance matrix used by the Voronoi binning, not fit as a spectrum. The published DAP MAPS is the independent all-spaxel reference; it is stored unmodified and is never described as the output of this repository's DAP run. The full all-spaxel 2397-bin DAP emission-line stage exceeded the 58 min wall-clock budget; the accepted product is the official full-method SASUKE fit on 9 central single-spaxel bins, with the published MAPS as the all-spaxel reference.",
+  "plate": 9193,
+  "plateifu": "9193-12701",
+  "products": {
+    "cube_shape": [
+      4563,
+      74,
+      74
+    ],
+    "dap_version_reference": "3.1.0",
+    "daptype_reference": "HYB10-MILESHC-MASTARHC2",
+    "drp3qual": 0,
+    "drp_versdrp3": "v3_1_1",
+    "drp_version": "v3_1_1",
+    "ebv_galactic": 0.0764222,
+    "ifu_diameter_arcsec": 32.0,
+    "manga_target1": 0,
+    "manga_target2": 0,
+    "manga_target3": 6,
+    "manga_target3_note": "MNGTARG3=6 means the object was observed through an ancillary target selection (the exact ancillary bit label is survey metadata, not a DAP input). NGC 1194 is independently a catalogued Seyfert 2 and is included in the MaNGA AGN Catalog VAC used here.",
+    "spaxel_scale_arcsec": 0.5,
+    "wavelength_range_observed_A": [
+      3621.59598486,
+      10353.80544415
+    ]
+  },
+  "ra": 45.954624,
+  "redshift_note": "NSA v1_0_1 z=0.0136253 from DRPall v3_1_1 (rounded key uses 0.0136). SIMBAD gives cz=0.0135689; the DAP uses the NSA systemic redshift so velocities are relative to the same zero point as the published MAPS.",
+  "sha256": {
+    "raw/manga-9193-12701-LOGCUBE.fits.gz": "7810f4c94db2fbb677e1bc92bc91a866e88d421c24c8c52273aa5277b9b5f764",
+    "raw/manga-9193-12701-LOGRSS.fits.gz": "812000fdc1946193f8aa0e2e96878555ec370fa30b3a41df20cd76b0bad497bd",
+    "raw/manga-9193-12701-MAPS-HYB10-MILESHC-MASTARHC2.fits.gz": "f47f16b90c45fc668e0105e9b2a2241d6c28104924056bcfa493f84e1f200f49"
+  },
   "tools": [
-    "manga_dap"
+    "manga_dap",
+    "manga_dap_full"
   ],
-  "download_script": "download.sh",
-  "files_note": "LOGCUBE and LOGRSS are Git-ignored (>100 MB each) and fetched/verified by download.sh; the published MAPS is committed."
+  "urls": {
+    "manga_cube": "https://data.sdss.org/sas/dr17/manga/spectro/redux/v3_1_1/9193/stack/manga-9193-12701-LOGCUBE.fits.gz",
+    "manga_maps_reference": "https://data.sdss.org/sas/dr17/manga/spectro/analysis/v3_1_1/3.1.0/HYB10-MILESHC-MASTARHC2/9193/12701/manga-9193-12701-MAPS-HYB10-MILESHC-MASTARHC2.fits.gz",
+    "manga_rss": "https://data.sdss.org/sas/dr17/manga/spectro/redux/v3_1_1/9193/stack/manga-9193-12701-LOGRSS.fits.gz"
+  },
+  "z": 0.0136253
 }

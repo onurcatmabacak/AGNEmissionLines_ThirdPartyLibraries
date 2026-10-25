@@ -134,6 +134,8 @@ python pipeline/statistical_report.py
 | document | purpose |
 |---|---|
 | [`docs/GETTING_STARTED.md`](docs/GETTING_STARTED.md) | beginner tutorial |
+| [`docs/SCHEDULING.md`](docs/SCHEDULING.md) | multicore / parallel scheduling |
+| [`docs/LONG_RUNS.md`](docs/LONG_RUNS.md) | full-capability, long-run recipes |
 | [`docs/SCIENCE_RESULTS.md`](docs/SCIENCE_RESULTS.md) | statistical results and caveats |
 | [`docs/CAVEAT_MATRIX.md`](docs/CAVEAT_MATRIX.md) | status/severity/evidence for every tool |
 | [`docs/OUTPUT_SCHEMA.md`](docs/OUTPUT_SCHEMA.md) | formal output contract |

@@ -19,6 +19,7 @@ import json
 import os
 import subprocess
 import sys
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -44,7 +45,13 @@ ALL_TOOLS = ("ir_linefit", "pyqsofit_uv", "qsofitmore_line", "pyqsofitspec_line"
              "gandalf_line", "nir_linefit", "pahfit_mir", "fir_linefit", "cafe_line",
              "crossband", "cigale_sed", "agnfitter_sed", "s3fit_line", "galspec_line",
              "qgfit", "sheap_line", "manga_dap", "xmm_xspec", "rxte_xspec",
-             "crossmission", "optical_linefit")
+             "crossmission", "optical_linefit", "manga_dap_full")
+
+# Tools that can use more than one CPU thread.  They are run one at a time in
+# --phased mode so that they get the full machine; the remaining tools are then
+# run concurrently at one thread each.
+MULTICORE_TOOLS = {"s3fit_line", "galspec_line", "qgfit", "pahfit_mir",
+                   "cafe_line", "manga_dap", "manga_dap_full", "agnfitter_sed"}
 
 
 def log(msg: str):
@@ -144,14 +151,18 @@ def tool_pyqsofitspec(src: dict, out: Path, logp: Path, nboot: int | None = None
     return run(cmd, logp)
 
 
-def tool_manga_dap(src: dict, out: Path, logp: Path) -> int:
-    """Official MaNGA DAP subset on the real LOGCUBE (Stage A + 9-bin SASUKE)."""
+def tool_manga_dap(src: dict, out: Path, logp: Path, full: bool = False) -> int:
+    """Official MaNGA DAP; full=True runs the all-spaxel long path."""
     refs = source_files(src, "manga_maps_reference")
     if not refs:
         return _skip("no published DAP MAPS reference")
     cmd = [str(ROOT / "Pipelines" / "run_manga_dap_docker.sh"),
            str(Path(src["_path"])), str(out),
-           "--reference", str(refs[0]), "--n-bins", "9"]
+           "--reference", str(refs[0])]
+    if full:
+        cmd += ["--full"]
+    else:
+        cmd += ["--n-bins", "9"]
     return run(cmd, logp)
 
 
@@ -207,7 +218,8 @@ def tool_gandalf(src: dict, out: Path, logp: Path) -> int:
 
 
 def tool_galspec(src: dict, out: Path, logp: Path, config: str | None = None,
-                 sampler: str | None = None) -> int:
+                 sampler: str | None = None, mcmc_steps: int | None = None,
+                 nwalkers: int | None = None, nburn: int | None = None) -> int:
     cmd = [str(ROOT / "Pipelines" / "run_galspec_line_docker.sh"),
            str(Path(src["_path"])), str(out), "--object", str(src["key"])]
     if src.get("z") is not None:
@@ -216,6 +228,12 @@ def tool_galspec(src: dict, out: Path, logp: Path, config: str | None = None,
         cmd += ["--config", config]
     if sampler:
         cmd += ["--sampler", sampler]
+    if mcmc_steps is not None:
+        cmd += ["--mcmc-steps", str(mcmc_steps)]
+    if nwalkers is not None:
+        cmd += ["--nwalkers", str(nwalkers)]
+    if nburn is not None:
+        cmd += ["--nburn", str(nburn)]
     return run(cmd, logp)
 
 
@@ -361,7 +379,8 @@ def tool_agnfitter(src: dict, out: Path, logp: Path) -> int:
 
 
 def tool_s3fit(src: dict, out: Path, logp: Path, config: str | None = None,
-               n_mocks: int | None = None, mode: str | None = None) -> int:
+               n_mocks: int | None = None, mode: str | None = None,
+               threads: int | None = None) -> int:
     cmd = [str(ROOT / "Pipelines" / "run_s3fit_line_docker.sh"),
            str(Path(src["_path"])), str(out)]
     if src.get("z") is not None:
@@ -372,6 +391,8 @@ def tool_s3fit(src: dict, out: Path, logp: Path, config: str | None = None,
         cmd += ["--n-mocks", str(n_mocks)]
     if mode:
         cmd += ["--mode", mode]
+    if threads is not None:
+        cmd += ["--threads", str(threads)]
     # The runner auto-mounts the sibling pyqsofit_uv output when available.
     return run(cmd, logp)
 
@@ -420,6 +441,108 @@ def _skip(msg: str) -> int:
     return 0
 
 
+def _job_tools(src: dict, args) -> list[str]:
+    if args.auto:
+        plan = make_plan(src, goal=args.goal, max_cost=args.max_cost,
+                         include_expensive=args.include_expensive)
+        return [c["tool"] for c in plan["selected"]]
+    return [t for t in args.tools if t in src.get("tools", [])]
+
+
+def _run_phased(sources: list[dict], args) -> int:
+    """One multicore job at a time, then single-core jobs concurrently.
+
+    Each worker is a fresh ``run_new_tools.py`` subprocess, so logs and Docker
+    mounts stay isolated and an exception in one tool cannot corrupt another.
+    """
+    multi = set((args.multicore_tools or "").split(",")) if args.multicore_tools else set(MULTICORE_TOOLS)
+    multi = {x.strip() for x in multi if x.strip()}
+    jobs = []
+    for src in sources:
+        key = src["key"]
+        for tool in _job_tools(src, args):
+            out = output_dir(key, tool)
+            logp = WORK_ROOT.parent / "logs" / key / f"{tool}.log"
+            jobs.append((src, tool, out, logp))
+    if args.dry_run:
+        for src, tool, out, logp in jobs:
+            phase = "multicore" if tool in multi else "parallel"
+            log(f"[{phase}] {src['key']}/{tool} -> {out.relative_to(ROOT)}")
+        return 0
+    base = [sys.executable, str(ROOT / "pipeline" / "run_new_tools.py")]
+    common = []
+    if args.force:
+        common.append("--force")
+    if args.cigale_models:
+        common += ["--cigale-models", args.cigale_models]
+    if args.s3fit_config:
+        common += ["--s3fit-config", args.s3fit_config]
+    if args.s3fit_n_mocks is not None:
+        common += ["--s3fit-n-mocks", str(args.s3fit_n_mocks)]
+    if args.s3fit_mode:
+        common += ["--s3fit-mode", args.s3fit_mode]
+    if args.galspec_config:
+        common += ["--galspec-config", args.galspec_config]
+    if args.galspec_sampler:
+        common += ["--galspec-sampler", args.galspec_sampler]
+    if args.galspec_mcmc_steps is not None:
+        common += ["--galspec-mcmc-steps", str(args.galspec_mcmc_steps)]
+    if args.galspec_nwalkers is not None:
+        common += ["--galspec-nwalkers", str(args.galspec_nwalkers)]
+    if args.galspec_nburn is not None:
+        common += ["--galspec-nburn", str(args.galspec_nburn)]
+    if args.qsofitmore_config:
+        common += ["--qsofitmore-config", args.qsofitmore_config]
+    if args.qsofitmore_mc_trails is not None:
+        common += ["--qsofitmore-mc-trails", str(args.qsofitmore_mc_trails)]
+    if args.pyqsofitspec_config:
+        common += ["--pyqsofitspec-config", args.pyqsofitspec_config]
+    if args.pyqsofitspec_nboot is not None:
+        common += ["--pyqsofitspec-nboot", str(args.pyqsofitspec_nboot)]
+
+    def command(src, tool):
+        cmd = base + ["--only", src["key"], "--tools", tool] + common
+        if tool == "s3fit_line":
+            cmd += ["--s3fit-threads", str(args.threads)]
+        return cmd
+
+    def env_for(threads: int):
+        n = str(max(1, int(threads)))
+        return {
+            "OMP_NUM_THREADS": n, "OPENBLAS_NUM_THREADS": n,
+            "MKL_NUM_THREADS": n, "NUMEXPR_NUM_THREADS": n,
+            "MANGA_DAP_NPROC": n,
+        }
+
+    rc = 0
+    # Multicore phase: one tool at a time, full thread budget.
+    for src, tool, out, logp in jobs:
+        if tool not in multi:
+            continue
+        log(f"[multicore {args.threads}] {src['key']}/{tool}")
+        rc |= run(command(src, tool), logp, env=env_for(args.threads))
+    # Single-core phase: parallel, one thread per worker.
+    singles = [(s, t, o, l) for s, t, o, l in jobs if t not in multi]
+    if singles:
+        log(f"[parallel {min(args.jobs, len(singles))}] {len(singles)} single-core jobs")
+        with ThreadPoolExecutor(max_workers=max(1, args.jobs)) as ex:
+            futures = {ex.submit(run, command(s, t), l, env_for(1)): (s, t)
+                       for s, t, o, l in singles}
+            for fut in as_completed(futures):
+                s, t = futures[fut]
+                try:
+                    r = fut.result()
+                except Exception as exc:  # noqa: BLE001
+                    log(f"[error] {s['key']}/{t}: {exc}")
+                    r = 1
+                if r:
+                    log(f"[failed] {s['key']}/{t}")
+                    rc = 1
+                else:
+                    log(f"[ok] {s['key']}/{t}")
+    return rc
+
+
 def main(argv=None):
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument("--tools", nargs="*", choices=ALL_TOOLS, default=list(ALL_TOOLS))
@@ -433,6 +556,14 @@ def main(argv=None):
     p.add_argument("--max-cost", choices=("short", "medium", "long"), default="long")
     p.add_argument("--include-expensive", action="store_true",
                    help="allow long tools in an auto plan")
+    p.add_argument("--phased", action="store_true",
+                   help="run multicore tools serially, then single-core tools in parallel")
+    p.add_argument("--jobs", type=int, default=4,
+                   help="parallel single-core jobs in --phased mode (default 4)")
+    p.add_argument("--threads", type=int, default=8,
+                   help="threads for the serial multicore phase (default 8)")
+    p.add_argument("--multicore-tools", default=None,
+                   help="comma-separated tool names treated as multicore")
     p.add_argument("--list", action="store_true")
     p.add_argument("--force", action="store_true")
     p.add_argument("--dry-run", action="store_true")
@@ -450,12 +581,18 @@ def main(argv=None):
                    help="S3Fit config directory (default: configs/s3fit_line/default)")
     p.add_argument("--s3fit-n-mocks", type=int, default=None,
                    help="S3Fit Monte-Carlo mock spectra (default from fit_config.json: 10)")
+    p.add_argument("--s3fit-threads", type=int, default=None,
+                   help="S3Fit internal threads (default: config; --phased passes --threads)")
     p.add_argument("--s3fit-mode", choices=("spec+sed", "spec"), default=None,
                    help="S3Fit fitting mode (default from fit_config.json)")
     p.add_argument("--galspec-config", default=None,
                    help="GalSpec config directory (default: configs/galspec_line/default)")
     p.add_argument("--galspec-sampler", choices=("mcmc", "nested", "lsq"), default=None,
                    help="GalSpec sampling mode override")
+    p.add_argument("--galspec-mcmc-steps", type=int, default=None,
+                   help="GalSpec emcee production steps (long run)")
+    p.add_argument("--galspec-nwalkers", type=int, default=None)
+    p.add_argument("--galspec-nburn", type=int, default=None)
     args = p.parse_args(argv)
     if args.list:
         for s in iter_sources():
@@ -477,6 +614,9 @@ def main(argv=None):
             for c in plan["skipped"]:
                 log(f"  -- {c['tool']:18s} {c['reason']}")
         return 0
+    if args.phased:
+        return _run_phased(sources, args)
+
     rc = 0
     for src in sources:
         key = src["key"]
@@ -511,6 +651,7 @@ def main(argv=None):
                                                                args.pyqsofitspec_nboot,
                                                                args.pyqsofitspec_config),
                 "manga_dap": lambda: tool_manga_dap(src, out, logp),
+                "manga_dap_full": lambda: tool_manga_dap(src, out, logp, full=True),
                 "xmm_xspec": lambda: tool_xmm(src, out, logp),
                 "rxte_xspec": lambda: tool_rxte(src, out, logp),
                 "crossmission": lambda: tool_crossmission(src, out, logp),
@@ -518,7 +659,10 @@ def main(argv=None):
                 "gandalf_line": lambda: tool_gandalf(src, out, logp),
                 "galspec_line": lambda: tool_galspec(src, out, logp,
                                                      args.galspec_config,
-                                                     args.galspec_sampler),
+                                                     args.galspec_sampler,
+                                                     args.galspec_mcmc_steps,
+                                                     args.galspec_nwalkers,
+                                                     args.galspec_nburn),
                 "cafe_line": lambda: tool_cafe(src, out, logp),
                 "qgfit": lambda: tool_qgfit(src, out, logp),
                 "sheap_line": lambda: tool_sheap(src, out, logp),
@@ -531,7 +675,7 @@ def main(argv=None):
                 "agnfitter_sed": lambda: tool_agnfitter(src, out, logp),
                 "s3fit_line": lambda: tool_s3fit(src, out, logp,
                                                  args.s3fit_config, args.s3fit_n_mocks,
-                                                 args.s3fit_mode),
+                                                 args.s3fit_mode, args.threads),
             }[tool]
             try:
                 r = fn()

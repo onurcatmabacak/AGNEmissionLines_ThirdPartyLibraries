@@ -38,7 +38,7 @@ COST = {
     "pyqsofit_uv": "short", "qsofitmore_line": "short", "pyqsofitspec_line": "short",
     "ir_linefit": "short", "nir_linefit": "short", "optical_linefit": "short",
     "ppxf_host": "medium", "gandalf_line": "medium", "xmm_xspec": "medium",
-    "rxte_xspec": "short", "manga_dap": "medium", "pahfit_mir": "medium",
+    "rxte_xspec": "short", "manga_dap": "medium", "manga_dap_full": "long", "pahfit_mir": "medium",
     "cafe_line": "long", "s3fit_line": "long", "galspec_line": "long",
     "qgfit": "long", "sheap_line": "short", "crossmission": "short",
     "crossband": "short", "cigale_sed": "medium", "agnfitter_sed": "long",

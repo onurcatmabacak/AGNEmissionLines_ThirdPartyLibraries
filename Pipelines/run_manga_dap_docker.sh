@@ -41,6 +41,7 @@ while [ "$#" -gt 0 ]; do
     --config) CONFIG="$2"; shift 2 ;;
     --n-bins) NBINS="$2"; shift 2 ;;
     --fast) MODE=fast; shift ;;
+    --full) MODE=full; shift ;;
     --subset) MODE=subset; shift ;;
     --source-key) SOURCE_KEY="$2"; shift 2 ;;
     *) echo "unknown option: $1" >&2; exit 2 ;;
@@ -59,8 +60,8 @@ if [ "$MODE" = "subset" ] && [ ! -f "$CONFIG/plan_subset.toml" ]; then
   echo "subset mode requires $CONFIG/plan_subset.toml" >&2
   exit 2
 fi
-if [ "$MODE" = "fast" ] && [ ! -f "$CONFIG/plan.toml" ]; then
-  echo "fast mode requires $CONFIG/plan.toml" >&2
+if { [ "$MODE" = "fast" ] || [ "$MODE" = "full" ]; } && [ ! -f "$CONFIG/plan.toml" ]; then
+  echo "$MODE mode requires $CONFIG/plan.toml" >&2
   exit 2
 fi
 
@@ -110,6 +111,21 @@ COMMON_DOCKER=(
   "${REF_MOUNT[@]}"
   manga_dap
 )
+
+if [ "$MODE" = "full" ]; then
+  echo "==> Official full DAP: S/N=10 binning, all spaxels, SASUKE all bins"
+  RUN_ARGS=(
+    python /app/run/run_manga_dap.py
+    --input-dir /app/input
+    --out /app/output
+    --config /app/config
+    --source-key "$SOURCE_KEY"
+  )
+  if [ ${#REF_ARG[@]} -gt 0 ]; then RUN_ARGS+=("${REF_ARG[@]}"); fi
+  "${COMMON_DOCKER[@]}" "${RUN_ARGS[@]}"
+  echo "done (full DAP): $OUT"
+  exit 0
+fi
 
 if [ "$MODE" = "subset" ]; then
   echo "==> Stage A: official DAP moments-only workflow (HYB10/S/N=50)"
