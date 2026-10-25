@@ -29,7 +29,7 @@ SCHEMA = ROOT / "schemas" / "output_catalog.schema.json"
 CATALOG = ROOT / "outputs" / "output_catalog.json"
 # Compatibility names that are intentionally retained in old output trees but
 # are not independent fitting tools in the registry.
-COMPAT = {"cmodel", "unknown", "pyqsofit"}
+COMPAT = {"cmodel", "unknown", "pyqsofit", "galspec_line_long"}
 
 
 def sha256(path: Path) -> str:

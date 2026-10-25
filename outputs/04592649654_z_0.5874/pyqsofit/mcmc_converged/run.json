@@ -1,0 +1,172 @@
+{
+  "created_utc": "2026-10-25T13:50:13Z",
+  "engine": "PyQSOFit emcee (lmfit Minimizer.emcee)",
+  "fit_wall_seconds": 9202.392110588029,
+  "git_commit": "24ac5c58",
+  "image": "pyqsofit_uv",
+  "input_spectrum": "spectrum.fits",
+  "mcmc_config": {
+    "line_posterior_samples": 2000,
+    "nburn": 100,
+    "nsamp": 13000,
+    "nthin": 1,
+    "nwalkers": 100,
+    "retained_steps": 12900,
+    "seed": 20240517
+  },
+  "outputs": [
+    "pyqsofit_mcmc_samples.csv",
+    "pyqsofit_mcmc_samples_float32.npz",
+    "pyqsofit_mcmc_summary.csv",
+    "pyqsofit_mcmc_corner.pdf",
+    "pyqsofit_mcmc_corner.png",
+    "pyqsofit_mcmc_trace.pdf",
+    "pyqsofit_mcmc_trace.png",
+    "pyqsofit_mcmc_line_corner.png",
+    "pyqsofit_mcmc_config.json",
+    "run.json"
+  ],
+  "redshift": 0.58741307,
+  "runs": {
+    "Hb": {
+      "acceptance_max": 0.2620769230769231,
+      "acceptance_mean": 0.24556923076923076,
+      "acceptance_min": 0.2123076923076923,
+      "acceptance_std": 0.009098358002584604,
+      "converged": false,
+      "ess_median": 3848.97909449029,
+      "ess_min": 1608.8144779632266,
+      "nsteps_retained": 12900,
+      "nvarys": 17,
+      "nwalkers": 100,
+      "seconds": 705.7936933040619,
+      "steps_per_tau": 16.088144779632266,
+      "tau_max": 801.8326647788199,
+      "tau_mean": 387.93351118993985
+    },
+    "MgII": {
+      "acceptance_max": 0.42107692307692307,
+      "acceptance_mean": 0.40652615384615376,
+      "acceptance_min": 0.39353846153846156,
+      "acceptance_std": 0.005666257648540609,
+      "converged": true,
+      "ess_median": 11190.44043369292,
+      "ess_min": 8920.80152446087,
+      "nsteps_retained": 12900,
+      "nvarys": 9,
+      "nwalkers": 100,
+      "seconds": 362.3245666027069,
+      "steps_per_tau": 89.2080152446087,
+      "tau_max": 144.6058402333933,
+      "tau_mean": 119.18019262844243
+    },
+    "NII": {
+      "acceptance_max": 0.8192307692307692,
+      "acceptance_mean": 0.8063715384615382,
+      "acceptance_min": 0.7902307692307692,
+      "acceptance_std": 0.005323344312981851,
+      "converged": false,
+      "ess_median": 47109.34422332965,
+      "ess_min": 47109.34422332965,
+      "nsteps_retained": 12900,
+      "nvarys": 1,
+      "nwalkers": 100,
+      "seconds": 827.5818333625793,
+      "steps_per_tau": 471.0934422332965,
+      "tau_max": 27.383102466562498,
+      "tau_mean": 27.383102466562498
+    },
+    "continuum": {
+      "acceptance_max": 0.3223846153846154,
+      "acceptance_mean": 0.30113923076923077,
+      "acceptance_min": 0.26815384615384613,
+      "acceptance_std": 0.011266501087097187,
+      "converged": false,
+      "ess_median": 6152.560647924602,
+      "ess_min": 2474.875832417846,
+      "nsteps_retained": 12900,
+      "nvarys": 11,
+      "nwalkers": 100,
+      "seconds": 3404.6799700260162,
+      "steps_per_tau": 24.74875832417846,
+      "tau_max": 521.2382710690282,
+      "tau_mean": 269.48113532180633
+    }
+  },
+  "source_key": "",
+  "status": "success",
+  "tool": "pyqsofit_uv",
+  "total_seconds": 5300.380063295364,
+  "versions": {
+    "astropy": "7.0.1",
+    "emcee": "3.1.6",
+    "lmfit": "1.3.2",
+    "pyqsofit": "2.1.6",
+    "python": "3.12.15"
+  },
+  "wave_range_observed": [
+    3566.9742678444672,
+    10399.206408133097
+  ],
+  "quality": "provisional",
+  "convergence": {
+    "verdict": "not_converged",
+    "gate": "nsteps_retained >= 50*tau_max, 0.20 <= acceptance <= 0.50, ESS >= 500",
+    "nsteps_retained": 12900,
+    "passing_runs": [
+      "MgII"
+    ],
+    "failing_runs": [
+      "Hb",
+      "NII",
+      "continuum"
+    ],
+    "runs": {
+      "Hb": {
+        "steps_per_tau": 16.088144779632266,
+        "tau_max": 801.8326647788199,
+        "ess_min": 1608.8144779632266,
+        "acceptance_mean": 0.24556923076923076,
+        "converged": false
+      },
+      "MgII": {
+        "steps_per_tau": 89.2080152446087,
+        "tau_max": 144.6058402333933,
+        "ess_min": 8920.80152446087,
+        "acceptance_mean": 0.40652615384615376,
+        "converged": true
+      },
+      "NII": {
+        "steps_per_tau": 471.0934422332965,
+        "tau_max": 27.383102466562498,
+        "ess_min": 47109.34422332965,
+        "acceptance_mean": 0.8063715384615382,
+        "converged": false
+      },
+      "continuum": {
+        "steps_per_tau": 24.74875832417846,
+        "tau_max": 521.2382710690282,
+        "ess_min": 2474.875832417846,
+        "acceptance_mean": 0.30113923076923077,
+        "converged": false
+      }
+    },
+    "reasons": [
+      "H-beta is at 16.1 steps/tau_max; continuum at 24.7; both fail the 50-tau gate.",
+      "N II has a very long effective chain but acceptance 0.806 is outside the allowed 0.20-0.50 band.",
+      "Only Mg II passes the convergence gate."
+    ]
+  },
+  "caveats": [
+    "The 13,000-step PyQSOFit chain is NOT converged overall; only Mg II passes the gate.",
+    "Do not use the H-beta, N II or continuum posterior as a publication-grade error budget.",
+    "The 134 MB float64 sample file is kept outside Git; the committed float32 copy is downcast and is not bit-identical."
+  ],
+  "excluded_artifacts": [
+    {
+      "path": "work/mcmc_converged_full/pyqsofit_mcmc_samples.float64.npz",
+      "bytes": 134000000,
+      "reason": "Original float64 chain exceeds the GitHub 100 MB single-file limit; kept locally outside Git."
+    }
+  ]
+}

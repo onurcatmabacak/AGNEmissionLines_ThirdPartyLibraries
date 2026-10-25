@@ -74,7 +74,12 @@ def main() -> int:
     if catalog_path.exists():
         cat = json.loads(catalog_path.read_text())
         for e in cat.get("entries", []):
-            if e["tool"] not in registry and e["tool"] not in {"pyqsofit"}:
+            # Variant output trees that intentionally sit beside a production
+            # tool: the legacy PyQSOFit MCMC sub-runs and the separate GalSpec
+            # long-chain run.  They are not registry entries (no Docker image
+            # or runner of their own) but are valid documented products.
+            variant_tools = {"pyqsofit", "galspec_line_long"}
+            if e["tool"] not in registry and e["tool"] not in variant_tools:
                 errors.append(f"catalog unknown tool: {e['source_key']}/{e['tool']}")
             for a in e.get("artifacts", []):
                 if not (ROOT / a["path"]).exists():
