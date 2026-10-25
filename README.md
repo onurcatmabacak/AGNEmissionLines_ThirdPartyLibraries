@@ -1,179 +1,177 @@
 # AGN emission-line + SED factory
 
-A reproducible, Dockerised analysis of AGN spectra and photometry.  The repo is
-organized around a source registry and a fixed output contract.
+A source-keyed, Dockerised framework for fitting **AGN emission lines and SEDs**
+across UV, optical, NIR, MIR, FIR and X-ray data.  It is designed for
+reproducible research, not for silently producing one "best" answer.
 
-## Layout
+> **New here? Read [`docs/GETTING_STARTED.md`](docs/GETTING_STARTED.md) first.**
+> It includes a 2-minute no-Docker tour and a 10-minute first fit.
 
-```text
-Tools/                  Dockerised tool source + Dockerfiles
-Pipelines/              shell entry points (new tools; archived optical driver)
-pipeline/               Python orchestration, layout, preparation and statistics
-inputs/                 canonical source store
-  catalogs/             cross-source tables
-  <source>_z_<z>/       source.json + raw/ [+ photometry/]
-outputs/                canonical results
-  <source>_z_<z>/<tool>/files
-docs/                   plan, caveat matrix, layout, statistics
-schemas/                formal JSON Schema for the output catalogue
-tests/                  pytest unit + golden-reference tests
-workflow/               Snakemake dependency graph over the Docker runners
-work/                   ignored generated inputs/logs
-```
-
-`Tools/` contains: `badass`, `fantasy_agn`, `Gelato`, `Gleam`, `pyqsofit`,
-`sculptor`, `pipeline_ir`, `pyqsofit_uv`, `qsofitmore_line`, `pyqsofitspec_line`, `ppxf_host`,
-`gandalf_line`, `cafe_line`, `s3fit_line`, `galspec_line`, `qgfit`,
-`sheap_line`, `manga_dap`, `xmm_xspec`, `rxte_xspec`, `nir_linefit`, `pahfit_mir`, `fir_linefit`,
-`crossband`, `cigale_sed`, `agnfitter_sed`.
-
-CIGALE and AGNfitter are **SED/torus** codes; they do not measure individual
-lines.  Use `pyqsofit_uv`, `qsofitmore_line`, `pyqsofitspec_line`, `cafe_line`, `s3fit_line`,
-`gandalf_line`, `galspec_line`, `qgfit`, `sheap_line`, `manga_dap`, `pahfit_mir`,
-`nir_linefit` or `ir_linefit` for optical/IR line fluxes and kinematics.  The
-X-ray Fe K-alpha branch is separate: `xmm_xspec` fits official XMM-Newton
-EPIC PPS spectra and `rxte_xspec` fits official RXTE/PCA `stdprod` spectra
-with HEASoft/PyXspec.
-
-## Quick start
+## Start here
 
 ```bash
-bash Pipelines/build_images.sh
-bash Pipelines/run_new_tools.sh --list
-bash Pipelines/run_new_tools.sh --cigale-models skirtor2016,fritz2006
+git clone https://github.com/onurcatmabacak/AGNEmissionLines_ThirdPartyLibraries.git
+cd AGNEmissionLines_ThirdPartyLibraries
+
+uv venv .venv
+source .venv/bin/activate
+uv pip install -r requirements-host.txt -r requirements-dev.txt
+
+# No Docker needed: inspect the same-object 3C 120 result and ask the planner
+python pipeline/plan_analysis.py --source 3C120_z_0.0330
+python pipeline/compare_xray_optical.py --source 3C120_z_0.0330
 ```
 
-All **24 Docker images** in `Pipelines/build_images.sh` build successfully; `rxte_xspec` is a thin layer on the existing `xmm_xspec` XSPEC 13.0.0 base.  The matrix runner writes only to:
-
-```text
-outputs/<source_name>_z_<redshift>/<tool_name>/...
-```
-
-Inputs are never copied into outputs; PyQSOFit/pPXF-native files are generated
-under `work/prepared/`.
-
-## Orchestration and quality assurance
-
-The full Docker matrix can be driven as a Snakemake graph:
+For a first actual fit:
 
 ```bash
-.venv/bin/snakemake -s workflow/Snakefile -n all       # dry-run
-.venv/bin/snakemake -s workflow/Snakefile --cores 4 all # production
+bash Pipelines/build_images.sh optical_linefit
+python pipeline/run_new_tools.py --only PDS456_z_0.1840 --tools optical_linefit --force
 ```
 
-Snakemake encodes the `s3fit_line -> pyqsofit_uv` and
-`crossmission -> pyqsofit_uv + X-ray` dependencies.  Completion markers are
-ignored by git; the science products are not.
+For a complete first optical example:
 
 ```bash
-.venv/bin/pytest -q                                  # 15 unit + golden tests
-.venv/bin/python pipeline/build_output_manifest.py   # regenerate catalogue
-.venv/bin/python pipeline/validate_outputs.py        # schema + SHA-256 audit
+bash Pipelines/build_images.sh pyqsofit_uv
+python pipeline/run_new_tools.py --only 3C120_z_0.0330 --tools pyqsofit_uv --force
 ```
 
-The formal output contract is `schemas/output_catalog.schema.json` plus
-`docs/OUTPUT_SCHEMA.md`.  Per-tool scientific status, severity, evidence and
-mitigation live in `docs/CAVEAT_MATRIX.md`, generated from
-`configs/caveats.yaml`.  `pipeline/decide_tools.py` prints the tool list and
-the reason for each choice.
+Do **not** start with `snakemake all`; some tools take tens of minutes.
 
-## Source-keyed matrix
+## What this repository is
 
-| source group | tools |
+- **A tool matrix:** 25 Docker images for line/SED/host/IFU/X-ray analyses.
+- **A canonical data layout:** one source directory in, one tool directory out.
+- **A source-aware planner:** recommends tools from the data actually present.
+- **A validation system:** output schema, SHA-256 artifact catalogue, pytest
+  regression tests, per-tool caveats.
+- **A scientific audit trail:** raw data, provenance, fit tables, figures and
+  explicit limitations.
+
+It is **not** a survey pipeline, an automatic AGN finder, or a claim that every
+fit is publication-final.  Read `docs/CAVEAT_MATRIX.md` before using a number.
+
+## Choose your path
+
+| Goal / data | Recommended first tool |
 |---|---|
-| SDSS z>0.5 QSOs (5) | `ir_linefit`, `pyqsofit_uv`, `qsofitmore_line` (04592649654), `pyqsofitspec_line`, `ppxf_host`, `gandalf_line`, `s3fit_line`, `galspec_line`, `qgfit`, `sheap_line`, `cigale_sed`, `agnfitter_sed` |
-| J0100+2802 | `nir_linefit` (pipeline, 3×3, PSF), `ir_linefit` |
-| VV114 / PDS 456 | `pahfit_mir`, `cafe_line`, `ir_linefit` |
-| Low-z SDSS GANDALF example | `gandalf_line` (Hα/Hβ coverage) |
-| MaNGA AGN NGC 1194 (9193-12701) | `manga_dap` (official DAP subset; all-spaxel reference = published MAPS) |
-| XMM-Newton PDS 456 (0721010201) | `xmm_xspec` (official EPIC PPS; PN+MOS; PyXspec), `pyqsofit_uv` (HST/STIS UV), `crossmission` |
-| RXTE/PCA AGN 3C 120, MCG-6-30-15 | `rxte_xspec` (official HEASARC `stdprod`; PyXspec); 3C 120 also `pyqsofit_uv` + `crossmission` |
-| NGC 1068 / NGC 253 / NGC 4151 | `pahfit_mir`, `fir_linefit`, `ir_linefit`; cross-band for NGC 253/4151 |
-| Mrk 231 | `pahfit_mir`, `ir_linefit`, `crossband` |
-| synthetic FIR / multiband | `fir_linefit` + `ir_linefit` / `crossband` |
+| optical/UV AGN spectrum | `pyqsofit_uv`, `qsofitmore_line`, `optical_linefit` |
+| broad Hβ + [O III] with a local model | `optical_linefit` |
+| X-ray Fe Kα | `xmm_xspec` or `rxte_xspec` |
+| NIR/MIR lines and PAHs | `cafe_line`, `pahfit_mir`, `nir_linefit` |
+| FIR lines | `fir_linefit` |
+| photometry / torus SED | `cigale_sed`, `agnfitter_sed` |
+| MaNGA IFU | `manga_dap` |
+| same-object X-ray + optical | `crossmission` (two-object case study) |
 
-## Production-quality test run
+The planner encodes this logic:
 
-The production matrix uses real data only:
-
-| tool | suitable object | production mode | result |
-|---|---|---|---|
-| **CAFE** | VV114, full 12 MIRI `s1d` channels | AGN/SB continuum + selected MIR lines/PAHs, 200 covariance draws | rms **0.143**, χ²ν 2.68; Ar II, Ne II, Ne III, S IV, etc. detected |
-| **S3Fit** | `04592649654` SDSS QSO | **spec+sed**, 8 bands, 10 mock spectra, 8 threads | χ²ν **1.035**; MC χ² 1.605±0.112; Hβ/[O III] **1.83**; 58 min |
-| **GANDALF** | `spSpec-51908-0277-120` z=0.0859 | native GDL, pPXF + all Hα/Hβ/[O III]/[N II] lines | pPXF **accepted** (V=72.5, σ=79.9 km/s); Hα 1391, Hβ 244, [O III] 79.7 |
-| **PAHFIT** | VV114, PDS 456, NGC 4151, NGC 253 | full MIRI/IRS, covariance/bootstrap, 100–200 draws | rms VV114 **0.195** (flagged hot-dust mismatch), PDS short/long/both **0.0088/0.017/0.038**, NGC 4151 **0.031**, NGC 253 **0.25**; all PAHFIT production runs are `flagged=true` / systematics-limited |
-| **GalSpec** | `04592649654` | full-continuum global model + `emcee`, 39 parameters | 224,000 samples, 37,334 saved; Hβ 3718, [O III] 1681, ratio **2.21** |
-| **QSOFITMORE** | `04592649654` | V09 Fe II + broken PL + Balmer continuum + broad/narrow lines, **200 MC draws** | Hβ ~3077, [O III] 5007 ~1505, ratio ~2.04; Mg II ~2541; no MCMC (package has none) |
-| **PyQSOFitSpec** | `04592649654` | full Fe II/Balmer + skew-normal lines, 55 bootstrap draws | 53 valid; Hβ **3525**, [O III] **1639**, ratio **2.15** |
-| **QGfit** | `04592649654` | long continuum MCMC + line complexes | 2334 s; Hβ/[O III] **2.50**; line errors LSQ |
-| **SHEAP** | `04592649654` | Hβ/[O III] SPAF/JAX, 50 bootstrap draws | Hβ/[O III] **2.02**, χ²ν 2.9 |
-| **PyQSOFit** | `04592649654` | 100-realization MC (`mc/`); short `emcee` MCMC (800 draws, not converged) + 300-step diagnostics | MCMC initialization fixed; acceptance ≈0.37; short-chain samples/corner/trace saved, but MC remains the quantitative product |
-| **SDSS ZLINE** | five SDSS QSOs | official `ZLINE` HDU | 045926 ratio **1.57** |
-| **MaNGA DAP** | NGC 1194, 9193-12701 | official DAP 4.5.0, 9 central bins full SASUKE; all-spaxel reference MAPS | 9/9 BPT agreement; Hα ours/ref **0.9999**; [O III] **1.011**; full all-spaxel run time-limited and rejected fast mode |
-| **XMM-Newton** | PDS 456, 0721010201 | official EPIC PPS, PN+MOS1+MOS2, `tbabs*(zpowerlw+zgauss)`, 0.5-10 keV | χ²/dof **862.64/515**; Γ **2.025**; N_H 2.31e21; Fe Kα Δχ² **16.39 (4.05σ)**, flux 2.01e-14, EW_rest **30.7 eV** |
-| **PyQSOFit + HST** | **3C 120** HST/STIS G430L+G750L | real HASP `cspec`, 2993–10247 Å; host-free global fit | Hβ **28436**, [O III] 5007 **18363**, Hβ/[O III] **1.55**; Hβ FWHM **2676 km/s**, S/N 17.9 |
-| **PyQSOFit + HST** | **PDS 456** HST/STIS G140L+G230L | real HASP `cspec`, 1139–3137 Å; host-free global fit | C IV 1549 broad **94123**; FWHM 34807 km/s; **tentative** (S/N 1.77); no Hβ/Mg II coverage |
-| **crossmission** | 3C 120 (RXTE) + PDS 456 (XMM) | same-object Fe Kα vs Hβ/C IV | 3C 120 **accepted**: L_Hβ 7.64e41, L_Fe 1.35e42, EW 140 Å vs 90.3 eV; PDS 456 **tentative**: C IV S/N < 3; no correlation fit |
-| **RXTE/PCA** | 3C 120 (10339-02-01-01), MCG-6-30-15 (20310-01-02-00) | official `stdprod` Standard2; `tbabs*(zpowerlw+zgauss)`, 3-20 keV | 3C 120: χ²/dof **72.02/48**, Γ **1.816**, Fe Kα Δχ² **17.83 (4.22σ)**, EW_rest **90.3 eV**; MCG: χ²/dof **39.41/41**, Δχ² **46.48 (6.82σ)**, EW_rest **263.5 eV** |
-
-The cross-tool 04592649654 Hβ/[O III] 5007 values are:
-
-```text
-ZLINE 1.57 | S3Fit 1.83 | PyQSOFit 1.96 | SHEAP 2.02
-QSOFITMORE 2.04 | GANDALF 2.07 | PyQSOFitSpec 2.15 | GalSpec 2.21 | QGfit 2.50
-median 2.04, log-scatter 0.12 dex
+```bash
+python pipeline/plan_analysis.py --source <source_key> --goal auto
+python pipeline/plan_analysis.py --source <source_key> --goal lines
+python pipeline/run_new_tools.py --source <source_key> --auto
 ```
 
-## Failure audit and fixes
+`--goal auto` excludes long tools unless `--include-expensive` is supplied.
 
-| failure | fix / outcome |
+## Repository contract
+
+```text
+inputs/<source_key>/source.json     # source metadata, file roles, chosen tools
+inputs/<source_key>/raw/            # one canonical raw copy
+outputs/<source_key>/<tool>/        # all products for that tool
+work/prepared/                      # generated tool-native inputs (ignored)
+work/logs/                          # run logs (ignored)
+```
+
+Every output is an artifact collection: `run.json`, CSV/FITS tables, figures and
+a README.  The machine-readable catalogue is `outputs/output_catalog.json`; its
+schema is `schemas/output_catalog.schema.json`.  See
+[`docs/OUTPUT_SCHEMA.md`](docs/OUTPUT_SCHEMA.md).
+
+## Reproducible execution
+
+```bash
+# validate the committed products
+python -m pytest -q
+python pipeline/validate_outputs.py
+
+# dry-run a dependency graph
+snakemake -s workflow/Snakefile -n \
+  --config sources=3C120_z_0.0330 tools=pyqsofit_uv,crossmission
+
+# execute it
+snakemake -s workflow/Snakefile --cores 2 \
+  --config sources=3C120_z_0.0330 tools=pyqsofit_uv,crossmission
+```
+
+The Snakemake graph calls the same Docker runners as `run_new_tools.py`; it is
+a dependency layer, not a second implementation.
+
+## What has actually been validated
+
+- **MaNGA DAP subset vs published MAPS:** BPT agreement **9/9**, Hα ratio
+  **0.99985** (9 central bins; not all spaxels).
+- **XMM PDS 456:** Fe Kα Δχ² **16.39 (4.05σ)**, rest EW **30.7 eV**.
+- **RXTE 3C 120:** Fe Kα Δχ² **17.83 (4.22σ)**, rest EW **90.3 eV**.
+- **Nine SDSS line fitters:** median Hβ/[O III] **2.04**, scatter **0.12 dex**.
+- **Independent 3C 120 optical fits:** PyQSOFit **1.55**, QSOFITMORE **3.00** —
+  a model-systematic spread, not a confirmed line ratio.
+- **PDS 456 Hβ:** local X-SHOOTER fit gives **5.99**, but χ²_red is **430**;
+  quality is **provisional**.
+- **Same-object X-ray/optical:** **N=2**, no correlation fitted.  See
+  [`docs/SCIENCE_RESULTS.md`](docs/SCIENCE_RESULTS.md).
+
+These are honest results, including the disagreements.  The full statistical
+report is regenerated by:
+
+```bash
+python pipeline/statistical_report.py
+```
+
+## Documentation map
+
+| document | purpose |
 |---|---|
-| CAFE PDS 456 had only four MRS L sub-bands and one detected line | added a 12-file MIRI `s1d` adapter; VV114 now has full 5–28 µm coverage and multiple MIR detections. The PDS gap remains documented. |
-| S3Fit was pure-spectrum with only 3 mocks | full **spec+sed** run with **10 mocks**, 8 threads; χ²ν 1.035. |
-| GANDALF had no Hα coverage and pPXF was rejected | added a real low-z SDSS spectrum; pPXF accepted; Hα/Hβ/[O III]/[N II] measured. |
-| PAHFIT Jy/MJy conversion was wrong by **1e12**; MIRI s1d units were hard-coded; `pahfit_args` were dropped | corrected units, dynamic `TUNIT`/aperture handling, appended args; PDS long/both **0.017/0.038**, NGC 253 **0.25**. All production runs remain flagged/systematics-limited (VV114 hot dust, NGC 253 gaps, NGC 4151 residuals). |
-| GalSpec only fit a reduced Hβ/[O III] window | full-continuum 39-parameter `emcee` model; 37,334 saved samples. |
-| PyQSOFitSpec only 10 bootstraps and pinned widths | 55-draw bootstrap; width anchors and tied components documented. Hβ remains ~18% above GANDALF/S3Fit because of continuum/model definition. |
-| QGfit used a very short continuum MCMC | 2334 s production run with long continuum MCMC and expanded [O III] template; line errors remain LSQ. |
-| SHEAP failed at χ² 46 and Hβ/[O III]=4.00 | model/region/profile repair; now **2.02**, χ²ν 2.9, 50-draw MC. |
-| PyQSOFit line-stage `emcee` condition-number failure | fixed by bounds-aware walker initialization; short MCMC samples/corner/trace saved (800 draws, not converged), plus 300-step diagnostics (acceptance ≈0.37). Full 300-step chains were lost at the container timeout; the 100-realization MC remains quantitative. |
-| MaNGA all-spaxel DAP exceeded the time budget | 9-bin full-DAP subset matches published MAPS (Hα ratio 0.9999, BPT 9/9); fast SASUKE rejected |
-| XMM SAS raw reduction not run | production test uses official XMM EPIC PPS products + PyXspec; SAS `epproc/especget` documented as optional |
-| RXTE PCA raw reduction not run | production test uses official HEASoft `stdprod` products; PCA background/response preserved |
-| HST x1d/HASP `ivar` was converted in cgs while the PyQSOFit writer expects 1e-17 units | prepared errors were 10^17 too small and produced ~10^34 chi-square values; fixed in `pipeline/prepare_inputs.py` and added a regression test |
-| Official SDSS DAPs, AMARU, ELFO, AGNdecompose, pyspeckit | excluded with explicit data/model reasons; see `docs/OFFICIAL_PIPELINES_AND_XRAY.md`. |
+| [`docs/GETTING_STARTED.md`](docs/GETTING_STARTED.md) | beginner tutorial |
+| [`docs/SCIENCE_RESULTS.md`](docs/SCIENCE_RESULTS.md) | statistical results and caveats |
+| [`docs/CAVEAT_MATRIX.md`](docs/CAVEAT_MATRIX.md) | status/severity/evidence for every tool |
+| [`docs/OUTPUT_SCHEMA.md`](docs/OUTPUT_SCHEMA.md) | formal output contract |
+| [`docs/LINE_FITTING_TOOLS.md`](docs/LINE_FITTING_TOOLS.md) | line fitters vs SED fitters |
+| [`docs/MCMC_AND_STATISTICS.md`](docs/MCMC_AND_STATISTICS.md) | MC/MCMC/covariance modes |
+| [`docs/OFFICIAL_PIPELINES_AND_XRAY.md`](docs/OFFICIAL_PIPELINES_AND_XRAY.md) | XMM/RXTE/SDSS provenance |
+| [`docs/ROADMAP_V2.md`](docs/ROADMAP_V2.md) | implementation history and open items |
+| [`docs/PINNING.md`](docs/PINNING.md) | image/upstream provenance |
+| [`docs/RUN_MANIFEST.md`](docs/RUN_MANIFEST.md) | normalized run/catalog status |
+| [`workflow/README.md`](workflow/README.md) | Snakemake graph |
 
-## Statistics and caveats
+## Environment and tests
 
-* `docs/statistical_tests_new_tools.csv` — UV/ZLINE, SED-family, FIR recovery,
-  cross-band and PAHFIT stability tests.
-* `docs/statistical_analysis_new_tools.png` / `.pdf` — six-panel comparison.
-* `docs/sed_family_comparison.csv` — CIGALE SKIRTOR/Fritz vs AGNfitter-rx.
-* `docs/pyqsofit_zline_comparison.csv` — broad/narrow UV line table.
-* `docs/CAVEAT_FIXES.md` — what was fixed and what remains.
-* `docs/LINE_FITTING_TOOLS.md` — line-fitting tools vs SED fitting.
-* `docs/MCMC_AND_STATISTICS.md` — MC, nested sampling and covariance modes.
-* `docs/OFFICIAL_PIPELINES_AND_XRAY.md` — official SDSS/XMM/RXTE products, SAS/PPS and HEASoft provenance.
-* `docs/CAVEAT_MATRIX.md` / `docs/caveat_matrix.json` — per-tool status, severity, evidence and mitigation.
-* `docs/OUTPUT_SCHEMA.md` / `schemas/output_catalog.schema.json` — formal output contract.
-* `docs/xray_optical_comparison.png` — same-object Fe Kα vs Hβ/C IV.
-* `workflow/Snakefile` — Snakemake dependency graph over the Docker runners.
-* `tests/` — pytest unit and golden-reference suite.
-* `docs/line_tool_comparison.png` — official ZLINE + nine line fitters (QSOFITMORE added).
-* `docs/line_ratio_scatter.csv` — inter-tool scatter and bootstrap intervals.
-* `docs/SHEAP_ASSESSMENT.md` — SHEAP repair and quality gates.
-* `docs/GANDALF_ASSESSMENT.md` — low-z GDL/pPXF validation.
+- Host dependencies: `requirements-host.txt`
+- QA tools: `requirements-dev.txt`
+- Docker images: `Pipelines/build_images.sh` (25 tools)
+- Tests: 20 pytest tests plus schema/hash validation
 
-## Legacy optical v1
+```bash
+pytest -q
+python pipeline/validate_outputs.py
+python pipeline/build_output_manifest.py
+```
 
-The original optical five-tool driver is archived in
-`Pipelines/legacy_optical/`; its production results were migrated to
-`outputs/<object>_z_<z>/{pyqsofit,badass,fantasy_agn,gelato,gleam}/`, with
-uncertainty products under `<tool>/uncertainties/`.  The old `input/`, `runs/`,
-`results/`, `figures*/`, `results_uncertainties/` and `statistical
-confirmation/` directories are gone.
+## Contributing
 
-## Key docs
+Read `CONTRIBUTING.md` before adding a source or a tool.  Scientific claims must
+carry their caveat and a reproducible output path.
 
-`docs/REPO_LAYOUT.md`, `docs/OUTPUTS.md`, `docs/STATISTICS.md`,
-`docs/CAVEAT_FIXES.md`, `docs/IR_EXTENSION_PLAN.md`.
+## Citation and licence
+
+See `CITATION.cff` and `LICENSE`.  Third-party codes retain their own licences;
+HST/ESO archive data have their licences recorded in the source READMEs.
+
+## Status
+
+The framework is suitable for research use and method comparison.  It is not
+yet a turnkey community product: several tools have conditional/systematic
+caveats, the X-ray/optical comparison is a two-object case study, and raw SAS /
+PCA reductions are not part of the production path.  Known limitations are
+tracked in `docs/CAVEAT_MATRIX.md`, not hidden in this README.

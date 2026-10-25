@@ -27,6 +27,7 @@ MC_TRAILS="${QSOFITMORE_MC_TRAILS:-200}"
 SEED="${QSOFITMORE_SEED:-20250101}"
 NAME="${QSOFITMORE_NAME:-}"
 SOURCE_KEY="${QSOFITMORE_SOURCE_KEY:-}"
+REDSHIFT="${QSOFITMORE_Z:-}"
 NO_SYSTEMATICS="${QSOFITMORE_NO_SYSTEMATICS:-0}"
 
 while [ "$#" -gt 0 ]; do
@@ -36,6 +37,7 @@ while [ "$#" -gt 0 ]; do
     --seed) SEED="$2"; shift 2 ;;
     --name) NAME="$2"; shift 2 ;;
     --source-key) SOURCE_KEY="$2"; shift 2 ;;
+    --z) REDSHIFT="$2"; shift 2 ;;
     --no-systematics) NO_SYSTEMATICS=1; shift ;;
     *) echo "unknown option: $1" >&2; exit 2 ;;
   esac
@@ -88,6 +90,9 @@ ARGS=(
 )
 if [ -n "$NAME" ]; then
   ARGS+=(--name "$NAME")
+fi
+if [ -n "$REDSHIFT" ]; then
+  ARGS+=(--z "$REDSHIFT")
 fi
 if [ "$NO_SYSTEMATICS" = "1" ]; then
   ARGS+=(--no-systematics)

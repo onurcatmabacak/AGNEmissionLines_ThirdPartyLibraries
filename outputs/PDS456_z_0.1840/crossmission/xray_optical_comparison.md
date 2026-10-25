@@ -8,14 +8,15 @@
 | Fe Kα flux | 2.011e-14 erg cm⁻² s⁻¹ |
 | Fe Kα rest EW | 30.66 eV |
 | Fe Kα significance | 4.05σ |
-| optical/UV line | **CIV1549** |
-| line flux | 9.412e+04 × 10⁻¹⁷ erg cm⁻² s⁻¹ |
-| line FWHM | 34807 km/s |
-| line S/N | 1.77 |
-| line luminosity | 9.587e+43 erg s⁻¹ |
+| optical tool | `optical_linefit` |
+| optical/UV line | **Hbeta** |
+| line flux | 3.345e+04 × 10⁻¹⁷ erg cm⁻² s⁻¹ |
+| line FWHM | 6031 km/s |
+| line S/N | 9.92 |
+| line luminosity | 3.407e+43 erg s⁻¹ |
 | Fe Kα luminosity | 2.048e+42 erg s⁻¹ |
-| quality | **tentative** |
-| note | public HST/STIS spectrum covers C IV but not H-beta or Mg II; broad C IV is blended/absorption-affected and has S/N < 3 |
+| quality | **provisional** |
+| note | local simultaneous H-beta/[O III] fit; local fit chi2_red=430.2 > 10; absorption/continuum mismatch |
 
 The table is a same-object consistency comparison, not a correlation fit.
 `PDS456_z_0.1840` has only one optical/UV line family in the public

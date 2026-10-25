@@ -28,6 +28,7 @@ from pipeline.io_layout import (  # noqa: E402
     OUTPUT_ROOT, WORK_ROOT, ensure_output, iter_sources, load_source,
     output_dir, prepared_dir, source_files,
 )
+from pipeline.plan_analysis import make_plan  # noqa: E402
 
 MIRI_ALL = ",".join([
     "jwst.miri.mrs.ch1.A", "jwst.miri.mrs.ch1.B", "jwst.miri.mrs.ch1.C",
@@ -43,7 +44,7 @@ ALL_TOOLS = ("ir_linefit", "pyqsofit_uv", "qsofitmore_line", "pyqsofitspec_line"
              "gandalf_line", "nir_linefit", "pahfit_mir", "fir_linefit", "cafe_line",
              "crossband", "cigale_sed", "agnfitter_sed", "s3fit_line", "galspec_line",
              "qgfit", "sheap_line", "manga_dap", "xmm_xspec", "rxte_xspec",
-             "crossmission")
+             "crossmission", "optical_linefit")
 
 
 def log(msg: str):
@@ -99,6 +100,16 @@ def tool_pyqsofit(src: dict, out: Path, logp: Path) -> int:
     )
 
 
+def tool_optical_linefit(src: dict, out: Path, logp: Path) -> int:
+    """Local H-beta/[O III] fit; used where a global QSO fit misallocates flux."""
+    files = source_files(src, "xshooter_spectrum") or source_files(src, "optical_spectrum") or source_files(src, "spectrum")
+    if not files:
+        return _skip("no optical spectrum")
+    cmd = [str(ROOT / "Pipelines" / "run_optical_linefit_docker.sh"),
+           str(files[0]), str(out), "--z", str(src["z"]), "--name", str(src["key"])]
+    return run(cmd, logp)
+
+
 def tool_qsofitmore(src: dict, out: Path, logp: Path, config: str | None = None,
                     mc_trails: int | None = None) -> int:
     """QSOFITMORE UV/optical fit on the raw SDSS spectrum.
@@ -116,6 +127,8 @@ def tool_qsofitmore(src: dict, out: Path, logp: Path, config: str | None = None,
         cmd += ["--config", str(config)]
     if mc_trails is not None:
         cmd += ["--mc-trails", str(mc_trails)]
+    if src.get("z") is not None:
+        cmd += ["--z", str(src["z"])]
     return run(cmd, logp, env={"QSOFITMORE_SOURCE_KEY": str(src["key"])})
 
 
@@ -410,7 +423,16 @@ def _skip(msg: str) -> int:
 def main(argv=None):
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument("--tools", nargs="*", choices=ALL_TOOLS, default=list(ALL_TOOLS))
-    p.add_argument("--only", nargs="*", default=None, help="source keys or globs")
+    p.add_argument("--only", "--source", nargs="*", default=None, help="source keys or globs")
+    p.add_argument("--auto", action="store_true",
+                   help="use the source-aware planner instead of --tools")
+    p.add_argument("--plan", action="store_true",
+                   help="print the source-aware plan and exit")
+    p.add_argument("--goal", choices=("auto", "lines", "xray", "sed", "host", "ifu", "all"),
+                   default="auto", help="planner goal (with --auto/--plan)")
+    p.add_argument("--max-cost", choices=("short", "medium", "long"), default="long")
+    p.add_argument("--include-expensive", action="store_true",
+                   help="allow long tools in an auto plan")
     p.add_argument("--list", action="store_true")
     p.add_argument("--force", action="store_true")
     p.add_argument("--dry-run", action="store_true")
@@ -445,12 +467,29 @@ def main(argv=None):
     if not sources:
         log("no sources selected")
         return 1
+    if args.plan:
+        for src in sources:
+            plan = make_plan(src, goal=args.goal, max_cost=args.max_cost,
+                             include_expensive=args.include_expensive)
+            log(f"\n{src['key']}  goal={plan['goal']}")
+            for c in plan["selected"]:
+                log(f"  -> {c['tool']:18s} [{c['cost']:6s}] {c['reason']}")
+            for c in plan["skipped"]:
+                log(f"  -- {c['tool']:18s} {c['reason']}")
+        return 0
     rc = 0
     for src in sources:
         key = src["key"]
         log(f"\n=== {key}  z={src['z']}  kind={src.get('kind')}")
-        for tool in args.tools:
-            if tool not in src.get("tools", []):
+        if args.auto:
+            plan = make_plan(src, goal=args.goal, max_cost=args.max_cost,
+                             include_expensive=args.include_expensive)
+            tools = [c["tool"] for c in plan["selected"]]
+            log(f"[auto] {len(tools)} selected: {', '.join(tools) or '-'}")
+        else:
+            tools = args.tools
+        for tool in tools:
+            if not args.auto and tool not in src.get("tools", []):
                 continue
             out = output_dir(key, tool)
             if args.force and out.exists():
@@ -464,6 +503,7 @@ def main(argv=None):
             fn = {
                 "ir_linefit": lambda: tool_ir(src, out, logp),
                 "pyqsofit_uv": lambda: tool_pyqsofit(src, out, logp),
+                "optical_linefit": lambda: tool_optical_linefit(src, out, logp),
                 "qsofitmore_line": lambda: tool_qsofitmore(src, out, logp,
                                                            args.qsofitmore_config,
                                                            args.qsofitmore_mc_trails),

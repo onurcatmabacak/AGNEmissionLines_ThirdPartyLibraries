@@ -11,6 +11,16 @@
       "mitigation": "Use line totals; treat PDS 456 C IV as tentative; do not quote the short MCMC as an error bar."
     },
     {
+      "tool": "optical_linefit",
+      "kind": "line",
+      "wave": "optical",
+      "status": "conditional",
+      "severity": "medium",
+      "caveat": "Local H-beta/[O III] fit, independent of global QSO models. PDS 456 uses the public X-SHOOTER VIS spectrum and detects H-beta, but the formal chi-square is high (absorption/continuum residuals) and the ratio is provisional.",
+      "evidence": "outputs/PDS456_z_0.1840/optical_linefit/, docs/SCIENCE_RESULTS.md",
+      "mitigation": "Use it as a local cross-check; inspect optical_fit.png and the quality flag before quoting a ratio."
+    },
+    {
       "tool": "qsofitmore_line",
       "kind": "line",
       "wave": "UV/optical",
@@ -166,9 +176,9 @@
       "wave": "X-ray/UV/optical",
       "status": "postprocess",
       "severity": "medium",
-      "caveat": "Two objects only; no correlation fit. 3C 120 uses H-beta; PDS 456 uses C IV because the public HST/STIS spectrum has no H-beta/Mg II coverage, and the broad C IV is tentative (S/N < 3).",
+      "caveat": "Two objects only; no correlation fit. 3C 120 uses PyQSOFit H-beta; PDS 456 uses the local X-SHOOTER H-beta/[O III] fit, which is provisional because of absorption/continuum residuals. The older PDS HST C IV result is retained only as UV context.",
       "evidence": "outputs/3C120_z_0.0330/crossmission/, outputs/PDS456_z_0.1840/crossmission/",
-      "mitigation": "Treat as same-object consistency checks; add more objects before fitting any slope."
+      "mitigation": "Treat as same-object consistency checks; inspect the PDS quality flag and add more objects before fitting any slope."
     },
     {
       "tool": "crossband",

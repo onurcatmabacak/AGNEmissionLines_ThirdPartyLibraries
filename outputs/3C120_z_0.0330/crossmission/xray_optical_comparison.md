@@ -8,6 +8,7 @@
 | Fe Kα flux | 5.029e-13 erg cm⁻² s⁻¹ |
 | Fe Kα rest EW | 90.27 eV |
 | Fe Kα significance | 4.22σ |
+| optical tool | `pyqsofit_uv` |
 | optical/UV line | **Hbeta** |
 | line flux | 2.844e+04 × 10⁻¹⁷ erg cm⁻² s⁻¹ |
 | line FWHM | 2676 km/s |

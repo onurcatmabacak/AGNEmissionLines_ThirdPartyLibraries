@@ -12,8 +12,11 @@ Hγ, Hβ, [O III] 4959/5007, Hα, [N II] 6548/6584 and [S II] 6716/6731.
 - MAST product: `mast:HST/product/hasp/hst_8700_stis_3c120d0_g430l-g750l_o62o_cspec.fits`
 - SHA-256: `f0f1bbb19124ea01233922c2c633c6abcc8e44e25b9c59d387d692f427fecde2`
 
-The spectrum is fitted with `pyqsofit_uv` for the broad Hβ and narrow
-[O III] 5007 measurements used in the RXTE Fe Kα comparison.  The G750L part
+The spectrum is fitted independently with `pyqsofit_uv` and
+`qsofitmore_line` for the broad Hβ and narrow [O III] 5007 measurements used in
+the RXTE Fe Kα comparison.  The two optical models give Hβ/[O III] **1.55**
+(PyQSOFit) and **3.00** (QSOFITMORE); that spread is a model systematic, not a
+confirmed ratio.  The G750L part
 also covers Hα, which is reported as a consistency line but not used for the
 Fe Kα correlation.
 

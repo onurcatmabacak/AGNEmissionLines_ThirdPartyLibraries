@@ -33,7 +33,10 @@ per-tool `README.md`/`run.json`.
   "source_key": "PDS456_z_0.1840",
   "tool": "crossmission",
   "kind": "ratio",
-  "run_status": "unknown",
+  "run_status": "ok",
+  "quality": "conditional",
+  "severity": "medium",
+  "caveat": "Local H-beta/[O III] fit ... provisional ...",
   "headline": {},
   "caveats": [],
   "provenance": {"run_json": "outputs/PDS456_z_0.1840/crossmission/run.json"},
@@ -60,8 +63,10 @@ Artifact roles:
 | `report` | `.md`, `.txt` |
 | `log` | `.log` |
 
-The schema requires at least one artifact per entry; a zero-byte file is a
-validation error.  `sha256` binds the catalogue to the exact committed bytes.
+`quality` and `severity` are joined from `configs/caveats.yaml`;
+`run_status` is normalized by `pipeline/build_output_manifest.py`.  The schema
+requires at least one artifact per entry; a zero-byte file is a validation
+error.  `sha256` binds the catalogue to the exact committed bytes.
 
 ## Generate and validate
 

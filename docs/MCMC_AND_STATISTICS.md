@@ -7,6 +7,7 @@ broad-band SED code is not a line fitter.
 | tool | native method | MCMC? | what is saved |
 |---|---|---|---|
 | `pyqsofit_uv` | least-squares; optional `emcee`; optional MC resampling | optional | `pyqsofit_mc_samples.csv`, `pyqsofit_mc.png` (100 MC realizations); MCMC corner only when stable |
+| `optical_linefit` | least-squares covariance; local Hβ/[O III]; no MCMC | no | `optical_lines.csv`, `optical_lines_summary.json`, `optical_fit.png` |
 | `qsofitmore_line` | least-squares; `MC=True` lmfit parametric bootstrap (200 realizations) | no | `qsofitmore_mc_samples.csv`, `qsofitmore_mc_summary.csv`, `qsofitmore_corner.png`, `qsofitmore_uncertainty.png` |
 | `agnfitter_sed` | `ultranest` nested sampling | yes (nested) | posterior quantiles, realization PDFs |
 | `cigale_sed` | `pdf_analysis` Bayesian likelihood/posterior | no | `sed_fit.png`, `sed_summary.csv`, model-family spread |

@@ -24,7 +24,7 @@ def main() -> int:
         rows.append(json.loads(p.read_text()))
     OUT.mkdir(exist_ok=True)
     with (OUT / "xray_optical_comparison.csv").open("w", newline="") as fh:
-        w = csv.writer(fh)
+        w = csv.writer(fh, lineterminator="\n")
         w.writerow(["source", "xray_tool", "optical_line", "optical_flux_erg_cm2_s",
                     "xray_flux_erg_cm2_s", "optical_ew_rest_A", "xray_ew_rest_eV",
                     "optical_luminosity_erg_s", "xray_luminosity_erg_s", "quality"])

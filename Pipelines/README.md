@@ -17,6 +17,7 @@ Pipelines/
   run_pyqsofitspec_line_docker.sh # PyQSOFitSpec bootstrap
   run_qgfit_docker.sh          # QGfit AGN/host/line fit
   run_sheap_line_docker.sh     # SHEAP JAX AGN decomposition
+  run_optical_linefit_docker.sh # local Hβ/[O III] joint fit
   run_qsofitmore_line_docker.sh # QSOFITMORE UV/optical
   run_manga_dap_docker.sh      # official MaNGA DAP
   run_xmm_xspec_docker.sh      # XMM EPIC PPS + PyXspec

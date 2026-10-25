@@ -390,6 +390,99 @@ def read_spitzer_irs_tbl(path: str | Path, z_override: float | None = None,
 
 
 
+def read_hst(path: str | Path, z_override: float | None = None,
+             band: str | None = None) -> Spectrum:
+    """HST/STIS x1d or HASP cspec (WAVELENGTH [A], FLUX/ERROR [cgs/A])."""
+    from astropy.io import fits
+    path = Path(path)
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        with fits.open(path, memmap=False) as hdul:
+            tab = None
+            for hdu in hdul:
+                if getattr(hdu, "columns", None) is None:
+                    continue
+                names = {c.upper() for c in hdu.columns.names}
+                if {"WAVELENGTH", "FLUX", "ERROR"} <= names:
+                    tab = hdu
+                    break
+            if tab is None:
+                raise ValueError("HST FITS has no WAVELENGTH/FLUX/ERROR table")
+            d = tab.data
+            cols = {c.upper(): c for c in d.columns.names}
+            wave_a = np.asarray(d[cols["WAVELENGTH"]], float).ravel()
+            flux = np.asarray(d[cols["FLUX"]], float).ravel()
+            err = np.abs(np.asarray(d[cols["ERROR"]], float).ravel())
+            hdr = hdul[0].header
+            z = hdr.get("Z", hdr.get("REDSHIFT", np.nan))
+            if not np.isfinite(z):
+                z = 0.0
+            if z_override is not None:
+                z = float(z_override)
+            obj = str(hdr.get("TARGNAME", path.stem)).strip().replace(" ", "_")
+            ra = hdr.get("TARG_RA", hdr.get("RA", np.nan))
+            dec = hdr.get("TARG_DEC", hdr.get("DEC", np.nan))
+    wave_um = wave_a / 1e4
+    flux_1e17 = flux / 1e-17
+    err_1e17 = err / 1e-17
+    mask = (np.isfinite(wave_um) & np.isfinite(flux_1e17) & np.isfinite(err_1e17)
+            & (err_1e17 > 0))
+    return Spectrum(wave_um=wave_um, flux=flux_1e17, error=err_1e17,
+                    mask=mask, z=float(z), band=band or "optical",
+                    instrument="HST/STIS", object_id=obj,
+                    flux_unit="1e-17 erg s-1 cm-2 A-1",
+                    native_flux_unit="erg s-1 cm-2 A-1",
+                    ra=ra, dec=dec,
+                    meta={"path": str(path), "source": "HST/STIS x1d or HASP cspec"})
+
+
+def read_xshooter(path: str | Path, z_override: float | None = None,
+                  band: str | None = None) -> Spectrum:
+    """ESO X-SHOOTER reduced SFLX spectrum (WAVE [nm], FLUX/ERR [cgs/A])."""
+    from astropy.io import fits
+    path = Path(path)
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        with fits.open(path, memmap=False) as hdul:
+            tab = None
+            for hdu in hdul:
+                if getattr(hdu, "columns", None) is not None:
+                    names = {c.upper() for c in hdu.columns.names}
+                    if {"WAVE", "FLUX", "ERR"} <= names:
+                        tab = hdu
+                        break
+            if tab is None:
+                raise ValueError("X-SHOOTER FITS has no WAVE/FLUX/ERR table")
+            d = tab.data
+            cols = {c.upper(): c for c in d.columns.names}
+            wave_nm = np.asarray(d[cols["WAVE"]], float).ravel()
+            flux = np.asarray(d[cols["FLUX"]], float).ravel()
+            err = np.asarray(d[cols["ERR"]], float).ravel()
+            qual = np.asarray(d[cols["QUAL"]], int).ravel() if "QUAL" in cols else np.zeros_like(flux, dtype=int)
+            hdr = hdul[0].header
+            z = hdr.get("Z", hdr.get("REDSHIFT", np.nan))
+            if not np.isfinite(z):
+                z = 0.0
+            if z_override is not None:
+                z = float(z_override)
+            obj = str(hdr.get("OBJECT", path.stem)).strip().replace(" ", "_")
+            ra = hdr.get("RA", np.nan)
+            dec = hdr.get("DEC", np.nan)
+    wave_um = wave_nm / 1000.0
+    flux_1e17 = flux / 1e-17
+    err_1e17 = np.abs(err) / 1e-17
+    mask = (np.isfinite(wave_um) & np.isfinite(flux_1e17) & np.isfinite(err_1e17)
+            & (err_1e17 > 0) & (qual == 0))
+    return Spectrum(wave_um=wave_um, flux=flux_1e17, error=err_1e17,
+                    mask=mask, z=float(z), band=band or "optical",
+                    instrument="XSHOOTER", object_id=obj,
+                    flux_unit="1e-17 erg s-1 cm-2 A-1",
+                    native_flux_unit="erg s-1 cm-2 A-1",
+                    ra=ra, dec=dec,
+                    meta={"path": str(path), "source": "ESO X-SHOOTER SFLX",
+                          "quality_flagged": int(np.sum(qual != 0))})
+
+
 def read_spectrum(path: str | Path, **kw) -> Spectrum:
     """Adapter dispatch for all supported spectra."""
     from astropy.io import fits
@@ -415,6 +508,10 @@ def read_spectrum(path: str | Path, **kw) -> Spectrum:
                     return read_hifi_hpdp(path, **kw)
                 if {"wavelength", "flux"} <= cols and "uncertainty" in cols:
                     return read_s1d(path, **kw)
+                if {"wave", "flux", "err"} <= cols:
+                    return read_xshooter(path, **kw)
+                if {"wavelength", "flux", "error"} <= cols:
+                    return read_hst(path, **kw)
     return read_sdss(path, **kw)
 
 def zline_table(path: str | Path):

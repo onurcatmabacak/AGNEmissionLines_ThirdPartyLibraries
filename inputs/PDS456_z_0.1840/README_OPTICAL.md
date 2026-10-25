@@ -1,25 +1,29 @@
-# PDS 456 — real UV spectrum for the X-ray/UV line comparison
+# PDS 456 — real optical/UV spectra for the X-ray/optical line comparison
 
-`raw/hst_8264_stis_pds456_sg140l-sg230l_o58s_cspec.fits` is the public
-**HST/STIS G140L+G230L** HASP `cspec` product from MAST.  It is a single,
-flux-calibrated spectrum covering **1140–3137 Å** (observed), with the two
-STIS orders already merged by the Hubble Spectroscopic Legacy Archive.
+This source has **two** public spectra, because no single archive spectrum
+covers both the UV and H-beta at z=0.184.
 
-- Proposal: HST 8264 (PI P. O'Brien), "PDS 456: A radio-quiet analogue of 3C 273"
-- Observation: 2000-09-15, total 1921 s (FUV 1140 s + NUV 781 s)
-- Aperture: 52×0.5 arcsec; gratings G140L + G230L
-- Calibration: HASP HSLA Cal 1.2.4; `LICENSE = CC BY 4.0`
-- MAST product: `mast:HST/product/hasp/hst_8264_stis_pds456_sg140l-sg230l_o58s_cspec.fits`
-- SHA-256: `d6567d80cef6b515c006aec17ee20c6f18363fb88bde273f67cfde43f12c83c8`
+1. **ESO VLT/X-SHOOTER VIS**, `raw/ADP.2023-04-20T08:25:01.842_XSHOOTER_VIS.fits`
+   - 5336.6–10200 Å observed, 2416 s, MJD 60049
+   - public reduced `SFLX` product, programme `111.24T0.001`
+   - covers Hβ 5758 Å, [O III] 4959/5007, Hα and [N II]/[S II]
+   - SHA-256 `872a8aad...bea3e9`
+2. **HST/STIS G140L+G230L**, `raw/hst_8264_stis_pds456_sg140l-sg230l_o58s_cspec.fits`
+   - 1139–3137 Å observed, 1921 s
+   - HASP `cspec`, HST proposal 8264 (PI P. O'Brien), CC BY 4.0
+   - covers Lyα/N V, C IV 1549, C III] 1909
+   - SHA-256 `d6567d80...2c83c8`
 
-The spectrum is used for the rest-frame **Lyα/N V, C IV 1549 and C III] 1909**
-measurements in `pyqsofit_uv`.  It does **not** cover Hβ or Mg II: at z=0.184
-Hβ is at 5758 Å and Mg II at 3315 Å, both redward of the STIS range.  The
-X-ray/UV comparison therefore uses C IV, not Hβ, for PDS 456.  The JWST/MIRI
-spectra remain the IR branch.
+The original HST-only analysis could not measure Hβ (5758 Å) or Mg II
+(3315 Å), so its C IV result was tentative.  The **X-SHOOTER VIS** spectrum
+removes that limitation: `pyqsofit_uv` now measures Hβ and [O III] directly.
+The HST UV spectrum is retained as `uv_spectrum` for C IV context and for
+future multi-line work.
 
-Reproduce with:
+Reproduce both files with:
 
 ```bash
 bash inputs/PDS456_z_0.1840/download_optical.sh
 ```
+
+The JWST/MIRI spectra remain the IR branch.

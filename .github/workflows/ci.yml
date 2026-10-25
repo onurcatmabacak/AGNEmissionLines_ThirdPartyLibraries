@@ -1,0 +1,70 @@
+name: CI
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  tests:
+    name: Tests, schema and workflow
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: Install host/test dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements-host.txt -r requirements-dev.txt
+      - name: Pytest
+        run: pytest -q
+      - name: Output catalogue and SHA-256 validation
+        run: python pipeline/validate_outputs.py
+      - name: Planner smoke test
+        run: python pipeline/plan_analysis.py --source 3C120_z_0.0330 --goal auto
+      - name: Statistical report regeneration
+        run: python pipeline/statistical_report.py
+      - name: Snakemake dry-run
+        run: |
+          snakemake -s workflow/Snakefile -n \
+            --config sources=3C120_z_0.0330 tools=pyqsofit_uv,crossmission
+
+  docker-smoke:
+    name: Docker smoke (optical_linefit)
+    runs-on: ubuntu-latest
+    needs: tests
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Build image
+        run: docker build -f Tools/optical_linefit/dockerfile -t optical_linefit .
+      - name: Run on the committed PDS 456 X-SHOOTER spectrum
+        run: |
+          mkdir -p /tmp/agn-smoke
+          docker run --rm \
+            -v "$PWD/inputs/PDS456_z_0.1840/raw":/app/input:ro \
+            -v /tmp/agn-smoke:/app/output \
+            optical_linefit \
+            --fits /app/input/ADP.2023-04-20T08:25:01.842_XSHOOTER_VIS.fits \
+            --out /app/output --z 0.184 --name ci-smoke
+          test -s /tmp/agn-smoke/optical_lines_summary.json
+          python - <<'PY'
+          import json
+          d=json.load(open('/tmp/agn-smoke/optical_lines_summary.json'))
+          assert d['Hbeta_total_1e17'] > 0
+          assert d['OIII5007_total_1e17'] > 0
+          print('smoke OK', d['quality'], d['Hbeta_OIII_ratio'])
+          PY

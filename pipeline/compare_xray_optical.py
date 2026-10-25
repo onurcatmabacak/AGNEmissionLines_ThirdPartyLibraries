@@ -134,6 +134,47 @@ def read_optical(lines_csv: Path, model_csv: Path, z: float) -> dict:
     }
 
 
+def read_optical_linefit(path: Path, z: float) -> dict:
+    """Read the local H-beta/[O III] tool; keep the same shape as PyQSOFit."""
+    import json as _json
+    summary = _json.loads((path / "optical_lines_summary.json").read_text())
+    rows = []
+    with (path / "optical_lines.csv").open(newline="") as fh:
+        rows = list(csv.DictReader(fh))
+    by = {}
+    for r in rows:
+        by[f"{r['line']}:{r['component']}"] = r
+    def total(prefixes, comps=None):
+        vals = [r for r in rows if any(r["line"].startswith(p) for p in prefixes)
+                and (comps is None or r["component"] in comps)]
+        flux = sum(float(r["flux_1e17"]) for r in vals if r["flux_1e17"] not in ("", "nan"))
+        err = math.sqrt(sum(float(r["flux_err"]) ** 2 for r in vals
+                            if r["flux_err"] not in ("", "nan")))
+        snr = max((float(r["snr"]) for r in vals if r["snr"] not in ("", "nan")), default=0.0)
+        fwhm = max((float(r["fwhm_kms"]) for r in vals if r["fwhm_kms"] not in ("", "nan")), default=0.0)
+        return {"area_1e17": flux, "flux_err": err, "snr": snr, "fwhm_kms": fwhm}
+    hb = total(("Hbeta",))
+    o3 = total(("OIII5007",))
+    # EW: use the H-beta broad+narrow integrated line / local continuum from the table.
+    ew = {}
+    if summary.get("Hbeta_ew_A") is not None:
+        ew["Hbeta"] = {"ew_rest_A": float(summary["Hbeta_ew_A"]),
+                       "continuum_1e17": summary.get("continuum_1e17")}
+    return {
+        "table": str((path / "optical_lines.csv").relative_to(ROOT)),
+        "tool": "optical_linefit",
+        "components": by,
+        "Hbeta": hb,
+        "OIII5007": o3,
+        "CIV1549": {"area_1e17": 0.0, "snr": 0.0, "fwhm_kms": 0.0},
+        "Lya": {"area_1e17": 0.0, "snr": 0.0, "fwhm_kms": 0.0},
+        "ew_rest_A": ew,
+        "hb_oiii_ratio": summary.get("Hbeta_OIII_ratio"),
+        "quality": summary.get("quality", "provisional"),
+        "summary": summary,
+    }
+
+
 def luminosity(flux_erg_cm2_s: float, z: float) -> float | None:
     if flux_erg_cm2_s is None or not math.isfinite(flux_erg_cm2_s):
         return None
@@ -175,6 +216,7 @@ def markdown(result: dict) -> str:
 | Fe Kα flux | {x['flux']:.4g} erg cm⁻² s⁻¹ |
 | Fe Kα rest EW | {x['ew_rest_eV']:.2f} eV |
 | Fe Kα significance | {x['significance_sigma']:.2f}σ |
+| optical tool | `{result['optical_tool']}` |
 | optical/UV line | **{result['optical_line']}** |
 | line flux | {o[result['optical_line']]['area_1e17']:.4g} × 10⁻¹⁷ erg cm⁻² s⁻¹ |
 | line FWHM | {o[result['optical_line']]['fwhm_kms']:.0f} km/s |
@@ -234,6 +276,7 @@ def main(argv=None) -> int:
     p.add_argument("--source", required=True, help="canonical source key")
     p.add_argument("--out", type=Path, default=None)
     p.add_argument("--xray-tool", choices=("auto", "xmm_xspec", "rxte_xspec"), default="auto")
+    p.add_argument("--optical-tool", choices=("auto", "pyqsofit_uv", "optical_linefit"), default="auto")
     a = p.parse_args(argv)
     src_dir = ROOT / "inputs" / a.source
     src = load_json(src_dir / "source.json")
@@ -252,18 +295,31 @@ def main(argv=None) -> int:
     else:
         xray = read_xray(OUT_ROOT / a.source / "rxte_xspec" / "rxte_lines.csv")
 
-    opt_dir = OUT_ROOT / a.source / "pyqsofit_uv"
-    optical = read_optical(opt_dir / "pyqsofit_lines.csv", opt_dir / "pyqsofit_model.csv",
-                           float(src["z"]))
-    line_name, line = choose_primary(optical)
-    line_flux = line["area_1e17"] * 1e-17
-    flag, note = quality_flag(line_name, line, optical)
+    if a.optical_tool == "auto":
+        a.optical_tool = ("optical_linefit"
+                          if (OUT_ROOT / a.source / "optical_linefit" / "optical_lines_summary.json").exists()
+                          else "pyqsofit_uv")
+    if a.optical_tool == "optical_linefit":
+        opt_dir = OUT_ROOT / a.source / "optical_linefit"
+        optical = read_optical_linefit(opt_dir, float(src["z"]))
+        line_name, line = choose_primary(optical)
+        line_flux = line["area_1e17"] * 1e-17
+        flag = optical.get("quality", "provisional")
+        note = "local simultaneous H-beta/[O III] fit; " + "; ".join(optical["summary"].get("notes", []))
+    else:
+        opt_dir = OUT_ROOT / a.source / "pyqsofit_uv"
+        optical = read_optical(opt_dir / "pyqsofit_lines.csv", opt_dir / "pyqsofit_model.csv",
+                               float(src["z"]))
+        line_name, line = choose_primary(optical)
+        line_flux = line["area_1e17"] * 1e-17
+        flag, note = quality_flag(line_name, line, optical)
     opt_lum = luminosity(line_flux, float(src["z"]))
     x_lum = luminosity(xray["flux"], float(src["z"]))
     result = {
         "source": a.source,
         "z": float(src["z"]),
         "xray_tool": a.xray_tool,
+        "optical_tool": a.optical_tool,
         "xray": xray,
         "optical": optical,
         "optical_line": line_name,
@@ -277,7 +333,7 @@ def main(argv=None) -> int:
     }
     (out / "xray_optical_comparison.json").write_text(json.dumps(result, indent=2, allow_nan=False) + "\n")
     with (out / "xray_optical_comparison.csv").open("w", newline="") as fh:
-        w = csv.writer(fh)
+        w = csv.writer(fh, lineterminator="\n")
         w.writerow(["source", "xray_tool", "xray_line", "xray_flux_erg_cm2_s",
                     "xray_ew_rest_eV", "xray_significance_sigma", "optical_line",
                     "optical_flux_erg_cm2_s", "optical_fwhm_kms", "optical_snr",
@@ -294,6 +350,7 @@ def main(argv=None) -> int:
         "source_key": a.source,
         "redshift": result["z"],
         "xray_tool": a.xray_tool,
+        "optical_tool": a.optical_tool,
         "inputs": {
             "xray_lines": result["xray"]["table"],
             "optical_lines": result["optical"]["table"],

@@ -15,6 +15,7 @@ Tools/                   Dockerized tool source and Dockerfiles
   pipeline_ir/           generic IR line router/fitter
   pyqsofit_uv/ qsofitmore_line/ ppxf_host/ UV/host tool images
   gandalf_line/          native GANDALF v1.5 under GDL
+  optical_linefit/       local Hβ/[O III] joint fit (X-SHOOTER/HST safe)
   manga_dap/             official SDSS MaNGA DAP (sdss-mangadap 4.5.0), subset production
   xmm_xspec/             official XMM-Newton PPS + HEASoft/PyXspec
   rxte_xspec/            official RXTE/PCA stdprod + HEASoft/PyXspec (thin FROM xmm_xspec)

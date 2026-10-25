@@ -201,7 +201,7 @@ same-object claim.  The X-ray pair is therefore a methodological cross-check
 (independent objects, independent missions), not a cross-calibration.
 
 Stage 5 extends each object with a real **same-object** UV/optical spectrum
-(HST/STIS) and compares Fe K-alpha with H-beta (3C 120) or C IV (PDS 456);
+(HST/STIS and X-SHOOTER) and compares Fe K-alpha with H-beta (both objects);
 see the Stage 5 result below.
 
 **Raw-vs-PPS provenance.**  The `stdprod` products are the official reduced
@@ -219,22 +219,27 @@ Two real archival spectra were added without touching the X-ray products:
 | source | optical/UV data | X-ray branch | line used | result |
 |---|---|---|---|---|
 | **3C 120** | HST/STIS G430L+G750L HASP `cspec`, 2993-10247 A | RXTE/PCA `stdprod` | broad H-beta + [O III] 5007 | H-beta 28436, [O III] 18363, ratio **1.55**; H-beta FWHM 2676 km/s (S/N 17.9) |
-| **PDS 456** | HST/STIS G140L+G230L HASP `cspec`, 1139-3137 A | XMM-Newton PPS | broad C IV 1549 | C IV 94123; FWHM 34807 km/s; **tentative** (S/N 1.77) |
+| **PDS 456** | HST/STIS UV + ESO X-SHOOTER VIS | XMM-Newton PPS | local Hβ/[O III] | Hβ **33448**, [O III] 5007 **5580**, ratio **5.99**; χ²_red 430; **provisional** |
 
 The public HST/STIS spectrum of PDS 456 does **not** cover H-beta (5758 A
 observed) or Mg II (3315 A); only Ly-alpha, N V, C IV and C III] are available.
-The HST/STIS spectrum of 3C 120 covers H-beta, [O III], H-alpha and [N II]/[S II].
-That asymmetry is forced by the archive, not a model choice.
+A public ESO VLT/X-SHOOTER VIS reduced spectrum fills that gap and is now used
+for a **local** Hβ/[O III] fit.  The local fit has high formal χ² because the
+X-SHOOTER spectrum contains absorption residuals; the ratio is therefore
+labelled provisional.  The HST/STIS spectrum of 3C 120 covers H-beta,
+[O III], H-alpha and [N II]/[S II].
 
 `pipeline/compare_xray_optical.py` writes
 `outputs/<source>/crossmission/xray_optical_comparison.{json,csv,md,png,pdf}`.
-The 3C 120 comparison is accepted; the PDS 456 comparison is explicitly
-**tentative** because the broad C IV S/N is below 3.  With two objects the tool
-does **not** fit a slope or claim a correlation; adding more objects is the
-next scientific step.
+The 3C 120 comparison is **accepted** (Hβ, PyQSOFit).  The PDS 456 comparison
+now uses the X-SHOOTER **Hβ** local fit but is **provisional** because the local
+fit has high formal χ²; it is not the earlier C IV-only tentative result.  With
+two objects the tool does **not** fit a slope or claim a correlation; adding
+more objects is the next scientific step.
 
-The raw HST files are small (57 KB and 45 KB), committed with SHA-256, and
-reproduced by `inputs/<source>/download_optical.sh`.  A unit-conversion bug in
+The HST files are 57 KB and 45 KB; the X-SHOOTER VIS file is 1.3 MB.  All are
+committed with SHA-256 and reproduced by `inputs/<source>/download_optical.sh`.
+A unit-conversion bug in
 the HST `ivar` path (cgs vs the repository's 1e-17 convention) was found by the
 pytest golden suite and fixed before the production results were accepted.
 

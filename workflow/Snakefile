@@ -60,6 +60,8 @@ def dependency_inputs(wildcards):
             deps.append("xmm_xspec")
         if "rxte_xspec" in src.get("tools", []):
             deps.append("rxte_xspec")
+        if "optical_linefit" in src.get("tools", []):
+            deps.append("optical_linefit")
         deps.append("pyqsofit_uv")
     available = set(src.get("tools", []))
     return [f"outputs/{wildcards.source}/{d}/.snakemake_done"

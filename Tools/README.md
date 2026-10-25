@@ -20,6 +20,7 @@ Dockerized fitting engines and their Dockerfiles.  See `Pipelines/build_images.s
 | `pyqsofitspec_line/` | `pyqsofitspec_line` (skew-normal lines + bootstrap) |
 | `qgfit/` | `qgfit` (AGN/host/Fe II + continuum MCMC) |
 | `sheap_line/` | `sheap_line` (SHEAP JAX AGN decomposition) |
+| `optical_linefit/` | `optical_linefit` (local Hβ/[O III] joint fit) |
 | `qsofitmore_line/` | `qsofitmore_line` (UV/optical QSOFITMORE) |
 | `manga_dap/` | `manga_dap` (official MaNGA DAP) |
 | `xmm_xspec/` | `xmm_xspec` (XMM EPIC PPS + PyXspec) |

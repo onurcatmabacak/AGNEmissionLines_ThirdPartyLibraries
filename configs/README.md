@@ -14,7 +14,7 @@ The two families are deliberately separate:
 | family | tools | output |
 |---|---|---|
 | Broad-band SED / torus | `cigale_sed`, `agnfitter_sed` | stellar mass, AGN fraction, torus luminosity, model-family spread |
-| Spectral line fitting | `pyqsofit_uv`, `qsofitmore_line`, `pyqsofitspec_line`, `ir_linefit`, `nir_linefit`, `fir_linefit`, `pahfit_mir`, `cafe_line`, `s3fit_line`, `gandalf_line`, `galspec_line`, `qgfit`, `sheap_line`, `manga_dap`, `xmm_xspec`, `rxte_xspec`, `crossmission`, `crossband` | line flux, FWHM, velocity, equivalent width, ratios, X-ray Fe K-alpha |
+| Spectral line fitting | `pyqsofit_uv`, `optical_linefit`, `qsofitmore_line`, `pyqsofitspec_line`, `ir_linefit`, `nir_linefit`, `fir_linefit`, `pahfit_mir`, `cafe_line`, `s3fit_line`, `gandalf_line`, `galspec_line`, `qgfit`, `sheap_line`, `manga_dap`, `xmm_xspec`, `rxte_xspec`, `crossmission`, `crossband` | line flux, FWHM, velocity, equivalent width, ratios, X-ray Fe K-alpha |
 | Host/continuum decomposition | `ppxf_host` | stellar velocity dispersion, host fraction |
 
 `gandalf_line/default/` is a complete tool configuration rather than a tuning
@@ -54,6 +54,7 @@ the broad-band SED with templates.
 | tool | statistical method |
 |---|---|
 | `pyqsofit_uv` | covariance; optional MC resampling and `emcee` MCMC (`PYQSOFIT_MC`, `PYQSOFIT_MCMC`) |
+| `optical_linefit` | least-squares covariance; local Hβ/[O III] joint fit; no MCMC |
 | `qsofitmore_line` | lmfit parametric Monte Carlo (`MC=True`, `n_trails=200`); no MCMC sampler in qsofitmore 1.2.2 |
 | `pyqsofitspec_line` | parametric bootstrap: `flux + N(0, err)` refit, mean/std over `nboot_fit` (no covariance/MC inside a fit) |
 | `agnfitter_sed` | `ultranest` nested sampling (Bayesian posterior) |
@@ -79,6 +80,7 @@ the broad-band SED with templates.
 configs/
   pyqsofit/uv/main.py              # executable
   pyqsofit/uv/config.json          # effective settings snapshot
+  optical_linefit/default/config.json
   qsofitmore_line/default/config.json    # fit switches + uncertainty mode
   qsofitmore_line/default/line_table.csv # effective editable line table
   qsofitmore_line/default/README.md      # switch-by-switch notes

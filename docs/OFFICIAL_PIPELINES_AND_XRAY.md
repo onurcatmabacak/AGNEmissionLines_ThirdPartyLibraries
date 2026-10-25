@@ -145,14 +145,16 @@ spectra and not re-reductions of raw STIS files.
 | source | HST product | observed coverage | lines used | X-ray branch |
 |---|---|---|---|---|
 | **3C 120** | `hst_8700_stis_3c120d0_g430l-g750l_o62o_cspec.fits` | 2993-10247 A | H-beta, [O III] 4959/5007, H-alpha, [N II]/[S II] | RXTE/PCA |
-| **PDS 456** | `hst_8264_stis_pds456_sg140l-sg230l_o58s_cspec.fits` | 1139-3137 A | Ly-alpha/N V, C IV 1549, C III] 1909 | XMM-Newton |
+| **PDS 456** | HST/STIS G140L+G230L + ESO X-SHOOTER VIS | 1139-3137 A (UV) + 5337-10200 A (optical) | C IV (UV); Hβ/[O III]/Hα (optical) | XMM-Newton |
 
 Provenance:
 
 * 3C 120: HST proposal 8700 (PI A. Martel), STIS G430L+G750L, 1440 s,
   2000-09-09, `LICENSE = CC BY 4.0`.
 * PDS 456: HST proposal 8264 (PI P. O'Brien), STIS G140L+G230L, 1921 s,
-  2000-09-15, `LICENSE = CC BY 4.0`.
+  2000-09-15, `LICENSE = CC BY 4.0`; plus the public ESO VLT/X-SHOOTER VIS
+  reduced spectrum `ADP.2023-04-20T08:25:01.842` (programme 111.24T0.001,
+  2416 s) covering Hβ and [O III].
 * Both files are committed with SHA-256; reproduce with
   `inputs/<source>/download_optical.sh`.
 
@@ -163,7 +165,9 @@ convention; a cgs/1e-17 mismatch was caught by the regression suite and fixed.
 
 `pipeline/compare_xray_optical.py` then writes
 `outputs/<source>/crossmission/`.  3C 120 is an **accepted** H-beta vs Fe K-alpha
-comparison; PDS 456 is **tentative** because its public HST spectrum does not
-cover H-beta/Mg II and the broad C IV S/N is below 3.  With two objects the
+comparison.  PDS 456 now uses a **local X-SHOOTER Hβ/[O III]** fit; the line is
+detected but the formal local χ² is high, so the result is **provisional**, not
+publication-grade.  The earlier HST C IV result is retained as UV context and
+is not used as the primary comparison.  With two objects the
 comparison is not a correlation fit.  The next step is to add more objects,
 not to over-interpret these two points.

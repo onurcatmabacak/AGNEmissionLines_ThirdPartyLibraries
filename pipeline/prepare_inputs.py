@@ -142,6 +142,72 @@ def _read_classic_spspec(hdul, path: Path) -> dict:
     }
 
 
+def _is_xshooter_table(hdul) -> bool:
+    """True for ESO X-SHOOTER reduced spectra (WAVE + FLUX + ERR)."""
+    for hdu in hdul:
+        if getattr(hdu, "columns", None) is None or hdu.data is None:
+            continue
+        names = {c.upper() for c in hdu.columns.names}
+        if {"WAVE", "FLUX", "ERR"} <= names:
+            return True
+    return False
+
+
+def _read_xshooter(hdul, path: Path) -> dict:
+    """Read an ESO X-SHOOTER ``SFLX`` reduced spectrum.
+
+    X-SHOOTER stores vacuum/air wavelengths in nm and flux in
+    ``erg cm-2 s-1 A-1``.  The VIS arm (533-1020 nm) covers H-beta and
+    [O III] at z=0.184; this is the public spectrum used to remove the
+    "PDS 456 has no H-beta" limitation of the earlier HST/STIS-only fit.
+    """
+    tab = None
+    for hdu in hdul:
+        if getattr(hdu, "columns", None) is not None and hdu.data is not None:
+            if {"WAVE", "FLUX", "ERR"} <= {c.upper() for c in hdu.columns.names}:
+                tab = hdu
+                break
+    if tab is None:
+        raise ValueError(f"{path}: no X-SHOOTER WAVE/FLUX/ERR table")
+    wave = _flatten_col(tab.data, "WAVE")
+    wave_unit = str(tab.columns["WAVE"].unit or "").lower()
+    if "nm" in wave_unit:
+        wave = wave * 10.0
+    flux = _flatten_col(tab.data, "FLUX")
+    err = np.abs(_flatten_col(tab.data, "ERR"))
+    qual = None
+    cols = {c.upper(): c for c in tab.columns.names}
+    if "QUAL" in cols:
+        qual = _flatten_col(tab.data, cols["QUAL"]).astype(int)
+    good = np.isfinite(wave) & np.isfinite(flux) & np.isfinite(err) & (err > 0)
+    if qual is not None:
+        good &= (qual == 0)
+    ivar = np.zeros_like(flux)
+    ivar[good] = (EFEDS_FLUX_UNIT_CGS / err[good]) ** 2
+    wdisp = np.full_like(wave, float(np.median(np.diff(wave[good]))) if good.any() else 1.0)
+    hdr = hdul[0].header
+    z = float(hdr.get("REDSHIFT", hdr.get("Z", 0.0)) or 0.0)
+    ra = float(hdr.get("RA", 0.0) or 0.0)
+    dec = float(hdr.get("DEC", 0.0) or 0.0)
+    mjd = int(float(hdr.get("MJD-OBS", 0.0) or 0.0))
+    return {
+        "path": str(path),
+        "wave": wave,
+        "flux_1e17": flux / EFEDS_FLUX_UNIT_CGS,
+        "ivar": ivar,
+        "wdisp": wdisp,
+        "z": z,
+        "ra": ra,
+        "dec": dec,
+        "mjd": mjd,
+        "fiberid": 0,
+        "plateid": 0,
+        "catalogid": 0,
+        "n_pix": int(flux.size),
+        "good": good,
+    }
+
+
 def _is_hst_x1d(hdul) -> bool:
     """True for HST STIS/HASP x1d/cspec tables (WAVELENGTH + FLUX + ERROR)."""
     for hdu in hdul:
@@ -219,6 +285,8 @@ def read_spectrum(path: Path) -> dict:
         hdr0 = hdul[0].header
         if _is_classic_spspec(hdul):
             return _read_classic_spspec(hdul, path)
+        if _is_xshooter_table(hdul):
+            return _read_xshooter(hdul, path)
         if _is_hst_x1d(hdul):
             return _read_hst_x1d(hdul, path)
         tab = _get_table_hdu(hdul)

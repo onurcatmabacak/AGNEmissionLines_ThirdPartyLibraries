@@ -28,8 +28,8 @@ input policy: one source, one raw payload, one manifest.
 | `spSpec-51908-0277-120_z_0.0859` | 0.0859 | SDSS legacy spSpec (GANDALF example) | `spectrum` | gandalf_line |
 | `J0100p2802_z_6.3270` | 6.327 | JWST/NIRSpec G395H | `spectrum`, `centered` | nir_linefit (pipeline + QSO-centred), ir_linefit |
 | `VV114_z_0.0200` | 0.020 | JWST/MIRI MRS (PAHFIT example) | `spectra` (12 s1d) | cafe_line, pahfit_mir, ir_linefit |
-| `PDS456_z_0.1840` | 0.184 | JWST/MIRI MRS + HST/STIS UV | `spectra` (short/long), `optical_spectrum` | cafe_line, pahfit_mir, ir_linefit, xmm_xspec, pyqsofit_uv, crossmission |
-| `3C120_z_0.0330` | 0.033 | RXTE/PCA + HST/STIS optical | `optical_spectrum`, `xray_pca_*` | rxte_xspec, pyqsofit_uv, crossmission |
+| `PDS456_z_0.1840` | 0.184 | JWST/MIRI MRS + HST/STIS UV | `spectra` (short/long), `optical_spectrum` (HST UV), `xshooter_spectrum` (X-SHOOTER VIS) | cafe_line, pahfit_mir, ir_linefit, xmm_xspec, pyqsofit_uv, optical_linefit, crossmission |
+| `3C120_z_0.0330` | 0.033 | RXTE/PCA + HST/STIS optical | `optical_spectrum`, `xray_pca_*` | rxte_xspec, pyqsofit_uv, qsofitmore_line, crossmission |
 | `NGC1068_z_0.0038` | 0.003793 | Herschel PACS + HIFI | `pacs`, `spectrum` | fir_linefit, ir_linefit |
 | `NGC4151_z_0.0033` | 0.003319 | Spitzer IRS + Herschel PACS | `mir_table`, `pacs` | pahfit_mir, fir_linefit, ir_linefit, crossband |
 | `Mrk231_z_0.0422` | 0.04217 | Spitzer IRS | `mir_table` | pahfit_mir, ir_linefit, crossband |
@@ -54,8 +54,9 @@ input policy: one source, one raw payload, one manifest.
 * NGC 1068, NGC 253: Herschel/PACS HPDP extracted spectra from the ESA HSA
   (`hpacs..._POC_*.fits.gz`); NGC 1068 also HIFI HPDP.
 * Mrk 231, NGC 253, NGC 4151: Spitzer IRS Enhanced `*_merge.tbl` from IRSA.
-* PDS 456 and 3C 120: real HST/STIS HASP `cspec` products from MAST; see
-  `inputs/<source>/README_OPTICAL.md` and `download_optical.sh`.
+* PDS 456 and 3C 120: real HST/STIS HASP `cspec` products from MAST; PDS 456
+  additionally uses the public ESO VLT/X-SHOOTER VIS reduced spectrum for Hβ.
+  See `inputs/<source>/README_OPTICAL.md` and `download_optical.sh`.
 * NGC 1194 (plateifu 9193-12701): real MaNGA DR17 LOGCUBE/LOGRSS and the published DAP MAPS, downloaded by `NGC1194_z_0.0136/download.sh`; the two DRP cubes are Git-ignored (>100 MB) and SHA-256 verified.  See `source.json`.
 * Synthetic files are labelled `synthetic_*`; they are not real sources.
 

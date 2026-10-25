@@ -1,0 +1,258 @@
+{
+  "command": [
+    "/app/run/main.py",
+    "--input-dir",
+    "/app/input",
+    "--out",
+    "/app/output",
+    "--config",
+    "/app/config",
+    "--mc-trails",
+    "200",
+    "--seed",
+    "20250101",
+    "--source-key",
+    "3C120_z_0.0330",
+    "--z",
+    "0.033"
+  ],
+  "config": {
+    "file": "/app/config/config.json",
+    "fit": {
+      "BC": true,
+      "Fe_flux_range": [
+        [
+          2250.0,
+          2700.0
+        ],
+        [
+          4434.0,
+          4684.0
+        ],
+        [
+          5100.0,
+          5600.0
+        ]
+      ],
+      "Fe_verner09": true,
+      "broken_pl": true,
+      "decomposition_host": false,
+      "deredden": true,
+      "dust_law": "Fitzpatrick (1999) f99law, R_V=3.1, as implemented in qsofitmore.extinction",
+      "dust_map": "sfd",
+      "include_iron": true,
+      "iron_temp_name": "V09",
+      "linefit": true,
+      "log10_electron_density": 9.0,
+      "narrow_max_kms": 1200.0,
+      "nsmooth": 1,
+      "pl_pivot_A": 3000.0,
+      "plot_fig": true,
+      "poly": false,
+      "rej_abs": false,
+      "save_fig": true,
+      "save_result": true,
+      "tie_flux_1": true,
+      "tie_flux_2": true,
+      "tie_lambda": true,
+      "tie_width": true,
+      "wave_range": [
+        2247.0,
+        6510.4
+      ],
+      "wave_range_note": "Rest-frame clean coverage of the SDSS COADD after dropping zero-IVAR pixels. The upper edge is set just below H-alpha/NII6549 so a prepared PyQSOFit copy (which sanitises zero-IVAR pixels) cannot pull the H-alpha complex into the fit."
+    },
+    "line_table": "/app/config/line_table.csv",
+    "line_table_meta": {
+      "narrow_max_kms": 1200.0,
+      "path": "line_table.csv",
+      "source": "qsofitmore/examples/output/qsopar_log.csv at the pinned commit, with the [O III] 4959/5007 and outflow doublet flux ratios tied (findex=1/2, fvalue=0.33/1.00) and narrow C III]/C IV rows added for UV coverage. H-alpha/C III]/C IV rows are retained for general use and are automatically skipped when their rest wavelength is outside the observed rest-frame coverage.",
+      "velocity_units": "lnlambda",
+      "wave_scale": "log"
+    },
+    "line_table_sha256": "9d0615785b272ac2b9ecc6046b0007c706523cee7d2b13f0e349fcee29505a18",
+    "sha256": "bdb0c0b5977a2a3aed749797defaebb760492c7e713d3efceb28cb1a724c8b4f"
+  },
+  "dust_map": {
+    "citation": "Schlegel, Finkbeiner & Davis (1998), ApJ 500, 525",
+    "dataverse_url": "https://doi.org/10.7910/DVN/EWCNL5",
+    "directory": "/app/cache/dustmaps/sfd",
+    "doi": "10.7910/DVN/EWCNL5",
+    "downloaded_utc": "2026-10-24T06:47:50+00:00",
+    "dustmaps_version": "1.0.12",
+    "files": {
+      "SFD_dust_4096_ngp.fits": {
+        "dataverse_file_id": 2902687,
+        "md5": "6f3a89528bba7d1b7bd55838da86b639"
+      },
+      "SFD_dust_4096_sgp.fits": {
+        "dataverse_file_id": 2902695,
+        "md5": "60f7c43d51bccaff82961de3e9f9e789"
+      }
+    },
+    "map": "SFD98",
+    "note": "SFD98 E(B-V); qsofitmore applies Fitzpatrick (1999) R_V=3.1 extinction.",
+    "queried_by": "dustmaps.sfd.SFDQuery(map_dir=...)"
+  },
+  "fit": {
+    "complex_diagnostics": {
+      "Hb_line_min_chi2": 12564.6114535855,
+      "Hb_line_red_chi2": 182.09581816790578,
+      "Hb_line_status": 1.0,
+      "Hb_ndof": 69.0,
+      "Hb_niter": 1263.0,
+      "Hg_line_min_chi2": 1091.1701473059873,
+      "Hg_line_red_chi2": 37.626556803654736,
+      "Hg_line_status": 1.0,
+      "Hg_ndof": 29.0,
+      "Hg_niter": 159.0,
+      "LINE_MED_SN_Hb": 101.37577899378141,
+      "LINE_MED_SN_Hg": 97.54439006989266,
+      "LINE_MED_SN_NeV": 79.37872366471461,
+      "LINE_MED_SN_OII": 93.12727163811132,
+      "LINE_NPIX_Hb": 85.0,
+      "LINE_NPIX_Hg": 35.0,
+      "LINE_NPIX_NeV": 19.0,
+      "LINE_NPIX_OII": 28.0,
+      "NeV_line_min_chi2": 164.0543216438643,
+      "NeV_line_red_chi2": 10.25339510274152,
+      "NeV_line_status": 1.0,
+      "NeV_ndof": 16.0,
+      "NeV_niter": 40.0,
+      "OII_line_min_chi2": 1300.3747125411346,
+      "OII_line_red_chi2": 52.014988501645384,
+      "OII_line_status": 1.0,
+      "OII_ndof": 25.0,
+      "OII_niter": 44.0
+    },
+    "ebv": null,
+    "line_table_path": "/app/config/line_table.csv",
+    "linefit": true,
+    "n_complex": 4
+  },
+  "image": "qsofitmore_line",
+  "image_size_bytes": 1501705328,
+  "input": {
+    "bunit": "",
+    "dec_deg": null,
+    "errors": "calibrated SDSS errors (1/sqrt(IVAR)); no error floor",
+    "file": "/app/input/hst_8700_stis_3c120d0_g430l-g750l_o62o_cspec.fits",
+    "layout": "generic_fits",
+    "median_snr": 77.85201585999256,
+    "n_pixels_masked": 8,
+    "n_pixels_raw": 1425,
+    "n_pixels_used": 1417,
+    "ra_deg": null,
+    "sha256": "f0f1bbb19124ea01233922c2c633c6abcc8e44e25b9c59d387d692f427fecde2",
+    "unit_scale_to_1e17": 1e+17,
+    "wave_obs_range_A": [
+      2993.114013671875,
+      10247.19921875
+    ],
+    "wave_rest_range_A": [
+      2897.4966250453776,
+      9919.844355033883
+    ],
+    "z": 0.033
+  },
+  "method": {
+    "continuum": "broken power law + Verner et al. (2009) Fe II + Balmer continuum + high-order Balmer series (Storey & Hummer 1995)",
+    "lines": "broad and narrow Gaussians, lmfit least squares, tied [O III] doublet/outflow kinematics and 0.33 flux ratio",
+    "mcmc": false,
+    "uncertainty": "parametric Monte Carlo: flux + N(0, err) per fitted pixel, full lmfit continuum and line-complex refit; 200 realizations requested"
+  },
+  "products": [
+    "config.effective.json",
+    "qsofitmore_components.csv",
+    "qsofitmore_continuum.csv",
+    "qsofitmore_corner.pdf",
+    "qsofitmore_corner.png",
+    "qsofitmore_fit.jpg",
+    "qsofitmore_fit.pdf",
+    "qsofitmore_fit.png",
+    "qsofitmore_hb_oiii_mc.csv",
+    "qsofitmore_lines.csv",
+    "qsofitmore_mc_components.csv",
+    "qsofitmore_mc_samples.csv",
+    "qsofitmore_mc_summary.csv",
+    "qsofitmore_result.csv",
+    "qsofitmore_result.fits",
+    "qsofitmore_uncertainty.pdf",
+    "qsofitmore_uncertainty.png",
+    "qsopar.fits",
+    "systematics/qsofitmore_lines_bg92.csv",
+    "systematics/qsofitmore_result_bg92.fits",
+    "systematics/systematic.json"
+  ],
+  "repo_commit": "048994f164e9d680ca401cc56622dbce88660f08",
+  "runtime_sec": {
+    "fit": 1369.698834657669,
+    "total": 1386.5833554267883
+  },
+  "status": "ok",
+  "systematics": {
+    "Hbeta_1e17": 38775.87748907839,
+    "Hbeta_OIII5007": 2.8390048167227957,
+    "MgII_1e17": null,
+    "OIII5007_1e17": 13658.264072210808,
+    "enabled": true,
+    "iron_template": "BG92-VW01",
+    "note": "Least-squares fit only (MC off), same line table and switches; quantifies the Fe II template systematic, not a second production uncertainty.",
+    "runtime_sec": 6.605851411819458
+  },
+  "tool": "qsofitmore_line",
+  "uncertainty": {
+    "Hbeta_OIII5007": {
+      "median": 2.954964350965713,
+      "n": 200,
+      "p16": 2.862346908875101,
+      "p84": 2.9988354322836535,
+      "std": 1.4305024279679357
+    },
+    "line_mc_attempted": {
+      "Hb": 200,
+      "Hg": 200,
+      "NeV": 200,
+      "OII": 200
+    },
+    "line_mc_rows": 2400,
+    "line_mc_valid": {
+      "Hb": 200,
+      "Hg": 200,
+      "NeV": 200,
+      "OII": 200
+    },
+    "mcmc": false,
+    "method": "lmfit Monte Carlo refit",
+    "note": "Line-complex MC draws are independent between complexes; H-beta/[O III] is correlated because both are in the same Hb complex. Mg II has its own independent MC.",
+    "requested_trails": 200,
+    "seed": 20250101
+  },
+  "upstream": {
+    "commit": "4c5f6e497b306aaf50b502a8e4b27ed9dfe89421",
+    "license": "GPL-3.0",
+    "repo": "https://github.com/rudolffu/qsofitmore",
+    "version": "1.2.2"
+  },
+  "versions": {
+    "astropy": "7.0.1",
+    "corner": "2.2.3",
+    "dustmaps": "1.0.12",
+    "lmfit": "1.3.2",
+    "matplotlib": "3.11.1",
+    "numpy": "1.26.4",
+    "pandas": "2.2.3",
+    "python": "3.12.15",
+    "qsofitmore": "1.2.2",
+    "scipy": "1.15.1",
+    "uncertainties": "3.2.2"
+  },
+  "warnings": [
+    "'Fe_verner09' is deprecated and ignored when 'iron_temp_name' is set.",
+    "'reject_badpix' is deprecated; rely on SDSS masks or 'wave_mask' for pixel rejection.",
+    "Conversion of an array with ndim > 0 to a scalar is deprecated, and will error in future. Ensure you extract a single element from your array before performing this operation. (Deprecated NumPy 1.25.)",
+    "Conversion of an array with ndim > 0 to a scalar is deprecated, and will error in future. Ensure you extract a single element from your array before performing this operation. (Deprecated NumPy 1.25.)",
+    "Conversion of an array with ndim > 0 to a scalar is deprecated, and will error in future. Ensure you extract a single element from your array before performing this operation. (Deprecated NumPy 1.25.)",
+    "Conversion of an array with ndim > 0 to a scalar is deprecated, and will error in future. Ensure you extract a single element from your array before performing this operation. (Deprecated NumPy 1.25.)"
+  ]
+}

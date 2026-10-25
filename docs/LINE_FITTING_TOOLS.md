@@ -11,6 +11,7 @@ CAFE, S3Fit, GANDALF, PAHFIT and the generic Gaussian fitters operate on
 | tool | family | rest-frame coverage | decomposition | uncertainty |
 |---|---|---|---|---|
 | `pyqsofit_uv` | line | UV–optical | power-law/Fe II continuum + broad/narrow Gaussians | covariance, optional MC/`emcee` |
+| `optical_linefit` | line | optical | local linear continuum + Hβ broad/narrow + [O III] 4959/5007 tied doublet | least-squares covariance; independent local cross-check |
 | `qsofitmore_line` | line | UV–optical | broken PL + V09 Fe II + Balmer continuum/high-order Balmer + broad/narrow Gaussians | lmfit parametric MC (200 draws), no MCMC |
 | `ir_linefit` | line | UV–FIR | local continuum + Gaussians, doublet/kinematic ties | covariance |
 | `nir_linefit` | line | NIR | x1d/PSF spectrum + local continuum + Gaussians | covariance |
@@ -26,7 +27,7 @@ CAFE, S3Fit, GANDALF, PAHFIT and the generic Gaussian fitters operate on
 | `fir_linefit` | line | FIR | local continuum + Gaussian forbidden lines | covariance |
 | `manga_dap` | line (IFU) | optical | **official DAP**: HYB10 binning + pPXF + SASUKE 35-line Gaussian fit on MaNGA cubes | DAP formal covariance; **9 central bins only**; fast mode rejected |
 | `xmm_xspec` | line (X-ray) | 0.5-10 keV observed; Fe K-alpha at 6.4 keV rest | **official XMM-Newton EPIC PPS**: `tbabs*(zpowerlw+zgauss)`, PN+MOS | XSPEC covariance; `Delta chi^2` line significance; no MCMC |
-| `crossmission` | comparison (X-ray + UV/optical) | same object; Fe K-alpha vs H-beta/C IV | reads `xmm_xspec`/`rxte_xspec` + `pyqsofit_uv` | no fit; quality-flagged comparison; 2 objects, no correlation |
+| `crossmission` | comparison (X-ray + UV/optical) | same object; Fe K-alpha vs H-beta/C IV | reads `xmm_xspec`/`rxte_xspec` + `pyqsofit_uv` or `optical_linefit` | no fit; quality-flagged comparison; 2 objects, no correlation |
 | `rxte_xspec` | line (X-ray) | 3-20 keV observed; Fe K-alpha at 6.4 keV rest | **official RXTE/PCA stdprod**: `tbabs*(zpowerlw+zgauss)` | XSPEC covariance; `Delta chi^2` line significance; no MCMC |
 | `ppxf_host` | host | optical–NIR | stellar templates + AGN power law, emission masked | pPXF formal errors |
 | `crossband` | ratio | NIR–FIR | line-ratio consistency | analytic propagation |
@@ -174,6 +175,16 @@ See `docs/SHEAP_ASSESSMENT.md`.
 Already used for MIR PAH/dust/gas decomposition.  The new statistics mode adds
 per-feature uncertainty distributions and a line table; PAHFIT is not an MCMC
 code.
+
+## Same-object Hβ coverage
+
+The public PDS 456 HST/STIS UV spectrum does not cover Hβ.  The ESO
+VLT/X-SHOOTER VIS spectrum (`ADP.2023-04-20T08:25:01.842`) fills that gap, and
+`optical_linefit` fits Hβ + [O III] jointly.  The fit detects Hβ but has a high
+formal χ² from absorption residuals, so the quality is **provisional**.
+3C 120 has HST G430L+G750L coverage and is fitted independently by PyQSOFit and
+QSOFITMORE; the Hβ/[O III] values (1.55 and 3.00) show the model-systematic
+spread.
 
 ## Routing examples
 

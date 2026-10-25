@@ -20,6 +20,8 @@ import mimetypes
 from datetime import datetime, timezone
 from pathlib import Path
 
+import yaml
+
 ROOT = Path(__file__).resolve().parents[1]
 sys_path = str(ROOT)
 import sys  # noqa: E402
@@ -82,8 +84,20 @@ def caveats(run: dict) -> list[str]:
     return []
 
 
+def _caveat_index() -> dict:
+    p = ROOT / "configs" / "caveats.yaml"
+    if not p.exists():
+        return {}
+    try:
+        data = yaml.safe_load(p.read_text()) or {}
+    except Exception:
+        return {}
+    return {t["tool"]: t for t in data.get("tools", []) if "tool" in t}
+
+
 def build() -> dict:
     sources = {s["key"]: s for s in iter_sources()}
+    caveat_index = _caveat_index()
     entries = []
     for source_key in sorted(sources):
         for tool_dir in sorted((ROOT / "outputs" / source_key).iterdir()):
@@ -112,11 +126,22 @@ def build() -> dict:
                 })
             if not artifacts:
                 continue
+            status = run.get("status")
+            if not status:
+                # A tool-native run.json is not standardized across upstream
+                # codes.  A present product tree with a valid run.json or a
+                # non-empty headline is still an "ok" artifact run; absence of
+                # both is explicitly recorded as unknown.
+                status = "ok" if (run_json.exists() or headline(run)) else "artifacts_present"
+            cav = caveat_index.get(tool, {})
             entries.append({
                 "source_key": source_key,
                 "tool": tool,
                 "kind": reg.kind if reg else "unknown",
-                "run_status": str(run.get("status", "unknown")),
+                "run_status": str(status),
+                "quality": cav.get("status", "unknown"),
+                "severity": cav.get("severity", "info"),
+                "caveat": cav.get("caveat", ""),
                 "headline": headline(run),
                 "caveats": caveats(run),
                 "provenance": {"run_json": str(run_json.relative_to(ROOT)) if run_json.exists() else None},
@@ -141,7 +166,7 @@ def main(argv=None) -> int:
     a.out.write_text(json.dumps(data, indent=2) + "\n")
     import csv
     with a.csv.open("w", newline="") as fh:
-        w = csv.writer(fh)
+        w = csv.writer(fh, lineterminator="\n")
         w.writerow(["source_key", "tool", "kind", "run_status", "artifact_count", "figure_count", "bytes"])
         for e in data["entries"]:
             arts = e["artifacts"]

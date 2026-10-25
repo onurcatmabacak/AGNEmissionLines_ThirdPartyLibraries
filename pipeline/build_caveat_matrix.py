@@ -21,7 +21,7 @@ def main() -> int:
     excluded = data.get("excluded", [])
     OUT_JSON.write_text(json.dumps(data, indent=2) + "\n")
     with OUT_CSV.open("w", newline="") as fh:
-        w = csv.writer(fh)
+        w = csv.writer(fh, lineterminator="\n")
         w.writerow(["tool", "kind", "wave", "status", "severity", "caveat", "evidence", "mitigation"])
         for t in tools:
             w.writerow([t["tool"], t["kind"], t["wave"], t["status"], t["severity"],
