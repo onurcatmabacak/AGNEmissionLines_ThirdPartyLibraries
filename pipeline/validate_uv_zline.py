@@ -66,13 +66,13 @@ def main():
         f = output_dir(src["key"], "pyqsofit_uv") / "zline_comparison.csv"
         f.parent.mkdir(parents=True, exist_ok=True)
         with f.open("w", newline="") as fh:
-            w = csv.DictWriter(fh, fieldnames=list(sub[0]))
+            w = csv.DictWriter(fh, lineterminator="\n", fieldnames=list(sub[0]))
             w.writeheader(); w.writerows(sub)
     # compact documentation table
     out = ROOT / "docs" / "pyqsofit_zline_comparison.csv"
     out.parent.mkdir(parents=True, exist_ok=True)
     with out.open("w", newline="") as fh:
-        w = csv.DictWriter(fh, fieldnames=list(rows[0]) if rows else ["source"])
+        w = csv.DictWriter(fh, lineterminator="\n", fieldnames=list(rows[0]) if rows else ["source"])
         w.writeheader(); w.writerows(rows)
     print(f"wrote per-source tables and {out} ({len(rows)} rows)")
     return 0

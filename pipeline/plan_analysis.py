@@ -93,6 +93,10 @@ def _coverage(src: dict) -> dict:
                         fac = 1e-3 if "nm" in unit else 1e-4
                         optical_ranges.append([float(min(w)) * fac, float(max(w)) * fac])
                         break
+                    if {"LOGLAM", "FLUX"} <= names:
+                        w = 10.0 ** (hdu.data["LOGLAM"].ravel())
+                        optical_ranges.append([float(min(w)) / 1e4, float(max(w)) / 1e4])
+                        break
         except Exception:
             pass
     if optical_ranges:
@@ -119,7 +123,9 @@ def _band_availability(src: dict, cov: dict) -> dict:
     optical = bool({"optical_spectrum", "xshooter_spectrum", "spectrum", "uv_spectrum"} & roles) or "sdss" in text
     xray = bool({"xray_spectrum", "xray_pca_source", "xray"} & roles)
     mir = bool({"spectra", "mir_table", "jwst_miri", "spitzer_irs", "pacs"} & roles) or "miri" in text or "irs" in text
-    fir = bool({"pacs", "spectrum"} & roles) or "fir" in text or "pacs" in text
+    fir = bool({"pacs"} & roles) or "fir" in text or "pacs" in text
+    if cov.get("optical_um") and cov["optical_um"][1] > 30.0:
+        fir = True
     ifu = bool({"manga_cube", "manga_rss", "manga_maps_reference"} & roles) or "manga" in text
     phot = bool({"photometry"} & roles) or "photometry" in src
     if cov.get("optical_um") and cov["optical_um"][1] > 1.0:

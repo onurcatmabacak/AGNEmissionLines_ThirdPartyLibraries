@@ -46,7 +46,7 @@ the total is the stable quantity.  The production result is Hβ
 3076.6±100.1, [O III] 5007 1505.3±57.3, Hβ/[O III] **2.044±0.102** (MC
 p16–p84 1.960–2.103), and Mg II 2540.8±209.4; all 1,000 line-complex
 realizations were valid.  The cross-tool nine-fitter median Hβ/[O III] is 2.04 with
-0.12 dex scatter.  **The MC distributions are not Gaussian.**  Mg II is
+0.053 dex scatter.  **The MC distributions are not Gaussian.**  Mg II is
 bimodal: a high-quality mode near 2560 (best fit, χ²_r=1.38) and a lower
 local-minimum mode near 2130 where both broad Gaussians hit the 0.004 ln-width
 bound (χ²_r≈2.4).  The 16–84% interval 2133–2603 is the appropriate

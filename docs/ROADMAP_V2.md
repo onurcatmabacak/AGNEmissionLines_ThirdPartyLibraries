@@ -64,7 +64,7 @@ was 1,640.9 s (27m21s).  All 1,000 line-complex realizations were valid.
 
 Cross-check: the Hβ/[O III] 5007 value is **2.044 ± 0.102**; the median of
 PyQSOFit, GANDALF, S3Fit, GalSpec, PyQSOFitSpec, QGfit, SHEAP and SDSS ZLINE is
-**2.074**, with **0.060 dex** tool-to-tool scatter.  PyQSOFit (1.96), GANDALF
+**2.044**, with **0.053 dex** tool-to-tool scatter.  PyQSOFit (1.96), GANDALF
 (2.07) and SHEAP (2.02) are the closest.  An alternate BG92-VW01 Fe II fit
 gives Hβ/O III = 2.34, i.e. the Fe II template is the dominant model
 systematic.  Hα (6564.61 Å), C III] (1908.73 Å) and C IV (1549.06 Å) are outside
@@ -231,7 +231,7 @@ labelled provisional.  The HST/STIS spectrum of 3C 120 covers H-beta,
 
 `pipeline/compare_xray_optical.py` writes
 `outputs/<source>/crossmission/xray_optical_comparison.{json,csv,md,png,pdf}`.
-The 3C 120 comparison is **accepted** (Hβ, PyQSOFit).  The PDS 456 comparison
+The 3C 120 comparison is **provisional** because independent optical models disagree (Hβ/[O III] 1.55 vs 3.00).  The PDS 456 comparison
 now uses the X-SHOOTER **Hβ** local fit but is **provisional** because the local
 fit has high formal χ²; it is not the earlier C IV-only tentative result.  With
 two objects the tool does **not** fit a slope or claim a correlation; adding

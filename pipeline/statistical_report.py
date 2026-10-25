@@ -50,7 +50,9 @@ def robust_stats(values):
         "min": float(np.min(x)),
         "max": float(np.max(x)),
         "log10_scatter_mad": mad,
-        "multiplicative_scatter": float(10 ** mad),
+        "log10_scatter_std": float(np.std(np.log10(x))),
+        "multiplicative_scatter_mad": float(10 ** mad),
+        "multiplicative_scatter_std": float(10 ** float(np.std(np.log10(x)))),
         "bootstrap_median_16_84": bootstrap_ci(x),
     }
 
@@ -62,6 +64,8 @@ def read_line_ratios():
         return rows
     with p.open(newline="") as fh:
         for r in csv.DictReader(fh):
+            if r.get("quality", "ok") != "ok":
+                continue
             if r["ratio"] != "Hbeta/OIII5007":
                 continue
             try:
@@ -120,7 +124,10 @@ def main() -> int:
             **robust_stats([r["value"] for r in rows]),
         }
     all_ratios = [r["value"] for r in line_rows]
-    global_stats = robust_stats(all_ratios)
+    # The source with the largest tool set is the only defensible
+    # cross-tool headline; pooling different objects would pseudo-replicate.
+    canonical_source = max(by_source, key=lambda k: len(by_source[k])) if by_source else None
+    global_stats = robust_stats([r["value"] for r in by_source.get(canonical_source, [])]) if canonical_source else None
     tool_bias = {}
     for source, rows in by_source.items():
         med = np.median([r["value"] for r in rows])
@@ -156,7 +163,9 @@ def main() -> int:
         "schema_version": "1.0.0",
         "analysis": "cross-tool line-ratio and same-object X-ray/optical case study",
         "line_ratio": "Hbeta/OIII5007",
-        "global": global_stats,
+        "canonical_source": canonical_source,
+        "canonical_source_stats": global_stats,
+        "global": None,
         "per_source": source_stats,
         "tool_bias_relative_to_source_median": tool_bias_summary,
         "hst_3c120_independent": hst,
@@ -188,11 +197,11 @@ def main() -> int:
         "",
         "## Cross-tool Hβ/[O III] 5007",
         "",
-        f"Global values: **{global_stats['n']}** measurements, median "
-        f"**{global_stats['median']:.3f}**, multiplicative scatter "
-        f"**{global_stats['multiplicative_scatter']:.2f}×** "
-        f"(log10 MAD {global_stats['log10_scatter_mad']:.3f})." if global_stats else "No ratios found.",
-        "",
+        f"Canonical cross-tool group: `{canonical_source}` with **{global_stats['n']}** tools, "
+        f"median **{global_stats['median']:.3f}**, log10 scatter "
+        f"**{global_stats['log10_scatter_std']:.3f} dex** "
+        f"(multiplicative {global_stats['multiplicative_scatter_std']:.2f}×)." if global_stats else "No ratios found.",
+        "", "No population median is computed across different objects.", "",
         "| source | n tools | median | min | max | 16–84% bootstrap |",
         "|---|---:|---:|---:|---:|---:|",
     ]
@@ -228,7 +237,10 @@ def main() -> int:
                   "provisional and should not be used as a publication value "
                   "without a better absorption mask.", ""]
     lines += ["## Same-object X-ray/optical", "",
-              "| source | optical tool | line | quality | optical/X-ray flux |",
+              "The tabulated quantity is a **line-to-line flux ratio**.  It is "
+              "descriptive; it is not alpha_ox or a physical SED normalization.",
+              "",
+              "| source | optical tool | line | quality | optical line / X-ray line flux |",
               "|---|---|---|---|---:|"]
     for r in cross:
         lines.append(f"| `{r['source']}` | `{r['optical_tool']}` | {r['optical_line']} | "

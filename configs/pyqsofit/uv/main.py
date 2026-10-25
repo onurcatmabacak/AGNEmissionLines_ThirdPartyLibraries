@@ -267,9 +267,6 @@ hdr4['Fe_flux_range'] = 'Fe emission wavelength range calculated in results'
 
 hdu4 = fits.BinTableHDU(data=measure_info, header=hdr4, name='measure_info')
 
-hdu_list = fits.HDUList([primary_hdu, hdu1, hdu2, hdu3, hdu4])
-hdu_list.writeto(os.path.join(path_ex, 'qsopar.fits'), overwrite=True)
-
 Table(line_priors)
 
 path_out = "./"
@@ -291,6 +288,12 @@ _wmax = float(np.nanmax(wavelength.value))
 for _row in line_priors:
     if not (_wmin < float(_row['lambda']) * (1 + z) < _wmax):
         _row['vary'] = 0
+# Write the *updated* table before QSOFit reads it.  Previously the file was
+# written before this loop, so out-of-coverage lines stayed free and could run
+# to their 1e10 amplitude bound.
+hdu1 = fits.BinTableHDU(data=line_priors, header=hdr1, name='line_priors')
+hdu_list = fits.HDUList([primary_hdu, hdu1, hdu2, hdu3, hdu4])
+hdu_list.writeto(os.path.join(path_ex, 'qsopar.fits'), overwrite=True)
 print(wavelength, flux, error, z)
 
 # # Optional

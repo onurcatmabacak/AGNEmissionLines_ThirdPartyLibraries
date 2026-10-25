@@ -25,7 +25,11 @@ from pipeline.tool_registry import TOOLS  # noqa: E402
 
 
 def choose(goal: str, z: float, wmin: float, wmax: float, instrument: str = "") -> dict:
-    rest_min, rest_max = wmin / (1 + z), wmax / (1 + z)
+    if goal == "xray":
+        # X-ray inputs are observed keV; rest-frame energy is E_obs*(1+z).
+        rest_min, rest_max = wmin * (1 + z), wmax * (1 + z)
+    else:
+        rest_min, rest_max = wmin / (1 + z), wmax / (1 + z)
     names: list[str] = []
     reasons: list[str] = []
     if goal in ("sed", "both"):
@@ -40,7 +44,8 @@ def choose(goal: str, z: float, wmin: float, wmax: float, instrument: str = "") 
     if goal in ("lines", "both"):
         # UV/optical coverage
         if rest_max >= 0.10 and rest_min <= 1.0:
-            names += ["pyqsofit_uv", "pyqsofitspec_line", "galspec_line", "qgfit", "sheap_line"]
+            names += ["pyqsofit_uv", "qsofitmore_line", "optical_linefit",
+                      "pyqsofitspec_line", "galspec_line", "qgfit", "sheap_line"]
             reasons.append("rest-frame UV/optical broad lines: PyQSOFit/PyQSOFitSpec/GalSpec/QGfit/SHEAP")
             names += ["ir_linefit"]
             reasons.append("generic local-Gaussian optical/UV line check")

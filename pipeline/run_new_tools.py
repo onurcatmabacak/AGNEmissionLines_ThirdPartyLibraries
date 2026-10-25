@@ -31,10 +31,13 @@ from pipeline.io_layout import (  # noqa: E402
 )
 from pipeline.plan_analysis import make_plan  # noqa: E402
 from pipeline.tool_capabilities import THREADS, is_threaded, DEPENDENT_TOOLS  # noqa: E402
+from pipeline.resources import (  # noqa: E402
+    ResourceSnapshot, env_for_threads, jobs_for_singles, threads_for_tool,
+)
 
 PREREQUISITES = {
     "s3fit_line": ["pyqsofit_uv"],
-    "crossmission": ["optical_linefit", "pyqsofit_uv"],
+    "crossmission": ["xmm_xspec", "rxte_xspec", "optical_linefit", "pyqsofit_uv"],
     "crossband": ["pahfit_mir", "fir_linefit"],
 }
 
@@ -89,7 +92,18 @@ def prep_pyqsofit(src: dict) -> Path:
     # Canonical source redshift wins over any missing/nominal FITS header value.
     if src.get("z") is not None:
         spec["z"] = float(src["z"])
-    write_pyqsofit(spec, out / "spectrum.fits")
+    # Atomic replacement: Snakemake can prepare this shared file from several
+    # rules concurrently; a reader must never see a half-written FITS.
+    import os
+    import tempfile
+    fd, tmp = tempfile.mkstemp(prefix="spectrum.", suffix=".fits", dir=out)
+    os.close(fd)
+    try:
+        write_pyqsofit(spec, Path(tmp))
+        os.replace(tmp, out / "spectrum.fits")
+    finally:
+        if os.path.exists(tmp):
+            os.unlink(tmp)
     return out
 
 
@@ -350,7 +364,10 @@ def tool_fir(src: dict, out: Path, logp: Path) -> int:
     if pacs:
         # run_fir prefers .fits.gz in the directory; pass a directory containing
         # only the PACS products to avoid mixing HIFI/IRS files.
+        import shutil
         stage = WORK_ROOT / src["key"] / "fir"
+        if stage.exists():
+            shutil.rmtree(stage)
         stage.mkdir(parents=True, exist_ok=True)
         for p in pacs:
             (stage / p.name).write_bytes(p.read_bytes())
@@ -369,7 +386,7 @@ def tool_crossband(src: dict, out: Path, logp: Path) -> int:
         r = run([sys.executable, str(gen), src["key"]], logp.with_name("crossband_build.log"))
         if r:
             return r
-        candidate = Path(src["_path"]) / "crossband.csv"
+        candidate = prepared_dir(src["key"], "crossband") / "crossband.csv"
         if candidate.exists():
             paths = [candidate]
     if not paths:
@@ -442,9 +459,12 @@ def tool_cigale(src: dict, out: Path, logp: Path, models: list[str]) -> int:
     return rc
 
 
-def _skip(msg: str) -> int:
-    log(f"[skip] {msg}")
-    return 0
+class SkipTool(Exception):
+    """Raised when a tool has no applicable input; not a failure."""
+
+
+def _skip(msg: str):
+    raise SkipTool(msg)
 
 
 def _job_tools(src: dict, args) -> list[str]:
@@ -463,6 +483,10 @@ def _run_phased(sources: list[dict], args) -> int:
     """
     multi = set((args.multicore_tools or "").split(",")) if args.multicore_tools else set(MULTICORE_TOOLS)
     multi = {x.strip() for x in multi if x.strip()}
+    unknown = multi - set(THREADS)
+    if unknown:
+        log(f"[error] unknown --multicore-tools: {', '.join(sorted(unknown))}")
+        return 2
     jobs = []
     for src in sources:
         key = src["key"]
@@ -473,8 +497,10 @@ def _run_phased(sources: list[dict], args) -> int:
     if args.dry_run:
         have = {(s["key"], t) for s, t, _, _ in jobs}
         for src, tool, out, logp in jobs:
-            stage = ("multicore" if tool in multi else
-                     "final" if tool in DEPENDENT_TOOLS else "parallel")
+            if tool in multi:
+                stage = f"multicore/{threads_for_tool(tool, args.threads, ResourceSnapshot.detect())}"
+            else:
+                stage = "final" if tool in DEPENDENT_TOOLS else "parallel"
             log(f"[{stage}] {src['key']}/{tool} -> {out.relative_to(ROOT)}")
         for src, tool, out, logp in jobs:
             for dep in PREREQUISITES.get(tool, []):
@@ -513,52 +539,64 @@ def _run_phased(sources: list[dict], args) -> int:
     if args.pyqsofitspec_nboot is not None:
         common += ["--pyqsofitspec-nboot", str(args.pyqsofitspec_nboot)]
 
-    def command(src, tool):
+    def command(src, tool, nthreads: int = 1):
         cmd = base + ["--only", src["key"], "--tools", tool] + common
         if tool == "s3fit_line":
-            cmd += ["--s3fit-threads", str(args.threads)]
+            cmd += ["--s3fit-threads", str(max(1, int(nthreads)))]
         return cmd
 
-    def env_for(threads: int):
-        n = str(max(1, int(threads)))
-        return {
-            "OMP_NUM_THREADS": n, "OPENBLAS_NUM_THREADS": n,
-            "MKL_NUM_THREADS": n, "NUMEXPR_NUM_THREADS": n,
-            "MANGA_DAP_NPROC": n,
-        }
-
+    snapshot = ResourceSnapshot.detect()
+    log(f"[resources] cpus={snapshot.cpu_count} budget={snapshot.cpu_budget} "
+        f"mem={snapshot.memory_available_gb:.1f}GB gpu={snapshot.gpu_count}")
     rc = 0
     # Dependencies that are not explicitly in the selected job list are run
     # first, serially, so S3Fit and crossmission never read a stale/missing
     # producer product.
     have = {(s["key"], t) for s, t, _, _ in jobs}
     producer_jobs = []
-    for src, tool, _, _ in jobs:
+    producer_pairs = set()
+    # A selected producer must run before its consumer even when the producer
+    # is also in the requested tool list (e.g. s3fit_line + pyqsofit_uv).
+    dependency_tools = {dep for src, tool, _, _ in jobs
+                        for dep in PREREQUISITES.get(tool, [])
+                        if dep in src.get("tools", [])}
+    for src, tool, out, logp in jobs:
+        if tool in dependency_tools and (src["key"], tool) not in producer_pairs:
+            producer_jobs.append((src, tool, out, logp))
+            producer_pairs.add((src["key"], tool))
         for dep in PREREQUISITES.get(tool, []):
-            if dep not in src.get("tools", []) or (src["key"], dep) in have:
+            if dep not in src.get("tools", []):
                 continue
-            out = output_dir(src["key"], dep)
-            logp = WORK_ROOT.parent / "logs" / src["key"] / f"{dep}.log"
-            producer_jobs.append((src, dep, out, logp))
-            have.add((src["key"], dep))
+            if (src["key"], dep) not in have:
+                dep_out = output_dir(src["key"], dep)
+                dep_log = WORK_ROOT.parent / "logs" / src["key"] / f"{dep}.log"
+                producer_jobs.append((src, dep, dep_out, dep_log))
+                have.add((src["key"], dep))
+            producer_pairs.add((src["key"], dep))
+    jobs = [j for j in jobs if (j[0]["key"], j[1]) not in producer_pairs]
+    def parent_log(logp: Path) -> Path:
+        return logp.with_name(logp.stem + ".runner.log")
+
     for src, tool, out, logp in producer_jobs:
         log(f"[producer] {src['key']}/{tool}")
-        rc |= run(command(src, tool), logp, env_for(1))
+        rc |= run(command(src, tool, 1), parent_log(logp), env_for_threads(1))
     # Multicore phase: one tool at a time, full thread budget.
     for src, tool, out, logp in jobs:
         if tool not in multi:
             continue
-        log(f"[multicore {args.threads}] {src['key']}/{tool}")
-        rc |= run(command(src, tool), logp, env=env_for(args.threads))
+        nthreads = threads_for_tool(tool, args.threads, snapshot)
+        log(f"[multicore {nthreads}] {src['key']}/{tool}")
+        rc |= run(command(src, tool, nthreads), parent_log(logp), env=env_for_threads(nthreads))
     # Single-core phase: parallel, one thread per worker.  Post-processing
     # tools that consume another tool's output run after this phase.
     singles = [(s, t, o, l) for s, t, o, l in jobs
                if t not in multi and t not in DEPENDENT_TOOLS]
     final = [(s, t, o, l) for s, t, o, l in jobs if t in DEPENDENT_TOOLS]
     if singles:
-        log(f"[parallel {min(args.jobs, len(singles))}] {len(singles)} single-core jobs")
-        with ThreadPoolExecutor(max_workers=max(1, args.jobs)) as ex:
-            futures = {ex.submit(run, command(s, t), l, env_for(1)): (s, t)
+        njobs = jobs_for_singles([t for _, t, _, _ in singles], args.jobs, snapshot)
+        log(f"[parallel {njobs}] {len(singles)} single-core jobs")
+        with ThreadPoolExecutor(max_workers=njobs) as ex:
+            futures = {ex.submit(run, command(s, t, 1), parent_log(l), env_for_threads(1)): (s, t)
                        for s, t, o, l in singles}
             for fut in as_completed(futures):
                 s, t = futures[fut]
@@ -575,7 +613,7 @@ def _run_phased(sources: list[dict], args) -> int:
     # Dependency-bearing post-processing runs only after the producers.
     for s, t, o, l in final:
         log(f"[final] {s['key']}/{t}")
-        rc |= run(command(s, t), l, env_for(1))
+        rc |= run(command(s, t, 1), parent_log(l), env_for_threads(1))
     return rc
 
 
@@ -594,12 +632,14 @@ def main(argv=None):
                    help="allow long tools in an auto plan")
     p.add_argument("--phased", action="store_true",
                    help="run multicore tools serially, then single-core tools in parallel")
-    p.add_argument("--jobs", type=int, default=4,
-                   help="parallel single-core jobs in --phased mode (default 4)")
-    p.add_argument("--threads", type=int, default=8,
-                   help="threads for the serial multicore phase (default 8)")
+    p.add_argument("--jobs", default="auto",
+                   help="parallel single-core jobs in --phased mode (default: auto)")
+    p.add_argument("--threads", default="auto",
+                   help="multicore threads, or auto based on cgroups/memory (default: auto)")
     p.add_argument("--multicore-tools", default=None,
                    help="comma-separated tool names treated as multicore")
+    p.add_argument("--resource-report", action="store_true",
+                   help="print detected resources and exit")
     p.add_argument("--list", action="store_true")
     p.add_argument("--force", action="store_true")
     p.add_argument("--dry-run", action="store_true")
@@ -630,6 +670,9 @@ def main(argv=None):
     p.add_argument("--galspec-nwalkers", type=int, default=None)
     p.add_argument("--galspec-nburn", type=int, default=None)
     args = p.parse_args(argv)
+    if args.resource_report:
+        print(json.dumps(ResourceSnapshot.detect().report(), indent=2))
+        return 0
     if args.list:
         for s in iter_sources():
             print(s["key"], s.get("kind"), "tools=" + ",".join(s.get("tools", [])))
@@ -668,13 +711,45 @@ def main(argv=None):
             if not args.auto and tool not in src.get("tools", []):
                 continue
             out = output_dir(key, tool)
-            if args.force and out.exists():
-                import shutil
-                shutil.rmtree(out)
-            ensure_output(key, tool)
             logp = WORK_ROOT.parent / "logs" / key / f"{tool}.log"
             log(f"[{key}] {tool} -> {out.relative_to(ROOT)}")
             if args.dry_run:
+                continue
+            backup = None
+            if args.force and out.exists():
+                import shutil
+                backup = out.with_name(out.name + ".preforce")
+                if backup.exists():
+                    shutil.rmtree(backup)
+                out.rename(backup)
+            ensure_output(key, tool)
+            # Serial mode must honour the same producer graph as --phased and
+            # Snakemake.  A consumer must never silently use a missing/stale
+            # producer (S3Fit previously did exactly that).
+            prereq_ok = True
+            for dep in PREREQUISITES.get(tool, []):
+                if dep not in src.get("tools", []) or dep == tool:
+                    continue
+                dep_out = out.parent / dep
+                if dep_out.exists() and not args.force:
+                    continue
+                dep_cmd = [sys.executable, str(Path(__file__)),
+                           "--only", key, "--tools", dep]
+                if args.force:
+                    dep_cmd.append("--force")
+                dep_log = logp.with_name(f"{tool}__{dep}.pre.log")
+                log(f"[prerequisite] {key}/{dep}")
+                if run(dep_cmd, dep_log) != 0:
+                    log(f"[failed] prerequisite {key}/{dep}")
+                    prereq_ok = False
+                    break
+            if not prereq_ok:
+                import shutil
+                if out.exists():
+                    shutil.rmtree(out)
+                if backup is not None:
+                    backup.rename(out)
+                rc = 1
                 continue
             fn = {
                 "ir_linefit": lambda: tool_ir(src, out, logp),
@@ -711,17 +786,41 @@ def main(argv=None):
                 "agnfitter_sed": lambda: tool_agnfitter(src, out, logp),
                 "s3fit_line": lambda: tool_s3fit(src, out, logp,
                                                  args.s3fit_config, args.s3fit_n_mocks,
-                                                 args.s3fit_mode, args.threads),
+                                                 args.s3fit_mode,
+                                                 args.s3fit_threads or (threads_for_tool(
+                                                     "s3fit_line", args.threads,
+                                                     ResourceSnapshot.detect()))),
             }[tool]
             try:
                 r = fn()
+            except SkipTool as exc:
+                import shutil
+                log(f"[skip] {key}/{tool}: {exc}")
+                if out.exists():
+                    shutil.rmtree(out)
+                if backup is not None:
+                    backup.rename(out)
+                continue
             except Exception as exc:  # noqa: BLE001
+                import shutil
                 log(f"[error] {key}/{tool}: {exc}")
+                if out.exists():
+                    shutil.rmtree(out)
+                if backup is not None:
+                    backup.rename(out)
                 r = 1
             if r:
+                import shutil
                 log(f"[failed] {key}/{tool} rc={r}  log={logp}")
+                if out.exists():
+                    shutil.rmtree(out)
+                if backup is not None:
+                    backup.rename(out)
                 rc = 1
             else:
+                if backup is not None:
+                    import shutil
+                    shutil.rmtree(backup)
                 log(f"[ok] {key}/{tool}")
     return rc
 

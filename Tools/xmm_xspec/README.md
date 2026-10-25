@@ -117,7 +117,7 @@ wilm abundances, 0.5–10 keV):
 | Δχ² (1 dof) | 16.39 → **4.05σ** |
 | line normalization | (2.32 ± 0.57) × 10⁻⁶ photons cm⁻² s⁻¹ |
 | line flux | (2.01 ± 0.50) × 10⁻¹⁴ erg cm⁻² s⁻¹ |
-| EW_rest | 30.7 ± 7.6 eV |
+| EW_rest | 25.9 ± 6.4 eV (XSPEC-consistent; corrected (1+z) factor) |
 | PN / MOS1 / MOS2 independent | 3.13σ / 1.10σ / 2.45σ |
 | MOS/PN constants | 1.0514 ± 0.0038 / 1.0422 ± 0.0037 |
 

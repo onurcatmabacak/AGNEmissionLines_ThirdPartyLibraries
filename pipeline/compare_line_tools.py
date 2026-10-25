@@ -267,7 +267,8 @@ def ratios(rows):
             if not (0.02 <= val <= 50.0):
                 continue
             err = abs(val) * math.sqrt((ea / fa) ** 2 + (eb / fb) ** 2) if fa and eb >= 0 else None
-            out.append(dict(source=source, tool=tool, ratio=label, value=val, err=err))
+            out.append(dict(source=source, tool=tool, ratio=label, value=val, err=err,
+                            quality="ok"))
     return out
 
 
@@ -278,12 +279,24 @@ def main(argv=None):
     args.output.mkdir(parents=True, exist_ok=True)
     rows = load()
     rr = ratios(rows)
+    # Use the official SDSS ZLINE ratio as an external sanity anchor.  A
+    # PyQSOFit/IR fit that is outside a factor 2 of ZLINE is a failed fit, not
+    # a scientific measurement of inter-tool scatter.
+    zline = {r["source"]: r["value"] for r in rr
+             if r["tool"] == "sdss_zline" and r["ratio"] == "Hbeta/OIII5007"}
+    for r in rr:
+        if r["tool"] == "sdss_zline":
+            continue
+        z = zline.get(r["source"])
+        if z and not (0.5 <= r["value"] / z <= 2.0):
+            r["quality"] = "zline_outlier"
+            r["err"] = None
     with (args.output / "line_tool_comparison.csv").open("w", newline="") as fh:
-        w = csv.DictWriter(fh, fieldnames=["source", "tool", "line", "component",
+        w = csv.DictWriter(fh, lineterminator="\n", fieldnames=["source", "tool", "line", "component",
                                            "flux", "flux_err", "fwhm_kms", "snr"])
         w.writeheader(); w.writerows(rows)
     with (args.output / "line_ratio_comparison.csv").open("w", newline="") as fh:
-        w = csv.DictWriter(fh, fieldnames=["source", "tool", "ratio", "value", "err"])
+        w = csv.DictWriter(fh, lineterminator="\n", fieldnames=["source", "tool", "ratio", "value", "err", "quality"])
         w.writeheader(); w.writerows(rr)
     if not rr:
         print("no comparable ratios yet; wrote empty tables")
@@ -294,7 +307,7 @@ def main(argv=None):
     groups = []
     for label in labels:
         sub = [r for r in rr if r["ratio"] == label
-               and 0.02 <= r["value"] <= 50.0]
+               and 0.02 <= r["value"] <= 50.0 and r.get("quality") == "ok"]
         if sub:
             groups.append((label, sub))
     fig, axes = plt.subplots(len(groups), 1,
@@ -321,7 +334,8 @@ def main(argv=None):
     summary = []
     for label in labels:
         for source in sources:
-            vals = [r["value"] for r in rr if r["ratio"] == label and r["source"] == source]
+            vals = [r["value"] for r in rr if r["ratio"] == label and r["source"] == source
+                    and r.get("quality") == "ok"]
             if len(vals) >= 2:
                 vals = np.asarray(vals, float)
                 rng = np.random.default_rng(42)
@@ -331,9 +345,9 @@ def main(argv=None):
                                     median=float(np.median(vals)),
                                     ci16=float(np.percentile(boots, 16)),
                                     ci84=float(np.percentile(boots, 84)),
-                                    log_scatter=float(np.std(np.log(vals)))))
+                                    log_scatter=float(np.std(np.log10(vals)))))
     with (args.output / "line_ratio_scatter.csv").open("w", newline="") as fh:
-        w = csv.DictWriter(fh, fieldnames=["source", "ratio", "n", "median", "ci16", "ci84", "log_scatter"])
+        w = csv.DictWriter(fh, lineterminator="\n", fieldnames=["source", "ratio", "n", "median", "ci16", "ci84", "log_scatter"])
         w.writeheader(); w.writerows(summary)
     print(f"read {len(rows)} line measurements, {len(rr)} ratios, {len(summary)} multi-tool groups")
     return 0

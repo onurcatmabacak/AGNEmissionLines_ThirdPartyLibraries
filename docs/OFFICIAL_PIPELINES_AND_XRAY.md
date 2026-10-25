@@ -164,8 +164,7 @@ PyQSOFit cgs layout.  The HST `ivar` is stored in the repository's 1e-17
 convention; a cgs/1e-17 mismatch was caught by the regression suite and fixed.
 
 `pipeline/compare_xray_optical.py` then writes
-`outputs/<source>/crossmission/`.  3C 120 is an **accepted** H-beta vs Fe K-alpha
-comparison.  PDS 456 now uses a **local X-SHOOTER Hβ/[O III]** fit; the line is
+`outputs/<source>/crossmission/`.  3C 120 is a **provisional** H-beta vs Fe K-alpha comparison because independent optical models give 1.55 and 3.00.  PDS 456 now uses a **local X-SHOOTER Hβ/[O III]** fit; the line is
 detected but the formal local χ² is high, so the result is **provisional**, not
 publication-grade.  The earlier HST C IV result is retained as UV context and
 is not used as the primary comparison.  With two objects the

@@ -10,7 +10,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
-from pipeline.io_layout import load_source, output_dir  # noqa: E402
+from pipeline.io_layout import load_source, output_dir, prepared_dir  # noqa: E402
 
 MIR_LINES = {
     "[NeII]": "NeII12814",
@@ -64,7 +64,8 @@ def main(key: str) -> int:
     if not rows:
         print("no crossband lines")
         return 1
-    dest = Path(src["_path"]) / "crossband.csv"
+    dest = prepared_dir(key, "crossband") / "crossband.csv"
+    dest.parent.mkdir(parents=True, exist_ok=True)
     with dest.open("w", newline="") as fh:
         w = csv.DictWriter(fh, fieldnames=["object", "line", "band", "flux", "flux_err"])
         w.writeheader(); w.writerows(rows)

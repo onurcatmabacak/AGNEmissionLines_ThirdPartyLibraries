@@ -112,14 +112,15 @@ a dependency layer, not a second implementation.
 
 - **MaNGA DAP subset vs published MAPS:** BPT agreement **9/9**, Hα ratio
   **0.99985** (9 central bins; not all spaxels).
-- **XMM PDS 456:** Fe Kα Δχ² **16.39 (4.05σ)**, rest EW **30.7 eV**.
-- **RXTE 3C 120:** Fe Kα Δχ² **17.83 (4.22σ)**, rest EW **90.3 eV**.
-- **Nine SDSS line fitters:** median Hβ/[O III] **2.04**, scatter **0.12 dex**.
+- **XMM PDS 456:** Fe Kα Δχ² **16.39 (4.05σ)**, rest EW **25.9 eV**.
+- **RXTE 3C 120:** Fe Kα Δχ² **17.83 (4.22σ)**, rest EW **90.3 eV**; conservative fixed-N_H variant **3.46σ**.
+- **Nine SDSS line fitters:** median Hβ/[O III] **2.04**, scatter **0.053 dex**.
 - **Independent 3C 120 optical fits:** PyQSOFit **1.55**, QSOFITMORE **3.00** —
   a model-systematic spread, not a confirmed line ratio.
-- **PDS 456 Hβ:** local X-SHOOTER fit gives **5.99**, but χ²_red is **430**;
-  quality is **provisional**.
-- **Same-object X-ray/optical:** **N=2**, no correlation fitted.  See
+- **PDS 456 Hβ:** local X-SHOOTER fit gives **5.99**, but χ²_red is **430**
+  and the continuum/absorption model is incomplete; quality is **provisional**.
+  Do not quote 5.99 as a measurement.
+- **Same-object X-ray/optical:** **N=2**, no correlation fitted; both objects are now **provisional** (X-ray detection/model consistency gate).  See
   [`docs/SCIENCE_RESULTS.md`](docs/SCIENCE_RESULTS.md).
 
 These are honest results, including the disagreements.  The full statistical
@@ -144,6 +145,7 @@ python pipeline/statistical_report.py
 | [`docs/OFFICIAL_PIPELINES_AND_XRAY.md`](docs/OFFICIAL_PIPELINES_AND_XRAY.md) | XMM/RXTE/SDSS provenance |
 | [`docs/ROADMAP_V2.md`](docs/ROADMAP_V2.md) | implementation history and open items |
 | [`docs/PINNING.md`](docs/PINNING.md) | image/upstream provenance |
+| [`docs/LITERATURE_COVERAGE.md`](docs/LITERATURE_COVERAGE.md) | what is covered and what is genuinely missing |
 | [`docs/RUN_MANIFEST.md`](docs/RUN_MANIFEST.md) | normalized run/catalog status |
 | [`workflow/README.md`](workflow/README.md) | Snakemake graph |
 
@@ -152,7 +154,7 @@ python pipeline/statistical_report.py
 - Host dependencies: `requirements-host.txt`
 - QA tools: `requirements-dev.txt`
 - Docker images: `Pipelines/build_images.sh` (25 tools)
-- Tests: 22 pytest tests plus schema/hash validation
+- Tests: 27 pytest tests plus schema/hash validation
 
 ```bash
 pytest -q

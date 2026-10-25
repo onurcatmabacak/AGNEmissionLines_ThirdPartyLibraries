@@ -57,7 +57,7 @@ total from all Gaussian components because the package's
 Gaussians that belong to the broad template.  On `04592649654`: Hβ
 3076.6±100.1, [O III] 5007 1505.3±57.3, Hβ/[O III] **2.044±0.102**, Mg II
 2540.8±209.4; the Hβ complex χ²_r is 17.9 (model mismatch, not a flux
-failure).  The cross-tool median Hβ/[O III] is 2.074 with 0.060 dex scatter.
+failure).  The cross-tool median Hβ/[O III] is 2.044 with 0.053 dex scatter.
 See `docs/MCMC_AND_STATISTICS.md` and
 `outputs/04592649654_z_0.5874/qsofitmore_line/README.md`.
 

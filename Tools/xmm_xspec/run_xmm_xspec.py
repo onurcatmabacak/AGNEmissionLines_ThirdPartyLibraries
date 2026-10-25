@@ -620,9 +620,12 @@ def line_metrics(result: dict, config: dict, baseline_result: dict | None) -> di
     # zpowerlw; Galactic absorption at 5.4 keV changes this by <2%.
     gamma = result["gamma"][0]
     pl_norm = result["pl_norm"][0]
+    # ``f_cont`` is evaluated at the rest-frame line energy.  The equivalent
+    # width in the rest frame is norm/f_cont; converting to the observed frame
+    # requires one factor (1+z), not two.  This matches XSPEC's eqwidth output.
     f_cont = pl_norm * (e_obs * (1.0 + z)) ** (-gamma)
-    ew_rest = norm * (1.0 + z) / f_cont
-    ew_rest_err = abs(norm_err) * (1.0 + z) / f_cont
+    ew_rest = norm / f_cont
+    ew_rest_err = abs(norm_err) / f_cont
     ew_obs = ew_rest / (1.0 + z)
     ew_obs_err = ew_rest_err / (1.0 + z)
 

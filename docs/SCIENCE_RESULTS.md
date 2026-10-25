@@ -5,29 +5,32 @@ This is a **descriptive** report, not a population regression.
 
 ## Cross-tool Hβ/[O III] 5007
 
-Global values: **16** measurements, median **2.355**, multiplicative scatter **1.46×** (log10 MAD 0.166).
+Canonical cross-tool group: `04592649654_z_0.5874` with **9** tools, median **2.044**, log10 scatter **0.053 dex** (multiplicative 1.13×).
+
+No population median is computed across different objects.
 
 | source | n tools | median | min | max | 16–84% bootstrap |
 |---|---:|---:|---:|---:|---:|
-| `04570952937_z_0.9901` | 3 | 4.352 | 3.286 | 19.624 | 3.286–19.624 |
+| `04570952937_z_0.9901` | 2 | 3.819 | 3.286 | 4.352 | 3.286–4.352 |
 | `04592649654_z_0.5874` | 9 | 2.044 | 1.572 | 2.498 | 2.025–2.074 |
-| `04592933676_z_0.6506` | 3 | 8.233 | 3.231 | 16.724 | 3.231–16.724 |
+| `04592933676_z_0.6506` | 1 | 3.231 | 3.231 | 3.231 | 3.231–3.231 |
+| `3C120_z_0.0330` | 2 | 2.274 | 1.549 | 2.999 | 1.549–2.999 |
 | `spSpec-51908-0277-120_z_0.0859` | 1 | 3.063 | 3.063 | 3.063 | 3.063–3.063 |
 
 ## Per-tool bias relative to the source median
 
 | tool | n sources | multiplicative bias | log10 scatter |
 |---|---:|---:|---:|
-| `pyqsofit_uv` | 3 | 2.031× | 0.484 |
-| `sdss_zline` | 3 | 0.755× | 0.012 |
+| `pyqsofit_uv` | 2 | 0.808× | 0.110 |
 | `qgfit` | 1 | 1.222× | 0.000 |
+| `sdss_zline` | 3 | 0.860× | 0.072 |
+| `qsofitmore_line` | 2 | 1.148× | 0.089 |
+| `ir_linefit` | 1 | 1.140× | 0.000 |
 | `s3fit_line` | 1 | 0.895× | 0.000 |
 | `galspec_line` | 1 | 1.083× | 0.000 |
 | `pyqsofitspec_line` | 1 | 1.052× | 0.000 |
 | `sheap_line` | 1 | 0.991× | 0.000 |
 | `gandalf_line` | 2 | 1.007× | 0.005 |
-| `ir_linefit` | 2 | 1.000× | 0.000 |
-| `qsofitmore_line` | 1 | 1.000× | 0.000 |
 
 A value of 1.00 means the tool sits at the per-source median; this is a descriptive bias, not a calibration.
 
@@ -52,9 +55,11 @@ The X-SHOOTER spectrum gives Hβ coverage but the local fit has absorption/conti
 
 ## Same-object X-ray/optical
 
-| source | optical tool | line | quality | optical/X-ray flux |
+The tabulated quantity is a **line-to-line flux ratio**.  It is descriptive; it is not alpha_ox or a physical SED normalization.
+
+| source | optical tool | line | quality | optical line / X-ray line flux |
 |---|---|---|---|---:|
-| `3C120_z_0.0330` | `pyqsofit_uv` | Hbeta | **accepted** | 0.565 |
+| `3C120_z_0.0330` | `pyqsofit_uv` | Hbeta | **provisional** | 0.565 |
 | `PDS456_z_0.1840` | `optical_linefit` | Hbeta | **provisional** | 16.634 |
 
 **N=2. No correlation or slope is fitted.**  This is a two-object consistency case study, not evidence for a population relation.

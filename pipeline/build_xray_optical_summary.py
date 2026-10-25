@@ -63,13 +63,20 @@ def main() -> int:
     axes[0].set_ylabel("UV/optical line luminosity (erg s$^{-1}$)")
     axes[0].set_title("same-object luminosity comparison", fontsize=10)
     axes[1].set_xscale("log"); axes[1].set_yscale("log")
-    axes[1].set_xlim(20, 120); axes[1].set_ylim(110, 160)
+    axes[1].set_xlim(20, 120)
+    ew_values = [r["optical"].get("ew_rest_A", {}).get(r["optical_line"], {}).get("ew_rest_A")
+                 for r in rows]
+    ew_values = [float(v) for v in ew_values if v is not None]
+    if ew_values:
+        lo, hi = min(ew_values), max(ew_values)
+        pad = max(5.0, 0.2 * (hi - lo))
+        axes[1].set_ylim(max(0.1, lo - pad), hi + pad)
     axes[1].set_xlabel("Fe Kα rest EW (eV)")
     axes[1].set_ylabel("UV/optical line rest EW (Å)")
     axes[1].set_title("equivalent-width comparison", fontsize=10)
     for ax in axes:
         ax.grid(alpha=0.25)
-    axes[0].text(0.03, 0.95, "orange = tentative\n(PDS 456 C IV S/N < 3)",
+    axes[0].text(0.03, 0.95, "orange = provisional\n(model/X-ray gate)",
                  transform=axes[0].transAxes, fontsize=7, va="top",
                  bbox={"facecolor": "white", "alpha": 0.7, "edgecolor": "0.8"})
     fig.suptitle("X-ray Fe Kα vs same-object UV/optical emission lines", fontsize=11)

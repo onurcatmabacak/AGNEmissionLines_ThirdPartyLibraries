@@ -15,8 +15,8 @@
 | line S/N | 17.94 |
 | line luminosity | 7.642e+41 erg s⁻¹ |
 | Fe Kα luminosity | 1.351e+42 erg s⁻¹ |
-| quality | **accepted** |
-| note | broad H-beta and [O III] 5007 both detected in the same HST spectrum |
+| quality | **provisional** |
+| note | optical H-beta/[O III] model range 1.55-3.00 spans >1.5x; model systematic dominates |
 
 The table is a same-object consistency comparison, not a correlation fit.
 `3C120_z_0.0330` has only one optical/UV line family in the public

@@ -40,6 +40,23 @@ python pipeline/run_new_tools.py --phased \
 Each worker is a separate `run_new_tools.py` process, so Docker mounts and
 logs are isolated.  `--force` is forwarded to every worker.
 
+## Resource detection
+
+`--threads auto` and `--jobs auto` use `pipeline/resources.py`, which reads
+process affinity, cgroup v1/v2 CPU and memory limits, available memory and the
+GPU inventory.  On the current 8-CPU/31-GB host the default budget is 6 CPUs
+and 26 GB; an 8-GB tool is therefore capped at 3 threads, not blindly given 8.
+Inspect it with:
+
+```bash
+python pipeline/run_new_tools.py --resource-report
+```
+
+The policy is conservative and memory-aware.  It does **not** claim that an
+upstream code is multithreaded merely because a thread count was requested;
+`pipeline/tool_capabilities.py` records the declared capability and the code is
+run with the corresponding environment.
+
 ## Long runs
 
 Long tools are never silently shortened:

@@ -157,8 +157,9 @@ def read_optical_linefit(path: Path, z: float) -> dict:
     o3 = total(("OIII5007",))
     # EW: use the H-beta broad+narrow integrated line / local continuum from the table.
     ew = {}
-    if summary.get("Hbeta_ew_A") is not None:
-        ew["Hbeta"] = {"ew_rest_A": float(summary["Hbeta_ew_A"]),
+    if summary.get("Hbeta_ew_rest_A") is not None:
+        ew["Hbeta"] = {"ew_rest_A": float(summary["Hbeta_ew_rest_A"]),
+                       "ew_obs_A": summary.get("Hbeta_ew_obs_A"),
                        "continuum_1e17": summary.get("continuum_1e17")}
     return {
         "table": str((path / "optical_lines.csv").relative_to(ROOT)),
@@ -192,11 +193,25 @@ def choose_primary(opt: dict) -> tuple[str, dict]:
     raise ValueError("no optical/UV line measured")
 
 
-def quality_flag(line: str, spec: dict, opt: dict) -> tuple[str, str]:
+def quality_flag(line: str, spec: dict, opt: dict, xray: dict,
+                 model_ratio_range: tuple[float, float] | None = None,
+                 local_quality: str | None = None) -> tuple[str, str]:
+    """Quality gate: optical S/N, X-ray detection and model consistency.
+
+    A ratio is not "accepted" merely because the optical line has S/N > 5.
+    """
+    if not xray.get("detected") or (xray.get("significance_sigma") or 0) < 3.0:
+        return "tentative", "X-ray Fe K-alpha is not detected at >=3 sigma"
+    if local_quality in ("tentative", "provisional"):
+        return local_quality, "the optical local fit is already flagged " + local_quality
     if line == "Hbeta":
-        if spec["snr"] >= 5 and opt["hb_oiii_ratio"] is not None:
-            return "accepted", "broad H-beta and [O III] 5007 both detected in the same HST spectrum"
-        return "tentative", "H-beta S/N below 5 or [O III] unavailable"
+        if spec.get("snr", 0) < 5 or opt.get("hb_oiii_ratio") is None:
+            return "tentative", "H-beta S/N below 5 or [O III] unavailable"
+        if model_ratio_range and model_ratio_range[0] > 0 and model_ratio_range[1] / model_ratio_range[0] > 1.5:
+            return "provisional", (
+                f"optical H-beta/[O III] model range {model_ratio_range[0]:.2f}-"
+                f"{model_ratio_range[1]:.2f} spans >1.5x; model systematic dominates")
+        return "accepted", "H-beta and [O III] detected; X-ray line >=3 sigma; optical models agree within 1.5x"
     if line == "CIV1549":
         return "tentative", ("public HST/STIS spectrum covers C IV but not H-beta or Mg II; "
                              "broad C IV is blended/absorption-affected and has S/N < 3")
@@ -304,15 +319,34 @@ def main(argv=None) -> int:
         optical = read_optical_linefit(opt_dir, float(src["z"]))
         line_name, line = choose_primary(optical)
         line_flux = line["area_1e17"] * 1e-17
-        flag = optical.get("quality", "provisional")
-        note = "local simultaneous H-beta/[O III] fit; " + "; ".join(optical["summary"].get("notes", []))
+        local_quality = optical.get("quality", "provisional")
+        local_note = "; ".join(optical["summary"].get("notes", []))
     else:
         opt_dir = OUT_ROOT / a.source / "pyqsofit_uv"
         optical = read_optical(opt_dir / "pyqsofit_lines.csv", opt_dir / "pyqsofit_model.csv",
                                float(src["z"]))
         line_name, line = choose_primary(optical)
         line_flux = line["area_1e17"] * 1e-17
-        flag, note = quality_flag(line_name, line, optical)
+        local_quality = None
+        local_note = ""
+    model_ratios = []
+    if optical.get("hb_oiii_ratio"):
+        model_ratios.append(float(optical["hb_oiii_ratio"]))
+    qm = OUT_ROOT / a.source / "qsofitmore_line" / "qsofitmore_lines.csv"
+    if qm.exists():
+        try:
+            with qm.open(newline="") as fh:
+                rows = {r["line"]: r for r in csv.DictReader(fh)}
+            hb = float(rows["Hbeta"]["area_1e17"])
+            o3 = float(rows["OIII5007"]["area_1e17"])
+            if o3 > 0:
+                model_ratios.append(hb / o3)
+        except Exception:
+            pass
+    model_range = (min(model_ratios), max(model_ratios)) if len(model_ratios) >= 2 else None
+    flag, note = quality_flag(line_name, line, optical, xray, model_range, local_quality)
+    if local_note and local_quality:
+        note += "; " + local_note
     opt_lum = luminosity(line_flux, float(src["z"]))
     x_lum = luminosity(xray["flux"], float(src["z"]))
     result = {
@@ -327,8 +361,10 @@ def main(argv=None) -> int:
         "optical_luminosity_erg_s": opt_lum,
         "xray_luminosity_erg_s": x_lum,
         "optical_to_xray_flux_ratio": line_flux / xray["flux"] if xray["flux"] else None,
+        "comparison_type": "descriptive line-to-line ratio; not alpha_ox or a physical SED normalization",
         "quality": flag,
         "quality_note": note,
+        "optical_model_ratio_range": model_range,
         "generated_utc": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
     }
     (out / "xray_optical_comparison.json").write_text(json.dumps(result, indent=2, allow_nan=False) + "\n")
