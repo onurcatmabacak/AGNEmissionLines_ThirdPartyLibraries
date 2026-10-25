@@ -9,6 +9,7 @@
     "xray_pca_source": 5013
   },
   "files": {
+    "optical_spectrum": "raw/hst_8700_stis_3c120d0_g430l-g750l_o62o_cspec.fits",
     "xray_pca_background": "xray/rxte_10339-02-01-01/xp10339020101_b2.pha.gz",
     "xray_pca_response": "xray/rxte_10339-02-01-01/xp10339020101.rsp.gz",
     "xray_pca_source": "xray/rxte_10339-02-01-01/xp10339020101_s2.pha.gz"
@@ -17,6 +18,26 @@
   "kind": "xray_rxte_pca",
   "name": "3C 120",
   "notes": "Primary RXTE/PCA source for Stage 4. 3C 120 is a broad-line radio galaxy / Seyfert 1 at z=0.03301 (rounded key uses 0.0330). The PHA header position is used; the source is an independent AGN from the XMM PDS 456 example.",
+  "optical": {
+    "instrument": "HST/STIS G430L+G750L",
+    "license": "CC BY 4.0",
+    "lines_covered": [
+      "H-gamma",
+      "H-beta",
+      "[O III] 4959/5007",
+      "H-alpha",
+      "[N II] 6548/6584",
+      "[S II] 6716/6731"
+    ],
+    "pi": "A. Martel",
+    "product": "HASP cspec",
+    "proposal": "8700",
+    "sha256": "f0f1bbb19124ea01233922c2c633c6abcc8e44e25b9c59d387d692f427fecde2",
+    "wavelength_range_angstrom": [
+      2993.1,
+      10247.2
+    ]
+  },
   "ra": 68.2957993,
   "redshift_note": "z=0.03301 (literature); the canonical source key and config round this to 0.033.",
   "sha256": {
@@ -25,6 +46,8 @@
     "xray_pca_source": "508067d831048ba4892e85588d0e779b293b1bacdca81d9075baaaa4860db639"
   },
   "tools": [
+    "crossmission",
+    "pyqsofit_uv",
     "rxte_xspec"
   ],
   "urls": {

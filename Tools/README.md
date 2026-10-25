@@ -30,3 +30,9 @@ Dockerized fitting engines and their Dockerfiles.  See `Pipelines/build_images.s
 | `agnfitter_sed/` | `agnfitter_sed` |
 | `pyqsofit/` | local PyQSOFit source, no image |
 | `sculptor/` | legacy GUI-only source, no image |
+
+## Post-processing (not a third-party fit)
+
+`pipeline/compare_xray_optical.py` writes `outputs/<source>/crossmission/` and compares the
+X-ray Fe K-alpha fit with the same object's H-beta or C IV line. It is not a Docker image
+because it only reads committed tool outputs and performs arithmetic/plotting.

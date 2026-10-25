@@ -50,6 +50,8 @@ def _get_table_hdu(hdul):
             names = {c.lower() for c in hdu.columns.names}
             if {"flux", "loglam"} <= names or {"flux", "wl"} <= names:
                 return hdu
+            if {"flux", "wavelength"} <= names:
+                return hdu
     raise ValueError("Could not locate a spectrum HDU (need FLUX + LOGLAM/WL)")
 
 
@@ -140,12 +142,85 @@ def _read_classic_spspec(hdul, path: Path) -> dict:
     }
 
 
+def _is_hst_x1d(hdul) -> bool:
+    """True for HST STIS/HASP x1d/cspec tables (WAVELENGTH + FLUX + ERROR)."""
+    for hdu in hdul:
+        if getattr(hdu, "columns", None) is None or hdu.data is None:
+            continue
+        names = {c.upper() for c in hdu.columns.names}
+        if {"WAVELENGTH", "FLUX", "ERROR"} <= names:
+            return True
+    return False
+
+
+def _flatten_col(data, name: str) -> np.ndarray:
+    """HST x1d stores one row of 1-D arrays; flatten to a plain spectrum."""
+    arr = np.asarray(data[name], dtype=np.float64)
+    while arr.ndim > 1:
+        arr = arr[0]
+    return arr
+
+
+def _read_hst_x1d(hdul, path: Path) -> dict:
+    """Read a real HST STIS x1d or HASP cspec spectrum.
+
+    The HASP ``cspec`` products combine the FUV+NUV or G430L+G750L orders
+    into one vacuum-wavelength, flux-calibrated table.  Flux and error are
+    ``erg s-1 cm-2 A-1``; convert to the repository's 1e-17 convention.
+    """
+    tab = None
+    for hdu in hdul:
+        if getattr(hdu, "columns", None) is not None and hdu.data is not None:
+            if {"WAVELENGTH", "FLUX", "ERROR"} <= {c.upper() for c in hdu.columns.names}:
+                tab = hdu
+                break
+    if tab is None:
+        raise ValueError(f"{path}: no HST WAVELENGTH/FLUX/ERROR table")
+    wave = _flatten_col(tab.data, "WAVELENGTH")
+    flux = _flatten_col(tab.data, "FLUX")
+    err = np.abs(_flatten_col(tab.data, "ERROR"))
+    good = np.isfinite(wave) & np.isfinite(flux) & np.isfinite(err) & (err > 0)
+    # ``ivar`` is stored in the repository's 1e-17 flux-unit convention:
+    # write_pyqsofit multiplies 1/sqrt(ivar) by 1e-17 to recover cgs.  Using
+    # 1/err_cgs**2 here would make the prepared errors 1e17 too small.
+    ivar = np.zeros_like(flux)
+    ivar[good] = (EFEDS_FLUX_UNIT_CGS / err[good]) ** 2
+    wdisp = np.full_like(wave, float(np.median(np.diff(wave[good]))) if good.any() else 1.0)
+    hdr = hdul[0].header
+    z = float(hdr.get("REDSHIFT", hdr.get("Z", 0.0)) or 0.0)
+    ra = float(hdr.get("RA_TARG", hdr.get("RA", 0.0)) or 0.0)
+    dec = float(hdr.get("DEC_TARG", hdr.get("DEC", 0.0)) or 0.0)
+    mjd = 0
+    for key in ("MJD-BEG", "MJD_OBS", "MJD"):
+        if key in hdr:
+            mjd = int(float(hdr[key]))
+            break
+    return {
+        "path": str(path),
+        "wave": wave,
+        "flux_1e17": flux / EFEDS_FLUX_UNIT_CGS,
+        "ivar": ivar,
+        "wdisp": wdisp,
+        "z": z,
+        "ra": ra,
+        "dec": dec,
+        "mjd": mjd,
+        "fiberid": 0,
+        "plateid": 0,
+        "catalogid": 0,
+        "n_pix": int(flux.size),
+        "good": good,
+    }
+
+
 def read_spectrum(path: Path) -> dict:
     """Read a raw spectrum, returning arrays and metadata in a tool-neutral dict."""
     with fits.open(path, memmap=False) as hdul:
         hdr0 = hdul[0].header
         if _is_classic_spspec(hdul):
             return _read_classic_spspec(hdul, path)
+        if _is_hst_x1d(hdul):
+            return _read_hst_x1d(hdul, path)
         tab = _get_table_hdu(hdul)
         data = tab.data
 

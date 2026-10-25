@@ -42,7 +42,8 @@ SPITZER_IRS = ",".join([
 ALL_TOOLS = ("ir_linefit", "pyqsofit_uv", "qsofitmore_line", "pyqsofitspec_line", "ppxf_host",
              "gandalf_line", "nir_linefit", "pahfit_mir", "fir_linefit", "cafe_line",
              "crossband", "cigale_sed", "agnfitter_sed", "s3fit_line", "galspec_line",
-             "qgfit", "sheap_line", "manga_dap", "xmm_xspec", "rxte_xspec")
+             "qgfit", "sheap_line", "manga_dap", "xmm_xspec", "rxte_xspec",
+             "crossmission")
 
 
 def log(msg: str):
@@ -65,12 +66,15 @@ def run(cmd: list[str], logpath: Path, env: dict | None = None) -> int:
 
 def prep_pyqsofit(src: dict) -> Path:
     from pipeline.prepare_inputs import read_spectrum, write_pyqsofit
-    paths = source_files(src, "spectrum")
+    paths = source_files(src, "spectrum") or source_files(src, "optical_spectrum")
     if not paths:
-        raise FileNotFoundError("no spectrum role")
+        raise FileNotFoundError("no spectrum/optical_spectrum role")
     out = prepared_dir(src["key"], "pyqsofit")
     out.mkdir(parents=True, exist_ok=True)
     spec = read_spectrum(paths[0])
+    # Canonical source redshift wins over any missing/nominal FITS header value.
+    if src.get("z") is not None:
+        spec["z"] = float(src["z"])
     write_pyqsofit(spec, out / "spectrum.fits")
     return out
 
@@ -165,6 +169,17 @@ def tool_rxte(src: dict, out: Path, logp: Path) -> int:
         cmd += ["--redshift", str(src["z"])]
     if src.get("rxte_config"):
         cmd += ["--config", str(ROOT / "configs" / "rxte_xspec" / str(src["rxte_config"]))]
+    return run(cmd, logp)
+
+
+def tool_crossmission(src: dict, out: Path, logp: Path) -> int:
+    """Same-object X-ray Fe K-alpha vs UV/optical line comparison."""
+    if not (source_files(src, "spectrum") or source_files(src, "optical_spectrum")):
+        return _skip("no UV/optical spectrum")
+    if not (out.parent / "pyqsofit_uv").exists():
+        return _skip("no pyqsofit_uv output")
+    cmd = [sys.executable, str(ROOT / "pipeline" / "compare_xray_optical.py"),
+           "--source", str(src["key"]), "--out", str(out)]
     return run(cmd, logp)
 
 
@@ -458,6 +473,7 @@ def main(argv=None):
                 "manga_dap": lambda: tool_manga_dap(src, out, logp),
                 "xmm_xspec": lambda: tool_xmm(src, out, logp),
                 "rxte_xspec": lambda: tool_rxte(src, out, logp),
+                "crossmission": lambda: tool_crossmission(src, out, logp),
                 "ppxf_host": lambda: tool_ppxf(src, out, logp),
                 "gandalf_line": lambda: tool_gandalf(src, out, logp),
                 "galspec_line": lambda: tool_galspec(src, out, logp,

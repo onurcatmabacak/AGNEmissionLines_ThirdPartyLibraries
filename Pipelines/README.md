@@ -21,6 +21,10 @@ Pipelines/
   run_manga_dap_docker.sh      # official MaNGA DAP
   run_xmm_xspec_docker.sh      # XMM EPIC PPS + PyXspec
   run_rxte_xspec_docker.sh     # RXTE PCA stdprod + PyXspec
+
+# post-processing / orchestration
+pipeline/compare_xray_optical.py   # same-object Fe K-alpha vs UV/optical line
+workflow/Snakefile                  # Snakemake dependency graph over the runners
   run_rxte_xspec_docker.sh     # official RXTE/PCA stdprod + HEASoft/PyXspec
   legacy_optical/              # archived optical-v1 drivers
 ```

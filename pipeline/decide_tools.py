@@ -34,9 +34,9 @@ def choose(goal: str, z: float, wmin: float, wmax: float, instrument: str = "") 
     if goal in ("host", "both"):
         names += ["ppxf_host", "gandalf_line"]
         reasons.append("stellar host/continuum decomposition")
-    if goal == "xray" or any(k in instrument.upper() for k in ("RXTE", "PCA")):
-        names += ["rxte_xspec"]
-        reasons.append("X-ray: official RXTE/PCA stdprod fit with HEASoft/PyXspec (Fe K-alpha)")
+    if goal == "xray" or any(k in instrument.upper() for k in ("RXTE", "PCA", "XMM", "EPIC")):
+        names += ["xmm_xspec", "rxte_xspec"]
+        reasons.append("X-ray: official XMM/PPS or RXTE/stdprod spectra fitted with HEASoft/PyXspec (Fe K-alpha)")
     if goal in ("lines", "both"):
         # UV/optical coverage
         if rest_max >= 0.10 and rest_min <= 1.0:

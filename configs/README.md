@@ -14,7 +14,7 @@ The two families are deliberately separate:
 | family | tools | output |
 |---|---|---|
 | Broad-band SED / torus | `cigale_sed`, `agnfitter_sed` | stellar mass, AGN fraction, torus luminosity, model-family spread |
-| Spectral line fitting | `pyqsofit_uv`, `qsofitmore_line`, `pyqsofitspec_line`, `ir_linefit`, `nir_linefit`, `fir_linefit`, `pahfit_mir`, `cafe_line`, `s3fit_line`, `gandalf_line`, `galspec_line`, `qgfit`, `sheap_line`, `manga_dap`, `xmm_xspec`, `rxte_xspec`, `crossband` | line flux, FWHM, velocity, equivalent width, ratios, X-ray Fe K-alpha |
+| Spectral line fitting | `pyqsofit_uv`, `qsofitmore_line`, `pyqsofitspec_line`, `ir_linefit`, `nir_linefit`, `fir_linefit`, `pahfit_mir`, `cafe_line`, `s3fit_line`, `gandalf_line`, `galspec_line`, `qgfit`, `sheap_line`, `manga_dap`, `xmm_xspec`, `rxte_xspec`, `crossmission`, `crossband` | line flux, FWHM, velocity, equivalent width, ratios, X-ray Fe K-alpha |
 | Host/continuum decomposition | `ppxf_host` | stellar velocity dispersion, host fraction |
 
 `gandalf_line/default/` is a complete tool configuration rather than a tuning
@@ -68,6 +68,7 @@ the broad-band SED with templates.
 | `ir_linefit`/`nir_linefit`/`fir_linefit` | covariance from `least_squares`/`curve_fit` |
 | `manga_dap` | DAP formal covariance (`1/sqrt(IVAR)`); no MCMC; official full-method SASUKE on 9 central bins |
 | `xmm_xspec` | XSPEC chi-square covariance; PN+MOS joint fit; Fe K-alpha Delta chi^2; no MCMC |
+| `crossmission` | no sampler; same-object flux/EW consistency with explicit quality flags; N=2 is not a correlation fit |
 | `rxte_xspec` | XSPEC chi-square covariance; `Delta chi^2` line significance; no MCMC; PCA background model systematics reported separately |
 | `ppxf_host` | pPXF formal errors |
 | `crossband` | analytic ratio error propagation |
@@ -99,6 +100,7 @@ configs/
   ppxf_host/default/config.json
   manga_dap/default/{config.json,plan.toml,plan_moments.toml,plan_subset.toml,line_database.csv}
   xmm_xspec/default/config.json
+  crossmission/default/config.json
   rxte_xspec/{default,mcg6-30-15}/config.json
   cigale_sed/{skirtor2016,fritz2006}/config.json
   agnfitter_sed/default/config.json

@@ -23,7 +23,7 @@ stage is completed before the next starts, with the same acceptance gates:
 | 2 | **MaNGA DAP** | `sdss-mangadap` official IFU DAP | real MaNGA AGN cube | **complete (official subset; all-spaxel time-limited)** |
 | 3 | **XMM-Newton** | PPS + HEASoft/PyXspec | real XMM/EPIC AGN observation | **complete (PPS+XSPEC; SAS raw reduction not run)** |
 | 4 | **RXTE** | HEASoft + PyXspec | real RXTE/PCA AGN spectrum | **complete (3C 120 + MCG-6-30-15)** |
-| 5 | cross-mission | X-ray/optical/SED comparison | combined source products | planned |
+| 5 | cross-mission | X-ray/optical/SED comparison | 3C 120 + PDS 456 | **complete (same-object; 2 objects, no correlation fit)** |
 
 ## Wavelength coverage target
 
@@ -190,18 +190,19 @@ choice is the free-`nH` baseline because it is the statistically adequate
 continuum description (`chi2/dof = 1.83` before the line, 1.50 after), whereas
 the Galactic-`nH` baseline is not (`chi2/dof = 3.97`).
 
-**Cross-mission note.**  The existing `xmm_xspec` image documents the
-XMM-Newton EPIC PPS fit of **PDS 456** (ObsID `0721010201`, z = 0.184,
-100.4 ks): narrow Fe K-alpha Delta chi2 = 16.39 (4.05 sigma) with the same
-kind of absorbed power-law model.  The `xmm_xspec` image is reused as the
-HEASoft/PyXspec base; its source tree is not part of this worktree, so the
-XMM fit is not re-run or re-audited in this pass.  PDS 456 and 3C 120 are
-**independent AGN**, not a same-object cross-calibration.  **NGC 4151** is the natural
-same-object XMM/RXTE anchor, but its PCA background systematics are severe;
-it is not used here for a same-object claim.  A true same-object XMM/RXTE
-comparison remains Stage 5 work.  The two X-ray results are therefore
-methodological cross-checks (independent objects, independent missions), not
-a measurement of cross-calibration.
+**Cross-mission note.**  The `xmm_xspec` branch is the XMM-Newton EPIC PPS
+fit of **PDS 456** (ObsID `0721010201`, z = 0.184, 100.4 ks): narrow Fe K-alpha
+Delta chi2 = 16.39 (4.05 sigma) with the same absorbed power-law model.  The
+`rxte_xspec` branch reuses `xmm_xspec` as its HEASoft/PyXspec base and fits
+3C 120.  PDS 456 and 3C 120 are **independent AGN**, not a same-object
+cross-calibration.  **NGC 4151** is the natural same-object XMM/RXTE anchor,
+but its PCA background systematics are severe; it is not used here for a
+same-object claim.  The X-ray pair is therefore a methodological cross-check
+(independent objects, independent missions), not a cross-calibration.
+
+Stage 5 extends each object with a real **same-object** UV/optical spectrum
+(HST/STIS) and compares Fe K-alpha with H-beta (3C 120) or C IV (PDS 456);
+see the Stage 5 result below.
 
 **Raw-vs-PPS provenance.**  The `stdprod` products are the official reduced
 PCA products.  Re-running `pcabackest`/`saextrct` from raw PCA event files
@@ -210,3 +211,40 @@ not be the same dataset.  The tool therefore fits the official products and
 records the choice in `run.json` and `provenance.md`.  It does not claim to
 reproduce the RXTE PCA reduction chain.  This is the RXTE analogue of using
 XMM PPS spectra instead of re-running SAS.
+
+## Stage 5 result - same-object X-ray / UV-optical line comparison
+
+Two real archival spectra were added without touching the X-ray products:
+
+| source | optical/UV data | X-ray branch | line used | result |
+|---|---|---|---|---|
+| **3C 120** | HST/STIS G430L+G750L HASP `cspec`, 2993-10247 A | RXTE/PCA `stdprod` | broad H-beta + [O III] 5007 | H-beta 28436, [O III] 18363, ratio **1.55**; H-beta FWHM 2676 km/s (S/N 17.9) |
+| **PDS 456** | HST/STIS G140L+G230L HASP `cspec`, 1139-3137 A | XMM-Newton PPS | broad C IV 1549 | C IV 94123; FWHM 34807 km/s; **tentative** (S/N 1.77) |
+
+The public HST/STIS spectrum of PDS 456 does **not** cover H-beta (5758 A
+observed) or Mg II (3315 A); only Ly-alpha, N V, C IV and C III] are available.
+The HST/STIS spectrum of 3C 120 covers H-beta, [O III], H-alpha and [N II]/[S II].
+That asymmetry is forced by the archive, not a model choice.
+
+`pipeline/compare_xray_optical.py` writes
+`outputs/<source>/crossmission/xray_optical_comparison.{json,csv,md,png,pdf}`.
+The 3C 120 comparison is accepted; the PDS 456 comparison is explicitly
+**tentative** because the broad C IV S/N is below 3.  With two objects the tool
+does **not** fit a slope or claim a correlation; adding more objects is the
+next scientific step.
+
+The raw HST files are small (57 KB and 45 KB), committed with SHA-256, and
+reproduced by `inputs/<source>/download_optical.sh`.  A unit-conversion bug in
+the HST `ivar` path (cgs vs the repository's 1e-17 convention) was found by the
+pytest golden suite and fixed before the production results were accepted.
+
+## Engineering additions
+
+* `workflow/Snakefile` runs the Docker graph through Snakemake, with explicit
+  `s3fit_line -> pyqsofit_uv` and `crossmission -> pyqsofit_uv + X-ray` edges.
+* `tests/` contains unit tests plus golden scientific reference values for
+  QSOFITMORE, XMM, RXTE, MaNGA and the cross-mission comparison.
+* `schemas/output_catalog.schema.json` plus `pipeline/validate_outputs.py`
+  formalise and verify the `outputs/<source>/<tool>/` contract.
+* `configs/caveats.yaml` is the source of truth for the rendered
+  `docs/CAVEAT_MATRIX.md`; every registered tool must have an entry.

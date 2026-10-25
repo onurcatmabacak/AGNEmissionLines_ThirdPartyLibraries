@@ -20,6 +20,7 @@ broad-band SED code is not a line fitter.
 | `galspec_line` | emcee (`MCMC_Fit`, full-continuum global model); dynesty optional | yes (production) | `galspec_uncertainty.*`, `galspec_corner.*`, saved posterior in `galspec_mcmc.npz` |
 | `ir_linefit` / `nir_linefit` / `fir_linefit` | `least_squares`/`curve_fit` covariance | no | per-line `flux_err`, `fwhm_err` |
 | `manga_dap` | official DAP/SASUKE formal covariance (`1/sqrt(IVAR)`); no MCMC | no | `subset_comparison.json`, formal flux/kinematic errors; 9 central bins |
+| `crossmission` | no sampler; same-object line-flux/EW comparison with quality flags | no | `xray_optical_comparison.json/csv/md/png`; **not** a correlation fit at N=2 |
 | `xmm_xspec` | XSPEC chi-square (Levenberg-Marquardt); covariance; PN+MOS joint; `Delta chi^2` line significance | no | `xmm_fit.csv`, `xmm_lines.csv`, full `xspec.log`; no posterior |
 | `rxte_xspec` | XSPEC chi-square (Levenberg-Marquardt); covariance; `Delta chi^2` line significance | no | `rxte_fit.csv`, `rxte_lines.csv`, full `xspec.log`; no posterior |
 | `ppxf_host` | pPXF formal errors | no | `sigma_err_kms`, host error |
@@ -125,6 +126,7 @@ not a statistical error bar.
 | CIGALE | 5 QSOs × 2 tori | Bayesian `pdf_analysis` | posterior grid | `outputs/<source>/cigale_sed/*/sed_fit.png` |
 | XMM-Newton | PDS 456 | none (XSPEC chi-square) | covariance + `Delta chi^2` line significance; PN+MOS | `outputs/PDS456_z_0.1840/xmm_xspec/xmm_fe_ka_zoom.png` |
 | RXTE/PCA | 3C 120 + MCG-6-30-15 | none (XSPEC chi-square) | covariance + `Delta chi^2` line significance | `outputs/<source>/rxte_xspec/rxte_fe_ka_zoom.png` |
+| crossmission | 3C 120 + PDS 456 | none (post-processing) | same-object flux/EW with quality flags; no correlation fit | `docs/xray_optical_comparison.png` |
 
 `docs/line_tool_comparison.png` combines the line ratios measured by PyQSOFit,
 S3Fit, GANDALF and PAHFIT; `docs/line_ratio_scatter.csv` reports the

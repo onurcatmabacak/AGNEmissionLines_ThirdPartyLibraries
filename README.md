@@ -15,6 +15,9 @@ inputs/                 canonical source store
 outputs/                canonical results
   <source>_z_<z>/<tool>/files
 docs/                   plan, caveat matrix, layout, statistics
+schemas/                formal JSON Schema for the output catalogue
+tests/                  pytest unit + golden-reference tests
+workflow/               Snakemake dependency graph over the Docker runners
 work/                   ignored generated inputs/logs
 ```
 
@@ -49,6 +52,31 @@ outputs/<source_name>_z_<redshift>/<tool_name>/...
 Inputs are never copied into outputs; PyQSOFit/pPXF-native files are generated
 under `work/prepared/`.
 
+## Orchestration and quality assurance
+
+The full Docker matrix can be driven as a Snakemake graph:
+
+```bash
+.venv/bin/snakemake -s workflow/Snakefile -n all       # dry-run
+.venv/bin/snakemake -s workflow/Snakefile --cores 4 all # production
+```
+
+Snakemake encodes the `s3fit_line -> pyqsofit_uv` and
+`crossmission -> pyqsofit_uv + X-ray` dependencies.  Completion markers are
+ignored by git; the science products are not.
+
+```bash
+.venv/bin/pytest -q                                  # 15 unit + golden tests
+.venv/bin/python pipeline/build_output_manifest.py   # regenerate catalogue
+.venv/bin/python pipeline/validate_outputs.py        # schema + SHA-256 audit
+```
+
+The formal output contract is `schemas/output_catalog.schema.json` plus
+`docs/OUTPUT_SCHEMA.md`.  Per-tool scientific status, severity, evidence and
+mitigation live in `docs/CAVEAT_MATRIX.md`, generated from
+`configs/caveats.yaml`.  `pipeline/decide_tools.py` prints the tool list and
+the reason for each choice.
+
 ## Source-keyed matrix
 
 | source group | tools |
@@ -58,8 +86,8 @@ under `work/prepared/`.
 | VV114 / PDS 456 | `pahfit_mir`, `cafe_line`, `ir_linefit` |
 | Low-z SDSS GANDALF example | `gandalf_line` (Hα/Hβ coverage) |
 | MaNGA AGN NGC 1194 (9193-12701) | `manga_dap` (official DAP subset; all-spaxel reference = published MAPS) |
-| XMM-Newton PDS 456 (0721010201) | `xmm_xspec` (official EPIC PPS; PN+MOS; PyXspec) |
-| RXTE/PCA AGN 3C 120, MCG-6-30-15 | `rxte_xspec` (official HEASARC `stdprod`; PyXspec) |
+| XMM-Newton PDS 456 (0721010201) | `xmm_xspec` (official EPIC PPS; PN+MOS; PyXspec), `pyqsofit_uv` (HST/STIS UV), `crossmission` |
+| RXTE/PCA AGN 3C 120, MCG-6-30-15 | `rxte_xspec` (official HEASARC `stdprod`; PyXspec); 3C 120 also `pyqsofit_uv` + `crossmission` |
 | NGC 1068 / NGC 253 / NGC 4151 | `pahfit_mir`, `fir_linefit`, `ir_linefit`; cross-band for NGC 253/4151 |
 | Mrk 231 | `pahfit_mir`, `ir_linefit`, `crossband` |
 | synthetic FIR / multiband | `fir_linefit` + `ir_linefit` / `crossband` |
@@ -83,6 +111,9 @@ The production matrix uses real data only:
 | **SDSS ZLINE** | five SDSS QSOs | official `ZLINE` HDU | 045926 ratio **1.57** |
 | **MaNGA DAP** | NGC 1194, 9193-12701 | official DAP 4.5.0, 9 central bins full SASUKE; all-spaxel reference MAPS | 9/9 BPT agreement; Hα ours/ref **0.9999**; [O III] **1.011**; full all-spaxel run time-limited and rejected fast mode |
 | **XMM-Newton** | PDS 456, 0721010201 | official EPIC PPS, PN+MOS1+MOS2, `tbabs*(zpowerlw+zgauss)`, 0.5-10 keV | χ²/dof **862.64/515**; Γ **2.025**; N_H 2.31e21; Fe Kα Δχ² **16.39 (4.05σ)**, flux 2.01e-14, EW_rest **30.7 eV** |
+| **PyQSOFit + HST** | **3C 120** HST/STIS G430L+G750L | real HASP `cspec`, 2993–10247 Å; host-free global fit | Hβ **28436**, [O III] 5007 **18363**, Hβ/[O III] **1.55**; Hβ FWHM **2676 km/s**, S/N 17.9 |
+| **PyQSOFit + HST** | **PDS 456** HST/STIS G140L+G230L | real HASP `cspec`, 1139–3137 Å; host-free global fit | C IV 1549 broad **94123**; FWHM 34807 km/s; **tentative** (S/N 1.77); no Hβ/Mg II coverage |
+| **crossmission** | 3C 120 (RXTE) + PDS 456 (XMM) | same-object Fe Kα vs Hβ/C IV | 3C 120 **accepted**: L_Hβ 7.64e41, L_Fe 1.35e42, EW 140 Å vs 90.3 eV; PDS 456 **tentative**: C IV S/N < 3; no correlation fit |
 | **RXTE/PCA** | 3C 120 (10339-02-01-01), MCG-6-30-15 (20310-01-02-00) | official `stdprod` Standard2; `tbabs*(zpowerlw+zgauss)`, 3-20 keV | 3C 120: χ²/dof **72.02/48**, Γ **1.816**, Fe Kα Δχ² **17.83 (4.22σ)**, EW_rest **90.3 eV**; MCG: χ²/dof **39.41/41**, Δχ² **46.48 (6.82σ)**, EW_rest **263.5 eV** |
 
 The cross-tool 04592649654 Hβ/[O III] 5007 values are:
@@ -109,6 +140,7 @@ median 2.04, log-scatter 0.12 dex
 | MaNGA all-spaxel DAP exceeded the time budget | 9-bin full-DAP subset matches published MAPS (Hα ratio 0.9999, BPT 9/9); fast SASUKE rejected |
 | XMM SAS raw reduction not run | production test uses official XMM EPIC PPS products + PyXspec; SAS `epproc/especget` documented as optional |
 | RXTE PCA raw reduction not run | production test uses official HEASoft `stdprod` products; PCA background/response preserved |
+| HST x1d/HASP `ivar` was converted in cgs while the PyQSOFit writer expects 1e-17 units | prepared errors were 10^17 too small and produced ~10^34 chi-square values; fixed in `pipeline/prepare_inputs.py` and added a regression test |
 | Official SDSS DAPs, AMARU, ELFO, AGNdecompose, pyspeckit | excluded with explicit data/model reasons; see `docs/OFFICIAL_PIPELINES_AND_XRAY.md`. |
 
 ## Statistics and caveats
@@ -122,6 +154,11 @@ median 2.04, log-scatter 0.12 dex
 * `docs/LINE_FITTING_TOOLS.md` — line-fitting tools vs SED fitting.
 * `docs/MCMC_AND_STATISTICS.md` — MC, nested sampling and covariance modes.
 * `docs/OFFICIAL_PIPELINES_AND_XRAY.md` — official SDSS/XMM/RXTE products, SAS/PPS and HEASoft provenance.
+* `docs/CAVEAT_MATRIX.md` / `docs/caveat_matrix.json` — per-tool status, severity, evidence and mitigation.
+* `docs/OUTPUT_SCHEMA.md` / `schemas/output_catalog.schema.json` — formal output contract.
+* `docs/xray_optical_comparison.png` — same-object Fe Kα vs Hβ/C IV.
+* `workflow/Snakefile` — Snakemake dependency graph over the Docker runners.
+* `tests/` — pytest unit and golden-reference suite.
 * `docs/line_tool_comparison.png` — official ZLINE + nine line fitters (QSOFITMORE added).
 * `docs/line_ratio_scatter.csv` — inter-tool scatter and bootstrap intervals.
 * `docs/SHEAP_ASSESSMENT.md` — SHEAP repair and quality gates.

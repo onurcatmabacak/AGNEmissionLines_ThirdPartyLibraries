@@ -134,3 +134,36 @@ cross-calibration.
 
 The line-ratio comparison now includes all implemented tools; the spread is
 `docs/line_ratio_scatter.csv`.
+
+## Same-object UV/optical data for the X-ray branches (Stage 5)
+
+The X-ray fits are complemented by real **public HST/STIS** spectra from the
+Hubble Spectroscopic Legacy Archive (HASP `cspec` products), downloaded from
+MAST.  These are official reduced, flux-calibrated products, not synthetic
+spectra and not re-reductions of raw STIS files.
+
+| source | HST product | observed coverage | lines used | X-ray branch |
+|---|---|---|---|---|
+| **3C 120** | `hst_8700_stis_3c120d0_g430l-g750l_o62o_cspec.fits` | 2993-10247 A | H-beta, [O III] 4959/5007, H-alpha, [N II]/[S II] | RXTE/PCA |
+| **PDS 456** | `hst_8264_stis_pds456_sg140l-sg230l_o58s_cspec.fits` | 1139-3137 A | Ly-alpha/N V, C IV 1549, C III] 1909 | XMM-Newton |
+
+Provenance:
+
+* 3C 120: HST proposal 8700 (PI A. Martel), STIS G430L+G750L, 1440 s,
+  2000-09-09, `LICENSE = CC BY 4.0`.
+* PDS 456: HST proposal 8264 (PI P. O'Brien), STIS G140L+G230L, 1921 s,
+  2000-09-15, `LICENSE = CC BY 4.0`.
+* Both files are committed with SHA-256; reproduce with
+  `inputs/<source>/download_optical.sh`.
+
+The HST spectra are fitted by `pyqsofit_uv` after a small, tested adapter in
+`pipeline/prepare_inputs.py` converts `WAVELENGTH/FLUX/ERROR` tables to the
+PyQSOFit cgs layout.  The HST `ivar` is stored in the repository's 1e-17
+convention; a cgs/1e-17 mismatch was caught by the regression suite and fixed.
+
+`pipeline/compare_xray_optical.py` then writes
+`outputs/<source>/crossmission/`.  3C 120 is an **accepted** H-beta vs Fe K-alpha
+comparison; PDS 456 is **tentative** because its public HST spectrum does not
+cover H-beta/Mg II and the broad C IV S/N is below 3.  With two objects the
+comparison is not a correlation fit.  The next step is to add more objects,
+not to over-interpret these two points.

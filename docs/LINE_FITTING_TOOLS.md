@@ -26,6 +26,7 @@ CAFE, S3Fit, GANDALF, PAHFIT and the generic Gaussian fitters operate on
 | `fir_linefit` | line | FIR | local continuum + Gaussian forbidden lines | covariance |
 | `manga_dap` | line (IFU) | optical | **official DAP**: HYB10 binning + pPXF + SASUKE 35-line Gaussian fit on MaNGA cubes | DAP formal covariance; **9 central bins only**; fast mode rejected |
 | `xmm_xspec` | line (X-ray) | 0.5-10 keV observed; Fe K-alpha at 6.4 keV rest | **official XMM-Newton EPIC PPS**: `tbabs*(zpowerlw+zgauss)`, PN+MOS | XSPEC covariance; `Delta chi^2` line significance; no MCMC |
+| `crossmission` | comparison (X-ray + UV/optical) | same object; Fe K-alpha vs H-beta/C IV | reads `xmm_xspec`/`rxte_xspec` + `pyqsofit_uv` | no fit; quality-flagged comparison; 2 objects, no correlation |
 | `rxte_xspec` | line (X-ray) | 3-20 keV observed; Fe K-alpha at 6.4 keV rest | **official RXTE/PCA stdprod**: `tbabs*(zpowerlw+zgauss)` | XSPEC covariance; `Delta chi^2` line significance; no MCMC |
 | `ppxf_host` | host | optical–NIR | stellar templates + AGN power law, emission masked | pPXF formal errors |
 | `crossband` | ratio | NIR–FIR | line-ratio consistency | analytic propagation |

@@ -1,0 +1,99 @@
+"""Snakemake orchestration for the Dockerised AGN tool matrix.
+
+Every rule delegates the actual science run to ``pipeline/run_new_tools.py``,
+which invokes the per-tool Docker runner.  Snakemake supplies the dependency
+graph, per-source/per-tool status markers, parallel execution and resume.
+
+Examples
+--------
+    # list the full graph without running Docker
+    .venv/bin/snakemake -s workflow/Snakefile -n all
+
+    # only one source and two tools
+    .venv/bin/snakemake -s workflow/Snakefile --cores 2 \
+        --config sources=3C120_z_0.0330 tools=pyqsofit_uv,crossmission
+
+    # the full registry
+    .venv/bin/snakemake -s workflow/Snakefile --cores 4 all
+"""
+import sys
+from pathlib import Path
+
+HERE = Path(workflow.basedir).resolve()
+ROOT = HERE.parent if HERE.name == "workflow" else HERE
+sys.path.insert(0, str(ROOT))
+
+from pipeline.io_layout import iter_sources  # noqa: E402
+from pipeline.run_new_tools import ALL_TOOLS  # noqa: E402
+
+SOURCES = {s["key"]: s for s in iter_sources()}
+
+# Config values are comma-separated strings (Snakemake command-line friendly).
+def _selected(name, default):
+    value = config.get(name, default)
+    if isinstance(value, str):
+        return [x for x in value.split(",") if x]
+    return list(value)
+
+
+selected_tools = _selected("tools", list(ALL_TOOLS))
+selected_sources = _selected("sources", sorted(SOURCES))
+missing = [t for t in selected_tools if t not in ALL_TOOLS]
+if missing:
+    raise ValueError(f"unknown tools: {missing}")
+missing = [s for s in selected_sources if s not in SOURCES]
+if missing:
+    raise ValueError(f"unknown sources: {missing}")
+
+# Tools that consume another tool's committed output.  The marker file is the
+# dependency; the actual data dependency is inside outputs/<source>/<tool>/.
+DEPENDENCIES = {
+    "s3fit_line": ["pyqsofit_uv"],
+    "crossband": ["pahfit_mir", "fir_linefit"],
+}
+
+def dependency_inputs(wildcards):
+    deps = list(DEPENDENCIES.get(wildcards.tool, []))
+    src = SOURCES[wildcards.source]
+    if wildcards.tool == "crossmission":
+        if "xmm_xspec" in src.get("tools", []):
+            deps.append("xmm_xspec")
+        if "rxte_xspec" in src.get("tools", []):
+            deps.append("rxte_xspec")
+        deps.append("pyqsofit_uv")
+    available = set(src.get("tools", []))
+    return [f"outputs/{wildcards.source}/{d}/.snakemake_done"
+            for d in deps if d in available]
+
+def targets():
+    out = []
+    for source in selected_sources:
+        available = set(SOURCES[source].get("tools", []))
+        for tool in selected_tools:
+            if tool in available:
+                out.append(f"outputs/{source}/{tool}/.snakemake_done")
+    return out
+
+rule all:
+    input: targets()
+
+rule run_tool:
+    """Run one source/tool through its Docker entry point and mark completion."""
+    output:
+        "outputs/{source}/{tool}/.snakemake_done"
+    input:
+        dependency_inputs
+    params:
+        source="{source}",
+        tool="{tool}",
+    shell:
+        """
+        .venv/bin/python pipeline/run_new_tools.py \
+            --only {params.source} --tools {params.tool} --force
+        touch {output}
+        """
+
+rule clean:
+    """Remove Snakemake completion markers, never the science products."""
+    shell:
+        "find outputs -name .snakemake_done -delete"
