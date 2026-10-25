@@ -63,7 +63,7 @@ Long tools are never silently shortened:
 
 - S3Fit: `--s3fit-threads 8`, full `spec+sed`, 10 mocks in the production config.
 - GalSpec: `--galspec-mcmc-steps` / `--galspec-nwalkers` can be raised in the config;
-  the existing 11.7 tau result remains a documented caveat until rerun.
+  the existing 8.2 retained-tau result remains a documented caveat until rerun.
 - PyQSOFit: `PYQSOFIT_MCMC=1` plus `PYQSOFIT_NSAMP` controls.
 - MaNGA: full DAP uses `plan.toml` (S/N=10, all bins); the subset production
   path remains the 9-bin validation.

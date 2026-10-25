@@ -37,7 +37,7 @@ Its capability gaps were:
 The full run below replaces that capability gap.  It does not reduce the
 spectral model; it keeps 39 free parameters and samples the whole 2280-6459 A
 rest-frame model.  The explicit compromise is chain length: 4000 steps at
-80 walkers, `tau_max=342.6`, `nsteps/tau_max=11.7`, ESS~654.
+80 walkers, `tau_max=342.6`, retained `nsteps/tau_max=8.2` (11.7 if total steps are used), ESS~654.
 
 ## Production model
 
@@ -149,7 +149,7 @@ The committed full run uses:
 `effective_sample_size`, `n_steps_kept`, `saved_samples` and `saved_thin`.
 A finite `tau_max` and a saved posterior of thousands of samples are the
 minimum acceptance criteria; the run is not described as asymptotically
-converged unless `nsteps/tau_max` is comfortably above 50.  This is a
+converged unless the retained `n_steps_kept/tau_max` is comfortably above 50.  This is a
 wide-line QSO with a 39-parameter global model, so the chain is best treated
 as a production posterior with an explicit convergence diagnostic rather
 than a publication-grade 50-tau chain.
@@ -173,7 +173,8 @@ continuum.  LSQ is only the starting point and a cross-check.
 | emcee | 80 walkers x 4000 steps, burn 1200 |
 | acceptance fraction | 0.188 |
 | tau_max | 342.6 steps |
-| nsteps / tau_max | 11.7 |
+| retained nsteps / tau_max | 8.2 |
+| total nsteps / tau_max | 11.7 |
 | effective sample size | 654 |
 | saved posterior | 37334 samples, thin 6 |
 | MCMC wall time | 3596.6 s |
@@ -196,7 +197,7 @@ Line measurements (posterior median +/- 16th/84th percentile half-width):
 | NeIII_3869 | narrow | 232.3 +/- 11.4 | 1698 +/- 17 | -3 | 20.3 |
 
 The run is a real full-continuum posterior, but it is not a 50-tau
-publication chain: `tau_max=342.6` steps and `nsteps/tau_max=11.7`.  The
+publication chain: `tau_max=342.6` steps and retained `nsteps/tau_max=8.2`.  The
 limited chain length is the explicit compromise for a 39-parameter global
 model on a shared CPU host; the spectral model was not reduced.  The saved
 37,334 samples (thin 6, 224,000 post-burn draws) are a posterior, not an

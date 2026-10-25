@@ -31,7 +31,7 @@ python pipeline/run_new_tools.py --source 04592649654_z_0.5874 \
 
 ## GalSpec
 
-The default `mcmc.nsteps=4000` reaches only ~11.7 τ.  A longer run:
+The default `mcmc.nsteps=4000` reaches only ~8.2 retained τ.  A longer run:
 
 ```bash
 python pipeline/run_new_tools.py --source 04592649654_z_0.5874 \

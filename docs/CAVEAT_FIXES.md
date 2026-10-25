@@ -47,7 +47,7 @@
   the reduced 4720–5150 A window.  The full MCMC run gives Hβ total 3718 and
   [O III] 5007 total 1681 (ratio 2.21); the narrow/broad split remains
   model-dependent.  The chain is 80 walkers × 4000 steps with
-  `tau_max=342.6`, `nsteps/tau_max=11.7`, saved posterior 37,334 samples; it
+  `tau_max=342.6`, `retained nsteps/tau_max=8.2`, saved posterior 37,334 samples; it
   is a real full-model posterior but not a 50-tau publication chain.
 * **PyQSOFitSpec** uses a 55-realisation bootstrap (53 valid); its Hβ total is
   3525, about 19% above GANDALF/S3Fit.  The bootstrap errors are statistical only.

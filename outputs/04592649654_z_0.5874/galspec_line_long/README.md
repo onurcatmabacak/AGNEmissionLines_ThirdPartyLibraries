@@ -11,14 +11,14 @@ while the MaNGA and PyQSOFit jobs were active.
 - total steps: 25,000
 - retained after burn-in: 20,000
 - `tau_max`: 1156.05
-- steps per `tau_max`: **21.63** (gate: >= 50)
-- required total steps for 50 tau: **57,803**
-- required retained steps for 50 tau: **62,803**
+- retained steps per `tau_max`: **17.30** (gate: >= 50)
+- required retained steps for 50 tau: **57,803**
+- required total steps for 50 tau (including 5,000 burn-in): **62,803**
 - acceptance fraction: **0.168** (gate: 0.20–0.50)
 - effective sample size: **1384**
 
-The `steps/tau` value is computed from total steps (25,000), matching
-`sampling.nsteps_over_tau_max`; after burn-in the retained count is lower.
+The `steps/tau` is computed from retained steps (20,000), matching the corrected
+`sampling.nsteps_over_tau_max`; the total-step ratio is recorded separately.
 
 The short autocorrelation-time status in `run.json` (`tau_status: ok`) only
 means the emcee autocorrelation estimate is usable; it is not the convergence

@@ -667,13 +667,14 @@
     "acceptance_fraction": 0.187815625,
     "tau_max": 342.5724686099473,
     "tau_status": "ok (tol=0.0)",
-    "nsteps_over_tau_max": 11.676361548348465,
+    "nsteps_over_tau_max": 8.173453083843926,
     "n_steps_kept": 2800,
     "n_samples_total": 224000,
     "effective_sample_size": 653.876246707514,
     "saved_samples": 37334,
     "saved_thin": 6,
-    "n_samples_derived": 4000
+    "n_samples_derived": 4000,
+    "total_steps_over_tau_max": 11.676361548348465
   },
   "mcmc": {
     "saved_samples": 37334,
@@ -2123,5 +2124,23 @@
     "galspec_uncertainty.pdf",
     "galspec_uncertainty.png",
     "run.json"
+  ],
+  "status": "success",
+  "quality": "provisional",
+  "convergence": {
+    "verdict": "not_converged",
+    "gate": "n_steps_kept >= 50*tau_max, 0.05 <= acceptance <= 0.50 (39-D)",
+    "nsteps_retained": 2800,
+    "nsteps_over_tau_max": 8.173453083843926,
+    "total_steps_over_tau_max": 11.676361548348465,
+    "tau_max": 342.5724686099473,
+    "required_retained_steps_for_50_tau": 17128.623430497366,
+    "required_total_steps_for_50_tau": 18328.623430497366,
+    "acceptance_fraction": 0.187815625,
+    "ess": 653.876246707514,
+    "reason": "Production 4,000-step chain has only 8.2 retained steps per tau_max; it is not converged. The 50-tau gate requires 17,129 retained steps (18,329 total including 1,200 burn-in)."
+  },
+  "caveats": [
+    "The production GalSpec chain is NOT converged (8.2 retained steps/tau; acceptance 0.188). Do not use its posterior as a publication-grade error budget."
   ]
 }

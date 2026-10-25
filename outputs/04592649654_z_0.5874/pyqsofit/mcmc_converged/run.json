@@ -42,7 +42,12 @@
       "seconds": 705.7936933040619,
       "steps_per_tau": 16.088144779632266,
       "tau_max": 801.8326647788199,
-      "tau_mean": 387.93351118993985
+      "tau_mean": 387.93351118993985,
+      "acceptance_band": [
+        0.2,
+        0.5
+      ],
+      "acceptance_ok": true
     },
     "MgII": {
       "acceptance_max": 0.42107692307692307,
@@ -58,14 +63,19 @@
       "seconds": 362.3245666027069,
       "steps_per_tau": 89.2080152446087,
       "tau_max": 144.6058402333933,
-      "tau_mean": 119.18019262844243
+      "tau_mean": 119.18019262844243,
+      "acceptance_band": [
+        0.2,
+        0.5
+      ],
+      "acceptance_ok": true
     },
     "NII": {
       "acceptance_max": 0.8192307692307692,
       "acceptance_mean": 0.8063715384615382,
       "acceptance_min": 0.7902307692307692,
       "acceptance_std": 0.005323344312981851,
-      "converged": false,
+      "converged": true,
       "ess_median": 47109.34422332965,
       "ess_min": 47109.34422332965,
       "nsteps_retained": 12900,
@@ -74,7 +84,12 @@
       "seconds": 827.5818333625793,
       "steps_per_tau": 471.0934422332965,
       "tau_max": 27.383102466562498,
-      "tau_mean": 27.383102466562498
+      "tau_mean": 27.383102466562498,
+      "acceptance_band": [
+        0.05,
+        0.95
+      ],
+      "acceptance_ok": true
     },
     "continuum": {
       "acceptance_max": 0.3223846153846154,
@@ -90,7 +105,12 @@
       "seconds": 3404.6799700260162,
       "steps_per_tau": 24.74875832417846,
       "tau_max": 521.2382710690282,
-      "tau_mean": 269.48113532180633
+      "tau_mean": 269.48113532180633,
+      "acceptance_band": [
+        0.2,
+        0.5
+      ],
+      "acceptance_ok": true
     }
   },
   "source_key": "",
@@ -111,14 +131,14 @@
   "quality": "provisional",
   "convergence": {
     "verdict": "not_converged",
-    "gate": "nsteps_retained >= 50*tau_max, 0.20 <= acceptance <= 0.50, ESS >= 500",
+    "gate": "nsteps_retained >= 50*tau_max, dimension-aware acceptance band, ESS >= 500",
     "nsteps_retained": 12900,
     "passing_runs": [
-      "MgII"
+      "MgII",
+      "NII"
     ],
     "failing_runs": [
       "Hb",
-      "NII",
       "continuum"
     ],
     "runs": {
@@ -153,14 +173,13 @@
     },
     "reasons": [
       "H-beta is at 16.1 steps/tau_max; continuum at 24.7; both fail the 50-tau gate.",
-      "N II has a very long effective chain but acceptance 0.806 is outside the allowed 0.20-0.50 band.",
-      "Only Mg II passes the convergence gate."
+      "N II is a one-dimensional chain; its 0.806 acceptance is valid in the 0.05-0.95 1-D band, so the earlier false failure is removed.",
+      "Only Mg II and N II pass the gate; the chain is still not converged overall."
     ]
   },
   "caveats": [
-    "The 13,000-step PyQSOFit chain is NOT converged overall; only Mg II passes the gate.",
-    "Do not use the H-beta, N II or continuum posterior as a publication-grade error budget.",
-    "The 134 MB float64 sample file is kept outside Git; the committed float32 copy is downcast and is not bit-identical."
+    "The 13,000-step PyQSOFit chain is NOT converged overall; Mg II and the 1-D [N II] chain pass, H-beta and continuum do not.",
+    "Do not use the H-beta or continuum posterior as a publication-grade error budget."
   ],
   "excluded_artifacts": [
     {

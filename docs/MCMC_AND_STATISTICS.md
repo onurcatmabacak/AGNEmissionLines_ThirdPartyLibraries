@@ -1,5 +1,8 @@
 # MCMC and statistical tests across the tools
 
+See `docs/MCMC_CONVERGENCE_AUDIT.md` for the cross-tool step/tau audit and the
+1-D acceptance-band correction.
+
 This page separates **posterior sampling** from **uncertainty propagation**.  A
 least-squares code with a covariance matrix is not an MCMC sampler, and a
 broad-band SED code is not a line fitter.
@@ -116,7 +119,7 @@ not a statistical error bar.
 | QSOFITMORE | `04592649654` | **200** | lmfit parametric bootstrap (continuum + line complexes) | `outputs/04592649654_z_0.5874/qsofitmore_line/qsofitmore_corner.png` |
 | PyQSOFit MCMC | `04592649654` | 800 (10-step validation) | `emcee`, **not converged**; 300-step diagnostics | `outputs/04592649654_z_0.5874/pyqsofit/mcmc/pyqsofit_mcmc_corner.png` |
 | S3Fit | `04592649654` | **10** | mock spectra (spec+sed) | `outputs/04592649654_z_0.5874/s3fit_line/s3fit_mc.png` |
-| GalSpec | `04592649654` | 37,334 saved samples (thin 6; 224,000 post-burn draws) | full-continuum `emcee`, 80 walkers x 4000 steps, tau_max 342.6 | `outputs/04592649654_z_0.5874/galspec_line/galspec_corner.png` |
+| GalSpec | `04592649654` | 37,334 saved samples (thin 6; 224,000 post-burn draws) | full-continuum `emcee`, 80 walkers x 4000 steps; tau_max 342.6; retained nsteps/tau=8.2 (not converged) | `outputs/04592649654_z_0.5874/galspec_line/galspec_corner.png` |
 | PyQSOFitSpec | `04592649654` | **53/55 valid** | parametric bootstrap | `outputs/04592649654_z_0.5874/pyqsofitspec_line/pyqsofitspec_bootstrap.png` |
 | QGfit | `04592649654` | long continuum MCMC (2334 s) | `emcee` continuum; LSQ lines | `outputs/04592649654_z_0.5874/qgfit/qgfit_uncertainty.png` |
 | SHEAP | `04592649654` | 50 | JAX + parametric-bootstrap MC (not MCMC) | `outputs/04592649654_z_0.5874/sheap_line/sheap_uncertainty.png` |

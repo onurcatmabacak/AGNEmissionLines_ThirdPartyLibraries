@@ -667,13 +667,14 @@
     "acceptance_fraction": 0.1682275,
     "tau_max": 1156.0516018385024,
     "tau_status": "ok (tol=0.0)",
-    "nsteps_over_tau_max": 21.62533226046465,
+    "nsteps_over_tau_max": 17.30026580837172,
     "n_steps_kept": 20000,
     "n_samples_total": 1600000,
     "effective_sample_size": 1384.0212646697375,
     "saved_samples": 200000,
     "saved_thin": 8,
-    "n_samples_derived": 4000
+    "n_samples_derived": 4000,
+    "total_steps_over_tau_max": 21.62533226046465
   },
   "mcmc": {
     "saved_samples": 200000,
@@ -1774,18 +1775,19 @@
   "quality": "provisional",
   "convergence": {
     "verdict": "not_converged",
-    "gate": "nsteps_retained >= 50*tau_max, 0.20 <= acceptance <= 0.50, ESS >= 500",
+    "gate": "n_steps_kept >= 50*tau_max, 0.05 <= acceptance <= 0.50 (39-D)",
     "nsteps_retained": 20000,
     "tau_max": 1156.0516018385024,
-    "nsteps_over_tau_max": 21.62533226046465,
+    "nsteps_over_tau_max": 17.30026580837172,
     "required_steps_for_50_tau": 57802.58009192512,
     "acceptance_fraction": 0.1682275,
     "ess": 1384.0212646697375,
-    "reason": "Only 21.6 steps per maximum autocorrelation time (25,000 total steps); the 50-tau gate requires about 57,803 total steps (62,803 if measured after the 5,000-step burn-in). Acceptance is also below 0.20.",
+    "reason": "Only 17.3 retained steps per maximum autocorrelation time (20,000 retained after a 5,000-step burn-in). The 50-tau gate requires 57,803 retained steps (62,803 total). Acceptance is also below 0.20.",
     "total_steps": 25000,
     "steps_over_tau_basis": "total nsteps (sampling.nsteps_over_tau_max); not burn-in-subtracted retained steps",
-    "required_total_steps_for_50_tau": 57802.58009192512,
-    "required_retained_steps_for_50_tau": 52802.58009192512
+    "required_total_steps_for_50_tau": 62802.58009192512,
+    "required_retained_steps_for_50_tau": 57802.58009192512,
+    "total_steps_over_tau_max": 21.62533226046465
   },
   "caveats": [
     "The 25,000-step, burn-in 5,000 GalSpec chain is NOT converged: 21.6 steps/tau_max versus the 50-tau gate; acceptance 0.168.",

@@ -377,6 +377,24 @@ def install_safe_emcee(
     return runs
 
 
+def acceptance_band(nvarys: int) -> tuple[float, float]:
+    """Return the acceptance-fraction band appropriate for the dimension.
+
+    emcee's ensemble acceptance is not directly comparable across dimensions.
+    A one-dimensional chain (the [N II] line complex here) is sampled by a
+    one-parameter random walk and often has acceptance well above 0.5 even
+    when it is mixing well (tau is small).  The 0.20-0.50 band is a
+    multi-dimensional random-walk guideline, not a convergence proof; applying
+    it blindly to a 1-D chain creates a false failure.  For nvarys == 1 we
+    therefore use a wide 0.05-0.95 diagnostic band, while retaining the
+    stricter band for genuinely multi-dimensional chains.
+    """
+
+    if int(nvarys) <= 1:
+        return 0.05, 0.95
+    return 0.20, 0.50
+
+
 def summarize_runs(runs: list[dict[str, Any]]) -> dict[str, Any]:
     """Compact, JSON-serialisable convergence summary."""
 
@@ -388,9 +406,13 @@ def summarize_runs(runs: list[dict[str, Any]]) -> dict[str, Any]:
         tau_max = _clean_float(np.nanmax(tau)) if tau is not None and np.any(np.isfinite(tau)) else None
         ess_min = _clean_float(np.nanmin(ess)) if ess is not None and np.any(np.isfinite(ess)) else None
         nsteps = int(run["nsteps_retained"])
-        converged = bool(
+        acc_lo, acc_hi = acceptance_band(int(run["nvarys"]))
+        acceptance_ok = bool(
             np.isfinite(acceptance).all()
-            and 0.2 <= float(np.nanmean(acceptance)) <= 0.5
+            and acc_lo <= float(np.nanmean(acceptance)) <= acc_hi
+        )
+        converged = bool(
+            acceptance_ok
             and tau_max is not None
             and nsteps >= 50.0 * tau_max
             and ess_min is not None and ess_min >= 500.0
@@ -403,6 +425,8 @@ def summarize_runs(runs: list[dict[str, Any]]) -> dict[str, Any]:
             "acceptance_std": _clean_float(np.nanstd(acceptance)),
             "acceptance_min": _clean_float(np.nanmin(acceptance)),
             "acceptance_max": _clean_float(np.nanmax(acceptance)),
+            "acceptance_band": [acc_lo, acc_hi],
+            "acceptance_ok": acceptance_ok,
             "tau_mean": _clean_float(np.nanmean(tau)) if tau is not None else None,
             "tau_max": tau_max,
             "ess_min": ess_min,

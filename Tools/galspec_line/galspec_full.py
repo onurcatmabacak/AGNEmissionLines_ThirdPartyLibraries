@@ -1478,6 +1478,17 @@ def run_full(args, cfg, config_path):
             "tau_max": sampling.get("tau_max"),
             "tau_status": sampling.get("tau_status"),
             "nsteps_over_tau_max": (
+                float(
+                    (sampling.get("n_steps_kept")
+                     or sampling.get("n_samples_discarded")
+                     or sampling.get("nsteps")) / sampling["tau_max"]
+                )
+                if (sampling.get("n_steps_kept")
+                    or sampling.get("n_samples_discarded")
+                    or sampling.get("nsteps")) and sampling.get("tau_max")
+                else None
+            ),
+            "total_steps_over_tau_max": (
                 float(sampling["nsteps"] / sampling["tau_max"])
                 if sampling.get("nsteps") and sampling.get("tau_max")
                 else None
