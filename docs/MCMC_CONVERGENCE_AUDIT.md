@@ -18,6 +18,7 @@ plus ESS and a dimension-appropriate acceptance check.
 | GalSpec | `galspec_line_long` | emcee | 20,000 | 1156.1 | 17.3 | **not converged** |
 | GalSpec | `galspec_long_70k` | emcee | 65,000 | running | running | **in progress** |
 | QGfit | `qgfit` continuum | emcee | 800 | 99.5 | 8.0 | **not converged**; chain is not used for the continuum error |
+| QGfit | `work/qgfit_long` | emcee | 5,300 | running | running | **in progress** (5,500 steps, 200 burn) |
 | SHEAP | `sheap_line` | JAX Adam + bootstrap | n/a | n/a | n/a | **not an MCMC** |
 | PAHFIT | `pahfit_mir` | least-squares + bootstrap | n/a | n/a | n/a | **not an MCMC**; convergence counts are MC refits |
 | PyQSOFitSpec | `pyqsofitspec_line` | parametric bootstrap | n/a | n/a | n/a | **not an MCMC** |
@@ -52,7 +53,8 @@ validity flags still matter, but they are out of scope for this gate.
 
 - QGfit's committed continuum chain is still 8 tau; its README and `run.json`
   explicitly say it is not converged and it is not used as the continuum
-  error.  A 5,000-step run is the required follow-up, not a claim.
+  error.  A 5,500-step run is now active; it is not a completed correction
+  until its tau is checked.
 - GalSpec's production 4,000-step output remains a documented caveat until the
   70,000-step run is complete.
 - PyQSOFit's 55,000-step run is in progress; its result must be checked, not
