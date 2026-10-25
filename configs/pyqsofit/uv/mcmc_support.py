@@ -392,7 +392,8 @@ def summarize_runs(runs: list[dict[str, Any]]) -> dict[str, Any]:
             np.isfinite(acceptance).all()
             and 0.2 <= float(np.nanmean(acceptance)) <= 0.5
             and tau_max is not None
-            and nsteps >= 20.0 * tau_max
+            and nsteps >= 50.0 * tau_max
+            and ess_min is not None and ess_min >= 500.0
         )
         out[run["label"]] = {
             "nvarys": int(run["nvarys"]),

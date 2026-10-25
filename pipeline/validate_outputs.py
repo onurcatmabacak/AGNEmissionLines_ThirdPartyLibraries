@@ -93,6 +93,8 @@ def validate(catalog_path: Path = CATALOG, schema_path: Path = SCHEMA,
                 continue
             if tool_dir.name in {"statistical_confirmation"}:
                 continue
+            if (tool_dir / ".running").exists():
+                continue
             files = [p for p in tool_dir.rglob("*") if p.is_file()]
             if not files:
                 continue

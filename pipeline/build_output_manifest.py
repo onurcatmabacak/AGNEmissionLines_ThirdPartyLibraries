@@ -103,6 +103,8 @@ def build() -> dict:
         for tool_dir in sorted((ROOT / "outputs" / source_key).iterdir()):
             if not tool_dir.is_dir() or tool_dir.name.startswith("."):
                 continue
+            if (tool_dir / ".running").exists():
+                continue
             tool = tool_dir.name
             reg = BY_NAME.get(tool)
             run = {}
@@ -114,7 +116,7 @@ def build() -> dict:
                     run = {}
             artifacts = []
             for path in sorted(tool_dir.rglob("*")):
-                if not path.is_file() or path.name == ".snakemake_done":
+                if not path.is_file() or path.name in (".snakemake_done", ".running"):
                     continue
                 rel = path.relative_to(ROOT).as_posix()
                 artifacts.append({

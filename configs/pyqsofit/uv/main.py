@@ -414,8 +414,10 @@ q_mle.Fit(name='result',  # customize the name of given targets. Default: plate-
               'save_fig_path': './',  # The output path of the figure
               'broad_fwhm'   : narrow_line_velocity_limit  # km/s, lower limit that code decide if a line component belongs to broad component
           },
-          kwargs_conti_emcee={'seed': MCMC_CFG["seed"]},
-          kwargs_line_emcee={'seed': MCMC_CFG["seed"]})
+          kwargs_conti_emcee={'seed': MCMC_CFG["seed"],
+                              'workers': 1},
+          kwargs_line_emcee={'seed': MCMC_CFG["seed"],
+                             'workers': int(os.environ.get("PYQSOFIT_MCMC_WORKERS", "1"))})
 
 end = timeit.default_timer()
 
