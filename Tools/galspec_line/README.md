@@ -191,40 +191,40 @@ continuum.  LSQ is only the starting point and a cross-check.
 | pixels / line-free pixels | 4523 / 3236 |
 | free parameters | 39 |
 | chi2/nu raw / floored | 3.709 / 2.159 |
-| LSQ start | 39.3 s |
-| emcee | 80 walkers x 4000 steps, burn 1200 |
-| acceptance fraction | 0.188 |
-| tau_max | 342.6 steps |
-| retained nsteps / tau_max | 8.2 |
-| total nsteps / tau_max | 11.7 |
-| effective sample size | 654 |
-| saved posterior | 37334 samples, thin 6 |
-| MCMC wall time | 3596.6 s |
-| total wall time | 3703.0 s |
+| LSQ start | 39.8 s |
+| emcee | 200 walkers x 30,000 steps, burn 5,000 (`DEMove`, gamma0=0.20) |
+| acceptance fraction | 0.267 |
+| tau_max | 299.8 steps |
+| finite tau | 39/39 |
+| retained nsteps / tau_max | 83.4 |
+| total nsteps / tau_max | 100.1 |
+| effective sample size (min / median) | 16679 / 25783 |
+| saved posterior | 200000 samples, thin 25 |
+| MCMC wall time | 9358.0 s |
+| total wall time | 9595.3 s |
 
 Line measurements (posterior median +/- 16th/84th percentile half-width):
 
 | line | component | flux (1e-17) | FWHM (km/s) | velocity (km/s) | S/N |
 |---|---|---:|---:|---:|---:|
-| Hbeta | narrow | 1778.6 +/- 24.4 | 1698 +/- 17 | -3 | 73.0 |
-| Hbeta | broad | 1937.5 +/- 34.4 | 7110 +/- 92 | -29 | 56.4 |
-| Hbeta | total | 3718.5 +/- 28.6 | 1959 +/- 23 | 0 | 129.9 |
-| OIII_5007 | narrow | 834.6 +/- 21.4 | 835 +/- 14 | -141 | 39.0 |
-| OIII_5007 | wing | 844.8 +/- 26.2 | 1977 +/- 43 | -890 | 32.2 |
-| OIII_5007 | total | 1680.6 +/- 13.1 | 1026 +/- 15 | -178 | 128.8 |
-| MgII_2796 | broad | 818.1 +/- 10.6 | 2114 +/- 45 | -261 | 77.5 |
-| Hgamma | total | 769.6 +/- 15.1 | 1665 +/- 20 | 0 | 51.1 |
-| Hdelta | total | 257.8 +/- 11.3 | 1665 +/- 20 | 0 | 22.8 |
-| OII_3726 | narrow | 197.1 +/- 29.8 | 1698 +/- 17 | -3 | 6.6 |
-| NeIII_3869 | narrow | 232.3 +/- 11.4 | 1698 +/- 17 | -3 | 20.3 |
+| Hbeta | narrow | 1665.9 +/- 36.9 | 1622 +/- 23 | 2 | 45.1 |
+| Hbeta | broad | 1989.7 +/- 32.7 | 6419 +/- 199 | -65 | 60.9 |
+| Hbeta | total | 3654.2 +/- 33.9 | 1915 +/- 24 | 0 | 107.8 |
+| OIII_5007 | narrow | 844.4 +/- 31.7 | 846 +/- 19 | -148 | 26.6 |
+| OIII_5007 | wing | 868.3 +/- 32.7 | 2061 +/- 51 | -894 | 26.6 |
+| OIII_5007 | total | 1712.2 +/- 14.0 | 1039 +/- 16 | -185 | 122.4 |
+| MgII_2796 | broad | 817.8 +/- 9.5 | 2161 +/- 36 | -262 | 86.1 |
+| Hgamma | total | 740.7 +/- 12.7 | 1590 +/- 26 | 0 | 58.1 |
+| Hdelta | total | 254.1 +/- 9.7 | 1589 +/- 26 | 0 | 26.3 |
+| OII_3726 | narrow | 174.3 +/- 47.9 | 1622 +/- 23 | 2 | 3.6 |
+| NeIII_3869 | narrow | 222.7 +/- 10.2 | 1622 +/- 23 | 2 | 21.8 |
 
-The run is a real full-continuum posterior, but it is not a 50-tau
-publication chain: `tau_max=342.6` steps and retained `nsteps/tau_max=8.2`.  The
-limited chain length is the explicit compromise for a 39-parameter global
-model on a shared CPU host; the spectral model was not reduced.  The saved
-37,334 samples (thin 6, 224,000 post-burn draws) are a posterior, not an
-interpolation of a handful of points, and `effective_sample_size=654` is
-reported so the correlation is visible.
+The committed product is the 30,000-step DEMove chain: acceptance 0.267,
+tau_max 299.8 steps, 25,000 retained steps = **83.4 tau**, 39/39 finite tau
+and ESS 16,679 (median 25,783).  It is a converged posterior, not a
+"posterior with a caveat".  The earlier 4,000-step product (8.2 tau) and the
+25,000/70,000/110,000-step StretchMove chains are superseded and remain
+documented as not converged in `docs/MCMC_CONVERGENCE_AUDIT.md`.
 
 ## Comparison (committed run)
 

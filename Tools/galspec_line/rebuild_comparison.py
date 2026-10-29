@@ -65,6 +65,9 @@ def main(argv=None) -> int:
         raise SystemExit(f"no galspec_lines.csv in {product}")
     cfg_path = product / "config.effective.json"
     cfg = json.loads(cfg_path.read_text()) if cfg_path.exists() else {}
+    # The container mount name is arbitrary; take the source key from the
+    # effective config so reference lookup never depends on the mount point.
+    source_key = (cfg.get("_effective") or {}).get("object") or product.name
 
     rows = load_rows(product)
     comparison = gf.extended_comparison(product, rows, cfg, args.reference_root)
@@ -77,7 +80,7 @@ def main(argv=None) -> int:
             run = json.loads(run_path.read_text())
             root = args.reference_root
             run["reference_runtimes"] = {
-                tool: gr._reference_runtime(gr._reference_dir(root, tool, product.name))
+                tool: gr._reference_runtime(gr._reference_dir(root, tool, source_key))
                 for tool in ("pyqsofit_uv", "pyqsofitspec_line", "gandalf_line",
                              "s3fit_line", "qgfit", "sheap_line")
             }

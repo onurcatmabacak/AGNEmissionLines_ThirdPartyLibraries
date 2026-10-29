@@ -14,10 +14,10 @@ plus ESS and a dimension-appropriate acceptance check.
 | PyQSOFit | `pyqsofit/mcmc_long` | emcee | 1,900 | 255.2 (Hb) | 7.4 (Hb) | **not converged** |
 | PyQSOFit | `pyqsofit/mcmc_converged` | emcee | 12,900 | 801.8 (Hb) | 16.1 (Hb) | **not converged**; Mg II and 1-D [N II] pass |
 | PyQSOFit | `pyqsofit/mcmc_long_65k` | emcee | 50,000 | running | running | **in progress** (65,000 steps, 15,000 burn) |
-| GalSpec | `galspec_line` | emcee | 2,800 | 342.6 | 8.2 | **not converged**; production caveat |
+| GalSpec | `outputs/galspec_line/04592649654_z_0.5874` | emcee (DEMove, gamma0=0.20) | 25,000 | 299.8 | **83.4** | **converged**; acceptance 0.267, 39/39 finite τ, ESS 16,679 / 25,783 |
 | GalSpec | `galspec_line_long` | emcee | 20,000 | 1156.1 | 17.3 | **not converged** |
-| GalSpec | `work/galspec_long_70k` | emcee | 60,000 | running | running | **in progress** (80,000 steps, 20,000 burn) |
-| GalSpec | `work/galspec_prod200_v2` | emcee (DEMove, gamma0=0.20) | 17,000 | 273.7 | **62.1** | **converged**; acceptance 0.262, 39/39 finite tau, min ESS 12,421 |
+| GalSpec | `work/galspec_long_110k` | emcee (Stretch) | 90,000 | 2167.3 | 41.5 | **not converged**; 80-walker StretchMove chain, superseded |
+| GalSpec | `work/galspec_prod200_v2` | emcee (DEMove, gamma0=0.20) | 17,000 | 273.7 | **62.1** | converged (superseded by the 30,000-step product) |
 | QGfit | `qgfit` continuum | emcee | 800 | 99.5 | 8.0 | **not converged**; chain is not used for the continuum error |
 | QGfit | `work/qgfit_long` | emcee | 5,000 | running | running | **in progress** (6,500 steps, 1,500 burn) |
 | SHEAP | `sheap_line` | JAX Adam + bootstrap | n/a | n/a | n/a | **not an MCMC** |
@@ -104,8 +104,10 @@ Two corrections are now in `galspec_full.run_full_mcmc`:
 
 The acceptance problem was separate and real: 2.38/sqrt(2*ndim) = 0.269
 over-steps against the positivity prior (0.139 measured, 0.080 at 0.35,
-0.034 at 0.45).  With `gamma0 = 0.20` acceptance is 0.262 while tau_max stays
-at 274 steps, so the same 20,000-step budget now reaches 62 tau.
+0.034 at 0.45).  With `gamma0 = 0.20` acceptance is 0.262-0.267 while tau_max
+stays near 274-300 steps, so the same budget buys far more tau: 20,000 steps
+reach 62 tau and the 30,000-step product in `outputs/galspec_line/` reaches
+**83.4** retained tau with 39/39 finite tau and ESS 16,679.
 
 ## Open corrections
 
@@ -113,8 +115,9 @@ at 274 steps, so the same 20,000-step budget now reaches 62 tau.
   explicitly say it is not converged and it is not used as the continuum
   error.  A 6,500-step/1,500-burn run is now active; it is not a completed
   correction until its tau and Rhat are checked.
-- GalSpec's production 4,000-step output remains a documented caveat until the
-  70,000-step run is complete, but `work/galspec_prod200_v2` (62.1 tau,
-  acceptance 0.262, 39/39 finite tau) is a converged 20,000-step product.
+- GalSpec is closed: `outputs/galspec_line/04592649654_z_0.5874` is the
+  30,000-step product (83.4 retained tau, acceptance 0.267, 39/39 finite tau,
+  ESS 16,679).  The 4,000-, 25,000-, 70,000- and 110,000-step chains remain
+  documented as not converged and are superseded.
 - PyQSOFit's 55,000-step run is in progress; its result must be checked, not
   assumed converged.

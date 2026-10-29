@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
   "model_mode": "full",
-  "description": "Production GalSpec full-continuum + emission-line model for an SDSS QSO.  Global rest-frame polynomial continuum, park2022 Fe II template, one kinematic component per narrow-line group, broad Balmer and Mg II components, all Balmer lines available in the SDSS coverage, [O II] 3726/3729, [Ne III] 3869/3967, [O III] 4363/4959/5007 with a broad wing, [Ne V] 3426, He II 4686, [S II] 4068/4076, [O I] 6300/6363 and [S III] 6312.  emcee samples the full model; auxiliary windows are no longer fitted separately.",
+  "description": "GalSpec production 30k: same model and DEMove gamma0=0.20 as production_v2, 30,000 steps with 5,000 burn for ~91 tau.",
   "input": {
     "redshift": "auto",
     "flux_unit": "auto",
@@ -665,17 +665,20 @@
   },
   "mcmc": {
     "enabled": true,
-    "nwalkers": 80,
-    "nsteps": 4000,
-    "nburn": 1200,
+    "nwalkers": 200,
+    "nsteps": 30000,
+    "nburn": 5000,
     "thin": 1,
-    "seed": 42,
+    "seed": 46,
     "initial_jitter_frac": 0.02,
     "max_samples_for_derived": 4000,
-    "max_mcmc_samples_saved": 40000,
+    "max_mcmc_samples_saved": 200000,
     "autocorr_tol": 0.0,
     "progress": false,
-    "ncores": 1
+    "ncores": 8,
+    "note": "30,000-step extension of production_v2: gamma0=0.20, 200 walkers, 5,000 burn (18 tau), 25,000 retained (~91 tau at the measured tau_max 273.7).",
+    "move": "demove",
+    "gamma0": 0.2
   },
   "nested": {
     "enabled": false,
