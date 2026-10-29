@@ -13,13 +13,13 @@ plus ESS and a dimension-appropriate acceptance check.
 | PyQSOFit | `pyqsofit/mcmc` | emcee | 8 | not estimable | — | **initialization test only** |
 | PyQSOFit | `pyqsofit/mcmc_long` | emcee | 1,900 | 255.2 (Hb) | 7.4 (Hb) | **not converged** |
 | PyQSOFit | `pyqsofit/mcmc_converged` | emcee | 12,900 | 801.8 (Hb) | 16.1 (Hb) | **not converged**; Mg II and 1-D [N II] pass |
-| PyQSOFit | `pyqsofit/mcmc_long_65k` | emcee | 50,000 | running | running | **in progress** (65,000 steps, 15,000 burn) |
+| PyQSOFit | `outputs/pyqsofit/04592649654_z_0.5874/mcmc_long_65k` | emcee | 50,000 | 797.1 (Hb) / 784.5 (cont.) | **62.7** / 63.7 | **converged** on all four blocks; ESS 6,273 (Hb) / 6,373 (cont.) |
 | GalSpec | `outputs/galspec_line/04592649654_z_0.5874` | emcee (DEMove, gamma0=0.20) | 25,000 | 299.8 | **83.4** | **converged**; acceptance 0.267, 39/39 finite τ, ESS 16,679 / 25,783 |
 | GalSpec | `galspec_line_long` | emcee | 20,000 | 1156.1 | 17.3 | **not converged** |
 | GalSpec | `work/galspec_long_110k` | emcee (Stretch) | 90,000 | 2167.3 | 41.5 | **not converged**; 80-walker StretchMove chain, superseded |
 | GalSpec | `work/galspec_prod200_v2` | emcee (DEMove, gamma0=0.20) | 17,000 | 273.7 | **62.1** | converged (superseded by the 30,000-step product) |
 | QGfit | `qgfit` continuum | emcee | 800 | 99.5 | 8.0 | **not converged**; chain is not used for the continuum error |
-| QGfit | `work/qgfit_long` | emcee | 5,000 | running | running | **in progress** (6,500 steps, 1,500 burn) |
+| QGfit | `outputs/qgfit/04592649654_z_0.5874/long` | emcee (host fixed) | 8,500 | 151.6 | **56.1** | **converged**; acceptance 0.374, width ratio 0.59 |
 | SHEAP | `sheap_line` | JAX Adam + bootstrap | n/a | n/a | n/a | **not an MCMC** |
 | PAHFIT | `pahfit_mir` | least-squares + bootstrap | n/a | n/a | n/a | **not an MCMC**; convergence counts are MC refits |
 | PyQSOFitSpec | `pyqsofitspec_line` | parametric bootstrap | n/a | n/a | n/a | **not an MCMC** |
@@ -111,13 +111,16 @@ reach 62 tau and the 30,000-step product in `outputs/galspec_line/` reaches
 
 ## Open corrections
 
-- QGfit's committed continuum chain is still 8 tau; its README and `run.json`
-  explicitly say it is not converged and it is not used as the continuum
-  error.  A 6,500-step/1,500-burn run is now active; it is not a completed
-  correction until its tau and Rhat are checked.
+- QGfit is closed for the continuum: `outputs/qgfit/04592649654_z_0.5874/long`
+  (host block fixed at LSQ, 100 x 10,000, 1,500 burn) reaches N_tau 56.1 with
+  acceptance 0.374 and an MCMC/LSQ width ratio of 0.59.  The committed
+  production product still quotes LSQ covariance for its line errors, and the
+  line MCMC stays disabled (the pilot posterior is broken, not short).
 - GalSpec is closed: `outputs/galspec_line/04592649654_z_0.5874` is the
   30,000-step product (83.4 retained tau, acceptance 0.267, 39/39 finite tau,
   ESS 16,679).  The 4,000-, 25,000-, 70,000- and 110,000-step chains remain
   documented as not converged and are superseded.
-- PyQSOFit's 55,000-step run is in progress; its result must be checked, not
-  assumed converged.
+- PyQSOFit is closed: `outputs/pyqsofit/04592649654_z_0.5874/mcmc_long_65k`
+  (65,000 steps / 15,000 burn / 50,000 retained) is converged on all four
+  blocks — Hbeta 62.7 tau, continuum 63.7 tau, Mg II 308.6 tau, 1-D [N II]
+  1,834.6 tau; ESS 6,273 / 6,373 / 30,861 / 183,458.

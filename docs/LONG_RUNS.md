@@ -31,7 +31,11 @@ python pipeline/run_new_tools.py --source 04592649654_z_0.5874 \
 
 ## GalSpec
 
-The default `mcmc.nsteps=4000` reaches only ~8.2 retained τ.  A longer run:
+The committed product (`outputs/galspec_line/04592649654_z_0.5874`) is the
+30,000-step DEMove `gamma0=0.20` chain: acceptance 0.267, τ_max 299.8,
+**83.4 retained τ**, 39/39 finite τ.  The default `mcmc.nsteps=4000` reaches
+only ~8.2 retained τ, so use `configs/galspec_line/production_30k` for
+production.  A generic longer run:
 
 ```bash
 python pipeline/run_new_tools.py --source 04592649654_z_0.5874 \

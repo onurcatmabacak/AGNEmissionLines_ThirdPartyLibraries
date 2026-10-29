@@ -17,6 +17,7 @@ import argparse
 import hashlib
 import json
 import mimetypes
+import subprocess
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -95,6 +96,39 @@ def _caveat_index() -> dict:
     return {t["tool"]: t for t in data.get("tools", []) if "tool" in t}
 
 
+
+def _git_visible_files(root: Path, directory: Path) -> list[Path] | None:
+    """Files under *directory* that Git sees (tracked or untracked, not ignored).
+
+    The catalogue is the contract for the *committed* tree, so a locally
+    present but gitignored artifact (for example a 512 MB float64 chain that
+    exceeds GitHub's per-file limit) must not be catalogued: a clean checkout
+    would then fail validation with "catalog missing artifact".  Returns
+    ``None`` when *root* is not a Git work tree, in which case the caller
+    falls back to a plain recursive walk.
+    """
+    try:
+        rel = directory.resolve().relative_to(root.resolve()).as_posix()
+    except ValueError:
+        return None
+    try:
+        proc = subprocess.run(
+            ["git", "-C", str(root), "ls-files", "--cached", "--others",
+             "--exclude-standard", "-z", "--", rel],
+            capture_output=True, check=True,
+        )
+    except (OSError, subprocess.CalledProcessError):
+        return None
+    out = []
+    for raw in proc.stdout.split(b"\0"):
+        if not raw:
+            continue
+        path = root / raw.decode()
+        if path.is_file():
+            out.append(path)
+    return out
+
+
 def build() -> dict:
     sources = {s["key"]: s for s in iter_sources()}
     caveat_index = _caveat_index()
@@ -115,7 +149,10 @@ def build() -> dict:
             except Exception:
                 run = {}
         artifacts = []
-        for path in sorted(tool_dir.rglob("*")):
+        candidates = _git_visible_files(ROOT, tool_dir)
+        if candidates is None:
+            candidates = [p for p in tool_dir.rglob("*") if p.is_file()]
+        for path in sorted(candidates):
             if not path.is_file() or path.name in (".snakemake_done", ".running"):
                 continue
             rel = path.relative_to(ROOT).as_posix()

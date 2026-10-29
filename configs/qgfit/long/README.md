@@ -6,6 +6,9 @@ chain, which reached only N_tau = 8.0 (tau_max 99.5 steps) and had not burned
 in: its 200-step burn was only ~2 tau and the trace showed strong drift in
 `f_old`, `host_shift`, `sigma` and `m_s`.
 
-The 9,000-step run measured tau=154.7 and reached 48.5 tau; 8,500 retained gives 55 tau at that estimate.  This is still a check, not a
-guarantee: tau can grow.  The 5,500-step variant was superseded because its
-200-step burn inherited the same transient.
+Measured result (`outputs/qgfit/04592649654_z_0.5874/long`): tau_max 151.6,
+**N_tau = 56.1**, acceptance 0.374, MCMC/LSQ width ratio 0.59 —
+`continuum.mcmc.converged = true`.  The 9,000-step attempt reached 48.5 tau and
+was one step short of the gate; the host block must stay fixed, because freeing
+it puts a tau ~599 ridge back into the chain (that is why 6,500 free-host steps
+only reached 38 tau).
