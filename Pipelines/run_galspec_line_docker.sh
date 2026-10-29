@@ -80,10 +80,12 @@ else
 fi
 MOUNTS+=(-v "$OUT":/app/output)
 
-# Sibling tool outputs live next to OUT (outputs/<source>/<tool>).  Mount the
-# parent read-only so galspec_comparison.csv and reference runtimes are built
-# inside the container without writing outside OUT.
-REF="$(dirname "$OUT")"
+# Sibling tool outputs for the same source live under the same outputs/ root
+# (outputs/<tool>/<source>/).  Mount that read-only so galspec_comparison.csv
+# and the reference runtimes are built without writing outside OUT.
+source "$(dirname "${BASH_SOURCE[0]}")/_output_layout.sh"
+output_layout_resolve "$OUT"
+REF="$OUT_REFS"
 MOUNTS+=(-v "$REF":/app/references:ro)
 ARGS+=(--reference-dir /app/references)
 

@@ -2,7 +2,7 @@
 """Build the formal catalogue of every committed output tree.
 
 The catalogue is the machine-readable companion to ``docs/OUTPUT_SCHEMA.md``.
-It records, for every ``outputs/<source>/<tool>/`` directory:
+It records, for every ``outputs/<tool>/<source>_z_<z>/`` directory:
 
 * the canonical source key and registered tool,
 * the tool kind and run status (from ``run.json`` when available),
@@ -27,7 +27,7 @@ sys_path = str(ROOT)
 import sys  # noqa: E402
 if sys_path not in sys.path:
     sys.path.insert(0, sys_path)
-from pipeline.io_layout import iter_sources, load_source  # noqa: E402
+from pipeline.io_layout import iter_output_dirs, iter_sources, load_source  # noqa: E402
 from pipeline.tool_registry import BY_NAME  # noqa: E402
 
 SCHEMA_VERSION = "1.0.0"
@@ -99,56 +99,56 @@ def build() -> dict:
     sources = {s["key"]: s for s in iter_sources()}
     caveat_index = _caveat_index()
     entries = []
-    for source_key in sorted(sources):
-        for tool_dir in sorted((ROOT / "outputs" / source_key).iterdir()):
-            if not tool_dir.is_dir() or tool_dir.name.startswith("."):
+    for tool, source_key, tool_dir in iter_output_dirs():
+        if source_key not in sources:
+            # A product tree whose source is not registered under inputs/ is a
+            # legacy tree; validate_outputs.py reports it separately.
+            continue
+        if (tool_dir / ".running").exists():
+            continue
+        reg = BY_NAME.get(tool)
+        run = {}
+        run_json = tool_dir / "run.json"
+        if run_json.exists():
+            try:
+                run = json.loads(run_json.read_text())
+            except Exception:
+                run = {}
+        artifacts = []
+        for path in sorted(tool_dir.rglob("*")):
+            if not path.is_file() or path.name in (".snakemake_done", ".running"):
                 continue
-            if (tool_dir / ".running").exists():
-                continue
-            tool = tool_dir.name
-            reg = BY_NAME.get(tool)
-            run = {}
-            run_json = tool_dir / "run.json"
-            if run_json.exists():
-                try:
-                    run = json.loads(run_json.read_text())
-                except Exception:
-                    run = {}
-            artifacts = []
-            for path in sorted(tool_dir.rglob("*")):
-                if not path.is_file() or path.name in (".snakemake_done", ".running"):
-                    continue
-                rel = path.relative_to(ROOT).as_posix()
-                artifacts.append({
-                    "path": rel,
-                    "role": role(path),
-                    "media_type": media_type(path),
-                    "bytes": path.stat().st_size,
-                    "sha256": sha256(path),
-                })
-            if not artifacts:
-                continue
-            status = run.get("status")
-            if not status:
-                # A tool-native run.json is not standardized across upstream
-                # codes.  A present product tree with a valid run.json or a
-                # non-empty headline is still an "ok" artifact run; absence of
-                # both is explicitly recorded as unknown.
-                status = "ok" if (run_json.exists() or headline(run)) else "artifacts_present"
-            cav = caveat_index.get(tool, {})
-            entries.append({
-                "source_key": source_key,
-                "tool": tool,
-                "kind": reg.kind if reg else "unknown",
-                "run_status": str(status),
-                "quality": cav.get("status", "unknown"),
-                "severity": cav.get("severity", "info"),
-                "caveat": cav.get("caveat", ""),
-                "headline": headline(run),
-                "caveats": caveats(run),
-                "provenance": {"run_json": str(run_json.relative_to(ROOT)) if run_json.exists() else None},
-                "artifacts": artifacts,
+            rel = path.relative_to(ROOT).as_posix()
+            artifacts.append({
+                "path": rel,
+                "role": role(path),
+                "media_type": media_type(path),
+                "bytes": path.stat().st_size,
+                "sha256": sha256(path),
             })
+        if not artifacts:
+            continue
+        status = run.get("status")
+        if not status:
+            # A tool-native run.json is not standardized across upstream
+            # codes.  A present product tree with a valid run.json or a
+            # non-empty headline is still an "ok" artifact run; absence of
+            # both is explicitly recorded as unknown.
+            status = "ok" if (run_json.exists() or headline(run)) else "artifacts_present"
+        cav = caveat_index.get(tool, {})
+        entries.append({
+            "source_key": source_key,
+            "tool": tool,
+            "kind": reg.kind if reg else "unknown",
+            "run_status": str(status),
+            "quality": cav.get("status", "unknown"),
+            "severity": cav.get("severity", "info"),
+            "caveat": cav.get("caveat", ""),
+            "headline": headline(run),
+            "caveats": caveats(run),
+            "provenance": {"run_json": str(run_json.relative_to(ROOT)) if run_json.exists() else None},
+            "artifacts": artifacts,
+        })
     return {
         "schema_version": SCHEMA_VERSION,
         "generated_utc": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),

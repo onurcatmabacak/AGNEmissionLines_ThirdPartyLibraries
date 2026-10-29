@@ -52,6 +52,8 @@ fi
 mkdir -p "$OUT"
 IN="$(realpath "$IN")"
 OUT="$(realpath "$OUT")"
+source "$(dirname "${BASH_SOURCE[0]}")/_output_layout.sh"
+output_layout_resolve "$OUT"
 CONFIG="$(realpath "$CONFIG")"
 
 if ! docker image inspect rxte_xspec >/dev/null 2>&1; then
@@ -64,7 +66,7 @@ fi
 IMAGE_SIZE="$(docker image inspect rxte_xspec --format '{{.Size}}' 2>/dev/null || echo 0)"
 REPO_COMMIT="$(git -C "$REPO_ROOT" rev-parse HEAD 2>/dev/null || true)"
 if [ -z "$SOURCE_KEY" ]; then
-  SOURCE_KEY="$(basename "$(dirname "$OUT")")"
+  SOURCE_KEY="$OUT_SOURCE"
 fi
 
 ARGS=(

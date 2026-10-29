@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 """Compare the PyQSOFitSpec line fluxes with the sibling tools in this repo.
 
-Reads the outputs already written under ``outputs/<source_key>/`` (PyQSOFit,
+Reads the outputs already written under ``outputs/<tool>/<source_key>/`` (PyQSOFit,
 GANDALF, S3Fit, GalSpec, QGfit) and the PyQSOFitSpec totals, and writes
 ``cross_tool_comparison.csv`` / ``.json`` into the PyQSOFitSpec output
 directory.  Standard library only; run it on the host after the container.
 
     python3 Tools/pyqsofitspec_line/compare_outputs.py \
-        outputs/04592649654_z_0.5874
+        outputs/<tool>/04592649654_z_0.5874
 
 Totals compared (1e-17 erg s-1 cm-2, rest-frame vacuum wavelengths):
 
@@ -223,7 +223,7 @@ def qgfit_totals(root: Path):
 def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("source_dir", help="outputs/<source_key> directory")
+    ap.add_argument("source_dir", help="outputs/<tool>/<source_key> directory")
     args = ap.parse_args(argv)
     root = Path(args.source_dir).resolve()
     out_dir = root / "pyqsofitspec_line"

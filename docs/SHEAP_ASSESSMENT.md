@@ -208,7 +208,7 @@ range.
 bash Pipelines/build_images.sh sheap_line
 bash Pipelines/run_sheap_line_docker.sh \
   inputs/04592649654_z_0.5874 \
-  outputs/04592649654_z_0.5874/sheap_line \
+  outputs/sheap_line/04592649654_z_0.5874 \
   --z 0.58741307 --variants
 ```
 
@@ -231,4 +231,4 @@ timing is in `run.json.runtime`.
   the reader use GalSpec's [O III] wing, 748, as the total, 1619).
 * `docs/LINE_FITTING_TOOLS.md`, `docs/MCMC_AND_STATISTICS.md`,
   `docs/CAVEAT_FIXES.md`, `docs/OUTPUTS.md`, `configs/README.md` — updated.
-* `outputs/04592649654_z_0.5874/sheap_line/` — regenerated.
+* `outputs/sheap_line/04592649654_z_0.5874/` — regenerated.

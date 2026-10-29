@@ -26,6 +26,7 @@ RUN pip install --no-cache-dir --no-deps \
 
 COPY Tools/galspec_line/run_galspec.py /app/galspec_line/run_galspec.py
 COPY Tools/galspec_line/galspec_full.py /app/galspec_line/galspec_full.py
+COPY Tools/galspec_line/rebuild_comparison.py /app/galspec_line/rebuild_comparison.py
 COPY configs/galspec_line /app/config
 
 RUN mkdir -p /app/input /app/output && chmod 777 /app/output

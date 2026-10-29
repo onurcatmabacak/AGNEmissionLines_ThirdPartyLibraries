@@ -3,7 +3,7 @@
 This directory mirrors the headline products of the canonical low-z run of
 `Tools/gandalf_line/` on the public GANDALF v1.5 SDSS example
 `spSpec-51908-0277-120.fit` (z=0.0858772).  The authoritative, complete output
-is `outputs/spSpec-51908-0277-120_z_0.0859/gandalf_line/`; the raw input and
+is `outputs/gandalf_line/spSpec-51908-0277-120_z_0.0859/`; the raw input and
 provenance are in `inputs/spSpec-51908-0277-120_z_0.0859/`.
 
 The copied files are `gandalf_lines.csv`, `gandalf_fit.png`, `run.json` and

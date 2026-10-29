@@ -1,11 +1,20 @@
 # `configs/galspec_line/`
 
-Two complete configurations are shipped:
+Configurations shipped:
 
-| directory | model | status |
+| directory | model / sampler | status |
 |---|---|---|
-| `default/` | full-continuum global model, 2280-6460 A rest | production recipe |
+| `production_30k/` | full-continuum model, DEMove `gamma0=0.20`, 200 walkers x 30,000 steps (5,000 burn) | **current production recipe** (~91 tau) |
+| `production_v2/` | same model and move, 200 x 20,000 (3,000 burn) | previous production recipe (62 tau) |
+| `production_demove/` | same model, `DEMove` at the Gaussian-optimal `gamma0=0.269`, 200 x 20,000 | superseded: 0.139 acceptance, 7/39 finite tau |
+| `pilot200/` | 200-walker mixing pilot, 12,000 steps | pilot only |
+| `long/` | 80-walker StretchMove long chain, 25,000 steps | superseded: 17 tau |
+| `default/` | full-continuum global model, 2280-6460 A rest, 80 walkers x 4,000 steps | quick look / smoke test |
 | `reduced/` | legacy 4720-5150 A H-beta/[O III] window | reproducibility only; not the production run |
+
+The `outputs/galspec_line/04592649654_z_0.5874/` product is the
+`production_30k` run; see its `README.md` for the measured tau, ESS and
+acceptance.
 
 `default/config.json` selects the full model with `"model_mode": "full"`.
 `reduced/config.json` has no `model_mode`, so the adapter uses the original

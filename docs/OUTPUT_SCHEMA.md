@@ -3,7 +3,7 @@
 Every science product is written under:
 
 ```text
-outputs/<source_key>/<tool_name>/
+outputs/<tool_name>/<source_key>/
 ```
 
 `source_key` is the canonical `inputs/<source_key>/source.json` directory name.
@@ -39,10 +39,10 @@ per-tool `README.md`/`run.json`.
   "caveat": "Local H-beta/[O III] fit ... provisional ...",
   "headline": {},
   "caveats": [],
-  "provenance": {"run_json": "outputs/PDS456_z_0.1840/crossmission/run.json"},
+  "provenance": {"run_json": "outputs/crossmission/PDS456_z_0.1840/run.json"},
   "artifacts": [
     {
-      "path": "outputs/PDS456_z_0.1840/crossmission/xray_optical_comparison.csv",
+      "path": "outputs/crossmission/PDS456_z_0.1840/xray_optical_comparison.csv",
       "role": "table",
       "media_type": "text/csv",
       "bytes": 481,
@@ -79,7 +79,7 @@ error.  `sha256` binds the catalogue to the exact committed bytes.
 
 * JSON Schema validity;
 * every artifact exists, has the recorded byte count and SHA-256;
-* every current `outputs/<source>/<tool>/` tree appears in the catalogue;
+* every current `outputs/<tool>/<source>/` tree appears in the catalogue;
 * every source key exists under `inputs/`;
 * every tool is registered;
 * no path traversal and no zero-byte artifacts.

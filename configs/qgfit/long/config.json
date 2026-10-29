@@ -1,5 +1,5 @@
 {
-  "_comment": "QGfit long continuum chain: 100 walkers x 6,500 steps (1,500 burn), 5,000 retained. The old 1,000-step/200-burn chain had 8 tau and a strong initial transient; line MCMC remains disabled after the unstable 50x300 pilot.",
+  "_comment": "QGfit host-fixed continuum chain: 100 walkers x 10,000 steps (1,500 burn), 8,500 retained. Host/BC03 parameters are fixed at the LSQ solution because their flat ridge cannot converge; line MCMC remains disabled after the unstable 50x300 pilot.",
   "z": null,
   "mask_and_mask": true,
   "qgfit": {
@@ -21,7 +21,7 @@
     "conti_mcmc": true,
     "conti_workers": 1,
     "conti_nwalkers": 100,
-    "conti_steps": 6500,
+    "conti_steps": 10000,
     "conti_burn": 1500,
     "conti_thin": 1,
     "conti_progress": false,
@@ -61,7 +61,8 @@
     "mcmc_seed": 42,
     "mcmc_init_scale": 0.0,
     "mcmc_use_correlations": false,
-    "line_mcmc_note": "50x300 line-MCMC pilot rejected: per-complex tau=20-42 steps, N_tau=5-11, and redchi_mcmc ~6e10 versus LSQ chi2_nu=11.5; LSQ covariance retained."
+    "line_mcmc_note": "50x300 line-MCMC pilot rejected: per-complex tau=20-42 steps, N_tau=5-11, and redchi_mcmc ~6e10 versus LSQ chi2_nu=11.5; LSQ covariance retained.",
+    "mcmc_fix_host": true
   },
   "reference_tools": [
     "pyqsofit_uv",

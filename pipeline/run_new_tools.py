@@ -8,7 +8,7 @@ Examples
     .venv/bin/python pipeline/run_new_tools.py --only NGC253_z_0.0008 --force
     .venv/bin/python pipeline/run_new_tools.py --tools cigale_sed --cigale-models skirtor2016
 
-Outputs are always ``outputs/<source_key>/<tool>/``.  Inputs are never copied
+Outputs are always ``outputs/<tool>/<source_key>/``.  Inputs are never copied
 into outputs; PyQSOFit/pPXF-native files are generated under
 ``work/prepared/<source_key>/``.
 """

@@ -6,7 +6,7 @@
 # Examples:
 #   bash Pipelines/build_images.sh cafe_line
 #   bash Pipelines/run_cafe_line_docker.sh \
-#       inputs/PDS456_z_0.1840/raw outputs/PDS456_z_0.1840/cafe_line 0.184 \
+#       inputs/PDS456_z_0.1840/raw outputs/cafe_line/PDS456_z_0.1840 0.184 \
 #       --error-floor 0.01 --mc-samples 200
 #
 # Extra arguments are passed to run_cafe.py (e.g. --max-wave, --segment,

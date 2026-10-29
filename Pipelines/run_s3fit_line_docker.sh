@@ -64,10 +64,12 @@ IN="$(realpath "$IN")"
 OUT="$(realpath -m "$OUT")"
 CONFIG="$(realpath "$CONFIG")"
 mkdir -p "$OUT"
+source "$(dirname "${BASH_SOURCE[0]}")/_output_layout.sh"
+output_layout_resolve "$OUT"
 
 # Reference PyQSOFit output: sibling pyqsofit_uv by default.
 if [ -z "$PYQ" ]; then
-  cand="$(dirname "$OUT")/pyqsofit_uv"
+  cand="$(output_ref_dir pyqsofit_uv)"
   if [ -d "$cand" ]; then PYQ="$cand"; fi
 fi
 

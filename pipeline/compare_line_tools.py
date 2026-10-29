@@ -22,8 +22,14 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
+import sys  # noqa: E402
+_ROOT = Path(__file__).resolve().parents[1]
+if str(_ROOT) not in sys.path:
+    sys.path.insert(0, str(_ROOT))
+from pipeline.io_layout import iter_output_dirs, output_dir  # noqa: E402
+
 ROOT = Path(__file__).resolve().parents[1]
-OUT = ROOT / "outputs"
+OUT = ROOT / "outputs"  # noqa: F841 - legacy alias
 
 
 def canon(name: str) -> str:
@@ -182,14 +188,15 @@ def read_zline(path: Path, source: str, rows):
 
 def load():
     rows = []
-    for src in sorted(OUT.glob("*_z_*")):
-        if not src.is_dir():
-            continue
-        source = src.name
-        p = src / "pyqsofit_uv" / "pyqsofit_lines.csv"
+    sources = sorted({key for _tool, key, _path in iter_output_dirs()})
+    for source in sources:
+        def tool_dir(tool):
+            return output_dir(source, tool)
+
+        p = tool_dir("pyqsofit_uv") / "pyqsofit_lines.csv"
         if p.exists():
             read_pyqsofit(p, source, rows)
-        for p in (src / "ir_linefit").glob("*.measurements.csv"):
+        for p in tool_dir("ir_linefit").glob("*.measurements.csv"):
             read_ir(p, source, rows)
         for spec in (ROOT / "inputs" / source / "raw").glob("spec-*.fits"):
             try:
@@ -210,7 +217,7 @@ def load():
             # A tool may publish its own production gate.  Do not let a
             # deliberately flagged diagnostic fit (e.g. an out-of-family line
             # ratio) enter the cross-tool comparison.
-            meta_p = src / tool / "run.json"
+            meta_p = tool_dir(tool) / "run.json"
             if meta_p.exists():
                 try:
                     meta = json.loads(meta_p.read_text())
@@ -220,7 +227,7 @@ def load():
                 except Exception:
                     pass
             for n in names:
-                p = src / tool / n
+                p = tool_dir(tool) / n
                 if p.exists():
                     try:
                         read_standard(p, source, tool, rows)

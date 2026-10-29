@@ -43,4 +43,4 @@ median Hα/Hβ/[O III]/[N II]/[S II] ratios are **0.9995-0.99999**, BPT agrees
 exceeded the 58 min budget and was killed, so the published MAPS is the
 all-spaxel reference.  The fast fixed-continuum all-spaxel mode is rejected as
 production (`FASTMODE_NOT_PRODUCTION`).  See
-`outputs/NGC1194_z_0.0136/manga_dap/comparison/`.
+`outputs/manga_dap/NGC1194_z_0.0136/comparison/`.

@@ -12,7 +12,7 @@ stage is completed before the next starts, with the same acceptance gates:
 6. Pedagogical README with commands, expected products, failure modes and a
    short “what this tool can and cannot measure”.
 7. Repo contract: `Tools/<tool>/`, `Pipelines/run_<tool>_docker.sh`,
-   `configs/<tool>/<variant>/`, `outputs/<source>/<tool>/`, registry/orchestrator
+   `configs/<tool>/<variant>/`, `outputs/<tool>/<source>/`, registry/orchestrator
    entry, and a committed result figure.
 
 ## Planned sequence
@@ -106,7 +106,7 @@ committed.
 **2397 bins**; the 65-template SASUKE fit reached 157/2397 spectra and was
 killed at the **3500 s (58 min)** cap.  No all-spaxel MAPS was produced.  The
 published official MAPS is the all-spaxel reference; the exact log is
-`outputs/NGC1194_z_0.0136/manga_dap/logs/full_dap_attempt_summary.txt`.
+`outputs/manga_dap/NGC1194_z_0.0136/logs/full_dap_attempt_summary.txt`.
 
 **Fast mode rejected.**  A fixed-continuum all-spaxel diagnostic (175 bins)
 gives Hα ratio 2.37, [N II] 0.53, BPT agreement 41% and a +175 km/s gas
@@ -230,7 +230,7 @@ labelled provisional.  The HST/STIS spectrum of 3C 120 covers H-beta,
 [O III], H-alpha and [N II]/[S II].
 
 `pipeline/compare_xray_optical.py` writes
-`outputs/<source>/crossmission/xray_optical_comparison.{json,csv,md,png,pdf}`.
+`outputs/crossmission/<source>/xray_optical_comparison.{json,csv,md,png,pdf}`.
 The 3C 120 comparison is **provisional** because independent optical models disagree (Hβ/[O III] 1.55 vs 3.00).  The PDS 456 comparison
 now uses the X-SHOOTER **Hβ** local fit but is **provisional** because the local
 fit has high formal χ²; it is not the earlier C IV-only tentative result.  With
@@ -250,6 +250,6 @@ pytest golden suite and fixed before the production results were accepted.
 * `tests/` contains unit tests plus golden scientific reference values for
   QSOFITMORE, XMM, RXTE, MaNGA and the cross-mission comparison.
 * `schemas/output_catalog.schema.json` plus `pipeline/validate_outputs.py`
-  formalise and verify the `outputs/<source>/<tool>/` contract.
+  formalise and verify the `outputs/<tool>/<source>/` contract.
 * `configs/caveats.yaml` is the source of truth for the rendered
   `docs/CAVEAT_MATRIX.md`; every registered tool must have an entry.

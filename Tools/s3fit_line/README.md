@@ -5,7 +5,7 @@ repository's canonical SDSS/WISE QSO inputs.  S3Fit uses `scipy.optimize`
 (`least_squares` + `lsq_linear`), not MCMC; its uncertainty estimate is a set
 of **Monte-Carlo mock spectra** generated and refitted `num_mocks` times.
 
-The committed output in `outputs/04592649654_z_0.5874/s3fit_line/` is now a
+The committed output in `outputs/s3fit_line/04592649654_z_0.5874/` is now a
 **full production `spec+sed` fit**: 8 SDSS/WISE bands, AGN + Fe II + Balmer
 continuum + SKIRTOR torus + NLR/BLR lines, **10 mock spectra**, all 10 mocks
 successful.  The older 3-mock pure-spectrum output is superseded.
@@ -17,7 +17,7 @@ bash Pipelines/build_images.sh s3fit_line
 
 # Production run (used for the committed output):
 bash Pipelines/run_s3fit_line_docker.sh \
-  inputs/04592649654_z_0.5874 outputs/04592649654_z_0.5874/s3fit_line \
+  inputs/04592649654_z_0.5874 outputs/s3fit_line/04592649654_z_0.5874 \
   --config configs/s3fit_line/production --n-mocks 10 --threads 8
 ```
 

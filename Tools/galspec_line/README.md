@@ -68,7 +68,7 @@ bash Pipelines/build_images.sh galspec_line
 # production full-continuum run (the default config is full)
 bash Pipelines/run_galspec_line_docker.sh \
   inputs/04592649654_z_0.5874 \
-  outputs/04592649654_z_0.5874/galspec_line \
+  outputs/galspec_line/04592649654_z_0.5874 \
   --object 04592649654_z_0.5874
 
 # through the matrix runner
@@ -153,6 +153,28 @@ converged unless the retained `n_steps_kept/tau_max` is comfortably above 50.  T
 wide-line QSO with a 39-parameter global model, so the chain is best treated
 as a production posterior with an explicit convergence diagnostic rather
 than a publication-grade 50-tau chain.
+
+### Two diagnostics traps in this model
+
+**A single frozen walker destroys every tau.**  `emcee.autocorr` averages one
+normalised ACF per walker.  A walker that never moves is a constant series,
+whose lag-zero power is zero, so its ACF is `0/0 = NaN` and every parameter's
+tau becomes NaN.  Walkers start inside their parameter bounds but that is not
+enough: the custom prior also requires the polynomial continuum to stay
+positive over the full rest-frame range, and 28/200 jittered starts violate
+it.  A walker that starts at `log_prob = -inf` cannot recover, because
+`DEMove` proposals scale with the ensemble spread and cannot cross the gap.
+The production 200x20,000 chain therefore reported `7/39` finite tau even
+though it was 53 tau long.  `run_full_mcmc` now redraws non-finite walkers
+before sampling and estimates tau on live walkers only, reporting
+`n_walkers_used_for_tau`.
+
+**The Gaussian-optimal `gamma0` over-steps here.**  `DEMove(gamma0=None)`
+uses 2.38/sqrt(2*ndim) = 0.269 at ndim=39, which yields 0.139 acceptance
+against the hard positivity prior.  Measured acceptance from a converged
+ensemble: 0.269 -> 0.139, 0.30 -> 0.124, 0.35 -> 0.080, 0.45 -> 0.034.
+`gamma0 = 0.20` gives 0.262 acceptance at the same `tau_max`, so it is free
+(see `configs/galspec_line/production_v2`).
 
 The LSQ start is a trust-region fit in three stages: polynomial + Fe II on
 line-free pixels, full model with the continuum fixed, then joint refinement.

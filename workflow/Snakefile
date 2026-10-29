@@ -46,7 +46,7 @@ if missing:
     raise ValueError(f"unknown sources: {missing}")
 
 # Tools that consume another tool's committed output.  The marker file is the
-# dependency; the actual data dependency is inside outputs/<source>/<tool>/.
+# dependency; the actual data dependency is inside outputs/<tool>/<source>/.
 DEPENDENCIES = {
     "s3fit_line": ["pyqsofit_uv"],
     "crossband": ["pahfit_mir", "fir_linefit"],
@@ -64,7 +64,7 @@ def dependency_inputs(wildcards):
             deps.append("optical_linefit")
         deps.append("pyqsofit_uv")
     available = set(src.get("tools", []))
-    return [f"outputs/{wildcards.source}/{d}/.snakemake_done"
+    return [f"outputs/{d}/{wildcards.source}/.snakemake_done"
             for d in deps if d in available]
 
 def targets():
@@ -73,7 +73,7 @@ def targets():
         available = set(SOURCES[source].get("tools", []))
         for tool in selected_tools:
             if tool in available:
-                out.append(f"outputs/{source}/{tool}/.snakemake_done")
+                out.append(f"outputs/{tool}/{source}/.snakemake_done")
     return out
 
 rule all:
@@ -82,7 +82,7 @@ rule all:
 rule run_tool:
     """Run one source/tool through its Docker entry point and mark completion."""
     output:
-        "outputs/{source}/{tool}/.snakemake_done"
+        "outputs/{tool}/{source}/.snakemake_done"
     input:
         dependency_inputs
     params:

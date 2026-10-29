@@ -6,9 +6,9 @@ regenerated without running any Docker image:
 
 * ``docs/line_ratio_comparison.csv`` — cross-tool H-beta/[O III] ratios for
   the SDSS QSOs;
-* ``outputs/3C120.../pyqsofit_uv`` and ``qsofitmore_line`` — independent
+* ``outputs/pyqsofit_uv/3C120...`` and ``outputs/qsofitmore_line/3C120...`` — independent
   optical fits of the same HST spectrum;
-* ``outputs/PDS.../optical_linefit`` and ``crossmission`` — the local H-beta
+* ``outputs/optical_linefit/PDS...`` and ``outputs/crossmission/PDS...`` — the local H-beta
   fit and the XMM Fe K-alpha comparison.
 
 The output is a JSON/CSV/Markdown report, not a claim of a correlation.  With
@@ -26,6 +26,11 @@ import numpy as np
 
 ROOT = Path(__file__).resolve().parents[1]
 OUT = ROOT / "docs"
+
+import sys  # noqa: E402
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+from pipeline.io_layout import output_dir  # noqa: E402
 
 
 def bootstrap_ci(values, n=10000, seed=20250101):
@@ -80,7 +85,7 @@ def read_line_ratios():
 def read_hst_ratios():
     """Independent optical fits of the same 3C 120 HST spectrum."""
     out = []
-    p = ROOT / "outputs" / "3C120_z_0.0330" / "qsofitmore_line" / "qsofitmore_lines.csv"
+    p = output_dir("3C120_z_0.0330", "qsofitmore_line") / "qsofitmore_lines.csv"
     if p.exists():
         with p.open(newline="") as fh:
             rows = {r["line"]: r for r in csv.DictReader(fh)}
@@ -90,7 +95,7 @@ def read_hst_ratios():
             out.append({"source": "3C120_z_0.0330", "tool": "qsofitmore_line", "value": hb / o3})
         except Exception:
             pass
-    p = ROOT / "outputs" / "3C120_z_0.0330" / "pyqsofit_uv" / "pyqsofit_lines.csv"
+    p = output_dir("3C120_z_0.0330", "pyqsofit_uv") / "pyqsofit_lines.csv"
     if p.exists():
         with p.open(newline="") as fh:
             rows = list(csv.DictReader(fh))
@@ -102,7 +107,7 @@ def read_hst_ratios():
 
 
 def read_pds_hbeta():
-    p = ROOT / "outputs" / "PDS456_z_0.1840" / "optical_linefit" / "optical_lines_summary.json"
+    p = output_dir("PDS456_z_0.1840", "optical_linefit") / "optical_lines_summary.json"
     if not p.exists():
         return None
     d = json.loads(p.read_text())
@@ -146,7 +151,7 @@ def main() -> int:
     pds = read_pds_hbeta()
     cross = []
     for source in ("3C120_z_0.0330", "PDS456_z_0.1840"):
-        p = ROOT / "outputs" / source / "crossmission" / "xray_optical_comparison.json"
+        p = output_dir(source, "crossmission") / "xray_optical_comparison.json"
         if p.exists():
             d = json.loads(p.read_text())
             cross.append({

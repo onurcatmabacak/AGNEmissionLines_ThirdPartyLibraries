@@ -26,7 +26,7 @@ records the config path in `pahfit_summary.json`.
 
 `ngc253` deliberately excludes the 35.8-37.9 um unflagged edge island. The
 full-tail failure control is produced by
-`outputs/NGC253_z_0.0008/pahfit_mir/full_tail/` and is not a production
+`outputs/pahfit_mir/NGC253_z_0.0008/full_tail/` and is not a production
 variant. `default` preserves the historical MC-off path.
 
 ## Schema

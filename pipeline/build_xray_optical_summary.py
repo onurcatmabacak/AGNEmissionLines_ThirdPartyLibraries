@@ -10,6 +10,12 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
+import sys  # noqa: E402
+_ROOT = Path(__file__).resolve().parents[1]
+if str(_ROOT) not in sys.path:
+    sys.path.insert(0, str(_ROOT))
+from pipeline.io_layout import output_dir  # noqa: E402
+
 ROOT = Path(__file__).resolve().parents[1]
 SOURCES = ("3C120_z_0.0330", "PDS456_z_0.1840")
 OUT = ROOT / "docs"
@@ -18,7 +24,7 @@ OUT = ROOT / "docs"
 def main() -> int:
     rows = []
     for source in SOURCES:
-        p = ROOT / "outputs" / source / "crossmission" / "xray_optical_comparison.json"
+        p = output_dir(source, "crossmission") / "xray_optical_comparison.json"
         if not p.exists():
             raise SystemExit(f"missing {p}; run crossmission first")
         rows.append(json.loads(p.read_text()))

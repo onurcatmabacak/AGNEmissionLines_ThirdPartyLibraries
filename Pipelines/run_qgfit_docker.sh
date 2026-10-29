@@ -60,6 +60,8 @@ IN="$(realpath "$IN")"
 OUT="$(realpath -m "$OUT")"
 CONFIG="$(realpath "$CONFIG")"
 mkdir -p "$OUT"
+source "$(dirname "${BASH_SOURCE[0]}")/_output_layout.sh"
+output_layout_resolve "$OUT"
 
 MOUNTS=(
   -v "$IN":/app/input:ro
@@ -85,10 +87,11 @@ fi
 
 # Reference tables: sibling outputs by default.
 if [ -z "$REF" ]; then
-  mkdir -p "$(dirname "$OUT")"
+  mkdir -p "$OUT"
+
   ref_mounted=0
   for tool in pyqsofit_uv gandalf_line s3fit_line galspec_line pyqsofitspec_line; do
-    cand="$(dirname "$OUT")/$tool"
+    cand="$(output_ref_dir "$tool")"
     if [ -d "$cand" ]; then
       MOUNTS+=(-v "$(realpath "$cand")":/app/reference/$tool:ro)
       ref_mounted=1

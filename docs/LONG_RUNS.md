@@ -49,7 +49,7 @@ PYQSOFIT_MCMC=1 PYQSOFIT_NSAMP=2000 PYQSOFIT_NBURN=500 \
 PYQSOFIT_NTHIN=1 PYQSOFIT_NWALKERS=100 \
 bash Pipelines/run_pyqsofit_uv_docker.sh \
   work/prepared/04592649654_z_0.5874/pyqsofit \
-  outputs/04592649654_z_0.5874/pyqsofit/mcmc_long
+  outputs/pyqsofit/04592649654_z_0.5874/mcmc_long
 ```
 
 This is a multi-hour run.  The committed short chain is only an
@@ -75,7 +75,7 @@ The all-spaxel official DAP is exposed as `manga_dap_full`:
 
 ```bash
 bash Pipelines/run_manga_dap_docker.sh \
-  inputs/NGC1194_z_0.0136 outputs/NGC1194_z_0.0136/manga_dap_full \
+  inputs/NGC1194_z_0.0136 outputs/manga_dap_full/NGC1194_z_0.0136 \
   --reference inputs/NGC1194_z_0.0136/raw/manga-9193-12701-MAPS-HYB10-MILESHC-MASTARHC2.fits.gz \
   --full
 ```
@@ -97,7 +97,7 @@ and raw PCA reductions remain external, instrument-team-style reductions:
   HEASARC endpoint.  `stdprod` is the current production path.
 
 The raw XMM PN path has now been run end-to-end for PDS 456; see
-`docs/XMM_RAW_SAS_RESULT.md` and `outputs/PDS456_z_0.1840/xmm_sas_raw/`.
+`docs/XMM_RAW_SAS_RESULT.md` and `outputs/xmm_sas_raw/PDS456_z_0.1840/`.
 It is a PN-only cross-check, not a replacement for joint PPS.  Raw RXTE PCA
 remains unavailable from the current network and would require a separate
 full-HEASoft image.

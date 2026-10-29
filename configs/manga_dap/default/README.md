@@ -56,7 +56,7 @@ bash Pipelines/build_images.sh manga_dap
 bash inputs/NGC1194_z_0.0136/download.sh
 bash Pipelines/run_manga_dap_docker.sh \
   inputs/NGC1194_z_0.0136 \
-  outputs/NGC1194_z_0.0136/manga_dap \
+  outputs/manga_dap/NGC1194_z_0.0136 \
   --reference inputs/NGC1194_z_0.0136/raw/manga-9193-12701-MAPS-HYB10-MILESHC-MASTARHC2.fits.gz \
   --n-bins 9
 ```

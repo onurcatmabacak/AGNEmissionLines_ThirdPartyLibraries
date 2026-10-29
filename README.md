@@ -79,7 +79,7 @@ python pipeline/run_new_tools.py --source <source_key> --auto
 ```text
 inputs/<source_key>/source.json     # source metadata, file roles, chosen tools
 inputs/<source_key>/raw/            # one canonical raw copy
-outputs/<source_key>/<tool>/        # all products for that tool
+outputs/<tool>/<source_key>/        # all products for that tool
 work/prepared/                      # generated tool-native inputs (ignored)
 work/logs/                          # run logs (ignored)
 ```

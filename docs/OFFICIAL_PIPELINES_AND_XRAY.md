@@ -52,7 +52,7 @@ inputs/NGC1194_z_0.0136/raw/manga-9193-12701-LOGCUBE.fits.gz
   -> official MaNGADataCube + LOGRSS covariance
   -> official manga_dap() Stage A (HYB10/S/N=50, pPXF, EMOM, INDXEN)
   -> official full-method SASUKE on 9 central bins (65 MaStar-HC2 templates)
-  -> outputs/NGC1194_z_0.0136/manga_dap/
+  -> outputs/manga_dap/NGC1194_z_0.0136/
 ```
 
 The all-spaxel 2397-bin emission-line fit is a documented time-budget
@@ -74,7 +74,7 @@ inputs/<source>/xray/rxte_<obsid>/
   download.sh
   SHA256SUMS
     -> Tools/rxte_xspec/ (HEASoft 6.37 / PyXspec 13.0.0)
-    -> outputs/<source>/rxte_xspec/
+    -> outputs/rxte_xspec/<source>/
        rxte_spectrum_model_residual.png
        rxte_fe_ka_zoom.png
        rxte_fit.csv, rxte_lines.csv
@@ -125,12 +125,12 @@ cross-calibration.
 
 | tool | branch / commit | output |
 |---|---|---|
-| GalSpec | `galspec-line` / `4503e140` | `outputs/04592649654_z_0.5874/galspec_line/` |
-| PyQSOFitSpec | `pi-agent-0616...` / `228a497e` | `outputs/04592649654_z_0.5874/pyqsofitspec_line/` |
-| QGfit | `feat/qgfit-sheap` / `08d5a814` | `outputs/04592649654_z_0.5874/qgfit/` |
-| SHEAP | `feat/qgfit-sheap` / `08d5a814`; audited/repaired (see `docs/SHEAP_ASSESSMENT.md`) | `outputs/04592649654_z_0.5874/sheap_line/` |
-| MaNGA DAP | `feat/manga-dap` (this work) | `outputs/NGC1194_z_0.0136/manga_dap/` |
-| RXTE/PCA | `rxte_xspec` (this work) | `outputs/3C120_z_0.0330/rxte_xspec/`, `outputs/MCG6-30-15_z_0.0077/rxte_xspec/` |
+| GalSpec | `galspec-line` / `4503e140` | `outputs/galspec_line/04592649654_z_0.5874/` |
+| PyQSOFitSpec | `pi-agent-0616...` / `228a497e` | `outputs/pyqsofitspec_line/04592649654_z_0.5874/` |
+| QGfit | `feat/qgfit-sheap` / `08d5a814` | `outputs/qgfit/04592649654_z_0.5874/` |
+| SHEAP | `feat/qgfit-sheap` / `08d5a814`; audited/repaired (see `docs/SHEAP_ASSESSMENT.md`) | `outputs/sheap_line/04592649654_z_0.5874/` |
+| MaNGA DAP | `feat/manga-dap` (this work) | `outputs/manga_dap/NGC1194_z_0.0136/` |
+| RXTE/PCA | `rxte_xspec` (this work) | `outputs/rxte_xspec/3C120_z_0.0330/`, `outputs/rxte_xspec/MCG6-30-15_z_0.0077/` |
 
 The line-ratio comparison now includes all implemented tools; the spread is
 `docs/line_ratio_scatter.csv`.
@@ -164,7 +164,7 @@ PyQSOFit cgs layout.  The HST `ivar` is stored in the repository's 1e-17
 convention; a cgs/1e-17 mismatch was caught by the regression suite and fixed.
 
 `pipeline/compare_xray_optical.py` then writes
-`outputs/<source>/crossmission/`.  3C 120 is a **provisional** H-beta vs Fe K-alpha comparison because independent optical models give 1.55 and 3.00.  PDS 456 now uses a **local X-SHOOTER Hβ/[O III]** fit; the line is
+`outputs/crossmission/<source>/`.  3C 120 is a **provisional** H-beta vs Fe K-alpha comparison because independent optical models give 1.55 and 3.00.  PDS 456 now uses a **local X-SHOOTER Hβ/[O III]** fit; the line is
 detected but the formal local χ² is high, so the result is **provisional**, not
 publication-grade.  The earlier HST C IV result is retained as UV context and
 is not used as the primary comparison.  With two objects the

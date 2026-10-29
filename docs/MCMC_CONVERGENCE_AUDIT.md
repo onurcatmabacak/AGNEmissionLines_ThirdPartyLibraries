@@ -17,6 +17,7 @@ plus ESS and a dimension-appropriate acceptance check.
 | GalSpec | `galspec_line` | emcee | 2,800 | 342.6 | 8.2 | **not converged**; production caveat |
 | GalSpec | `galspec_line_long` | emcee | 20,000 | 1156.1 | 17.3 | **not converged** |
 | GalSpec | `work/galspec_long_70k` | emcee | 60,000 | running | running | **in progress** (80,000 steps, 20,000 burn) |
+| GalSpec | `work/galspec_prod200_v2` | emcee (DEMove, gamma0=0.20) | 17,000 | 273.7 | **62.1** | **converged**; acceptance 0.262, 39/39 finite tau, min ESS 12,421 |
 | QGfit | `qgfit` continuum | emcee | 800 | 99.5 | 8.0 | **not converged**; chain is not used for the continuum error |
 | QGfit | `work/qgfit_long` | emcee | 5,000 | running | running | **in progress** (6,500 steps, 1,500 burn) |
 | SHEAP | `sheap_line` | JAX Adam + bootstrap | n/a | n/a | n/a | **not an MCMC** |
@@ -82,6 +83,30 @@ These are still checks.  If Rhat remains >1.01 or the drift persists, the next
 action is to diagnose the specific parameter (weak-line prior, initialization,
 or multimodal likelihood), not another blind step increase.
 
+## The GalSpec 7/39 tau report was a dead-walker artefact
+
+The 200x20,000 `production_demove` chain (`work/galspec_prod200`) reported
+`tau_status = ok (tol=0.0; best finite=7/39)` and only 7 finite tau values.
+The chain length was not the problem.  On the same retained chain: with all
+200 walkers emcee returns `0/39` finite tau; with the 196 live walkers it
+returns `39/39`.  Four walkers had started where the continuum-positivity
+prior is zero (`log_prob = -inf`) and never moved again, because DEMove steps
+scale with the ensemble spread.  emcee's estimator averages one ACF per
+walker and normalises by each walker's lag-zero power, so a constant series
+contributes `0/0 = NaN` and poisons every parameter.
+
+Two corrections are now in `galspec_full.run_full_mcmc`:
+
+1. walkers with a non-finite initial `log_prob` are redrawn before sampling
+   (28/200 in this model, of which 4 used to freeze permanently);
+2. `_robust_autocorr` masks non-finite-log-prob walkers and falls back to a
+   per-parameter ACF that skips zero-variance walkers.
+
+The acceptance problem was separate and real: 2.38/sqrt(2*ndim) = 0.269
+over-steps against the positivity prior (0.139 measured, 0.080 at 0.35,
+0.034 at 0.45).  With `gamma0 = 0.20` acceptance is 0.262 while tau_max stays
+at 274 steps, so the same 20,000-step budget now reaches 62 tau.
+
 ## Open corrections
 
 - QGfit's committed continuum chain is still 8 tau; its README and `run.json`
@@ -89,6 +114,7 @@ or multimodal likelihood), not another blind step increase.
   error.  A 6,500-step/1,500-burn run is now active; it is not a completed
   correction until its tau and Rhat are checked.
 - GalSpec's production 4,000-step output remains a documented caveat until the
-  70,000-step run is complete.
+  70,000-step run is complete, but `work/galspec_prod200_v2` (62.1 tau,
+  acceptance 0.262, 39/39 finite tau) is a converged 20,000-step product.
 - PyQSOFit's 55,000-step run is in progress; its result must be checked, not
   assumed converged.

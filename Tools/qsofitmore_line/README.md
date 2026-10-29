@@ -40,7 +40,7 @@ docker build -f Tools/qsofitmore_line/dockerfile -t qsofitmore_line .
 # raw SDSS directory (recommended: preserves the IVAR mask)
 bash Pipelines/run_qsofitmore_line_docker.sh \
   inputs/04592649654_z_0.5874/raw \
-  outputs/04592649654_z_0.5874/qsofitmore_line \
+  outputs/qsofitmore_line/04592649654_z_0.5874 \
   --source-key 04592649654_z_0.5874 --mc-trails 200 --seed 20250101
 
 # or through the orchestrator (it passes the raw directory for this tool)

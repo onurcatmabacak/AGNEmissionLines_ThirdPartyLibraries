@@ -8,7 +8,7 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
 ROOT = Path(__file__).resolve().parents[1]
-BASE = ROOT / "outputs/J0100p2802_z_6.3270/nir_linefit"
+BASE = ROOT / "outputs/nir_linefit/J0100p2802_z_6.3270"
 CASES = {"pipeline x1d": BASE, "QSO 3x3": BASE / "centered", "PSF r=3": BASE / "psf"}
 
 

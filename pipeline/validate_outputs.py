@@ -4,7 +4,7 @@
 Checks:
 * JSON Schema validity of ``outputs/output_catalog.json``;
 * every catalogued artifact exists and has the recorded size/SHA-256;
-* every ``outputs/<source>/<tool>/`` directory is represented in the catalog;
+* every ``outputs/<tool>/<source>_z_<z>/`` directory is represented in the catalog;
 * every source key exists under ``inputs/``;
 * every tool name is registered (or is a known non-registry compatibility name);
 * no zero-byte artifacts, no path traversal, no missing source.json.
@@ -22,7 +22,7 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 import jsonschema  # noqa: E402
-from pipeline.io_layout import iter_sources  # noqa: E402
+from pipeline.io_layout import iter_output_dirs, iter_sources  # noqa: E402
 from pipeline.tool_registry import BY_NAME  # noqa: E402
 
 SCHEMA = ROOT / "schemas" / "output_catalog.schema.json"
@@ -80,26 +80,21 @@ def validate(catalog_path: Path = CATALOG, schema_path: Path = SCHEMA,
                 errors.append(f"{key}/{tool}: sha256 mismatch {rel}")
 
     legacy = []
-    for source_dir in sorted((ROOT / "outputs").iterdir()):
-        if not source_dir.is_dir() or source_dir.name == "catalog":
-            continue
-        if source_dir.name not in known_sources:
+    for tool, source_key, tool_dir in iter_output_dirs():
+        if source_key not in known_sources:
             # Old flat-tree outputs retained for history, not part of the
             # canonical source registry.  They are reported but not errors.
-            legacy.append(source_dir.name)
+            legacy.append(f"{tool}/{source_key}")
             continue
-        for tool_dir in sorted(source_dir.iterdir()):
-            if not tool_dir.is_dir() or tool_dir.name.startswith("."):
-                continue
-            if tool_dir.name in {"statistical_confirmation"}:
-                continue
-            if (tool_dir / ".running").exists():
-                continue
-            files = [p for p in tool_dir.rglob("*") if p.is_file()]
-            if not files:
-                continue
-            if (source_dir.name, tool_dir.name) not in seen:
-                errors.append(f"{source_dir.name}/{tool_dir.name}: output tree not in catalog")
+        if tool in {"statistical_confirmation"}:
+            continue
+        if (tool_dir / ".running").exists():
+            continue
+        files = [p for p in tool_dir.rglob("*") if p.is_file()]
+        if not files:
+            continue
+        if (source_key, tool) not in seen:
+            errors.append(f"{tool}/{source_key}: output tree not in catalog")
     if legacy:
         print(f"note: ignored {len(legacy)} legacy output directories not in inputs/", file=sys.stderr)
     return errors

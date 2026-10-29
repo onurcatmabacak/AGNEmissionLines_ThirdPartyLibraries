@@ -13,7 +13,7 @@ bash Pipelines/build_images.sh pahfit_mir
 
 # direct runner (config name resolves under configs/pahfit_mir/)
 bash Pipelines/run_pahfit_mir_docker.sh inputs/NGC4151_z_0.0033/raw \
-  outputs/NGC4151_z_0.0033/pahfit_mir 0.003319 \
+  outputs/pahfit_mir/NGC4151_z_0.0033 0.003319 \
   --config /app/configs/pahfit_mir/ngc4151/config.json \
   --mc-samples 200 --mc-method auto
 

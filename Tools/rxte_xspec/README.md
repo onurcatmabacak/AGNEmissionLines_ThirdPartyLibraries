@@ -81,7 +81,7 @@ bash Pipelines/build_images.sh rxte_xspec
 # 3. production fit
 bash Pipelines/run_rxte_xspec_docker.sh \
   inputs/3C120_z_0.0330/xray/rxte_10339-02-01-01 \
-  outputs/3C120_z_0.0330/rxte_xspec \
+  outputs/rxte_xspec/3C120_z_0.0330 \
   --source-key 3C120_z_0.0330 --redshift 0.0330 --source-name "3C 120"
 ```
 
@@ -91,7 +91,7 @@ entry point sources `headas-init.sh` and uses writable `PFILES`, `HOME` and
 
 ## Products
 
-`outputs/<source>/rxte_xspec/`:
+`outputs/rxte_xspec/<source>/`:
 
 | file | content |
 |---|---|

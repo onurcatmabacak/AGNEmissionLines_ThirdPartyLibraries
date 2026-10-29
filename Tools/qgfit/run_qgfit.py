@@ -1426,6 +1426,16 @@ def _timing_wrappers(obj, timings: dict, line_mcmc_out: list | None = None):
 
     def conti_min(params, method="leastsq", **kwargs):
         t0 = time.time()
+        if method == "emcee" and bool(getattr(obj, "config", {}).get("mcmc_fix_host", False)):
+            # The BC03 host block is an unconstrained flat ridge for this QSO:
+            # m_s spans 1.8e7-5.4e8 and tau reaches 599 steps.  Sampling it
+            # cannot converge with a finite chain.  Fix it at the LSQ solution
+            # so the continuum MCMC is a well-defined conditional posterior.
+            # The line fit and its LSQ covariance are not changed.
+            for _name in ("m_s", "f_old", "age_young", "age_old",
+                          "a_v", "host_shift", "sigma"):
+                if _name in params:
+                    params[_name].vary = False
         if method == "emcee" and "pos" not in kwargs:
             pos = _mcmc_positions(params, int(kwargs.get("nwalkers", 0)),
                                   getattr(obj, "config", {}))
@@ -1784,6 +1794,14 @@ def run(args) -> int:
             "mcmc": mcmc_summary,
             "mcmc_seed": int(qcfg.get("mcmc_seed", 42)),
             "mcmc_init_scale": float(qcfg.get("mcmc_init_scale", 0.0)),
+            "mcmc_fix_host": bool(qcfg.get("mcmc_fix_host", False)),
+            "mcmc_fix_host_note": (
+                "The BC03 host block is fixed at the LSQ solution because it is "
+                "an unconstrained flat ridge for this QSO; the continuum MCMC is "
+                "therefore a conditional posterior. The line fit and LSQ line "
+                "errors are unchanged."
+                if qcfg.get("mcmc_fix_host", False) else None
+            ),
             "pars": jsonable(conti_pars),
             "stderr": jsonable(data["conti"]["stderr_set"][0]),
             "boundary_hits": _boundary_hits(obj, conti_pars),

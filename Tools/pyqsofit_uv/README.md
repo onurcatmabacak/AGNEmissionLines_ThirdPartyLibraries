@@ -31,7 +31,7 @@ from the canonical raw spectrum and writes
 
 The default matrix run is maximum-likelihood.  The committed uncertainty for
 `04592649654` is still the 100-realization MC under
-`outputs/04592649654_z_0.5874/pyqsofit/mc/`; the MCMC product is kept separate
+`outputs/pyqsofit/04592649654_z_0.5874/mc/`; the MCMC product is kept separate
 and explicitly labelled.
 
 ## MCMC: exact failure and fix
@@ -99,7 +99,7 @@ run.json                        # status, versions, acceptance, tau, ESS, runtim
 
 * A 300-step capped run completed the PyQSOFit fit in **1400.6 s** and its
   fit figure/output are preserved as
-  `outputs/04592649654_z_0.5874/pyqsofit/mcmc/pyqsofit_mcmc_fit.pdf` and
+  `outputs/pyqsofit/04592649654_z_0.5874/mcmc/pyqsofit_mcmc_fit.pdf` and
   `output.fits`/`qsopar.fits`.  Its 220 retained steps gave acceptance
   0.37/0.41/0.32/0.36 (continuum/Mg II/Hβ/Hα) and tau_max 36/29/38/35,
   i.e. only 5.8–7.6 steps per tau; it is not converged either.

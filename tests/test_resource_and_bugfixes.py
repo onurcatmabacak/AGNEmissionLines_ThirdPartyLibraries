@@ -28,7 +28,7 @@ def test_resource_policy_does_not_oversubscribe_small_host():
 
 
 def test_xmm_rest_ew_is_xspec_consistent():
-    p = Path("outputs/PDS456_z_0.1840/xmm_xspec/xmm_lines.csv")
+    p = Path("outputs/xmm_xspec/PDS456_z_0.1840/xmm_lines.csv")
     with p.open(newline="") as fh:
         rows = list(csv.DictReader(fh))
     row = next(r for r in rows if r["fit_id"] == "joint_pl_line")
@@ -38,12 +38,12 @@ def test_xmm_rest_ew_is_xspec_consistent():
 
 def test_pds_hbeta_ew_is_rest_frame():
     import json
-    d = json.loads(Path("outputs/PDS456_z_0.1840/optical_linefit/optical_lines_summary.json").read_text())
+    d = json.loads(Path("outputs/optical_linefit/PDS456_z_0.1840/optical_lines_summary.json").read_text())
     assert d["Hbeta_ew_rest_A"] == pytest.approx(d["Hbeta_ew_obs_A"] * 1.184, rel=1e-6)
 
 
 def test_pyqsofit_out_of_coverage_line_is_frozen():
-    p = Path("outputs/04545014975_z_1.1289/pyqsofit_uv/qsopar.fits")
+    p = Path("outputs/pyqsofit_uv/04545014975_z_1.1289/qsopar.fits")
     with fits.open(p) as h:
         rows = h["line_priors"].data
     vals = [int(r["vary"]) for r in rows if str(r["linename"]).startswith("OIII5007")]

@@ -11,7 +11,7 @@ result under a canonical source/tool path:
 
 ```text
 inputs/<source_key>/source.json          # what data exist
-outputs/<source_key>/<tool>/             # what the tool produced
+outputs/<tool>/<source_key>/             # what the tool produced
 ```
 
 It does **not**:
@@ -58,7 +58,7 @@ python pipeline/plan_analysis.py --source 3C120_z_0.0330
 
 # Inspect an existing, committed cross-mission result (no Docker needed)
 python pipeline/compare_xray_optical.py --source 3C120_z_0.0330
-python -m json.tool outputs/3C120_z_0.0330/crossmission/xray_optical_comparison.json
+python -m json.tool outputs/crossmission/3C120_z_0.0330/xray_optical_comparison.json
 ```
 
 You should see a plan containing an optical fit and an X-ray fit, and a JSON
@@ -82,7 +82,7 @@ python pipeline/run_new_tools.py \
 Read:
 
 ```text
-outputs/PDS456_z_0.1840/optical_linefit/
+outputs/optical_linefit/PDS456_z_0.1840/
   optical_lines.csv
   optical_lines_summary.json
   optical_fit.png

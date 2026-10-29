@@ -24,8 +24,8 @@ The production object is the public GANDALF v1.5 `SDSS_example` spectrum
 `inputs/spSpec-51908-0277-120_z_0.0859/`.  It is a real low-z SDSS galaxy with
 H-alpha and H-beta in range, so it exercises the full line table rather than
 only the blue side.  Its complete outputs are in
-`outputs/spSpec-51908-0277-120_z_0.0859/gandalf_line/`; the QSO regression is
-in `outputs/04592649654_z_0.5874/gandalf_line/`.
+`outputs/gandalf_line/spSpec-51908-0277-120_z_0.0859/`; the QSO regression is
+in `outputs/gandalf_line/04592649654_z_0.5874/`.
 
 ## Build / run
 

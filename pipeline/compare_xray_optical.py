@@ -31,6 +31,11 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
 ROOT = Path(__file__).resolve().parents[1]
+import sys  # noqa: E402
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+from pipeline.io_layout import output_dir  # noqa: E402
+
 OUT_ROOT = ROOT / "outputs"
 
 # rest-frame line centres and integration windows (Angstrom)
@@ -295,34 +300,34 @@ def main(argv=None) -> int:
     a = p.parse_args(argv)
     src_dir = ROOT / "inputs" / a.source
     src = load_json(src_dir / "source.json")
-    out = a.out or OUT_ROOT / a.source / "crossmission"
+    out = Path(a.out) if a.out else output_dir(a.source, "crossmission")
     out.mkdir(parents=True, exist_ok=True)
 
     if a.xray_tool == "auto":
-        if (OUT_ROOT / a.source / "xmm_xspec" / "xmm_lines.csv").exists():
+        if (output_dir(a.source, "xmm_xspec") / "xmm_lines.csv").exists():
             a.xray_tool = "xmm_xspec"
-        elif (OUT_ROOT / a.source / "rxte_xspec" / "rxte_lines.csv").exists():
+        elif (output_dir(a.source, "rxte_xspec") / "rxte_lines.csv").exists():
             a.xray_tool = "rxte_xspec"
         else:
             raise FileNotFoundError("no xmm_xspec or rxte_xspec line table")
     if a.xray_tool == "xmm_xspec":
-        xray = read_xray(OUT_ROOT / a.source / "xmm_xspec" / "xmm_lines.csv")
+        xray = read_xray(output_dir(a.source, "xmm_xspec") / "xmm_lines.csv")
     else:
-        xray = read_xray(OUT_ROOT / a.source / "rxte_xspec" / "rxte_lines.csv")
+        xray = read_xray(output_dir(a.source, "rxte_xspec") / "rxte_lines.csv")
 
     if a.optical_tool == "auto":
         a.optical_tool = ("optical_linefit"
-                          if (OUT_ROOT / a.source / "optical_linefit" / "optical_lines_summary.json").exists()
+                          if (output_dir(a.source, "optical_linefit") / "optical_lines_summary.json").exists()
                           else "pyqsofit_uv")
     if a.optical_tool == "optical_linefit":
-        opt_dir = OUT_ROOT / a.source / "optical_linefit"
+        opt_dir = output_dir(a.source, "optical_linefit")
         optical = read_optical_linefit(opt_dir, float(src["z"]))
         line_name, line = choose_primary(optical)
         line_flux = line["area_1e17"] * 1e-17
         local_quality = optical.get("quality", "provisional")
         local_note = "; ".join(optical["summary"].get("notes", []))
     else:
-        opt_dir = OUT_ROOT / a.source / "pyqsofit_uv"
+        opt_dir = output_dir(a.source, "pyqsofit_uv")
         optical = read_optical(opt_dir / "pyqsofit_lines.csv", opt_dir / "pyqsofit_model.csv",
                                float(src["z"]))
         line_name, line = choose_primary(optical)
@@ -332,7 +337,7 @@ def main(argv=None) -> int:
     model_ratios = []
     if optical.get("hb_oiii_ratio"):
         model_ratios.append(float(optical["hb_oiii_ratio"]))
-    qm = OUT_ROOT / a.source / "qsofitmore_line" / "qsofitmore_lines.csv"
+    qm = output_dir(a.source, "qsofitmore_line") / "qsofitmore_lines.csv"
     if qm.exists():
         try:
             with qm.open(newline="") as fh:

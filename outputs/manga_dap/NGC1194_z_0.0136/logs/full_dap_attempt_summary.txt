@@ -1,0 +1,62 @@
+MaNGA DAP full-emission-line runtime blocker — NGC 1194 (9193-12701)
+=====================================================================
+
+Production environment: 8 CPU, 31 GB RAM, Docker image manga_dap
+(sdss-mangadap 4.5.0, numpy 2.4.1, ppxf 8.1.0).
+
+A. Full all-spaxel HYB10 target S/N=10 run
+------------------------------------------
+Command:
+  Pipelines/run_manga_dap_docker.sh inputs/NGC1194_z_0.0136 \
+    outputs/manga_dap/NGC1194_z_0.0136 --reference <published MAPS>
+
+Plan: upstream default plan.toml; DAPTYPE HYB10-MILESHC-MASTARHC2;
+deconstruct_bins='binid'; 65 MaStar-HC2 stellar templates; 35 ELPMPL11 lines;
+mdegree=14; ensemble=True.
+
+Observed progress from the DAP log:
+  - reduction assessments, S/N and covariance: completed
+  - HYB10 Voronoi binning: completed
+  - pPXF stellar kinematics (MILES-HC): completed
+  - emission-line moments: completed
+  - full EmissionLineModel: 2397 original spectra, remapped to 2688 spectra,
+    65 stellar templates, 30 emission-line templates, 137 model degrees of
+    freedom (excluding templates)
+  - SASUKE fit reached "Fitting spectrum 157/2397" when the run was killed by
+    the 3500 s (58 min) wall-clock cap.
+  - No MAPS was written by this attempt.
+
+Why it is not viable: the 65-template SASUKE fit evaluates a very large
+least-squares system for every one of the 2397 bins on one 8-core host.  The
+process ran at ~100% of one CPU because the DAP's Sasuke loop is serial; the
+remapped 2688-spectrum path does not parallelise across bins.
+
+B. Earlier 175-bin diagnostic attempts
+---------------------------------------
+1. deconstruct_bins='binid', ensemble=True, 65 templates:
+   killed after 60 min inside the SASUKE fit.
+2. deconstruct_bins='ignore', ensemble=True, 65 templates:
+   killed after 30 min at the start of the SASUKE fit.
+3. deconstruct_bins='ignore', ensemble=False, 65 templates:
+   killed after 40 min at 39/175 spectra (~1 min per spectrum).
+
+C. Completed fallback used for the acceptance product
+-----------------------------------------------------
+Stage A: official DAP workflow with the Gaussian eline_fits block set to
+None, HYB10 target S/N=50, 175 bins.  Completed rdxqa, Voronoi binning, pPXF
+stellar kinematics, EMOM emission-line moments and INDXEN indices.  Runtime
+1741.7 s (29.0 min).  The partial MAPS is committed as
+fits/manga_dap_moments_maps.fits.gz.
+
+Stage B: official DAP Sasuke Gaussian fitter on all 175 official binned
+spectra with the official pPXF stellar-continuum model supplied as a fixed
+per-spectrum template.  Full ELPMPL11 database, DAP pixel mask/resolution,
+BADSKY mask, ensemble=False, mdegree=14, 8 processes.  Runtime 330.2 s
+(5.5 min), 0/175 failures.  This is the standard DAP fixed-continuum mode and
+is not a different fitter.
+
+The published SDSS DAP MAPS (v3_1_1/3.1.0, HYB10-MILESHC-MASTARHC2) is the
+independent reference product.  It was not used as an input to either stage.
+
+The merged MAPS, line tables, maps, BPT figure, central fit figure and the
+comparison are committed under outputs/manga_dap/NGC1194_z_0.0136/.

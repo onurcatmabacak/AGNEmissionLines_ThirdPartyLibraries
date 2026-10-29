@@ -16,6 +16,12 @@ import json
 import math
 from pathlib import Path
 
+import sys  # noqa: E402
+_ROOT = Path(__file__).resolve().parents[1]
+if str(_ROOT) not in sys.path:
+    sys.path.insert(0, str(_ROOT))
+from pipeline.io_layout import output_dir  # noqa: E402
+
 ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_TOOLS = (
     "qsofitmore_line",
@@ -363,7 +369,7 @@ def main(argv=None):
     p.add_argument("--outputs-root", default=str(ROOT / "outputs"))
     p.add_argument("--no-figure", action="store_true")
     args = p.parse_args(argv)
-    obj = Path(args.outputs_root) / args.source_key
+    obj = output_dir(args.source_key, "qsofitmore_line")
     outdir = obj / "qsofitmore_line"
     if not (outdir / "qsofitmore_lines.csv").exists():
         raise SystemExit(f"missing {outdir / 'qsofitmore_lines.csv'}; run qsofitmore_line first")

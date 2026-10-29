@@ -4,13 +4,13 @@ The original optical five-tool analysis has been migrated into the canonical
 layout:
 
 ```text
-outputs/<object_name>_z_<redshift>/
+outputs/<tool>/<object_name>_z_<redshift>/
   pyqsofit/
   badass/
   fantasy_agn/
   gelato/
   gleam/
-  .../<tool>/uncertainties/
+  .../uncertainties/
   statistical_confirmation/
 ```
 

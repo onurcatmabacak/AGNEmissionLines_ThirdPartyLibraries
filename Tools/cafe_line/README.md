@@ -50,7 +50,7 @@ The committed PDS 456 test (real JWST/MIRI MRS short+long `x1d`):
 ```bash
 bash Pipelines/run_cafe_line_docker.sh \
   inputs/PDS456_z_0.1840/raw \
-  outputs/PDS456_z_0.1840/cafe_line \
+  outputs/cafe_line/PDS456_z_0.1840 \
   0.184 \
   --max-wave 27.8 --no-outlier-clip \
   --mc-samples 200 --mc-seed 20250101
@@ -70,7 +70,7 @@ channels, 5–28 µm, SB+AGN configuration, reduced/documented line set):
 ```bash
 bash Pipelines/run_cafe_line_docker.sh \
   inputs/VV114_z_0.0200/raw \
-  outputs/VV114_z_0.0200/cafe_line \
+  outputs/cafe_line/VV114_z_0.0200 \
   0.02 \
   --config /app/config/vv114_agn_sb --tables /app/config/tables \
   --min-wave 5 --max-wave 28 --bin-kms 100 --error-floor 0.05 \
@@ -415,7 +415,7 @@ bash -n Pipelines/run_cafe_line_docker.sh
 bash Pipelines/build_images.sh cafe_line
 docker run --rm cafe_line --help
 bash Pipelines/run_cafe_line_docker.sh inputs/PDS456_z_0.1840/raw \
-  outputs/PDS456_z_0.1840/cafe_line 0.184 \
+  outputs/cafe_line/PDS456_z_0.1840 0.184 \
   --max-wave 27.8 --no-outlier-clip --mc-samples 200 --mc-seed 20250101
 # VV114 production (args are also in inputs/VV114_z_0.0200/source.json):
 # see the full command in the Run section above

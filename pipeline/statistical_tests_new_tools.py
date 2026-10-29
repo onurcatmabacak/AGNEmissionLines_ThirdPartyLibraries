@@ -20,6 +20,11 @@ import matplotlib.pyplot as plt
 from scipy import stats
 
 ROOT = Path(__file__).resolve().parents[1]
+import sys  # noqa: E402
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+from pipeline.io_layout import OUTPUT_ROOT, output_dir  # noqa: E402
+
 OUT = ROOT / "outputs"
 DOCS = ROOT / "docs"
 
@@ -116,7 +121,7 @@ def sed_tests():
 
 
 def fir_tests():
-    path = OUT / "synthetic_fir_z_0.5000" / "fir_linefit" / "spectrum.fir_lines.csv"
+    path = output_dir("synthetic_fir_z_0.5000", "fir_linefit") / "spectrum.fir_lines.csv"
     rows = read_csv(path)
     rec = {r["line"]: r for r in rows}
     ratios = []
@@ -131,7 +136,7 @@ def fir_tests():
 
 def cross_tests():
     rows = []
-    for p in OUT.glob("*/crossband/crossband_ratios.csv"):
+    for p in OUTPUT_ROOT.glob("crossband/*/crossband_ratios.csv"):
         for r in read_csv(p):
             r["_source"] = p.parent.parent.name
             rows.append(r)
@@ -147,7 +152,7 @@ def cross_tests():
 
 def pahfit_tests():
     rows = []
-    for p in OUT.glob("*/pahfit_mir/**/pahfit_summary.json"):
+    for p in OUTPUT_ROOT.glob("pahfit_mir/*/**/pahfit_summary.json"):
         try:
             d = json.loads(p.read_text())
         except Exception:

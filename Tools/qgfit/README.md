@@ -19,7 +19,7 @@ bash Pipelines/build_images.sh qgfit
 # Production run (100 x 1000 continuum MCMC, LSQ line covariance).
 bash Pipelines/run_qgfit_docker.sh \
   inputs/04592649654_z_0.5874 \
-  outputs/04592649654_z_0.5874/qgfit \
+  outputs/qgfit/04592649654_z_0.5874 \
   --config configs/qgfit/production \
   --z 0.58741307
 

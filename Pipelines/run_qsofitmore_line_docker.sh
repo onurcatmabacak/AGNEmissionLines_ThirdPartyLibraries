@@ -63,6 +63,8 @@ fi
 
 mkdir -p "$OUT"
 OUT="$(realpath "$OUT")"
+source "$(dirname "${BASH_SOURCE[0]}")/_output_layout.sh"
+output_layout_resolve "$OUT"
 CONFIG="$(realpath "$CONFIG")"
 
 if ! docker image inspect qsofitmore_line >/dev/null 2>&1; then
@@ -76,7 +78,7 @@ REPO_COMMIT="$(git -C "$REPO_ROOT" rev-parse HEAD 2>/dev/null || true)"
 UPSTREAM_COMMIT="${QSOFITMORE_COMMIT:-4c5f6e497b306aaf50b502a8e4b27ed9dfe89421}"
 
 if [ -z "$SOURCE_KEY" ]; then
-  SOURCE_KEY="$(basename "$(dirname "$OUT")")"
+  SOURCE_KEY="$OUT_SOURCE"
 fi
 
 ARGS=(

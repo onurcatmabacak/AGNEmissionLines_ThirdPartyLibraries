@@ -70,7 +70,7 @@ corner/trace/sample products.  A **300-step capped run** completed the fit
 full chains were lost when the container timed out during the copy step.  The
 short chain is **not converged**, so the committed quantitative uncertainty
 remains the **100-realization MC**.  Both statuses are explicit in
-`outputs/04592649654_z_0.5874/pyqsofit/mcmc/STATUS.md`.
+`outputs/pyqsofit/04592649654_z_0.5874/mcmc/STATUS.md`.
 
 ## RXTE/PCA: chi-square and Delta chi-square, not MCMC
 
@@ -115,21 +115,21 @@ not a statistical error bar.
 
 | tool | run | realizations | method | figure |
 |---|---|---:|---|---|
-| PyQSOFit | `04592649654` | 100 | MC error-array resampling | `outputs/04592649654_z_0.5874/pyqsofit/mc/pyqsofit_mc.png` |
-| QSOFITMORE | `04592649654` | **200** | lmfit parametric bootstrap (continuum + line complexes) | `outputs/04592649654_z_0.5874/qsofitmore_line/qsofitmore_corner.png` |
-| PyQSOFit MCMC | `04592649654` | 800 (10-step validation) | `emcee`, **not converged**; 300-step diagnostics | `outputs/04592649654_z_0.5874/pyqsofit/mcmc/pyqsofit_mcmc_corner.png` |
-| S3Fit | `04592649654` | **10** | mock spectra (spec+sed) | `outputs/04592649654_z_0.5874/s3fit_line/s3fit_mc.png` |
-| GalSpec | `04592649654` | 37,334 saved samples (thin 6; 224,000 post-burn draws) | full-continuum `emcee`, 80 walkers x 4000 steps; tau_max 342.6; retained nsteps/tau=8.2 (not converged) | `outputs/04592649654_z_0.5874/galspec_line/galspec_corner.png` |
-| PyQSOFitSpec | `04592649654` | **53/55 valid** | parametric bootstrap | `outputs/04592649654_z_0.5874/pyqsofitspec_line/pyqsofitspec_bootstrap.png` |
-| QGfit | `04592649654` | long continuum MCMC (2334 s) | `emcee` continuum; LSQ lines | `outputs/04592649654_z_0.5874/qgfit/qgfit_uncertainty.png` |
-| SHEAP | `04592649654` | 50 | JAX + parametric-bootstrap MC (not MCMC) | `outputs/04592649654_z_0.5874/sheap_line/sheap_uncertainty.png` |
-| CAFE | PDS 456 | 200 | LMFIT covariance multivariate normal | `outputs/PDS456_z_0.1840/cafe_line/cafe_uncertainty.png` |
-| GANDALF | `04592649654` | formal errors | GDL/MPFIT `FOR_ERRORS=1` | `outputs/04592649654_z_0.5874/gandalf_line/gandalf_uncertainty.png` |
+| PyQSOFit | `04592649654` | 100 | MC error-array resampling | `outputs/pyqsofit/04592649654_z_0.5874/mc/pyqsofit_mc.png` |
+| QSOFITMORE | `04592649654` | **200** | lmfit parametric bootstrap (continuum + line complexes) | `outputs/qsofitmore_line/04592649654_z_0.5874/qsofitmore_corner.png` |
+| PyQSOFit MCMC | `04592649654` | 800 (10-step validation) | `emcee`, **not converged**; 300-step diagnostics | `outputs/pyqsofit/04592649654_z_0.5874/mcmc/pyqsofit_mcmc_corner.png` |
+| S3Fit | `04592649654` | **10** | mock spectra (spec+sed) | `outputs/s3fit_line/04592649654_z_0.5874/s3fit_mc.png` |
+| GalSpec | `04592649654` | 37,334 saved samples (thin 6; 224,000 post-burn draws) | full-continuum `emcee`, 80 walkers x 4000 steps; tau_max 342.6; retained nsteps/tau=8.2 (not converged) | `outputs/galspec_line/04592649654_z_0.5874/galspec_corner.png` |
+| PyQSOFitSpec | `04592649654` | **53/55 valid** | parametric bootstrap | `outputs/pyqsofitspec_line/04592649654_z_0.5874/pyqsofitspec_bootstrap.png` |
+| QGfit | `04592649654` | long continuum MCMC (2334 s) | `emcee` continuum; LSQ lines | `outputs/qgfit/04592649654_z_0.5874/qgfit_uncertainty.png` |
+| SHEAP | `04592649654` | 50 | JAX + parametric-bootstrap MC (not MCMC) | `outputs/sheap_line/04592649654_z_0.5874/sheap_uncertainty.png` |
+| CAFE | PDS 456 | 200 | LMFIT covariance multivariate normal | `outputs/cafe_line/PDS456_z_0.1840/cafe_uncertainty.png` |
+| GANDALF | `04592649654` | formal errors | GDL/MPFIT `FOR_ERRORS=1` | `outputs/gandalf_line/04592649654_z_0.5874/gandalf_uncertainty.png` |
 | PAHFIT | PDS 456 short/long/both, VV114, NGC 4151, NGC 253 | 100-200 each | full-rank covariance or full-refit bootstrap | `outputs/<source>/pahfit_mir/pahfit_uncertainty.png` |
 | AGNfitter | 5 QSOs | nested sampling | `ultranest` | `outputs/<source>/agnfitter_sed/OUTPUT/.../SED_manyrealizations...pdf` |
 | CIGALE | 5 QSOs × 2 tori | Bayesian `pdf_analysis` | posterior grid | `outputs/<source>/cigale_sed/*/sed_fit.png` |
-| XMM-Newton | PDS 456 | none (XSPEC chi-square) | covariance + `Delta chi^2` line significance; PN+MOS | `outputs/PDS456_z_0.1840/xmm_xspec/xmm_fe_ka_zoom.png` |
-| RXTE/PCA | 3C 120 + MCG-6-30-15 | none (XSPEC chi-square) | covariance + `Delta chi^2` line significance | `outputs/<source>/rxte_xspec/rxte_fe_ka_zoom.png` |
+| XMM-Newton | PDS 456 | none (XSPEC chi-square) | covariance + `Delta chi^2` line significance; PN+MOS | `outputs/xmm_xspec/PDS456_z_0.1840/xmm_fe_ka_zoom.png` |
+| RXTE/PCA | 3C 120 + MCG-6-30-15 | none (XSPEC chi-square) | covariance + `Delta chi^2` line significance | `outputs/rxte_xspec/<source>/rxte_fe_ka_zoom.png` |
 | crossmission | 3C 120 + PDS 456 | none (post-processing) | same-object flux/EW with quality flags; no correlation fit | `docs/xray_optical_comparison.png` |
 
 `docs/line_tool_comparison.png` combines the line ratios measured by PyQSOFit,

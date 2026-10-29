@@ -14,7 +14,7 @@ MIRI_ALL="jwst.miri.mrs.ch1.A,jwst.miri.mrs.ch1.B,jwst.miri.mrs.ch1.C,jwst.miri.
 IRS="spitzer.irs.sl.2,spitzer.irs.sl.1,spitzer.irs.ll.2,spitzer.irs.ll.1"
 
 PDS_IN="inputs/PDS456_z_0.1840/raw"
-PDS_OUT="outputs/PDS456_z_0.1840/pahfit_mir"
+PDS_OUT="outputs/pahfit_mir/PDS456_z_0.1840"
 
 echo "=== PDS 456 short (100 MC, auto)"
 $RUN "$PDS_IN" "$PDS_OUT/short" 0.184 \
@@ -46,32 +46,32 @@ $RUN "$PDS_IN" "$PDS_OUT/both" 0.184 \
   --mc-samples 100 --mc-method auto
 
 echo "=== VV114 full 12-channel MIRI s1d (200 MC, auto/covariance)"
-$RUN inputs/VV114_z_0.0200/raw outputs/VV114_z_0.0200/pahfit_mir 0.02 \
+$RUN inputs/VV114_z_0.0200/raw outputs/pahfit_mir/VV114_z_0.0200 0.02 \
   --config /app/configs/pahfit_mir/vv114/config.json \
   --mc-samples 200 --mc-method auto
 
 echo "=== VV114 bootstrap validation (200 MC)"
-$RUN inputs/VV114_z_0.0200/raw outputs/VV114_z_0.0200/pahfit_mir/bootstrap_200 0.02 \
+$RUN inputs/VV114_z_0.0200/raw outputs/pahfit_mir/VV114_z_0.0200/bootstrap_200 0.02 \
   --config /app/configs/pahfit_mir/vv114/config.json \
   --mc-samples 200 --mc-method bootstrap
 
 echo "=== NGC 4151 full IRS SL/LL (200 MC, auto)"
-$RUN inputs/NGC4151_z_0.0033/raw outputs/NGC4151_z_0.0033/pahfit_mir 0.003319 \
+$RUN inputs/NGC4151_z_0.0033/raw outputs/pahfit_mir/NGC4151_z_0.0033 0.003319 \
   --config /app/configs/pahfit_mir/ngc4151/config.json \
   --mc-samples 200 --mc-method auto
 
 echo "=== NGC 4151 bootstrap validation (200 MC)"
-$RUN inputs/NGC4151_z_0.0033/raw outputs/NGC4151_z_0.0033/pahfit_mir/bootstrap_200 0.003319 \
+$RUN inputs/NGC4151_z_0.0033/raw outputs/pahfit_mir/NGC4151_z_0.0033/bootstrap_200 0.003319 \
   --config /app/configs/pahfit_mir/ngc4151/config.json \
   --mc-samples 200 --mc-method bootstrap
 
 echo "=== NGC 253 starburst stress test (100 MC, auto; tail >30 um excluded)"
-$RUN inputs/NGC253_z_0.0008/raw outputs/NGC253_z_0.0008/pahfit_mir 0.000811 \
+$RUN inputs/NGC253_z_0.0008/raw outputs/pahfit_mir/NGC253_z_0.0008 0.000811 \
   --config /app/configs/pahfit_mir/ngc253/config.json \
   --mc-samples 100 --mc-method auto
 
 echo "=== NGC 253 full-tail failure control (no MC; 5-38 um, all unflagged rows)"
-$RUN inputs/NGC253_z_0.0008/raw outputs/NGC253_z_0.0008/pahfit_mir/full_tail 0.000811 \
+$RUN inputs/NGC253_z_0.0008/raw outputs/pahfit_mir/NGC253_z_0.0008/full_tail 0.000811 \
   --tbl --smooth-um 0.1 --min-wave 5 --max-wave 38 \
   --tbl-aperture-arcsec2 1.0 --instrument "$IRS" \
   --normalize-fit --fit-passes 2 --maxiter 1000

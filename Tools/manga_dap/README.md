@@ -174,7 +174,7 @@ Stage B without repeating the 29-minute Stage A.
 
 ## Outputs
 
-`outputs/NGC1194_z_0.0136/manga_dap/`:
+`outputs/manga_dap/NGC1194_z_0.0136/`:
 
 | file | contents |
 |---|---|

@@ -24,7 +24,7 @@ Run:
   --config sources=3C120_z_0.0330
 ```
 
-Outputs are guarded by `outputs/<source>/<tool>/.snakemake_done`.  A missing
+Outputs are guarded by `outputs/<tool>/<source>/.snakemake_done`.  A missing
 marker is a request to rerun, even when a previous product directory exists;
 `--force` ensures the tool does not mix old and new files.  Science products
 are never deleted by the `clean` rule — only markers are removed.

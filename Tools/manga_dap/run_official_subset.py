@@ -3,7 +3,7 @@
 
 The all-spaxel MaNGA DAP emission-line model on the 2397 HYB10 bins did not
 complete within the wall-clock budget (see
-outputs/NGC1194_z_0.0136/manga_dap/logs/full_dap_attempt_summary.txt).  This
+outputs/manga_dap/NGC1194_z_0.0136/logs/full_dap_attempt_summary.txt).  This
 runner therefore keeps the **full official DAP method** -- 65 MaStar-HC2
 templates, ELPMPL11, mdegree=14, deconstruct_bins='ignore' -- and restricts the
 official Sasuke fit to the 9 central single-spaxel bins of the completed

@@ -59,7 +59,7 @@ Gaussians that belong to the broad template.  On `04592649654`: Hβ
 2540.8±209.4; the Hβ complex χ²_r is 17.9 (model mismatch, not a flux
 failure).  The cross-tool median Hβ/[O III] is 2.044 with 0.053 dex scatter.
 See `docs/MCMC_AND_STATISTICS.md` and
-`outputs/04592649654_z_0.5874/qsofitmore_line/README.md`.
+`outputs/qsofitmore_line/04592649654_z_0.5874/README.md`.
 
 ### CAFE
 
@@ -133,7 +133,7 @@ inputs/<source>/xray/rxte_<obsid>/*_s2.pha.gz   # official PCA Standard2 source
                                   *.rsp.gz      # official 5-PCU response
   -> Tools/rxte_xspec/ (HEASoft/PyXspec 13.0.0)
   -> tbabs*(zpowerlw+zgauss), 3-20 keV
-  -> outputs/<source>/rxte_xspec/
+  -> outputs/rxte_xspec/<source>/
 ```
 
 The production example is **3C 120** (ObsID `10339-02-01-01`, 9808 s,

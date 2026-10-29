@@ -53,4 +53,4 @@ within the different extraction/filter choices.
 - The fit assumes the same absorbed power-law model as the PPS path; this is a
   reduction cross-check, not an independent physical model.
 
-Products: `outputs/PDS456_z_0.1840/xmm_sas_raw/`.
+Products: `outputs/xmm_sas_raw/PDS456_z_0.1840/`.

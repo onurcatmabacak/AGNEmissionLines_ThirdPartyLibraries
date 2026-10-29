@@ -440,6 +440,70 @@ def metrics_for_specs(model, line_specs):
 # ---------------------------------------------------------------------------
 # MCMC
 # ---------------------------------------------------------------------------
+_GLOBAL_MCMC = None
+
+
+def _logprob_from_global(theta):
+    """Top-level log-probability for fork-based worker pools.
+
+    Passing the bound method directly makes multiprocess pickle the whole
+    CompoundModel for every task; the parent then spends its time serialising
+    while the workers sit idle.  The pool is created with fork, so each worker
+    inherits the model once and this top-level callable only needs the short
+    parameter vector.
+    """
+
+    if _GLOBAL_MCMC is None:
+        raise RuntimeError("global GalSpec MCMC model is not initialized")
+    return _GLOBAL_MCMC.log_probability(theta)
+
+
+def _robust_autocorr(chain, log_prob, ndim, c=5):
+    """Integrated autocorrelation time that survives dead walkers.
+
+    emcee's estimator averages one normalised ACF per walker.  A walker that
+    never moves has zero variance, so its ACF is ``0/0 = NaN`` and a *single*
+    such walker turns every parameter's tau into NaN.  Mask walkers whose
+    log-probability is non-finite anywhere in the retained chain, then fill any
+    remaining gap with a per-parameter estimate that skips constant walkers.
+
+    Returns ``(tau, n_live_walkers)`` with tau finite and positive for every
+    parameter whenever the live ensemble moves at all.
+    """
+    import emcee as _emcee
+
+    ch = np.asarray(chain, dtype=float)
+    n_t, n_w, n_d = ch.shape
+    lp = np.asarray(log_prob, dtype=float).reshape(n_t, n_w)
+    live = np.all(np.isfinite(lp), axis=0) & np.all(np.isfinite(ch), axis=(0, 2))
+    if int(live.sum()) < 2:
+        live = np.ones(n_w, dtype=bool)
+    sub = ch[:, live, :]
+    tau = np.full(int(ndim), np.nan, dtype=float)
+    try:
+        est = _emcee.autocorr.integrated_time(sub, tol=0.0, quiet=True)
+        tau[:] = np.atleast_1d(np.asarray(est, dtype=float))
+    except Exception:  # noqa: BLE001 - fall through to the per-parameter path
+        tau[:] = np.nan
+    broken = ~(np.isfinite(tau) & (tau > 0))
+    if broken.any():
+        n_t_sub = sub.shape[0]
+        for d in np.flatnonzero(broken):
+            series = sub[:, :, d]
+            keep = series.var(axis=0) > 0.0
+            if not np.any(keep):
+                tau[d] = 1.0
+                continue
+            acf = np.zeros(n_t_sub, dtype=float)
+            for k in np.flatnonzero(keep):
+                acf += _emcee.autocorr.function_1d(series[:, k])
+            acf /= float(np.count_nonzero(keep))
+            taus = 2.0 * np.cumsum(acf) - 1.0
+            value = float(taus[int(_emcee.autocorr.auto_window(taus, c))])
+            tau[d] = value if np.isfinite(value) and value > 0 else 1.0
+    return tau, int(live.sum())
+
+
 def run_full_mcmc(model, x, y, err, cfg, line_specs, seed):
     mcfg = cfg.get("mcmc", {})
     nwalkers = int(mcfg.get("nwalkers", 80))
@@ -483,9 +547,6 @@ def run_full_mcmc(model, x, y, err, cfg, line_specs, seed):
     span = high - low
     scale = float(mcfg.get("initial_jitter_frac", 0.02)) * span
     scale = np.maximum(scale, 1e-8)
-    pos = theta0 + scale * rng.standard_normal((nwalkers, ndim))
-    pos = np.clip(pos, low + 1e-8 * span, high - 1e-8 * span)
-    mcmc.pos = pos
 
     # Custom prior: the usual parameter bounds plus a positivity constraint on
     # the global continuum.  The continuum is the first submodel and its
@@ -516,25 +577,147 @@ def run_full_mcmc(model, x, y, err, cfg, line_specs, seed):
         return 0.0
 
     mcmc.log_prior_func = log_prior
+
+    # Draw the initial ensemble and keep every walker inside the support.
+    # A walker that starts where the prior is zero is trapped for the whole
+    # chain: DEMove steps scale with the ensemble spread, so it cannot jump
+    # back into the allowed region and stays frozen.  One frozen walker is
+    # enough to turn every integrated autocorrelation time into NaN, because
+    # emcee normalises each walker's ACF by its own lag-zero power (0/0 for a
+    # constant series).  The production 200x20000 run had exactly four such
+    # walkers and reported 32/39 missing tau values; redrawing them fixes both
+    # the diagnostic and those four wasted chains.
+    pos = None
+    init_from = mcfg.get("init_from")
+    if init_from:
+        init_path = Path(str(init_from))
+        if init_path.exists():
+            blob = np.load(init_path)
+            init_samples = np.asarray(blob["samples"], dtype=float)
+            init_names = [str(n) for n in blob["param_names"]]
+            if init_names != list(mcmc.param_names):
+                LOG.warning(
+                    "init_from %s has a different parameter order; ignoring it",
+                    init_path,
+                )
+            else:
+                take = min(int(nwalkers), len(init_samples))
+                pos = init_samples[-take:].copy()
+                pos = np.clip(pos, low + 1e-8 * span, high - 1e-8 * span)
+                LOG.info(
+                    "initial ensemble: warm start from %s (%d walkers)",
+                    init_path,
+                    int(take),
+                )
+        else:
+            LOG.warning("init_from %s does not exist; using the LSQ start", init_path)
+    if pos is None:
+        pos = theta0 + scale * rng.standard_normal((nwalkers, ndim))
+        pos = np.clip(pos, low + 1e-8 * span, high - 1e-8 * span)
+    pos_first = pos.copy()
+    lp_init = np.array([mcmc.log_probability(p) for p in pos], dtype=float)
+    good = np.flatnonzero(np.isfinite(lp_init))
+    attempt = 0
+    while (~np.isfinite(lp_init)).any() and attempt < 400:
+        bad = np.flatnonzero(~np.isfinite(lp_init))
+        shrink = 0.5 ** (attempt // 25)
+        if good.size and attempt >= 75:
+            base = pos[rng.choice(good, size=bad.size)]
+            jitter = np.maximum(1e-3 * span * shrink, 1e-9)
+        else:
+            base = theta0
+            jitter = np.maximum(scale * shrink, 1e-9)
+        trial = np.clip(
+            base + jitter * rng.standard_normal((bad.size, ndim)),
+            low + 1e-8 * span,
+            high - 1e-8 * span,
+        )
+        pos[bad] = trial
+        lp_init[bad] = np.array(
+            [mcmc.log_probability(p) for p in trial], dtype=float
+        )
+        attempt += 1
+    still_bad = ~np.isfinite(lp_init)
+    if still_bad.any() and np.isfinite(lp_init[good[0]]):
+        pos[still_bad] = pos[good[0]]
+        lp_init[still_bad] = lp_init[good[0]]
+    n_walkers_redrawn = int(np.sum(np.any(pos != pos_first, axis=1)))
+    if n_walkers_redrawn:
+        LOG.info(
+            "initial ensemble: redrew %d/%d walkers that started outside the prior support",
+            n_walkers_redrawn,
+            int(nwalkers),
+        )
+    if not np.all(np.isfinite(lp_init)):
+        raise RuntimeError("could not place all walkers inside the prior support")
+    mcmc.pos = pos
+
+    # Proposal strategy.  emcee's default StretchMove is inefficient for the
+    # 39-dimensional GalSpec model; DEMove uses walker differences and is the
+    # appropriate proposal at this dimension.  gamma0 is tunable because the
+    # hard continuum-positivity prior rejects a fair share of DE proposals and
+    # the 2.38/sqrt(2*ndim) Gaussian optimum over-steps in this geometry.
+    move_name = str(mcfg.get("move", "stretch")).lower()
+    if mcfg.get("gamma0") is not None:
+        gamma0 = float(mcfg["gamma0"])
+    else:
+        gamma0 = 2.38 / np.sqrt(2.0 * ndim)
+
+    def _build_moves():
+        import emcee as _emcee
+
+        de = _emcee.moves.DEMove(gamma0=gamma0)
+        if move_name in ("demove", "de"):
+            return [de]
+        if move_name in ("demove_stretch", "de_stretch"):
+            stretch = _emcee.moves.StretchMove(a=float(mcfg.get("stretch_a", 2.0)))
+            weight = float(mcfg.get("de_weight", 0.8))
+            return [(de, weight), (stretch, 1.0 - weight)]
+        if move_name in ("demove_snooker", "de_snooker"):
+            snooker = _emcee.moves.DESnookerMove()
+            return [(de, 0.8), (snooker, 0.2)]
+        if move_name in ("mix",):
+            snooker = _emcee.moves.DESnookerMove()
+            stretch = _emcee.moves.StretchMove(a=float(mcfg.get("stretch_a", 2.0)))
+            return [(de, 0.5), (snooker, 0.25), (stretch, 0.25)]
+        if move_name in ("stretch", "default"):
+            return None
+        raise ValueError(f"unknown mcmc.move: {move_name}")
+
     ncores = int(mcfg.get("ncores", 0) or 0)
     t0 = time.perf_counter()
-    if ncores > 1:
-        # emcee walkers are independent; GalSpec's fit_ncores wraps a
-        # multiprocess pool.  step_initial=0 selects a single production phase.
-        mcmc.step_initial = 0
-        mcmc.fit_ncores(ncores=ncores)
-        chain = np.asarray(mcmc.sampler.get_chain(discard=nburn), dtype=float)
-        flat = chain.reshape(-1, ndim)
-        log_prob = np.asarray(
-            mcmc.sampler.get_log_prob(discard=nburn), dtype=float
-        ).reshape(-1)
-        mcmc.flat_samples = flat
-        mcmc.log_prob = log_prob
-    else:
-        mcmc.fit(progress=bool(mcfg.get("progress", False)))
-        flat = np.asarray(mcmc.flat_samples, dtype=float)
-        log_prob = np.asarray(mcmc.log_prob, dtype=float)
-        chain = np.asarray(mcmc.sampler.get_chain(discard=nburn), dtype=float)
+    # Do not call GalSpec's MCMC_Fit.fit_ncores here.  In this container it
+    # created a multiprocess Pool but the workers stayed idle while the parent
+    # consumed one core.  Build the emcee sampler explicitly instead.
+    import emcee as _emcee
+    from multiprocess import Pool as _Pool
+    global _GLOBAL_MCMC
+    _GLOBAL_MCMC = mcmc
+    _pool = _Pool(processes=ncores) if ncores > 1 else None
+    try:
+        _sampler = _emcee.EnsembleSampler(
+            int(nwalkers),
+            int(ndim),
+            _logprob_from_global if _pool is not None else mcmc.log_probability,
+            pool=_pool,
+            moves=_build_moves(),
+            vectorize=False,
+        )
+        _sampler.run_mcmc(
+            pos,
+            int(nsteps),
+            progress=bool(mcfg.get("progress", False)) if _pool is None else False,
+        )
+    finally:
+        if _pool is not None:
+            _pool.close()
+            _pool.join()
+    mcmc.sampler = _sampler
+    chain = np.asarray(_sampler.get_chain(discard=nburn), dtype=float)
+    flat = chain.reshape(-1, ndim)
+    log_prob = np.asarray(_sampler.get_log_prob(discard=nburn), dtype=float).reshape(-1)
+    mcmc.flat_samples = flat
+    mcmc.log_prob = log_prob
     elapsed = time.perf_counter() - t0
     if flat.size == 0:
         raise RuntimeError("emcee returned an empty chain")
@@ -542,30 +725,48 @@ def run_full_mcmc(model, x, y, err, cfg, line_specs, seed):
     mcmc.set_model_params(theta_map)
 
     acceptance = float(np.mean(mcmc.sampler.acceptance_fraction))
-    tau = None
-    tau_max = None
-    tau_status = "not_estimated"
-    tol = float(mcfg.get("autocorr_tol", 0.0))
-    for attempt_tol in (tol, 1.0, 5.0):
-        try:
-            tau = np.asarray(
-                mcmc.sampler.get_autocorr_time(
-                    discard=nburn, tol=attempt_tol, quiet=True
-                ),
-                dtype=float,
-            )
-            tau_max = float(np.nanmax(tau))
-            tau_status = f"ok (tol={attempt_tol})"
-            break
-        except Exception as exc:  # noqa: BLE001
-            tau_status = f"{type(exc).__name__}: {exc}"
-
-    n_steps_kept = int(chain.shape[0]) if chain.ndim == 3 else int(nsteps - nburn)
-    ess = (
-        float(n_steps_kept * nwalkers / tau_max)
-        if tau_max and np.isfinite(tau_max) and tau_max > 0
-        else None
+    # Report acceptance over live walkers as well, so a mid-run death cannot
+    # drag the number down without saying so.
+    acceptance_live = acceptance
+    try:
+        _acc = np.asarray(_sampler.accepted, dtype=bool)
+        _n_moves = max(1, _acc.shape[1] // int(nwalkers))
+        _acc3 = _acc.reshape(_acc.shape[0], _n_moves, int(nwalkers))
+        _live_steps = np.all(np.isfinite(log_prob.reshape(_acc.shape[0], int(nwalkers))), axis=0)
+        if int(_live_steps.sum()) >= 2:
+            acceptance_live = float(np.mean(_acc3[:, :, _live_steps]))
+            acceptance = acceptance_live
+    except Exception:  # noqa: BLE001 - keep the sampler value
+        pass
+    tau, n_live_walkers = _robust_autocorr(chain, log_prob, int(ndim))
+    tau_status = (
+        f"ok (walkers={n_live_walkers}/{int(nwalkers)}; "
+        f"moves={move_name}, gamma0={gamma0:.4f})"
     )
+    n_steps_kept = int(chain.shape[0]) if chain.ndim == 3 else int(nsteps - nburn)
+    finite_tau = np.isfinite(tau) & (tau > 0)
+    n_finite = int(np.sum(finite_tau))
+    tau_max = float(np.nanmax(tau[finite_tau])) if n_finite else None
+    if n_finite:
+        tau_status += f"; {n_finite}/{int(ndim)} finite"
+    else:
+        tau_status += "; no finite tau"
+    # Never turn a missing tau into a fabricated ESS.  The scalar ESS is the
+    # minimum over parameters with a finite tau and is explicitly marked
+    # incomplete when some tau are NaN.
+    if n_finite:
+        ess_per_param = np.full(int(ndim), np.nan, dtype=float)
+        ess_per_param[finite_tau] = (
+            n_steps_kept * max(n_live_walkers, 1) / tau[finite_tau]
+        )
+        finite_ess = ess_per_param[np.isfinite(ess_per_param)]
+        ess = float(np.min(finite_ess)) if finite_ess.size else None
+        ess_median = float(np.median(finite_ess)) if finite_ess.size else None
+    else:
+        ess_per_param = None
+        ess = None
+        ess_median = None
+    ess_parameters = n_finite
     return {
         "method": "emcee_mcmc_full",
         "mcmc": mcmc,
@@ -575,6 +776,11 @@ def run_full_mcmc(model, x, y, err, cfg, line_specs, seed):
         "log_prob": log_prob,
         "param_names": list(mcmc.param_names),
         "acceptance_fraction": acceptance,
+        "acceptance_fraction_live": acceptance_live,
+        "move": move_name,
+        "gamma0": float(gamma0),
+        "n_walkers_redrawn": int(n_walkers_redrawn),
+        "n_walkers_used_for_tau": int(n_live_walkers),
         "autocorr_tau": tau,
         "tau_max": tau_max,
         "tau_status": tau_status,
@@ -585,6 +791,15 @@ def run_full_mcmc(model, x, y, err, cfg, line_specs, seed):
         "n_samples_total": int(len(flat)),
         "n_steps_kept": n_steps_kept,
         "effective_sample_size": ess,
+        "effective_sample_size_median": ess_median,
+        "effective_sample_size_n_parameters": ess_parameters,
+        "autocorr_tau_per_parameter": (
+            np.asarray(tau, dtype=float)
+            if np.asarray(tau).ndim == 1 else None
+        ),
+        "acceptance_band": (
+            [0.05, 0.95] if int(ndim) <= 1 else [0.15, 0.70]
+        ),
         "runtime_sec": elapsed,
         "model_after_map": mcmc.model,
     }
@@ -972,6 +1187,7 @@ def _add_comparison_block(comparisons, ours, tool, rows, mapping, runtime):
 def extended_comparison(outdir: Path, rows, cfg, reference_root: Path | None = None):
     comparisons = gr.build_comparison(outdir, rows, cfg, reference_root)
     parent = Path(reference_root) if reference_root is not None else outdir.parent
+    source_key = (cfg.get("_effective") or {}).get("object") or Path(outdir).name
     ours = {}
     for row in rows:
         if row["line"] in ("Hbeta", "OIII_5007") and row["component"] in (
@@ -986,10 +1202,10 @@ def extended_comparison(outdir: Path, rows, cfg, reference_root: Path | None = N
             ours[(row["line"], comp)] = gr._num(row["flux_1e17"])
 
     # PyQSOFitSpec (skew-normal, kapteyn least squares)
-    p = parent / "pyqsofitspec_line" / "pyqsofitspec_lines.csv"
+    p = gr._reference_dir(parent, "pyqsofitspec_line", source_key) / "pyqsofitspec_lines.csv"
     rows_p = gr._read_csv_rows(p)
     if rows_p is not None:
-        runtime = gr._reference_runtime(parent / "pyqsofitspec_line")
+        runtime = gr._reference_runtime(gr._reference_dir(parent, "pyqsofitspec_line", source_key))
         mapping = [
             ("Hbeta", "narrow", "Hb_na", "narrow", "PyQSOFitSpec narrow H-beta"),
             ("Hbeta", "broad", "Hb_br", "broad", "PyQSOFitSpec broad H-beta"),
@@ -1023,10 +1239,10 @@ def extended_comparison(outdir: Path, rows, cfg, reference_root: Path | None = N
             )
 
     # QGfit
-    p = parent / "qgfit" / "qgfit_lines.csv"
+    p = gr._reference_dir(parent, "qgfit", source_key) / "qgfit_lines.csv"
     rows_q = gr._read_csv_rows(p)
     if rows_q is not None:
-        runtime = gr._reference_runtime(parent / "qgfit")
+        runtime = gr._reference_runtime(gr._reference_dir(parent, "qgfit", source_key))
         mapping = [
             ("Hbeta", "total", "Hbeta", "total", "QGfit total H-beta"),
             ("Hbeta", "narrow", "Hbeta", "narrow", "QGfit narrow H-beta"),
@@ -1038,10 +1254,10 @@ def extended_comparison(outdir: Path, rows, cfg, reference_root: Path | None = N
         _add_comparison_block(comparisons, ours, "qgfit", rows_q, mapping, runtime)
 
     # SHEAP (optional extra)
-    p = parent / "sheap_line" / "sheap_lines.csv"
+    p = gr._reference_dir(parent, "sheap_line", source_key) / "sheap_lines.csv"
     rows_s = gr._read_csv_rows(p)
     if rows_s is not None:
-        runtime = gr._reference_runtime(parent / "sheap_line")
+        runtime = gr._reference_runtime(gr._reference_dir(parent, "sheap_line", source_key))
         mapping = [
             ("Hbeta", "total", "Hbeta", "total", "SHEAP total H-beta"),
             ("Hbeta", "narrow", "Hbeta", "narrow", "SHEAP narrow H-beta"),
@@ -1496,6 +1712,31 @@ def run_full(args, cfg, config_path):
             "n_steps_kept": sampling.get("n_steps_kept"),
             "n_samples_total": sampling.get("n_samples_total"),
             "effective_sample_size": sampling.get("effective_sample_size"),
+            "effective_sample_size_median": sampling.get(
+                "effective_sample_size_median"),
+            "effective_sample_size_n_parameters": sampling.get(
+                "effective_sample_size_n_parameters"),
+            "tau_per_parameter": (
+                [float(x) for x in sampling["autocorr_tau_per_parameter"]]
+                if sampling.get("autocorr_tau_per_parameter") is not None
+                else None
+            ),
+            "move": sampling.get("move"),
+            "gamma0": sampling.get("gamma0"),
+            "n_walkers_redrawn": sampling.get("n_walkers_redrawn"),
+            "n_walkers_used_for_tau": sampling.get("n_walkers_used_for_tau"),
+            "acceptance_band": sampling.get("acceptance_band"),
+            "acceptance_ok": (
+                bool(
+                    sampling.get("acceptance_band")
+                    and sampling.get("acceptance_fraction") is not None
+                    and sampling["acceptance_band"][0]
+                    <= float(sampling["acceptance_fraction"])
+                    <= sampling["acceptance_band"][1]
+                )
+                if sampling.get("acceptance_fraction") is not None
+                else None
+            ),
             "saved_samples": int(len(saved_samples)),
             "saved_thin": int(thin),
             "n_samples_derived": sampling.get("n_samples_derived"),
@@ -1511,12 +1752,12 @@ def run_full(args, cfg, config_path):
         "comparison": comparison,
         "runtime": runtime,
         "reference_runtimes": {
-            "pyqsofit_uv": gr._reference_runtime(reference_root / "pyqsofit_uv"),
-            "pyqsofitspec_line": gr._reference_runtime(reference_root / "pyqsofitspec_line"),
-            "gandalf_line": gr._reference_runtime(reference_root / "gandalf_line"),
-            "s3fit_line": gr._reference_runtime(reference_root / "s3fit_line"),
-            "qgfit": gr._reference_runtime(reference_root / "qgfit"),
-            "sheap_line": gr._reference_runtime(reference_root / "sheap_line"),
+            "pyqsofit_uv": gr._reference_runtime(gr._reference_dir(reference_root, "pyqsofit_uv", outdir.name)),
+            "pyqsofitspec_line": gr._reference_runtime(gr._reference_dir(reference_root, "pyqsofitspec_line", outdir.name)),
+            "gandalf_line": gr._reference_runtime(gr._reference_dir(reference_root, "gandalf_line", outdir.name)),
+            "s3fit_line": gr._reference_runtime(gr._reference_dir(reference_root, "s3fit_line", outdir.name)),
+            "qgfit": gr._reference_runtime(gr._reference_dir(reference_root, "qgfit", outdir.name)),
+            "sheap_line": gr._reference_runtime(gr._reference_dir(reference_root, "sheap_line", outdir.name)),
         },
         "limitations": limitations,
         "files": sorted({p.name for p in outdir.iterdir() if p.is_file()} | {"run.json"}),

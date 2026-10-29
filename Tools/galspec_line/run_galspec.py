@@ -1181,6 +1181,19 @@ def _num(value):
         return None
 
 
+def _reference_dir(parent: Path, tool: str, source_key: str | None = None) -> Path:
+    """Sibling tool tree for one source.
+
+    Canonical layout: ``outputs/<tool>/<source_key>/``.  Legacy scratch
+    layout (``work/<run>/``): ``<parent>/<tool>/``.
+    """
+    if source_key:
+        cand = Path(parent) / tool / source_key
+        if cand.is_dir():
+            return cand
+    return Path(parent) / tool
+
+
 def _reference_runtime(tool_dir: Path):
     run_json = tool_dir / "run.json"
     if not run_json.exists():
@@ -1205,6 +1218,7 @@ def _reference_runtime(tool_dir: Path):
 def build_comparison(outdir: Path, rows, cfg, reference_root: Path | None = None):
     """Compare our H-beta/[O III] 5007 fluxes with the sibling tool outputs."""
     parent = Path(reference_root) if reference_root is not None else outdir.parent
+    source_key = (cfg.get("_effective") or {}).get("object") or Path(outdir).name
     ours = {}
     for row in rows:
         if row["line"] in ("Hbeta", "OIII_5007") and row["component"] in ("narrow", "wing", "broad", "total"):
@@ -1229,13 +1243,13 @@ def build_comparison(outdir: Path, rows, cfg, reference_root: Path | None = None
                 "reference_component": ref_component,
                 "reference_flux_1e17": ref_flux,
                 "ratio_galspec_over_reference": ratio,
-                "reference_runtime_sec": _reference_runtime(parent / tool),
+                "reference_runtime_sec": _reference_runtime(_reference_dir(parent, tool, source_key)),
                 "note": note,
             }
         )
 
     # PyQSOFit (pyqsofit_uv)
-    pyq_dir = parent / "pyqsofit_uv"
+    pyq_dir = _reference_dir(parent, "pyqsofit_uv", source_key)
     pyq = _read_csv_rows(pyq_dir / "pyqsofit_lines.csv")
     if pyq is not None:
         def pyq_val(line, comp):
@@ -1262,7 +1276,7 @@ def build_comparison(outdir: Path, rows, cfg, reference_root: Path | None = None
             add("OIII_5007", "broad", "pyqsofit_uv", "OIII5007w", o3_br, "PyQSOFit wing [O III] 5007")
 
     # GANDALF
-    gand_dir = parent / "gandalf_line"
+    gand_dir = _reference_dir(parent, "gandalf_line", source_key)
     gand = _read_csv_rows(gand_dir / "gandalf_lines.csv")
     if gand is not None:
         def gand_val(line, comp):
@@ -1278,7 +1292,7 @@ def build_comparison(outdir: Path, rows, cfg, reference_root: Path | None = None
         add("OIII_5007", "total", "gandalf_line", "[OIII]5007 narrow", gand_val("[OIII]5007", "narrow"), "GANDALF has no broad [O III] 5007 component")
 
     # S3Fit
-    s3_dir = parent / "s3fit_line"
+    s3_dir = _reference_dir(parent, "s3fit_line", source_key)
     s3 = _read_csv_rows(s3_dir / "s3fit_lines.csv")
     if s3 is not None:
         def s3_val(line, comp):

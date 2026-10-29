@@ -8,8 +8,8 @@ Example
 -------
     python pipeline/compare_pahfit_mc.py
     python pipeline/compare_pahfit_mc.py \
-        --run "PDS456 short=bootstrap"=outputs/PDS456_z_0.1840/pahfit_mir/short \
-        --run "NGC4151"=outputs/NGC4151_z_0.0033/pahfit_mir
+        --run "PDS456 short=bootstrap"=outputs/pahfit_mir/PDS456_z_0.1840/short \
+        --run "NGC4151"=outputs/pahfit_mir/NGC4151_z_0.0033
 """
 from __future__ import annotations
 
@@ -27,15 +27,15 @@ from matplotlib.gridspec import GridSpec
 ROOT = Path(__file__).resolve().parents[1]
 
 DEFAULT_RUNS = [
-    ("PDS456 short (bootstrap)", ROOT / "outputs/PDS456_z_0.1840/pahfit_mir/short"),
-    ("PDS456 short (covariance)", ROOT / "outputs/PDS456_z_0.1840/pahfit_mir/short_covariance"),
-    ("PDS456 long (bootstrap)", ROOT / "outputs/PDS456_z_0.1840/pahfit_mir/long"),
-    ("PDS456 both (bootstrap)", ROOT / "outputs/PDS456_z_0.1840/pahfit_mir/both"),
-    ("NGC4151 (covariance)", ROOT / "outputs/NGC4151_z_0.0033/pahfit_mir"),
-    ("NGC4151 (bootstrap)", ROOT / "outputs/NGC4151_z_0.0033/pahfit_mir/bootstrap_200"),
-    ("VV114 (covariance)", ROOT / "outputs/VV114_z_0.0200/pahfit_mir"),
-    ("VV114 (bootstrap)", ROOT / "outputs/VV114_z_0.0200/pahfit_mir/bootstrap_200"),
-    ("NGC253 (bootstrap)", ROOT / "outputs/NGC253_z_0.0008/pahfit_mir"),
+    ("PDS456 short (bootstrap)", ROOT / "outputs/pahfit_mir/PDS456_z_0.1840/short"),
+    ("PDS456 short (covariance)", ROOT / "outputs/pahfit_mir/PDS456_z_0.1840/short_covariance"),
+    ("PDS456 long (bootstrap)", ROOT / "outputs/pahfit_mir/PDS456_z_0.1840/long"),
+    ("PDS456 both (bootstrap)", ROOT / "outputs/pahfit_mir/PDS456_z_0.1840/both"),
+    ("NGC4151 (covariance)", ROOT / "outputs/pahfit_mir/NGC4151_z_0.0033"),
+    ("NGC4151 (bootstrap)", ROOT / "outputs/pahfit_mir/NGC4151_z_0.0033/bootstrap_200"),
+    ("VV114 (covariance)", ROOT / "outputs/pahfit_mir/VV114_z_0.0200"),
+    ("VV114 (bootstrap)", ROOT / "outputs/pahfit_mir/VV114_z_0.0200/bootstrap_200"),
+    ("NGC253 (bootstrap)", ROOT / "outputs/pahfit_mir/NGC253_z_0.0008"),
 ]
 
 # Curated common features; the script skips any that a run does not contain.

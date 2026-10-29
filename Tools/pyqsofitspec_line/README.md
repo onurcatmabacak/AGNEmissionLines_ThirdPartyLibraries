@@ -20,7 +20,7 @@ products.
 bash Pipelines/build_images.sh pyqsofitspec_line      # build the image
 bash Pipelines/run_pyqsofitspec_line_docker.sh \
   inputs/04592649654_z_0.5874/raw \
-  outputs/04592649654_z_0.5874/pyqsofitspec_line \
+  outputs/pyqsofitspec_line/04592649654_z_0.5874 \
   --name 04592649654
 ```
 
@@ -220,7 +220,7 @@ GalSpec does not fit Mg II).
 ```bash
 bash Pipelines/run_pyqsofitspec_line_docker.sh \
   inputs/04592649654_z_0.5874/raw \
-  outputs/04592649654_z_0.5874/pyqsofitspec_line --name 04592649654 --nboot 55
+  outputs/pyqsofitspec_line/04592649654_z_0.5874 --name 04592649654 --nboot 55
 ```
 
 `configs/pyqsofitspec_line/default` (`skewnorm_model`, `seed=20250101`,

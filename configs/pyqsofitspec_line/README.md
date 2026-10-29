@@ -117,7 +117,7 @@ definitions.  See the tool README for the measured ratios.
 # production (55 draws, ~11 min; 53 valid after the rchi2 cut)
 bash Pipelines/run_pyqsofitspec_line_docker.sh \
   inputs/04592649654_z_0.5874/raw \
-  outputs/04592649654_z_0.5874/pyqsofitspec_line --name 04592649654
+  outputs/pyqsofitspec_line/04592649654_z_0.5874 --name 04592649654
 
 # smoke test (5 realisations, a few minutes)
 bash Pipelines/run_pyqsofitspec_line_docker.sh \

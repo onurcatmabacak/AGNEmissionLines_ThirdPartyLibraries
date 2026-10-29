@@ -79,5 +79,5 @@ tool's UV/higher-z capability without polluting this fit.
 * The host is not decomposed here; use `ppxf_host`.
 
 See `Tools/qsofitmore_line/README.md` for build/run commands and the full
-method, and `outputs/04592649654_z_0.5874/qsofitmore_line/README.md` for the
+method, and `outputs/qsofitmore_line/04592649654_z_0.5874/README.md` for the
 run-specific provenance note.

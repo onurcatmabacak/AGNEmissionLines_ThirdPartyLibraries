@@ -1,11 +1,12 @@
 # `outputs/` — canonical result store
 
-Every result lives under exactly one source and one tool:
+Every result lives under exactly one tool and one source.  The tree is
+keyed by tool first, so one tool's products across all sources sit together:
 
 ```text
 outputs/
-  <source_name>_z_<redshift>/
-    <tool_name>/
+  <tool_name>/
+    <source_name>_z_<redshift>/
       ... files ...
 ```
 
@@ -45,7 +46,7 @@ Tools and expected files:
 
 X-ray sources use the same layout: `inputs/<source>/xray/rxte_<obsid>/` for the
 official HEASARC `stdprod` PCA products and
-`outputs/<source>/rxte_xspec/` for the fit products.  The PCA input is small
+`outputs/rxte_xspec/<source>/` for the fit products.  The PCA input is small
 (kilobytes), so the official source/background/response files are committed
 alongside `download.sh` and `SHA256SUMS`.
 

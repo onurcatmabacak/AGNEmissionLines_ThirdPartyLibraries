@@ -2,7 +2,7 @@
 """Compare PyQSOFit MCMC line fluxes with the committed MC and other line tools.
 
 This is intentionally a reporting helper, not part of the fit.  It reads the
-per-tool CSV products already stored under ``outputs/<source_key>/`` and writes
+per-tool CSV products already stored under ``outputs/<tool>/<source_key>/`` and writes
 one tidy comparison table next to the PyQSOFit MCMC products.
 
     python pipeline/compare_pyqsofit_mcmc.py 04592649654_z_0.5874
@@ -13,6 +13,12 @@ from __future__ import annotations
 import argparse
 import csv
 from pathlib import Path
+
+import sys  # noqa: E402
+_ROOT = Path(__file__).resolve().parents[1]
+if str(_ROOT) not in sys.path:
+    sys.path.insert(0, str(_ROOT))
+from pipeline.io_layout import output_dir  # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -51,9 +57,8 @@ def main() -> int:
     parser.add_argument("--out", default=None)
     args = parser.parse_args()
 
-    src = ROOT / "outputs" / args.source_key
-    mcmc_dir = src / "pyqsofit" / "mcmc"
-    mc_dir = src / "pyqsofit" / "mc"
+    mcmc_dir = output_dir(args.source_key, "pyqsofit") / "mcmc"
+    mc_dir = output_dir(args.source_key, "pyqsofit") / "mc"
 
     mcmc = keyed(read_csv(mcmc_dir / "pyqsofit_mcmc_summary.csv"),
                  "line", "component", "mcmc_median", None)
@@ -64,16 +69,16 @@ def main() -> int:
                             as_float(row.get("n_posterior")))
     mc = keyed(read_csv(mc_dir / "pyqsofit_mc_summary.csv"),
                "line", "component", "median", None)
-    mle = keyed(read_csv(src / "pyqsofit_uv" / "pyqsofit_lines.csv"),
+    mle = keyed(read_csv(output_dir(args.source_key, "pyqsofit_uv") / "pyqsofit_lines.csv"),
                 "line", "component", "area_1e17", None)
 
-    gandalf = keyed(read_csv(src / "gandalf_line" / "gandalf_lines.csv"),
+    gandalf = keyed(read_csv(output_dir(args.source_key, "gandalf_line") / "gandalf_lines.csv"),
                     "line", "component", "flux_1e17", "flux_err_1e17")
-    s3fit = keyed(read_csv(src / "s3fit_line" / "s3fit_lines.csv"),
+    s3fit = keyed(read_csv(output_dir(args.source_key, "s3fit_line") / "s3fit_lines.csv"),
                   "line", "component", "flux_1e17", "flux_err_1e17")
-    galspec = keyed(read_csv(src / "galspec_line" / "galspec_lines.csv"),
+    galspec = keyed(read_csv(output_dir(args.source_key, "galspec_line") / "galspec_lines.csv"),
                     "line", "component", "flux_1e17", "flux_err_1e17")
-    qgfit = keyed(read_csv(src / "qgfit" / "qgfit_lines.csv"),
+    qgfit = keyed(read_csv(output_dir(args.source_key, "qgfit") / "qgfit_lines.csv"),
                   "qgfit_line", "component", "flux_1e17", "flux_err_1e17")
 
     targets = [
