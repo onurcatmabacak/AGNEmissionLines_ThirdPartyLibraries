@@ -114,9 +114,9 @@ The independent comparison to the published MAPS is produced by `Tools/manga_dap
 ## Reproduction
 
 ```bash
-bash Pipelines/build_images.sh manga_dap
+bash pipeline/runners/build_images.sh manga_dap
 bash inputs/NGC1194_z_0.0136/download.sh
-bash Pipelines/run_manga_dap_docker.sh \
+bash pipeline/runners/run_manga_dap_docker.sh \
   inputs/NGC1194_z_0.0136 \
   outputs/NGC1194_z_0.0136/manga_dap \
   --reference inputs/NGC1194_z_0.0136/raw/manga-9193-12701-MAPS-HYB10-MILESHC-MASTARHC2.fits.gz

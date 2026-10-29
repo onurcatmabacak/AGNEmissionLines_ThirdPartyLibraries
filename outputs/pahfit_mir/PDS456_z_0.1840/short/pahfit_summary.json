@@ -16,7 +16,8 @@
   "quality_flags": [
     "formal_chi2_mismatch",
     "coverage_gap",
-    "features_in_coverage_gaps"
+    "features_in_coverage_gaps",
+    "bootstrap_frozen_features"
   ],
   "unstable": false,
   "flagged": true,
@@ -82,17 +83,37 @@
   "n_at_bound_parameters": 12,
   "at_bound_fraction": 0.5,
   "mc": {
-    "enabled": false,
+    "enabled": true,
     "requested_method": "auto",
-    "method": null,
-    "n_samples": 0,
+    "method": "bootstrap",
+    "n_samples": 100,
     "seed": 12346,
-    "runtime_s": 0.0,
-    "fit_passes": 2
+    "runtime_s": 101.9866132736206,
+    "fit_passes": 2,
+    "fallback_reason": "covariance_ill_conditioned_rank_6_of_12_cond_841_ndata_58",
+    "n_samples_ok": 100,
+    "covariance_probe": {
+      "rank": 6,
+      "n_free": 12,
+      "n_at_bound": 12,
+      "n_data": 58,
+      "condition_number": 840.5901473835823,
+      "rank_deficient": true
+    },
+    "bootstrap": {
+      "mode": "parametric",
+      "n_ok": 100,
+      "n_failed": 0,
+      "n_not_converged": 0,
+      "n_frozen_features": 23,
+      "median_nfev": 73.0,
+      "median_chi2": 25643.442820282587,
+      "median_runtime_s": 1.0026633739471436
+    }
   },
   "config_file": "/app/configs/pahfit_mir/short/config.json",
   "config_name": "short",
-  "runtime_s": 18.42041325569153,
+  "runtime_s": 119.12343502044678,
   "fit_info": {
     "nfev": 432,
     "ierr": 1,

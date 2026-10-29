@@ -16,7 +16,8 @@
   "quality_flags": [
     "formal_chi2_mismatch",
     "coverage_gap",
-    "features_in_coverage_gaps"
+    "features_in_coverage_gaps",
+    "bootstrap_frozen_features"
   ],
   "unstable": false,
   "flagged": true,
@@ -121,17 +122,37 @@
   "n_at_bound_parameters": 20,
   "at_bound_fraction": 0.45454545454545453,
   "mc": {
-    "enabled": false,
+    "enabled": true,
     "requested_method": "auto",
-    "method": null,
-    "n_samples": 0,
+    "method": "bootstrap",
+    "n_samples": 100,
     "seed": 12348,
-    "runtime_s": 0.0,
-    "fit_passes": 3
+    "runtime_s": 470.2540647983551,
+    "fit_passes": 3,
+    "fallback_reason": "covariance_ill_conditioned_rank_12_of_24_cond_1.14e+04_ndata_94",
+    "n_samples_ok": 100,
+    "covariance_probe": {
+      "rank": 12,
+      "n_free": 24,
+      "n_at_bound": 20,
+      "n_data": 94,
+      "condition_number": 11367.94786394899,
+      "rank_deficient": true
+    },
+    "bootstrap": {
+      "mode": "parametric",
+      "n_ok": 100,
+      "n_failed": 0,
+      "n_not_converged": 0,
+      "n_frozen_features": 31,
+      "median_nfev": 685.5,
+      "median_chi2": 58223.754129464745,
+      "median_runtime_s": 4.367782115936279
+    }
   },
   "config_file": "/app/configs/pahfit_mir/both/config.json",
   "config_name": "both",
-  "runtime_s": 39.98855376243591,
+  "runtime_s": 506.26079297065735,
   "fit_info": {
     "nfev": 1324,
     "ierr": 1,

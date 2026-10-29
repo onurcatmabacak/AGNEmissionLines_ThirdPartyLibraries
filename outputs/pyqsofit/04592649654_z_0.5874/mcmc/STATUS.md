@@ -107,7 +107,7 @@ practical recipe is the one in the README:
 PYQSOFIT_MCMC=1 PYQSOFIT_NSAMP=300 PYQSOFIT_NBURN=80 PYQSOFIT_NTHIN=1 \
 PYQSOFIT_NWALKERS=100 PYQSOFIT_MCMC_SEED=20240517 \
 PYQSOFIT_MCMC_LINE_SAMPLES=500 \
-bash Pipelines/run_pyqsofit_uv_docker.sh <input-dir> <output-dir>
+bash pipeline/runners/run_pyqsofit_uv_docker.sh <input-dir> <output-dir>
 ```
 
 Run it under a persistent shell (not a tool timeout) so the runner's final

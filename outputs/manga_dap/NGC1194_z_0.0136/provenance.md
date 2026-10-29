@@ -152,7 +152,7 @@ comparison), `figures/manga_dap_subset_bpt.png` (9-bin BPT).
 ## Reproduction
 
 ```bash
-bash Pipelines/build_images.sh manga_dap
+bash pipeline/runners/build_images.sh manga_dap
 bash inputs/NGC1194_z_0.0136/download.sh
 # Stage A (official moments-only DAP)
 docker run ... manga_dap python /app/run/run_manga_dap.py \
