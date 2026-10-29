@@ -13,10 +13,10 @@ successful.  The older 3-mock pure-spectrum output is superseded.
 ## Build / run
 
 ```bash
-bash Pipelines/build_images.sh s3fit_line
+bash pipeline/runners/build_images.sh s3fit_line
 
 # Production run (used for the committed output):
-bash Pipelines/run_s3fit_line_docker.sh \
+bash pipeline/runners/run_s3fit_line_docker.sh \
   inputs/04592649654_z_0.5874 outputs/s3fit_line/04592649654_z_0.5874 \
   --config configs/s3fit_line/production --n-mocks 10 --threads 8
 ```

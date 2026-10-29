@@ -6,8 +6,8 @@ inputs/                  canonical source store (one raw copy per source)
   <source>_z_<z>/        source.json + raw/ [+ photometry/]
 outputs/                 canonical results
   <tool>/<source>_z_<z>/ files for one source and one tool
-Pipelines/               shell entry points (new tools + archived optical)
 pipeline/                Python orchestration, layout helpers, input preparation, validators
+  runners/               bash Docker entry points (+ legacy_optical/)
 schemas/                 formal output-catalogue JSON Schema
 tests/                   pytest unit + golden-reference tests
 workflow/                Snakemake graph over the Docker runners

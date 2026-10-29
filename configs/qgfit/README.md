@@ -17,17 +17,17 @@ H-beta/[O III] 5007 ratio is set by the line-component definition.
 
 ```bash
 # Build the image once (the adapter and vendored QGfit are copied into it).
-bash Pipelines/build_images.sh qgfit
+bash pipeline/runners/build_images.sh qgfit
 
 # Full-capability production run.
-bash Pipelines/run_qgfit_docker.sh \
+bash pipeline/runners/run_qgfit_docker.sh \
   inputs/04592649654_z_0.5874 \
   outputs/qgfit/04592649654_z_0.5874 \
   --config configs/qgfit/production \
   --z 0.58741307
 
 # Expanded-template [O III] wing diagnostic (same continuum, line MCMC on).
-bash Pipelines/run_qgfit_docker.sh \
+bash pipeline/runners/run_qgfit_docker.sh \
   inputs/04592649654_z_0.5874 \
   outputs/qgfit/04592649654_z_0.5874/expanded_template \
   --config configs/qgfit/production_wing \

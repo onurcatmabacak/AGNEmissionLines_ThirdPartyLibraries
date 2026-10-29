@@ -11,7 +11,7 @@ stage is completed before the next starts, with the same acceptance gates:
    one independent cross-check.
 6. Pedagogical README with commands, expected products, failure modes and a
    short “what this tool can and cannot measure”.
-7. Repo contract: `Tools/<tool>/`, `Pipelines/run_<tool>_docker.sh`,
+7. Repo contract: `Tools/<tool>/`, `pipeline/runners/run_<tool>_docker.sh`,
    `configs/<tool>/<variant>/`, `outputs/<tool>/<source>/`, registry/orchestrator
    entry, and a committed result figure.
 

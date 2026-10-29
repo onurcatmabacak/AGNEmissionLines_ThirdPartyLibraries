@@ -1,0 +1,404 @@
+{
+  "source_name": "auto",
+  "band_keV": [
+    0.5,
+    10.0
+  ],
+  "statistic": "cstat",
+  "fit_iterations": 500,
+  "xspec_chatter": 0,
+  "n_live_points": 500,
+  "evidence_tolerance": 0.5,
+  "seed": 42,
+  "note": "Bayesian evidence comparison with nested sampling (UltraNest) over the same PN+MOS1+MOS2 0.5-10 keV data used by xmm_xspec. BXA builds the prior transform from the parameter list below; constants are fixed at the chi-square best fit so models are compared under one calibration. Priors are centred on the least-squares solution and are deliberately wide. Parameter names follow the PyXspec model definitions in this image (zpowerlw.Redshift, zgauss.Redshift, zxipcf.Nh/log_xi/CvrFract, pcfabs.CvrFract). TBabs/pcfabs/cabs/zxipcf column densities use XSPEC's 1e22 cm^-2 units.",
+  "models": [
+    {
+      "name": "pl",
+      "expr": "constant*tbabs*(zpowerlw)",
+      "description": "absorbed power law (continuum null hypothesis)",
+      "params": [
+        {
+          "path": "TBabs.nH",
+          "index": 0,
+          "kind": "log",
+          "range": [
+            0.0001,
+            50.0
+          ],
+          "init": 1.0,
+          "comment": "10^22 cm^-2"
+        },
+        {
+          "path": "zpowerlw.PhoIndex",
+          "index": 0,
+          "kind": "uniform",
+          "range": [
+            1.2,
+            2.9
+          ],
+          "init": 2.1
+        },
+        {
+          "path": "zpowerlw.Redshift",
+          "index": 1,
+          "kind": "fixed"
+        },
+        {
+          "path": "zpowerlw.norm",
+          "index": 2,
+          "kind": "log",
+          "range": [
+            1e-08,
+            0.1
+          ],
+          "init": 0.001
+        }
+      ]
+    },
+    {
+      "name": "pl_line",
+      "expr": "constant*tbabs*(zpowerlw + zgauss)",
+      "description": "absorbed power law + narrow Fe K-alpha (6.4 keV rest, sigma 50 eV)",
+      "params": [
+        {
+          "path": "TBabs.nH",
+          "index": 0,
+          "kind": "log",
+          "range": [
+            0.0001,
+            50.0
+          ],
+          "init": 1.0
+        },
+        {
+          "path": "zpowerlw.PhoIndex",
+          "index": 0,
+          "kind": "uniform",
+          "range": [
+            1.2,
+            2.9
+          ],
+          "init": 2.1
+        },
+        {
+          "path": "zpowerlw.Redshift",
+          "index": 1,
+          "kind": "fixed"
+        },
+        {
+          "path": "zpowerlw.norm",
+          "index": 2,
+          "kind": "log",
+          "range": [
+            1e-08,
+            0.1
+          ],
+          "init": 0.001
+        },
+        {
+          "path": "zgauss.LineE",
+          "index": 0,
+          "kind": "uniform",
+          "range_factor": [
+            0.95,
+            1.05
+          ],
+          "init": 6.4,
+          "comment": "observer-frame, tied to 6.4/(1+z)"
+        },
+        {
+          "path": "zgauss.Sigma",
+          "index": 1,
+          "kind": "fixed",
+          "init": 0.05
+        },
+        {
+          "path": "zgauss.norm",
+          "index": 2,
+          "kind": "log",
+          "range": [
+            1e-07,
+            0.001
+          ],
+          "init": 3e-05
+        },
+        {
+          "path": "zgauss.Redshift",
+          "kind": "fixed"
+        }
+      ]
+    },
+    {
+      "name": "pl_line_wide",
+      "expr": "constant*tbabs*(zpowerlw + zgauss)",
+      "description": "absorbed power law + broad Fe K-alpha (sigma free 50-800 eV)",
+      "params": [
+        {
+          "path": "TBabs.nH",
+          "index": 0,
+          "kind": "log",
+          "range": [
+            0.0001,
+            50.0
+          ],
+          "init": 1.0
+        },
+        {
+          "path": "zpowerlw.PhoIndex",
+          "index": 0,
+          "kind": "uniform",
+          "range": [
+            1.2,
+            2.9
+          ],
+          "init": 2.1
+        },
+        {
+          "path": "zpowerlw.Redshift",
+          "index": 1,
+          "kind": "fixed"
+        },
+        {
+          "path": "zpowerlw.norm",
+          "index": 2,
+          "kind": "log",
+          "range": [
+            1e-08,
+            0.1
+          ],
+          "init": 0.001
+        },
+        {
+          "path": "zgauss.LineE",
+          "index": 0,
+          "kind": "uniform",
+          "range_factor": [
+            0.9,
+            1.1
+          ],
+          "init": 6.4
+        },
+        {
+          "path": "zgauss.Sigma",
+          "index": 1,
+          "kind": "uniform",
+          "range": [
+            0.05,
+            0.8
+          ],
+          "init": 0.2
+        },
+        {
+          "path": "zgauss.norm",
+          "index": 2,
+          "kind": "log",
+          "range": [
+            1e-07,
+            0.001
+          ],
+          "init": 3e-05
+        },
+        {
+          "path": "zgauss.Redshift",
+          "kind": "fixed"
+        }
+      ]
+    },
+    {
+      "name": "warmabs",
+      "expr": "constant*tbabs*zxipcf*(zpowerlw)",
+      "description": "ionized (warm) absorber on the power law (wind/torus proxy)",
+      "params": [
+        {
+          "path": "TBabs.nH",
+          "index": 0,
+          "kind": "log",
+          "range": [
+            0.0001,
+            50.0
+          ],
+          "init": 1.0
+        },
+        {
+          "path": "zxipcf.Nh",
+          "index": 0,
+          "kind": "log",
+          "range": [
+            0.01,
+            100.0
+          ],
+          "init": 1.0
+        },
+        {
+          "path": "zxipcf.log_xi",
+          "index": 1,
+          "kind": "uniform",
+          "range": [
+            0.0,
+            4.0
+          ],
+          "init": 2.0
+        },
+        {
+          "path": "zxipcf.CvrFract",
+          "index": 2,
+          "kind": "uniform",
+          "range": [
+            0.05,
+            1.0
+          ],
+          "init": 0.5
+        },
+        {
+          "path": "zxipcf.Redshift",
+          "index": 3,
+          "kind": "fixed"
+        },
+        {
+          "path": "zpowerlw.PhoIndex",
+          "index": 0,
+          "kind": "uniform",
+          "range": [
+            1.2,
+            2.9
+          ],
+          "init": 2.1
+        },
+        {
+          "path": "zpowerlw.Redshift",
+          "index": 1,
+          "kind": "fixed"
+        },
+        {
+          "path": "zpowerlw.norm",
+          "index": 2,
+          "kind": "log",
+          "range": [
+            1e-08,
+            0.1
+          ],
+          "init": 0.001
+        }
+      ]
+    },
+    {
+      "name": "pcfabs",
+      "expr": "constant*tbabs*pcfabs*(zpowerlw)",
+      "description": "partial covering absorber (clumpy torus proxy)",
+      "params": [
+        {
+          "path": "TBabs.nH",
+          "index": 0,
+          "kind": "log",
+          "range": [
+            0.0001,
+            50.0
+          ],
+          "init": 1.0
+        },
+        {
+          "path": "pcfabs.nH",
+          "index": 0,
+          "kind": "log",
+          "range": [
+            0.1,
+            1000.0
+          ],
+          "init": 10.0
+        },
+        {
+          "path": "pcfabs.CvrFract",
+          "index": 1,
+          "kind": "uniform",
+          "range": [
+            0.05,
+            0.95
+          ],
+          "init": 0.5
+        },
+        {
+          "path": "zpowerlw.PhoIndex",
+          "index": 0,
+          "kind": "uniform",
+          "range": [
+            1.2,
+            2.9
+          ],
+          "init": 2.1
+        },
+        {
+          "path": "zpowerlw.Redshift",
+          "index": 1,
+          "kind": "fixed"
+        },
+        {
+          "path": "zpowerlw.norm",
+          "index": 2,
+          "kind": "log",
+          "range": [
+            1e-08,
+            0.1
+          ],
+          "init": 0.001
+        }
+      ]
+    },
+    {
+      "name": "cutoffpl_cabs",
+      "expr": "constant*tbabs*cabs*(cutoffpl)",
+      "description": "Compton-thick absorption on a cut-off power law",
+      "params": [
+        {
+          "path": "TBabs.nH",
+          "index": 0,
+          "kind": "log",
+          "range": [
+            0.0001,
+            50.0
+          ],
+          "init": 1.0
+        },
+        {
+          "path": "cabs.nH",
+          "index": 0,
+          "kind": "log",
+          "range": [
+            1.0,
+            10000.0
+          ],
+          "init": 10.0
+        },
+        {
+          "path": "cutoffpl.PhoIndex",
+          "index": 0,
+          "kind": "uniform",
+          "range": [
+            1.2,
+            2.9
+          ],
+          "init": 2.1
+        },
+        {
+          "path": "cutoffpl.HighECut",
+          "index": 1,
+          "kind": "log",
+          "range": [
+            20.0,
+            500.0
+          ],
+          "init": 100.0
+        },
+        {
+          "path": "cutoffpl.norm",
+          "index": 2,
+          "kind": "log",
+          "range": [
+            1e-08,
+            0.1
+          ],
+          "init": 0.001
+        }
+      ]
+    }
+  ]
+}

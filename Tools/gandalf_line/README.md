@@ -30,16 +30,16 @@ in `outputs/gandalf_line/04592649654_z_0.5874/`.
 ## Build / run
 
 ```bash
-bash Pipelines/build_images.sh gandalf_line
+bash pipeline/runners/build_images.sh gandalf_line
 .venv/bin/python pipeline/run_new_tools.py \
   --only spSpec-51908-0277-120_z_0.0859 --tools gandalf_line --force
 ```
 
 The matrix runner prepares `work/prepared/<key>/pyqsofit/spectrum.fits` and
-calls `Pipelines/run_gandalf_line_docker.sh`.  A direct run is:
+calls `pipeline/runners/run_gandalf_line_docker.sh`.  A direct run is:
 
 ```bash
-bash Pipelines/run_gandalf_line_docker.sh work/prepared/<key>/pyqsofit \
+bash pipeline/runners/run_gandalf_line_docker.sh work/prepared/<key>/pyqsofit \
   outputs/<key>/gandalf_line <key>
 ```
 

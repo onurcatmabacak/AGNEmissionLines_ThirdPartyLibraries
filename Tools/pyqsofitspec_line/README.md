@@ -17,8 +17,8 @@ products.
 ## Build / run
 
 ```bash
-bash Pipelines/build_images.sh pyqsofitspec_line      # build the image
-bash Pipelines/run_pyqsofitspec_line_docker.sh \
+bash pipeline/runners/build_images.sh pyqsofitspec_line      # build the image
+bash pipeline/runners/run_pyqsofitspec_line_docker.sh \
   inputs/04592649654_z_0.5874/raw \
   outputs/pyqsofitspec_line/04592649654_z_0.5874 \
   --name 04592649654
@@ -218,7 +218,7 @@ GalSpec does not fit Mg II).
 ## Committed production run: `04592649654` (z = 0.5874)
 
 ```bash
-bash Pipelines/run_pyqsofitspec_line_docker.sh \
+bash pipeline/runners/run_pyqsofitspec_line_docker.sh \
   inputs/04592649654_z_0.5874/raw \
   outputs/pyqsofitspec_line/04592649654_z_0.5874 --name 04592649654 --nboot 55
 ```
@@ -401,4 +401,4 @@ for a run (`PyQSOFitSpec.py`, `fit_linemodel.py`, `main.py`, `fe_uv.txt`,
 to the wrapper files in this directory only.
 
 Part of the toolkit group in `configs/README.md`; built by
-`Pipelines/build_images.sh pyqsofitspec_line`.
+`pipeline/runners/build_images.sh pyqsofitspec_line`.

@@ -45,7 +45,7 @@ epatplot set=pn_source.fits
 
 Then point `configs/xmm_xspec/default/config.json` at the new products (the
 `products` override block), or create a variant config, and rerun the same
-`Pipelines/run_xmm_xspec_docker.sh`.  The model and outputs are identical.
+`pipeline/runners/run_xmm_xspec_docker.sh`.  The model and outputs are identical.
 
 ## What would change
 

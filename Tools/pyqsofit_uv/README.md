@@ -6,7 +6,7 @@ C IV 1549, Lyα/N V, Si IV), packaged as a Docker image.
 ## Build / run
 
 ```bash
-bash Pipelines/build_images.sh pyqsofit_uv
+bash pipeline/runners/build_images.sh pyqsofit_uv
 .venv/bin/python pipeline/run_new_tools.py --only 04592649654_z_0.5874 --tools pyqsofit_uv --force
 ```
 
@@ -74,7 +74,7 @@ PYQSOFIT_MCMC=1 \
 PYQSOFIT_NSAMP=300 PYQSOFIT_NBURN=80 PYQSOFIT_NTHIN=1 \
 PYQSOFIT_NWALKERS=100 PYQSOFIT_MCMC_SEED=20240517 \
 PYQSOFIT_MCMC_LINE_SAMPLES=500 \
-bash Pipelines/run_pyqsofit_uv_docker.sh <input-dir> <output-dir>
+bash pipeline/runners/run_pyqsofit_uv_docker.sh <input-dir> <output-dir>
 ```
 
 `NSAMP=300, NBURN=80, NTHIN=1` retains 220 steps per walker (22,000 draws at

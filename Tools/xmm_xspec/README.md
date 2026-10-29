@@ -69,10 +69,10 @@ fit inputs are inspectable.
 bash inputs/PDS456_z_0.1840/xray/xmm_0721010201/download.sh
 
 # 2. build the image (HEASARC conda XSPEC 13.0.0)
-bash Pipelines/build_images.sh xmm_xspec
+bash pipeline/runners/build_images.sh xmm_xspec
 
 # 3. production fit
-bash Pipelines/run_xmm_xspec_docker.sh \
+bash pipeline/runners/run_xmm_xspec_docker.sh \
   inputs/PDS456_z_0.1840/xray/xmm_0721010201 \
   outputs/xmm_xspec/PDS456_z_0.1840 \
   --source-key PDS456_z_0.1840 --redshift 0.184

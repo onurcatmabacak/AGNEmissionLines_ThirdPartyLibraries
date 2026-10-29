@@ -1,6 +1,6 @@
 # `Tools/`
 
-Dockerized fitting engines and their Dockerfiles.  See `Pipelines/build_images.sh`.
+Dockerized fitting engines and their Dockerfiles.  See `pipeline/runners/build_images.sh`.
 
 | directory | image |
 |---|---|

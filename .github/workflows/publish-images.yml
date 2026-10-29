@@ -1,9 +1,23 @@
 name: Publish images to GHCR
 
-# Manual/tag-only.  This is the path to immutable registry digests; the CI
-# workflow intentionally does not push images on every commit.
+# Manual / tag-only.  CI never pushes images on every commit.
+#
+# One matrix job per image, so each build gets a clean 14 GB runner: the whole
+# set is ~63 GB and cannot be built in a single job.  Images are pushed as
+# linux/amd64 with buildkit attestations disabled, and the digest is taken
+# from the registry (docker push output, cross-checked with imagetools) rather
+# than from `.RepoDigests[0]`, which can be a local-only digest.
 on:
   workflow_dispatch:
+    inputs:
+      tools:
+        description: "Space-separated tool subset (empty = all)"
+        required: false
+        default: ""
+      tag:
+        description: "Image tag (empty = ref name)"
+        required: false
+        default: ""
   push:
     tags:
       - "v*"
@@ -12,35 +26,122 @@ permissions:
   contents: read
   packages: write
 
+env:
+  REGISTRY: ghcr.io
+  IMAGE_PREFIX: ${{ github.repository_owner }}/agn
+
 jobs:
-  publish:
-    runs-on: ubuntu-latest
+  plan:
+    name: Plan image matrix
+    runs-on: ubuntu-24.04
+    outputs:
+      matrix: ${{ steps.plan.outputs.matrix }}
+      tag: ${{ steps.plan.outputs.tag }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: docker/login-action@v3
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-      - name: Build the image matrix
-        run: bash Pipelines/build_images.sh
-      - name: Tag and push
+      - uses: actions/checkout@v5
+      - id: plan
         shell: bash
         run: |
           set -euo pipefail
-          owner="$(echo "${GITHUB_REPOSITORY_OWNER}" | tr '[:upper:]' '[:lower:]')"
-          repo="${owner}/agnemissionlines-thirdpartylibraries"
-          tag="${GITHUB_REF_NAME//\//-}"
-          tools="$(sed -n 's/^DOCKER_TOOLS=(\(.*\))/\1/p' Pipelines/build_images.sh)"
-          : > image_digests.txt
-          for tool in $tools; do
-            image="ghcr.io/${repo}/${tool}:${tag}"
-            docker tag "${tool}:latest" "$image"
-            docker push "$image"
-            digest="$(docker inspect --format='{{index .RepoDigests 0}}' "$image")"
-            echo "${tool}|${image}|${digest}" >> image_digests.txt
-          done
+          all="$(sed -n 's/^DOCKER_TOOLS=(\(.*\))/\1/p' pipeline/runners/build_images.sh)"
+          # xmm_sas_raw is a local-only experimental reduction (needs the SAS
+          # install and 8.7 GB); it is not published.
+          subset="${{ github.event.inputs.tools }}"
+          if [ -n "$subset" ]; then
+            tools="$subset"
+          else
+            tools=""
+            for t in $all; do [ "$t" = "xmm_sas_raw" ] || tools="$tools $t"; done
+          fi
+          json="$(printf '%s\n' $tools | python3 -c 'import json,sys; print(json.dumps([l.strip() for l in sys.stdin if l.strip()]))')"
+          echo "matrix={\"tool\":$json}" >> "$GITHUB_OUTPUT"
+          tag="${{ github.event.inputs.tag }}"
+          [ -n "$tag" ] || tag="${GITHUB_REF_NAME//\//-}"
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+          echo "will publish: $tools (tag $tag)"
+
+  publish:
+    name: Publish ${{ matrix.tool }}
+    needs: plan
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      max-parallel: 8
+      matrix: ${{ fromJSON(needs.plan.outputs.matrix) }}
+    steps:
+      - uses: actions/checkout@v5
+      - name: Free disk before the build
+        run: |
+          sudo rm -rf /usr/share/dotnet /opt/ghc /usr/local/lib/android /opt/hostedtoolcache/CodeQL || true
+          docker system prune -af || true
+          df -h /
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Build (linux/amd64)
+        env:
+          TOOL: ${{ matrix.tool }}
+        run: |
+          set -euo pipefail
+          mkdir -p digests
+          # build_images.sh is the single build recipe; pass one tool so this
+          # job only pays for its own image.  `docker build` + `docker push`
+          # (not `buildx build --push`) keeps attestations off the manifest,
+          # so the registry digest is a plain single-platform image digest.
+          bash pipeline/runners/build_images.sh "$TOOL"
+          docker image inspect "$TOOL:latest" --format '{{.Id}} {{.Architecture}}'
+      - name: Push and record the registry digest
+        env:
+          TOOL: ${{ matrix.tool }}
+          TAG: ${{ needs.plan.outputs.tag }}
+        run: |
+          set -euo pipefail
+          remote="${REGISTRY}/${IMAGE_PREFIX}-${TOOL}:${TAG}"  # flat: ghcr.io/<owner>/agn-<tool>
+          docker tag "${TOOL}:latest" "$remote"
+          docker push "$remote" | tee push.txt
+          digest="$(grep -oE 'digest: sha256:[0-9a-f]+' push.txt | tail -1 | awk '{print $2}')"
+          if [ -z "$digest" ]; then
+            echo "no digest in push output for $remote" >&2
+            exit 1
+          fi
+          # Cross-check against the registry manifest, not a local RepoDigest.
+          ref="$(docker buildx imagetools inspect "$remote" --format '{{json .Manifest.Digest}}' | tr -d '\"')"
+          if [ "$ref" != "$digest" ]; then
+            echo "digest mismatch for $remote: push=$digest registry=$ref" >&2
+            exit 1
+          fi
+          printf '%s|%s|%s|%s\n' "$TOOL" "$remote" "$digest" "${GITHUB_SHA}" > "digests/${TOOL}.txt"
+          cat "digests/${TOOL}.txt"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: digest-${{ matrix.tool }}
+          path: digests/*.txt
+          if-no-files-found: error
+
+  summary:
+    name: Merge digests
+    needs: publish
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: digest-*
+          merge-multiple: true
+          path: digests
+      - name: Write image_digests.txt
+        run: |
+          set -euo pipefail
+          cat digests/*.txt | sort > image_digests.txt
+          echo "tool|image|digest|commit" > /dev/null
           cat image_digests.txt
+          n="$(wc -l < image_digests.txt)"
+          echo "published $n images" >> "$GITHUB_STEP_SUMMARY"
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+          cat image_digests.txt >> "$GITHUB_STEP_SUMMARY"
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
       - uses: actions/upload-artifact@v4
         with:
           name: registry-digests

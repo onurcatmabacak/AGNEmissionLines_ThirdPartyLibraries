@@ -14,17 +14,17 @@ and a five-tool component comparison.
 ## Build / run
 
 ```bash
-bash Pipelines/build_images.sh qgfit
+bash pipeline/runners/build_images.sh qgfit
 
 # Production run (100 x 1000 continuum MCMC, LSQ line covariance).
-bash Pipelines/run_qgfit_docker.sh \
+bash pipeline/runners/run_qgfit_docker.sh \
   inputs/04592649654_z_0.5874 \
   outputs/qgfit/04592649654_z_0.5874 \
   --config configs/qgfit/production \
   --z 0.58741307
 
 # Fast smoke/demo run (40 x 100 continuum MCMC, LSQ lines).
-bash Pipelines/run_qgfit_docker.sh \
+bash pipeline/runners/run_qgfit_docker.sh \
   inputs/04592649654_z_0.5874 /tmp/qgfit_demo \
   --config configs/qgfit/default --z 0.58741307
 ```

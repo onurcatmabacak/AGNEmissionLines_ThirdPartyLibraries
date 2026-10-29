@@ -9,7 +9,7 @@ the fallback/cross-check tool; the specialised tools (`nir_linefit`,
 Inputs are canonical source directories; results are source-keyed:
 
 ```bash
-bash Pipelines/run_ir.sh --fits inputs/04592649654_z_0.5874/raw/spec-00000-59345-04592649654.fits \
+bash pipeline/runners/run_ir.sh --fits inputs/04592649654_z_0.5874/raw/spec-00000-59345-04592649654.fits \
   --z 0.58741307 --out outputs/ir_linefit/04592649654_z_0.5874
 ```
 

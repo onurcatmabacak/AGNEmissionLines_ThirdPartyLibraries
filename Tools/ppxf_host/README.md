@@ -6,7 +6,7 @@ stellar templates, an additive Legendre AGN continuum and emission-line masks.
 ## Build / run
 
 ```bash
-bash Pipelines/build_images.sh ppxf_host
+bash pipeline/runners/build_images.sh ppxf_host
 .venv/bin/python pipeline/run_new_tools.py --only 04592649654_z_0.5874 --tools ppxf_host --force
 ```
 

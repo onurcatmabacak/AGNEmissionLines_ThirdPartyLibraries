@@ -60,7 +60,7 @@ See `Tools/gandalf_line/THIRD_PARTY_LICENSES.md`.
 The shipped config is used by:
 
 ```bash
-bash Pipelines/build_images.sh gandalf_line
+bash pipeline/runners/build_images.sh gandalf_line
 .venv/bin/python pipeline/run_new_tools.py \
   --only spSpec-51908-0277-120_z_0.0859 --tools gandalf_line --force
 ```

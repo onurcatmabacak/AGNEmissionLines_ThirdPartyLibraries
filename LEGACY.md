@@ -15,7 +15,7 @@ outputs/<tool>/<object_name>_z_<redshift>/
 ```
 
 The archived optical drivers and analysis notes are in
-`Pipelines/legacy_optical/` (`run_pipeline.sh`, `analyze.sh`, `run.sh`,
+`pipeline/runners/legacy_optical/` (`run_pipeline.sh`, `analyze.sh`, `run.sh`,
 `analysis/`, `OPTICAL_README.md`).  They assume the retired `input/`, `runs/`,
 `results/` trees and are not the supported entry point.
 

@@ -5,7 +5,7 @@ Compute ratios with uncertainties against broad physical priors.
 ## Run
 
 ```bash
-bash Pipelines/build_images.sh crossband
+bash pipeline/runners/build_images.sh crossband
 .venv/bin/python pipeline/run_new_tools.py --only synthetic_multiband_z_0.0000 --tools crossband --force
 .venv/bin/python pipeline/run_new_tools.py --only NGC253_z_0.0008 --tools pahfit_mir fir_linefit crossband --force
 ```

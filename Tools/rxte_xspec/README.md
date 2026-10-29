@@ -76,10 +76,10 @@ bash inputs/3C120_z_0.0330/xray/rxte_10339-02-01-01/download.sh
 
 # 2. build the thin image on top of the existing xmm_xspec image
 #    (XSPEC 13.0.0 / HEASoft 6.37; no second 4.3 GB install)
-bash Pipelines/build_images.sh rxte_xspec
+bash pipeline/runners/build_images.sh rxte_xspec
 
 # 3. production fit
-bash Pipelines/run_rxte_xspec_docker.sh \
+bash pipeline/runners/run_rxte_xspec_docker.sh \
   inputs/3C120_z_0.0330/xray/rxte_10339-02-01-01 \
   outputs/rxte_xspec/3C120_z_0.0330 \
   --source-key 3C120_z_0.0330 --redshift 0.0330 --source-name "3C 120"

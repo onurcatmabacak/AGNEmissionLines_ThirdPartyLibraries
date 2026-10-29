@@ -5,7 +5,7 @@ HEASoft/XSPEC base.  It is for raw ODF reduction (`odfingest`, `cifbuild`,
 `epproc`, `evselect`, `especget`), not for the production PPS fit.
 
 It is **not registered as a science tool** and is not part of
-`Pipelines/build_images.sh`, because the raw ODF/CCF products are large and
+`pipeline/runners/build_images.sh`, because the raw ODF/CCF products are large and
 must not be committed.
 
 ## Build

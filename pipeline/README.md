@@ -1,7 +1,24 @@
-# `pipeline/` — Python library and orchestration
+# `pipeline/` — orchestration library and Docker runners
 
-This is the implementation layer used by `Pipelines/run_new_tools.sh` and the
-source-keyed matrix.  It is not a second set of shell entry points.
+One tree, two layers:
+
+* top level — Python: layout helpers, input adapters, matrix runner, validators,
+  comparisons and report generators;
+* `runners/` — the bash entry points that wrap each Docker image (previously the
+  separate top-level `Pipelines/` directory).
+
+Python code here calls into `runners/` only through `pipeline/tool_registry.py`;
+the runners never import Python.
+
+```text
+pipeline/
+  io_layout.py, run_new_tools.py, validate_outputs.py, ...   # Python layer
+  runners/
+    run_galspec_line_docker.sh, run_qgfit_docker.sh, ...      # Docker wrappers
+    build_images.sh, record_image_digests.sh
+    _output_layout.sh                                         # shared path helper
+    legacy_optical/                                           # archived optical v1
+```
 
 Key modules:
 
@@ -21,11 +38,11 @@ Key modules:
 Run:
 
 ```bash
-bash Pipelines/run_new_tools.sh --list
-bash Pipelines/run_new_tools.sh --cigale-models skirtor2016,fritz2006
+bash pipeline/runners/run_new_tools.sh --list
+bash pipeline/runners/run_new_tools.sh --cigale-models skirtor2016,fritz2006
 .venv/bin/python pipeline/statistical_tests_new_tools.py
 ```
 
 The original optical pipeline is archived at
-`Pipelines/legacy_optical/`; its old `input/`, `runs/`, `results/` layout is not
+`pipeline/runners/legacy_optical/`; its old `input/`, `runs/`, `results/` layout is not
 used by this library anymore.

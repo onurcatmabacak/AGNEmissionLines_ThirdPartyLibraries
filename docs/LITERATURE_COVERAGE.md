@@ -23,7 +23,7 @@ not silently claimed as implemented.
 
 | candidate | why it matters | licence/runtime | status |
 |---|---|---|---|
-| **BXA** | Bayesian X-ray parameter estimation and evidence/model comparison; current X-ray is chi-square covariance only | GPL-3.0, Python + XSPEC/Sherpa + UltraNest | **not implemented** |
+| **BXA** | Bayesian X-ray parameter estimation and evidence/model comparison; the chi-square covariance remains the reference fit | GPL-3.0, Python + XSPEC/Sherpa + UltraNest | **implemented** as `bxa_xspec` (absorbed PL, Fe K-alpha, warm/partial/Compton-thick absorbers) |
 | **MYTorus** | Smooth torus absorption/scattering and Compton-thick Fe Kα; current model has no torus | public FITS table model, XSPEC | **not implemented** |
 | **UXCLUMPY/XARS** | Clumpy/eclipsing torus geometry | AGPL-3.0, XSPEC table model | **not implemented** |
 | **RELXILL** | Relativistic reflection/spin diagnostic; current 4σ narrow line cannot constrain spin | LGPL-3.0, C/C++ local XSPEC model | **not implemented; diagnostic only** |

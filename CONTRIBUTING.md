@@ -14,9 +14,9 @@
 ## Adding a tool
 
 1. Put the Dockerfile and runner under `Tools/<tool>/`.
-2. Add a `Pipelines/run_<tool>_docker.sh` entry point.
+2. Add a `pipeline/runners/run_<tool>_docker.sh` entry point.
 3. Register the tool in `pipeline/tool_registry.py`.
-4. Add it to `Pipelines/build_images.sh`, `pipeline/run_new_tools.py` and
+4. Add it to `pipeline/runners/build_images.sh`, `pipeline/run_new_tools.py` and
    `pipeline/plan_analysis.py`.
 5. Add a config under `configs/<tool>/`.
 6. Document the scientific model and a **caveat** in

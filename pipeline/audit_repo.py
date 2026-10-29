@@ -46,7 +46,7 @@ def main() -> int:
     if not MULTICORE_TOOLS <= set(registry):
         errors.append(f"multicore tools not registered: {sorted(MULTICORE_TOOLS-set(registry))}")
 
-    text = (ROOT / "Pipelines" / "build_images.sh").read_text()
+    text = (ROOT / "pipeline" / "runners" / "build_images.sh").read_text()
     m = re.search(r"DOCKER_TOOLS=\(([^)]*)\)", text)
     images = set(m.group(1).split()) if m else set()
     required_images = {t.name for t in TOOLS if t.name not in HOST_ONLY | REFERENCE}

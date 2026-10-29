@@ -3,7 +3,7 @@
 `workflow/Snakefile` is a thin dependency layer over the existing Docker
 runners.  It does not reimplement any science; each rule calls
 `pipeline/run_new_tools.py --only <source> --tools <tool> --force`, which in
-turn calls the tool's `Pipelines/run_*_docker.sh`.
+turn calls the tool's `pipeline/runners/run_*_docker.sh`.
 
 ## Quick checks
 
@@ -39,4 +39,4 @@ are never deleted by the `clean` rule — only markers are removed.
 
 Snakemake runs the science tools in Docker; it is not itself inside a
 container.  The host needs Docker, the repository's `.venv`, and a completed
-`bash Pipelines/build_images.sh`.
+`bash pipeline/runners/build_images.sh`.

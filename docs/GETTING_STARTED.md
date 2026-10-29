@@ -71,7 +71,7 @@ Start with the small `optical_linefit` image and the public PDS 456
 X-SHOOTER spectrum:
 
 ```bash
-bash Pipelines/build_images.sh optical_linefit
+bash pipeline/runners/build_images.sh optical_linefit
 
 python pipeline/run_new_tools.py \
   --only PDS456_z_0.1840 \
@@ -96,7 +96,7 @@ high formal χ²; that is a real scientific warning, not a pipeline failure.
 For a more complete first example, build PyQSOFit:
 
 ```bash
-bash Pipelines/build_images.sh pyqsofit_uv
+bash pipeline/runners/build_images.sh pyqsofit_uv
 
 python pipeline/run_new_tools.py \
   --only 3C120_z_0.0330 \
@@ -228,7 +228,7 @@ Add your user to the docker group, log out/in, or run Docker Desktop with the
 appropriate permissions.
 
 **`Docker image ... not found`**  
-Build only that image: `bash Pipelines/build_images.sh <tool>`.
+Build only that image: `bash pipeline/runners/build_images.sh <tool>`.
 
 **A run is taking too long**  
 Check the cost in `pipeline/plan_analysis.py`; stop the container and choose a

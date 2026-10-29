@@ -6,7 +6,14 @@ ENV PYTHONUNBUFFERED=1 MPLBACKEND=Agg
 RUN apt-get update && apt-get install -y --no-install-recommends \
       git git-lfs gcc g++ gfortran libgomp1 && rm -rf /var/lib/apt/lists/*
 WORKDIR /app
-RUN git clone --depth 1 https://gitlab.lam.fr/cigale/cigale.git /app/cigale
+# Pinned to the release tag that produced the committed products (v2025.1 =
+# 29cb909fe2636800b4acdb1dfc7129d8c8494a24).  The clone is shallow by tag so a
+# clean rebuild does not depend on whatever master points at today.
+ARG CIGALE_VERSION=v2025.1
+ARG CIGALE_COMMIT=29cb909fe2636800b4acdb1dfc7129d8c8494a24
+RUN git clone --depth 1 --branch ${CIGALE_VERSION} \
+      https://gitlab.lam.fr/cigale/cigale.git /app/cigale \
+ && test "$(git -C /app/cigale rev-parse HEAD)" = "${CIGALE_COMMIT}"
 RUN cd /app/cigale && git lfs install && git lfs pull
 RUN pip install --no-cache-dir "numpy==1.26.4" "scipy==1.15.1" "matplotlib==3.11.1" "astropy==7.0.1" configobj rich importlib_resources
 RUN cd /app/cigale && PYTHONPATH=/app/cigale python -c "from database_builder import build_filters, build_bc2003, build_dl2014, build_nebular, build_skirtor2016, build_fritz2006; build_filters(); build_bc2003('lr', 13700); build_dl2014(); build_nebular(); build_skirtor2016(); build_fritz2006()"

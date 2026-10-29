@@ -55,7 +55,7 @@ ALL_TOOLS = ("ir_linefit", "pyqsofit_uv", "qsofitmore_line", "pyqsofitspec_line"
              "gandalf_line", "nir_linefit", "pahfit_mir", "fir_linefit", "cafe_line",
              "crossband", "cigale_sed", "agnfitter_sed", "s3fit_line", "galspec_line",
              "qgfit", "sheap_line", "manga_dap", "xmm_xspec", "rxte_xspec",
-             "crossmission", "optical_linefit", "manga_dap_full", "xmm_sas_raw")
+             "crossmission", "optical_linefit", "manga_dap_full", "xmm_sas_raw", "bxa_xspec")
 
 # Tools that can use more than one CPU thread.  They are run one at a time in
 # --phased mode so that they get the full machine; the remaining tools are then
@@ -121,7 +121,7 @@ def tool_ir(src: dict, out: Path, logp: Path) -> int:
 def tool_pyqsofit(src: dict, out: Path, logp: Path) -> int:
     inp = prep_pyqsofit(src)
     return run(
-        [str(ROOT / "Pipelines" / "run_pyqsofit_uv_docker.sh"), str(inp), str(out)],
+        [str(ROOT / "pipeline" / "runners" / "run_pyqsofit_uv_docker.sh"), str(inp), str(out)],
         logp,
         env={"PYQSOFIT_SOURCE_KEY": str(src["key"])},
     )
@@ -132,7 +132,7 @@ def tool_optical_linefit(src: dict, out: Path, logp: Path) -> int:
     files = source_files(src, "xshooter_spectrum") or source_files(src, "optical_spectrum") or source_files(src, "spectrum")
     if not files:
         return _skip("no optical spectrum")
-    cmd = [str(ROOT / "Pipelines" / "run_optical_linefit_docker.sh"),
+    cmd = [str(ROOT / "pipeline" / "runners" / "run_optical_linefit_docker.sh"),
            str(files[0]), str(out), "--z", str(src["z"]), "--name", str(src["key"])]
     return run(cmd, logp)
 
@@ -148,7 +148,7 @@ def tool_qsofitmore(src: dict, out: Path, logp: Path, config: str | None = None,
     raw = Path(src["_path"]) / "raw"
     if not raw.exists():
         raw = prep_pyqsofit(src)
-    cmd = [str(ROOT / "Pipelines" / "run_qsofitmore_line_docker.sh"),
+    cmd = [str(ROOT / "pipeline" / "runners" / "run_qsofitmore_line_docker.sh"),
            str(raw), str(out)]
     if config:
         cmd += ["--config", str(config)]
@@ -163,7 +163,7 @@ def tool_pyqsofitspec(src: dict, out: Path, logp: Path, nboot: int | None = None
                       config: str | None = None) -> int:
     """PyQSOFitSpec bootstrap line fit (skew-normal profiles) on the prepared spectrum."""
     inp = prep_pyqsofit(src)
-    cmd = [str(ROOT / "Pipelines" / "run_pyqsofitspec_line_docker.sh"),
+    cmd = [str(ROOT / "pipeline" / "runners" / "run_pyqsofitspec_line_docker.sh"),
            str(inp), str(out), "--name", str(src["name"]), "--z", str(src["z"])]
     cmd += ["--config", config or str(ROOT / "configs" / "pyqsofitspec_line" / "default")]
     if nboot is not None:
@@ -176,7 +176,7 @@ def tool_manga_dap(src: dict, out: Path, logp: Path, full: bool = False) -> int:
     refs = source_files(src, "manga_maps_reference")
     if not refs:
         return _skip("no published DAP MAPS reference")
-    cmd = [str(ROOT / "Pipelines" / "run_manga_dap_docker.sh"),
+    cmd = [str(ROOT / "pipeline" / "runners" / "run_manga_dap_docker.sh"),
            str(Path(src["_path"])), str(out),
            "--reference", str(refs[0])]
     if full:
@@ -190,7 +190,7 @@ def tool_xmm_sas_raw(src: dict, out: Path, logp: Path) -> int:
     files = source_files(src, "xray_spectrum")
     if not files:
         return _skip("no raw SAS products")
-    return run([str(ROOT / "Pipelines" / "run_xmm_sas_fit_docker.sh"),
+    return run([str(ROOT / "pipeline" / "runners" / "run_xmm_sas_fit_docker.sh"),
                 str(out), "--z", str(src["z"])], logp)
 
 
@@ -200,7 +200,7 @@ def tool_xmm(src: dict, out: Path, logp: Path) -> int:
     if not xray:
         return _skip("no XMM xray directory")
     inp = Path(src["_path"]) / xray
-    cmd = [str(ROOT / "Pipelines" / "run_xmm_xspec_docker.sh"),
+    cmd = [str(ROOT / "pipeline" / "runners" / "run_xmm_xspec_docker.sh"),
            str(inp), str(out), "--source-key", str(src["key"])]
     if src.get("z") is not None:
         cmd += ["--redshift", str(src["z"])]
@@ -213,7 +213,7 @@ def tool_rxte(src: dict, out: Path, logp: Path) -> int:
     if not paths:
         return _skip("no RXTE/PCA source spectrum")
     inp = paths[0].parent
-    cmd = [str(ROOT / "Pipelines" / "run_rxte_xspec_docker.sh"),
+    cmd = [str(ROOT / "pipeline" / "runners" / "run_rxte_xspec_docker.sh"),
            str(inp), str(out), "--source-key", str(src["key"])]
     if src.get("name"):
         cmd += ["--source-name", str(src["name"])]
@@ -237,18 +237,18 @@ def tool_crossmission(src: dict, out: Path, logp: Path) -> int:
 
 def tool_ppxf(src: dict, out: Path, logp: Path) -> int:
     inp = prep_pyqsofit(src)
-    return run([str(ROOT / "Pipelines" / "run_ppxf_host_docker.sh"), str(inp), str(out)], logp)
+    return run([str(ROOT / "pipeline" / "runners" / "run_ppxf_host_docker.sh"), str(inp), str(out)], logp)
 
 
 def tool_gandalf(src: dict, out: Path, logp: Path) -> int:
     inp = prep_pyqsofit(src)
-    return run([str(ROOT / "Pipelines" / "run_gandalf_line_docker.sh"), str(inp), str(out), str(src["key"])], logp)
+    return run([str(ROOT / "pipeline" / "runners" / "run_gandalf_line_docker.sh"), str(inp), str(out), str(src["key"])], logp)
 
 
 def tool_galspec(src: dict, out: Path, logp: Path, config: str | None = None,
                  sampler: str | None = None, mcmc_steps: int | None = None,
                  nwalkers: int | None = None, nburn: int | None = None) -> int:
-    cmd = [str(ROOT / "Pipelines" / "run_galspec_line_docker.sh"),
+    cmd = [str(ROOT / "pipeline" / "runners" / "run_galspec_line_docker.sh"),
            str(Path(src["_path"])), str(out), "--object", str(src["key"])]
     if src.get("z") is not None:
         cmd += ["--z", str(src["z"])]
@@ -267,7 +267,7 @@ def tool_galspec(src: dict, out: Path, logp: Path, config: str | None = None,
 
 def tool_qgfit(src: dict, out: Path, logp: Path) -> int:
     """Run QGfit on the canonical source directory."""
-    cmd = [str(ROOT / "Pipelines" / "run_qgfit_docker.sh"),
+    cmd = [str(ROOT / "pipeline" / "runners" / "run_qgfit_docker.sh"),
            str(Path(src["_path"])), str(out)]
     if src.get("z") is not None:
         cmd += ["--z", str(src["z"])]
@@ -276,7 +276,7 @@ def tool_qgfit(src: dict, out: Path, logp: Path) -> int:
 
 def tool_sheap(src: dict, out: Path, logp: Path) -> int:
     """Run SHEAP on the canonical source directory (CPU JAX)."""
-    cmd = [str(ROOT / "Pipelines" / "run_sheap_line_docker.sh"),
+    cmd = [str(ROOT / "pipeline" / "runners" / "run_sheap_line_docker.sh"),
            str(Path(src["_path"])), str(out)]
     if src.get("z") is not None:
         cmd += ["--z", str(src["z"])]
@@ -287,7 +287,7 @@ def tool_cafe(src: dict, out: Path, logp: Path) -> int:
     inp = Path(src["_path"]) / "raw"
     if not list(inp.glob("*_x1d.fits")):
         return _skip("no JWST x1d for CAFE")
-    cmd = [str(ROOT / "Pipelines" / "run_cafe_line_docker.sh"),
+    cmd = [str(ROOT / "pipeline" / "runners" / "run_cafe_line_docker.sh"),
            str(inp), str(out), str(src["z"])]
     extra = list(src.get("cafe_args", []))
     if extra:
@@ -300,16 +300,16 @@ def tool_cafe(src: dict, out: Path, logp: Path) -> int:
 
 def tool_nir(src: dict, out: Path, logp: Path) -> int:
     raw = Path(src["_path"]) / "raw"
-    rc = run([str(ROOT / "Pipelines" / "run_nir_linefit_docker.sh"), str(raw), str(out), str(src["z"])], logp)
+    rc = run([str(ROOT / "pipeline" / "runners" / "run_nir_linefit_docker.sh"), str(raw), str(out), str(src["z"])], logp)
     centered = source_files(src, "centered")
     if centered:
         sub = out / "centered"
-        rc |= run([str(ROOT / "Pipelines" / "run_nir_linefit_docker.sh"), str(centered[0].parent),
+        rc |= run([str(ROOT / "pipeline" / "runners" / "run_nir_linefit_docker.sh"), str(centered[0].parent),
                    str(sub), str(src["z"])], logp.with_name(logp.stem + "_centered.log"))
     psf = source_files(src, "centered_psf")
     if psf:
         sub = out / "psf"
-        rc |= run([str(ROOT / "Pipelines" / "run_nir_linefit_docker.sh"), str(psf[0].parent),
+        rc |= run([str(ROOT / "pipeline" / "runners" / "run_nir_linefit_docker.sh"), str(psf[0].parent),
                    str(sub), str(src["z"])], logp.with_name(logp.stem + "_psf.log"))
     return rc
 
@@ -332,7 +332,7 @@ def tool_pahfit(src: dict, out: Path, logp: Path) -> int:
             # Optional seed fit, then warm-start the full fit from its ECSV.
             if v.get("seed_args"):
                 seed = sub / "seed"
-                cmd = [str(ROOT / "Pipelines" / "run_pahfit_mir_docker.sh"), str(raw), str(seed),
+                cmd = [str(ROOT / "pipeline" / "runners" / "run_pahfit_mir_docker.sh"), str(raw), str(seed),
                        str(src["z"]), *v.get("seed_args", [])]
                 if src.get("kind") == "jwst_miri":
                     cmd += ["--instrument", MIRI_ALL]
@@ -343,7 +343,7 @@ def tool_pahfit(src: dict, out: Path, logp: Path) -> int:
                 src_ecsv = out / v["seed_from"] / "pahfit_output.ecsv"
                 if src_ecsv.exists():
                     (seed_dir / "pahfit_output.ecsv").write_bytes(src_ecsv.read_bytes())
-            cmd = [str(ROOT / "Pipelines" / "run_pahfit_mir_docker.sh"), str(raw), str(sub),
+            cmd = [str(ROOT / "pipeline" / "runners" / "run_pahfit_mir_docker.sh"), str(raw), str(sub),
                    str(src["z"]), *_pahfit_config_arg(v.get("config", v["name"])),
                    *v.get("args", [])]
             if src.get("kind") == "jwst_miri":
@@ -361,7 +361,7 @@ def tool_pahfit(src: dict, out: Path, logp: Path) -> int:
     if src.get("kind") == "jwst_miri":
         args += ["--instrument", MIRI_ALL]
     cfg_name = src.get("pahfit_config", "default")
-    return run([str(ROOT / "Pipelines" / "run_pahfit_mir_docker.sh"), str(raw), str(out),
+    return run([str(ROOT / "pipeline" / "runners" / "run_pahfit_mir_docker.sh"), str(raw), str(out),
                 str(src["z"]), *_pahfit_config_arg(cfg_name), *args], logp)
 
 
@@ -384,7 +384,7 @@ def tool_fir(src: dict, out: Path, logp: Path) -> int:
         target = spec[0]
     else:
         return _skip("no FIR spectrum")
-    return run([str(ROOT / "Pipelines" / "run_fir_linefit_docker.sh"), str(target), str(out), str(src["z"])], logp)
+    return run([str(ROOT / "pipeline" / "runners" / "run_fir_linefit_docker.sh"), str(target), str(out), str(src["z"])], logp)
 
 
 def tool_crossband(src: dict, out: Path, logp: Path) -> int:
@@ -399,20 +399,20 @@ def tool_crossband(src: dict, out: Path, logp: Path) -> int:
             paths = [candidate]
     if not paths:
         return _skip("no crossband input")
-    return run([str(ROOT / "Pipelines" / "run_crossband_docker.sh"), str(paths[0]), str(out)], logp)
+    return run([str(ROOT / "pipeline" / "runners" / "run_crossband_docker.sh"), str(paths[0]), str(out)], logp)
 
 
 def tool_agnfitter(src: dict, out: Path, logp: Path) -> int:
     inp = Path(src["_path"]) / "photometry"
     if not (inp / "photometry.txt").exists():
         return _skip("no photometry")
-    return run([str(ROOT / "Pipelines" / "run_agnfitter_sed_docker.sh"), str(inp), str(out)], logp)
+    return run([str(ROOT / "pipeline" / "runners" / "run_agnfitter_sed_docker.sh"), str(inp), str(out)], logp)
 
 
 def tool_s3fit(src: dict, out: Path, logp: Path, config: str | None = None,
                n_mocks: int | None = None, mode: str | None = None,
                threads: int | None = None) -> int:
-    cmd = [str(ROOT / "Pipelines" / "run_s3fit_line_docker.sh"),
+    cmd = [str(ROOT / "pipeline" / "runners" / "run_s3fit_line_docker.sh"),
            str(Path(src["_path"])), str(out)]
     if src.get("z") is not None:
         cmd += ["--z", str(src["z"])]
@@ -435,7 +435,7 @@ def tool_cigale(src: dict, out: Path, logp: Path, models: list[str]) -> int:
     rc = 0
     for model in models:
         sub = out / model
-        rc |= run([str(ROOT / "Pipelines" / "run_cigale_sed_docker.sh"), str(inp), str(sub)],
+        rc |= run([str(ROOT / "pipeline" / "runners" / "run_cigale_sed_docker.sh"), str(inp), str(sub)],
                   logp.with_name(logp.stem + f"_{model}.log"),
                   env={"CIGALE_AGN_MODEL": model})
     # Aggregate the model-family spread from the per-model summaries.

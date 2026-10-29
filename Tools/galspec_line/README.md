@@ -63,10 +63,10 @@ fitted range.  Fe II is an empirical template, not a physical model.
 ## Build / run
 
 ```bash
-bash Pipelines/build_images.sh galspec_line
+bash pipeline/runners/build_images.sh galspec_line
 
 # production full-continuum run (the default config is full)
-bash Pipelines/run_galspec_line_docker.sh \
+bash pipeline/runners/run_galspec_line_docker.sh \
   inputs/04592649654_z_0.5874 \
   outputs/galspec_line/04592649654_z_0.5874 \
   --object 04592649654_z_0.5874

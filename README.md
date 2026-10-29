@@ -25,14 +25,14 @@ python pipeline/compare_xray_optical.py --source 3C120_z_0.0330
 For a first actual fit:
 
 ```bash
-bash Pipelines/build_images.sh optical_linefit
+bash pipeline/runners/build_images.sh optical_linefit
 python pipeline/run_new_tools.py --only PDS456_z_0.1840 --tools optical_linefit --force
 ```
 
 For a complete first optical example:
 
 ```bash
-bash Pipelines/build_images.sh pyqsofit_uv
+bash pipeline/runners/build_images.sh pyqsofit_uv
 python pipeline/run_new_tools.py --only 3C120_z_0.0330 --tools pyqsofit_uv --force
 ```
 
@@ -80,6 +80,8 @@ python pipeline/run_new_tools.py --source <source_key> --auto
 inputs/<source_key>/source.json     # source metadata, file roles, chosen tools
 inputs/<source_key>/raw/            # one canonical raw copy
 outputs/<tool>/<source_key>/        # all products for that tool
+pipeline/                           # Python orchestration + validators
+pipeline/runners/                   # bash wrappers around each Docker image
 work/prepared/                      # generated tool-native inputs (ignored)
 work/logs/                          # run logs (ignored)
 ```
@@ -155,7 +157,7 @@ python pipeline/statistical_report.py
 
 - Host dependencies: `requirements-host.txt`
 - QA tools: `requirements-dev.txt`
-- Docker images: `Pipelines/build_images.sh` (26 tools)
+- Docker images: `pipeline/runners/build_images.sh` (26 tools)
 - Tests: 27 pytest tests plus schema/hash validation
 
 ```bash

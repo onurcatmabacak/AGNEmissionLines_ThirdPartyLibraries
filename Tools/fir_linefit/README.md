@@ -6,7 +6,7 @@ spectra.  Lines: [OI] 63/145, [OIII] 88, [NII] 122, [CII] 158 µm.
 ## Run
 
 ```bash
-bash Pipelines/build_images.sh fir_linefit
+bash pipeline/runners/build_images.sh fir_linefit
 .venv/bin/python pipeline/run_new_tools.py --only NGC253_z_0.0008 --tools fir_linefit --force
 .venv/bin/python pipeline/run_new_tools.py --only synthetic_fir_z_0.5000 --tools fir_linefit --force
 ```

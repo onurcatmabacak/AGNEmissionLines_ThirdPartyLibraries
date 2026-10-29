@@ -29,7 +29,7 @@ MD5s, dustmaps version and fetch time.
 ## Build
 
 ```bash
-bash Pipelines/build_images.sh qsofitmore_line
+bash pipeline/runners/build_images.sh qsofitmore_line
 # or directly (build context is the repo root):
 docker build -f Tools/qsofitmore_line/dockerfile -t qsofitmore_line .
 ```
@@ -38,7 +38,7 @@ docker build -f Tools/qsofitmore_line/dockerfile -t qsofitmore_line .
 
 ```bash
 # raw SDSS directory (recommended: preserves the IVAR mask)
-bash Pipelines/run_qsofitmore_line_docker.sh \
+bash pipeline/runners/run_qsofitmore_line_docker.sh \
   inputs/04592649654_z_0.5874/raw \
   outputs/qsofitmore_line/04592649654_z_0.5874 \
   --source-key 04592649654_z_0.5874 --mc-trails 200 --seed 20250101

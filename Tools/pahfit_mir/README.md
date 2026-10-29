@@ -9,23 +9,23 @@ explicit quality flags.
 ## Quick run
 
 ```bash
-bash Pipelines/build_images.sh pahfit_mir
+bash pipeline/runners/build_images.sh pahfit_mir
 
 # direct runner (config name resolves under configs/pahfit_mir/)
-bash Pipelines/run_pahfit_mir_docker.sh inputs/NGC4151_z_0.0033/raw \
+bash pipeline/runners/run_pahfit_mir_docker.sh inputs/NGC4151_z_0.0033/raw \
   outputs/pahfit_mir/NGC4151_z_0.0033 0.003319 \
   --config /app/configs/pahfit_mir/ngc4151/config.json \
   --mc-samples 200 --mc-method auto
 
 # full production matrix (PDS short/long/both, VV114, NGC 4151, NGC 253)
-bash Pipelines/run_pahfit_production.sh
+bash pipeline/runners/run_pahfit_production.sh
 
 # normal pipeline entry point
 .venv/bin/python pipeline/run_new_tools.py --only VV114_z_0.0200 \
   --tools pahfit_mir --force
 ```
 
-`Pipelines/run_pahfit_mc.sh` is retained as a backward-compatible wrapper
+`pipeline/runners/run_pahfit_mc.sh` is retained as a backward-compatible wrapper
 around the production script.  CLI flags override config values, and every run
 writes the resolved settings to `<output>/effective_config.json`.
 
@@ -244,7 +244,7 @@ though its 200-realization covariance is full rank.
 ## Reproduce
 
 ```bash
-bash Pipelines/run_pahfit_production.sh
+bash pipeline/runners/run_pahfit_production.sh
 ```
 
 This writes the production directories and, for the validation runs,

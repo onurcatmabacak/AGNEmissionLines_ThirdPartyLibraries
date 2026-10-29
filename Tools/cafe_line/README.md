@@ -22,12 +22,12 @@ pinned commit and mounts the effective configuration/tables from this repo.
 | `../../configs/cafe_line/default/` | Effective `inpars.ini` and `default_opt.cafe` (upstream `inpars_jwst_miri_AGN.ini` / `default_opt.cafe`, provenance headers added). |
 | `../../configs/cafe_line/vv114_agn_sb/` | MIRI-only SB+AGN configuration used for the full-coverage VV114 production fit (`inpars_jwst_nirspec-miri_SB_and_AGN.ini`, NIRSpec removed, broad-line width/wave fixed). |
 | `../../configs/cafe_line/tables/` | CAFE line/PAH/opacity/resolving-power/SED tables read by the configuration. |
-| `../../Pipelines/run_cafe_line_docker.sh` | Host entry point. |
+| `../../pipeline/runners/run_cafe_line_docker.sh` | Host entry point. |
 
 ## Build
 
 ```bash
-bash Pipelines/build_images.sh cafe_line
+bash pipeline/runners/build_images.sh cafe_line
 # or directly:
 docker build -f Tools/cafe_line/dockerfile -t cafe_line .
 ```
@@ -42,13 +42,13 @@ Astropy, SciPy, pandas, matplotlib, specutils and asdf.
 Generic form:
 
 ```bash
-bash Pipelines/run_cafe_line_docker.sh <input-dir> <output-dir> <z> [extra args...]
+bash pipeline/runners/run_cafe_line_docker.sh <input-dir> <output-dir> <z> [extra args...]
 ```
 
 The committed PDS 456 test (real JWST/MIRI MRS short+long `x1d`):
 
 ```bash
-bash Pipelines/run_cafe_line_docker.sh \
+bash pipeline/runners/run_cafe_line_docker.sh \
   inputs/PDS456_z_0.1840/raw \
   outputs/cafe_line/PDS456_z_0.1840 \
   0.184 \
@@ -68,7 +68,7 @@ The committed full-coverage VV114 production fit (all 12 MIRI `s1d`
 channels, 5–28 µm, SB+AGN configuration, reduced/documented line set):
 
 ```bash
-bash Pipelines/run_cafe_line_docker.sh \
+bash pipeline/runners/run_cafe_line_docker.sh \
   inputs/VV114_z_0.0200/raw \
   outputs/cafe_line/VV114_z_0.0200 \
   0.02 \
@@ -404,17 +404,17 @@ def tool_cafe_line(src: dict, out: Path, logp: Path) -> int:
 Both source manifests now carry the tool entry:
 `inputs/PDS456_z_0.1840/source.json` has `"cafe_line"` plus the sparse
 `cafe_args`, and `inputs/VV114_z_0.0200/source.json` has `"cafe_line"` plus
-the full-coverage `cafe_args` listed above.  `Pipelines/build_images.sh`
+the full-coverage `cafe_args` listed above.  `pipeline/runners/build_images.sh`
 already includes `cafe_line` in its tool lists.
 
 ## Validation commands
 
 ```bash
 python -m py_compile Tools/cafe_line/run_cafe.py Tools/cafe_line/read_jwst_x1d.py
-bash -n Pipelines/run_cafe_line_docker.sh
-bash Pipelines/build_images.sh cafe_line
+bash -n pipeline/runners/run_cafe_line_docker.sh
+bash pipeline/runners/build_images.sh cafe_line
 docker run --rm cafe_line --help
-bash Pipelines/run_cafe_line_docker.sh inputs/PDS456_z_0.1840/raw \
+bash pipeline/runners/run_cafe_line_docker.sh inputs/PDS456_z_0.1840/raw \
   outputs/cafe_line/PDS456_z_0.1840 0.184 \
   --max-wave 27.8 --no-outlier-clip --mc-samples 200 --mc-seed 20250101
 # VV114 production (args are also in inputs/VV114_z_0.0200/source.json):

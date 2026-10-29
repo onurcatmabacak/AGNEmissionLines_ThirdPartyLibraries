@@ -106,8 +106,8 @@ metadata and the per-tool README documents the native fields.
 
 ## Reproducibility checklist
 
-1. `bash Pipelines/build_images.sh <tool>` (or no argument for all 24).
-2. `bash Pipelines/run_<tool>_docker.sh ...` or
+1. `bash pipeline/runners/build_images.sh <tool>` (or no argument for all 24).
+2. `bash pipeline/runners/run_<tool>_docker.sh ...` or
    `.venv/bin/python pipeline/run_new_tools.py --tools <tool> --only <source> --force`.
 3. `snakemake -s workflow/Snakefile --cores N all` for the graph-managed path.
 4. Regenerate `outputs/output_catalog.json`.

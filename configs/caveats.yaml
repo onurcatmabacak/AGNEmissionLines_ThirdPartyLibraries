@@ -129,7 +129,7 @@ tools:
     status: conditional
     severity: high
     caveat: "Full all-spaxel official DAP is exposed as a long run (S/N=10, 2397 bins, full 65-template SASUKE). It is a single-core upstream workflow and may take many hours; the validated fast/9-bin result must not be substituted for it."
-    evidence: "Pipelines/run_manga_dap_docker.sh, configs/manga_dap/default/plan.toml, docs/LONG_RUNS.md"
+    evidence: "pipeline/runners/run_manga_dap_docker.sh, configs/manga_dap/default/plan.toml, docs/LONG_RUNS.md"
     mitigation: "Run with --full and wait for completion; compare the all-spaxel MAPS to the published reference before claiming the full DAP."
   - tool: xmm_sas_raw
     kind: line
@@ -147,6 +147,14 @@ tools:
     caveat: "Uses official XMM PPS products, not a raw SAS epproc/especget reduction. Fe K-alpha is 4.05 sigma; PN/MOS Gamma differ by 2.9 sigma; the broad Fe width is degenerate with continuum curvature and is not a resolved velocity."
     evidence: "outputs/xmm_xspec/PDS456_z_0.1840/, Tools/xmm_xspec/SAS_RAW_PATH.md"
     mitigation: "Quote the narrow-core flux/EW; treat SAS raw reduction as future work; do not claim spin/relativistic profile."
+  - tool: bxa_xspec
+    kind: line
+    wave: X-ray
+    status: production
+    severity: medium
+    caveat: "Bayesian evidence comparison of the same XMM PPS spectra as xmm_xspec, so it inherits the PPS (not raw SAS) provenance and the 4 sigma Fe K-alpha. Bayes factors depend on the stated prior volumes: wide log-uniform line priors penalise the line model, so Delta ln Z and the prior-independent Delta chi-square must be quoted together. Only the built-in XSPEC absorption family is used; MYTorus/UXCLUMPY/RELXILL table models are not bundled."
+    evidence: "outputs/bxa_xspec/PDS456_z_0.1840/, configs/bxa_xspec/default/config.json"
+    mitigation: "Quote Delta ln Z with its priors and the matching Delta chi-square; do not claim torus or spin constraints."
   - tool: rxte_xspec
     kind: line
     wave: X-ray

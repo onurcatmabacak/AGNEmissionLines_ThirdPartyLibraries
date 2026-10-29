@@ -1,7 +1,7 @@
 # `sheap_line` configuration
 
 `configs/sheap_line/default/config.json` is mounted at `/app/config/config.json`
-by `Pipelines/run_sheap_line_docker.sh`.  It controls the SHEAP 0.0.11 JAX fit
+by `pipeline/runners/run_sheap_line_docker.sh`.  It controls the SHEAP 0.0.11 JAX fit
 of the rest-frame Hβ/[O III] 4959,5007 region.
 
 The 2026-08 audit replaced the original 4600-5150 Å / single-narrow / no-Fe II
@@ -54,7 +54,7 @@ The diagnostic tables/figures are still written.
   --only 04592649654_z_0.5874 --tools sheap_line --force
 
 # full audit run with the model-systematics ensemble
-bash Pipelines/run_sheap_line_docker.sh \
+bash pipeline/runners/run_sheap_line_docker.sh \
   inputs/04592649654_z_0.5874 outputs/sheap_line/04592649654_z_0.5874 \
   --z 0.58741307 --variants
 ```
@@ -65,5 +65,5 @@ without rebuilding the image.  Only `Tools/sheap_line/run_sheap.py` is copied
 into the image; rebuild after editing it:
 
 ```bash
-bash Pipelines/build_images.sh sheap_line
+bash pipeline/runners/build_images.sh sheap_line
 ```

@@ -11,8 +11,8 @@ The repository has two levels of provenance:
 After building the images:
 
 ```bash
-bash Pipelines/build_images.sh
-bash Pipelines/record_image_digests.sh
+bash pipeline/runners/build_images.sh
+bash pipeline/runners/record_image_digests.sh
 ```
 
 `docs/image_digests.json` records, for each of the 26 image entries:

@@ -84,9 +84,9 @@ separate local JTJ estimate.
 ## Build / run
 
 ```bash
-bash Pipelines/build_images.sh sheap_line
+bash pipeline/runners/build_images.sh sheap_line
 
-bash Pipelines/run_sheap_line_docker.sh \
+bash pipeline/runners/run_sheap_line_docker.sh \
   inputs/04592649654_z_0.5874 \
   outputs/sheap_line/04592649654_z_0.5874 \
   --z 0.58741307 --variants

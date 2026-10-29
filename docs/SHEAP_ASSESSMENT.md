@@ -205,8 +205,8 @@ range.
 ## 8. Reproduction
 
 ```bash
-bash Pipelines/build_images.sh sheap_line
-bash Pipelines/run_sheap_line_docker.sh \
+bash pipeline/runners/build_images.sh sheap_line
+bash pipeline/runners/run_sheap_line_docker.sh \
   inputs/04592649654_z_0.5874 \
   outputs/sheap_line/04592649654_z_0.5874 \
   --z 0.58741307 --variants
@@ -225,7 +225,7 @@ timing is in `run.json.runtime`.
 * `configs/sheap_line/default/config.json` — production model, limits,
   quality gates, variants.
 * `configs/sheap_line/README.md` — new.
-* `Pipelines/run_sheap_line_docker.sh` — `--variants` option.
+* `pipeline/runners/run_sheap_line_docker.sh` — `--variants` option.
 * `pipeline/compare_line_tools.py` — honour `quality.production_ok`; keep
   wing/outflow components distinct from the total row (the old mapping made
   the reader use GalSpec's [O III] wing, 748, as the total, 1619).

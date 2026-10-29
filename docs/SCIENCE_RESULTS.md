@@ -5,14 +5,14 @@ This is a **descriptive** report, not a population regression.
 
 ## Cross-tool Hβ/[O III] 5007
 
-Canonical cross-tool group: `04592649654_z_0.5874` with **9** tools, median **2.044**, log10 scatter **0.053 dex** (multiplicative 1.13×).
+Canonical cross-tool group: `04592649654_z_0.5874` with **9** tools, median **2.074**, log10 scatter **0.052 dex** (multiplicative 1.13×).
 
 No population median is computed across different objects.
 
 | source | n tools | median | min | max | 16–84% bootstrap |
 |---|---:|---:|---:|---:|---:|
 | `04570952937_z_0.9901` | 2 | 3.819 | 3.286 | 4.352 | 3.286–4.352 |
-| `04592649654_z_0.5874` | 9 | 2.044 | 1.572 | 2.498 | 2.025–2.074 |
+| `04592649654_z_0.5874` | 9 | 2.074 | 1.572 | 2.498 | 2.044–2.098 |
 | `04592933676_z_0.6506` | 1 | 3.231 | 3.231 | 3.231 | 3.231–3.231 |
 | `3C120_z_0.0330` | 2 | 2.274 | 1.549 | 2.999 | 1.549–2.999 |
 | `spSpec-51908-0277-120_z_0.0859` | 1 | 3.063 | 3.063 | 3.063 | 3.063–3.063 |
@@ -21,16 +21,16 @@ No population median is computed across different objects.
 
 | tool | n sources | multiplicative bias | log10 scatter |
 |---|---:|---:|---:|
-| `pyqsofit_uv` | 2 | 0.808× | 0.110 |
-| `qgfit` | 1 | 1.222× | 0.000 |
-| `sdss_zline` | 3 | 0.860× | 0.072 |
-| `qsofitmore_line` | 2 | 1.148× | 0.089 |
+| `pyqsofit_uv` | 2 | 0.830× | 0.127 |
+| `qgfit` | 1 | 1.205× | 0.000 |
+| `sdss_zline` | 3 | 0.860× | 0.082 |
+| `qsofitmore_line` | 2 | 1.140× | 0.094 |
 | `ir_linefit` | 1 | 1.140× | 0.000 |
-| `s3fit_line` | 1 | 0.895× | 0.000 |
-| `galspec_line` | 1 | 1.083× | 0.000 |
-| `pyqsofitspec_line` | 1 | 1.052× | 0.000 |
-| `sheap_line` | 1 | 0.991× | 0.000 |
-| `gandalf_line` | 2 | 1.007× | 0.005 |
+| `s3fit_line` | 1 | 0.882× | 0.000 |
+| `galspec_line` | 1 | 1.067× | 0.000 |
+| `pyqsofitspec_line` | 1 | 1.037× | 0.000 |
+| `sheap_line` | 1 | 0.976× | 0.000 |
+| `gandalf_line` | 2 | 1.000× | 0.000 |
 
 A value of 1.00 means the tool sits at the per-source median; this is a descriptive bias, not a calibration.
 

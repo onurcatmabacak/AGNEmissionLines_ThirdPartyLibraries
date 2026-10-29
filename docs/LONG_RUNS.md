@@ -51,7 +51,7 @@ report the posterior; do not call it converged from step count alone.
 ```bash
 PYQSOFIT_MCMC=1 PYQSOFIT_NSAMP=2000 PYQSOFIT_NBURN=500 \
 PYQSOFIT_NTHIN=1 PYQSOFIT_NWALKERS=100 \
-bash Pipelines/run_pyqsofit_uv_docker.sh \
+bash pipeline/runners/run_pyqsofit_uv_docker.sh \
   work/prepared/04592649654_z_0.5874/pyqsofit \
   outputs/pyqsofit/04592649654_z_0.5874/mcmc_long
 ```
@@ -78,7 +78,7 @@ broader-window run requires a model change, not just a longer runtime; see
 The all-spaxel official DAP is exposed as `manga_dap_full`:
 
 ```bash
-bash Pipelines/run_manga_dap_docker.sh \
+bash pipeline/runners/run_manga_dap_docker.sh \
   inputs/NGC1194_z_0.0136 outputs/manga_dap_full/NGC1194_z_0.0136 \
   --reference inputs/NGC1194_z_0.0136/raw/manga-9193-12701-MAPS-HYB10-MILESHC-MASTARHC2.fits.gz \
   --full
@@ -110,5 +110,5 @@ full-HEASoft image.
 
 `docs/image_digests.json` records local IDs.  For immutable registry references,
 run the manual `Publish images to GHCR` workflow (`.github/workflows/publish-images.yml`);
-it pushes `ghcr.io/<owner>/agnemissionlines-thirdpartylibraries/<tool>:<tag>`
+it pushes `ghcr.io/<owner>/agn-<tool>:<tag>`
 and uploads the returned `@sha256` digests.

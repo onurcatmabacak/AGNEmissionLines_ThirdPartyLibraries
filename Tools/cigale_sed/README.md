@@ -6,7 +6,7 @@ The fit is now **per source** and runs **two AGN torus families**.
 ## Build / run
 
 ```bash
-bash Pipelines/build_images.sh cigale_sed
+bash pipeline/runners/build_images.sh cigale_sed
 .venv/bin/python pipeline/run_new_tools.py --only 04592649654_z_0.5874 \
   --tools cigale_sed --cigale-models skirtor2016,fritz2006 --force
 ```

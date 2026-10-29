@@ -102,7 +102,7 @@ Its comparison is in `aux_fastmode/comparison_fastmode/`.
 ## Build
 
 ```bash
-bash Pipelines/build_images.sh manga_dap
+bash pipeline/runners/build_images.sh manga_dap
 ```
 
 Image: **1,853,913,965 bytes (1.85 GB)**.  Pins:
@@ -138,7 +138,7 @@ binning, not fit as a spectrum.
 The committed subset products can be reproduced in two stages:
 
 ```bash
-bash Pipelines/build_images.sh manga_dap
+bash pipeline/runners/build_images.sh manga_dap
 bash inputs/NGC1194_z_0.0136/download.sh
 
 # Stage A: official moments-only DAP

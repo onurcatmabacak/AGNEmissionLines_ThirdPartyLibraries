@@ -7,7 +7,7 @@ The independent second SED engine: the public **AGNfitter 2.0
 ## Build / run
 
 ```bash
-bash Pipelines/build_images.sh agnfitter_sed
+bash pipeline/runners/build_images.sh agnfitter_sed
 .venv/bin/python pipeline/run_new_tools.py --only 04592649654_z_0.5874 \
   --tools agnfitter_sed --force
 ```

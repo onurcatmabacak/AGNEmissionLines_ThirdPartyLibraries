@@ -6,7 +6,7 @@ The `pipeline_ir` router/fitter with a JWST/NIRSpec x1d adapter, packaged as
 ## Run
 
 ```bash
-bash Pipelines/build_images.sh nir_linefit
+bash pipeline/runners/build_images.sh nir_linefit
 .venv/bin/python pipeline/run_new_tools.py --only J0100p2802_z_6.3270 --tools nir_linefit --force
 ```
 
