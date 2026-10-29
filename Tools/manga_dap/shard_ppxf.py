@@ -26,6 +26,8 @@ from __future__ import annotations
 import os
 import sys
 
+import numpy as np
+
 _STATE = None
 _ORIGINAL = None
 
@@ -88,7 +90,9 @@ def make_sharded(original, workers):
         ctx = mp.get_context("fork")
         with ctx.Pool(processes=len(ranges)) as pool:
             parts = pool.map(_chunk, ranges)
-        out = [None] * nspec
+        # Upstream builds `numpy.empty(nspec, dtype=object)`; downstream code
+        # indexes and masks it, so return the same container type.
+        out = np.empty(nspec, dtype=object)
         for (lo, hi), part in zip(ranges, parts):
             out[lo:hi] = part
         _STATE = None

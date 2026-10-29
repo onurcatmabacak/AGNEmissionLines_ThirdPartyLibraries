@@ -662,7 +662,11 @@ def write_provenance(path: Path, source: dict, config: dict, versions: dict,
         "|---|---|---:|---|---|",
     ]
     for role, rec in inputs.items():
-        lines.append(f"| `{role}` | `{rec['path']}` | {rec['size_bytes']} | "
+        if "path" not in rec:
+            # e.g. reference_maps when --reference was not supplied
+            lines.append(f"| `{role}` | — ({rec.get('status', 'not provided')}) | — | — | — |")
+            continue
+        lines.append(f"| `{role}` | `{rec['path']}` | {rec.get('size_bytes', '')} | "
                      f"`{rec.get('sha256', '')}` | {rec.get('url', '')} |")
     lines += [
         "",
