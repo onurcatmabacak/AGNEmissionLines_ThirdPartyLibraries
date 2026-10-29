@@ -71,9 +71,16 @@ COPY Tools/manga_dap/compare_maps.py /app/run/compare_maps.py
 COPY Tools/manga_dap/manga_maps.py /app/run/manga_maps.py
 COPY Tools/manga_dap/fast_eline.py /app/run/fast_eline.py
 COPY Tools/manga_dap/run_official_subset.py /app/run/run_official_subset.py
+COPY Tools/manga_dap/shard_ppxf.py /app/shard/shard_ppxf.py
+COPY Tools/manga_dap/sitecustomize.py /app/shard/sitecustomize.py
 COPY Tools/manga_dap/README.md /app/run/README.md
 COPY Tools/manga_dap/THIRD_PARTY_LICENSES.md /app/THIRD_PARTY_LICENSES.md
 COPY configs/manga_dap/default /app/config
+
+# The pPXF shard is injected through sitecustomize (PYTHONPATH), so
+# sdss-mangadap itself is unmodified.
+ENV PYTHONPATH=/app/shard \
+    MANGADAP_SHARD_WORKERS=0
 
 WORKDIR /app/run
 RUN mkdir -p /app/input /app/output /app/reference /app/redux /app/manga/core/v1_9_1 /app/cache && \

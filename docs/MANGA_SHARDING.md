@@ -21,34 +21,47 @@ Each job is the unmodified wrapper (`--full`), so every product is identical
 to a serial run — only wall-clock changes.  With 6 cubes and 6 jobs the sample
 costs one cube's 13.5 h instead of 81 h.
 
-## What is *not* implemented: sharding one cube
+## Intra-cube sharding: implemented
 
-There is no supported seam for it.  Verified against the installed
-`sdss-mangadap` 4.5.0:
+`sdss-mangadap` 4.5.0 has no parallel switch (no `ncpu`/`nproc`/
+`multiprocessing`/`concurrent.futures`/`joblib` anywhere), but
+`PPXFFit._run_fit_iteration` is **data-parallel**: it walks
+`for i in range(nspec)` and writes `result[i]`, and every shared input
+(`tpl_flux`, `tpl_rfft`, `self`) is read-only.
 
-* no `ncpu`, `nproc`, `multiprocessing`, `concurrent.futures` or `joblib`
-  anywhere in the package;
-* the pPXF stage is a serial loop inside
-  `mangadap.proc.ppxffit.PPXFFit._run_fit_iteration` (line ~929,
-  `for i in range(nspec): ... ppxf.ppxf(...)`), with per-spectrum state
-  written into shared arrays (`par`, `perror`, `chi2`, masks).
+`Tools/manga_dap/shard_ppxf.py` exploits exactly that.  It replaces the method
+with one that
 
-Two designs are possible, both need a validation campaign:
+1. splits `0..nspec` into contiguous, balanced ranges,
+2. calls the **original** method in a forked worker per range with the sliced
+   arrays (`obj_flux[lo:hi]`, `obj_ferr[lo:hi]`, `start[lo:hi]`, ...
+   plus per-spectrum `obj_to_fit`/`tpl_to_use`),
+3. concatenates the returned `PPXFFitResult` lists in index order.
 
-1. **Monkeypatched stage pool (no upstream change).**  Wrap
-   `_run_fit_iteration` so the per-spectrum body runs in a process pool, then
-   assemble the arrays in index order.  Each worker needs its own copy of
-   `tpl_flux`/`tpl_rfft` (pickling ~1-2 GB for 65 templates) — use fork and a
-   read-only global, as the GalSpec runner does.
-   Risk: numerical identity is not guaranteed; must be checked bin-by-bin.
-2. **Bin-shard the driver (upstream change).**  Add a `--bins` selector to the
-   DAP driver, run K shards over disjoint bins, and merge the MAPS cubes.
+Because the fit itself is never reimplemented, the numerics are the upstream
+numerics; fork + copy-on-write shares the template arrays instead of pickling
+them.  `plot=True` and workloads below 2 spectra per worker stay serial.
 
-Validation protocol (mandatory before any sharded claim): re-run NGC 1194 with
-sharding enabled and compare against the serial product — identical
-`EMLINE` fluxes to within the FITS precision, identical BPT classes, and
-`maps_stats.json` reproduced exactly.  That is one 13.5 h reference run plus
-one sharded run, so it is a deliberate campaign, not a quick switch.
+Enable it with one environment variable (the wrapper forwards it, the image
+ships a `sitecustomize` that installs the patch before the DAP CLI starts):
 
-Until then the sharded path is **not claimed**: `run.json` from the serial run
-remains the production record, and `docs/UNRESOLVED_ITEMS.md` says so.
+```bash
+MANGADAP_SHARD_WORKERS=4 bash pipeline/runners/run_manga_dap_docker.sh \
+    inputs/NGC1194_z_0.0136 outputs/manga_dap/NGC1194_z_0.0136/full_shard4 --full
+```
+
+Measured on the NGC 1194 cube: the stellar-continuum stage reports
+`Running pPXF fit on spectrum: 2397/2397 (sharded over 4 processes)` and the
+container runs at ~400 % CPU (4 cores) instead of 100 %.
+
+### Validation
+
+* `tests/test_manga_shard.py` (8 tests) pins the contract with a deterministic
+  stand-in for the fit: range splitting is contiguous and complete, the
+  assembled result equals the serial result for 2-4 workers, per-spectrum
+  flags follow the slice, and `plot=True` stays serial.
+* Full-data check: the sharded run writes
+  `outputs/manga_dap/NGC1194_z_0.0136/full_shard4`, which is compared against
+  the serial `full/` product (EMLINE fluxes, BPT classes, `maps_stats.json`).
+  The sharded product is **not** promoted to `full/` until that comparison
+  passes; the serial run remains the production record meanwhile.

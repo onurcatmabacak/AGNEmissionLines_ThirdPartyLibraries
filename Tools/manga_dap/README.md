@@ -207,3 +207,14 @@ Fluxes are **1e-17 erg/s/cm²/spaxel**, velocities/dispersions **km/s**, EWs
 * BPT classes are discrete; NGC 1194 is near the Seyfert/LINER boundary.
 * Formal errors are from the DAP SASUKE covariance, not an independent error
   budget.
+
+## Parallelism
+
+* **Many cubes:** `python pipeline/run_manga_parallel.py --jobs 4 <sources...>`
+  runs independent cubes concurrently; each stays serial and official.
+* **One cube:** set `MANGADAP_SHARD_WORKERS=4` (forwarded by the runner).  The
+  pPXF stage is sliced across forked workers — `shard_ppxf.py` calls the
+  unmodified upstream `_run_fit_iteration` on `[lo:hi]` slices and concatenates
+  the results, so the numerics are unchanged.  The same env var passes through
+  `sitecustomize.py`, so sdss-mangadap itself is untouched.  `plot=True` and
+  tiny workloads stay serial.  See `docs/MANGA_SHARDING.md`.
