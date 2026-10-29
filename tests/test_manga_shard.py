@@ -17,6 +17,7 @@ TOOL = Path(__file__).resolve().parents[1] / "Tools" / "manga_dap"
 sys.path.insert(0, str(TOOL))
 
 import shard_ppxf  # noqa: E402
+import shard_emom  # noqa: E402
 
 
 def _inputs(n, nchan=8, ntpl=3):
@@ -111,3 +112,50 @@ def test_per_spectrum_flags_are_sliced():
     for index, length, shape_mask, shape_tpl in out:
         assert shape_mask == (length,), (index, shape_mask, length)
         assert shape_tpl == (length, ntpl), (index, shape_tpl, length)
+
+
+# ---------------------------------------------------------------------------
+# EMOM (emission-line moments) shard
+# ---------------------------------------------------------------------------
+class _FakeMomentsTable:
+    """Minimal stand-in for EmissionLineMomentsDataTable."""
+
+    def __init__(self, n, columns=("FLUX", "MOM1")):
+        self.keys = list(columns)
+        self._data = {k: np.zeros((n, 2)) for k in self.keys}
+        self._n = n
+
+    def __getitem__(self, key):
+        return self._data[key]
+
+    def set(self, key, values):
+        self._data[key][:] = values
+
+
+def test_emom_ranges_and_assembly():
+    """Range splitting + column-wise copy-back reproduce the serial table."""
+    import shard_emom
+
+    n = 256
+    flux = np.arange(n * 2, dtype=float).reshape(n, 2)
+
+    def original(momdb, wave, flux, ivar=None, mask=None, sres=None,
+                 continuum=None, redshift=None, bitmask=None):
+        out = _FakeMomentsTable(len(flux))
+        out.set("FLUX", np.asarray(flux) * 3.0)
+        out.set("MOM1", np.asarray(flux) + 7.0)
+        return out
+
+    class _Momdb:
+        size = 2
+
+    expected = original(_Momdb(), None, flux)["FLUX"]
+    shard_emom._new_table = lambda momdb, bitmask, n: _FakeMomentsTable(n)
+    sharded = shard_emom.make_sharded(original, 4)
+    got = sharded(_Momdb(), None, flux)
+    assert got["FLUX"].shape == expected.shape
+    assert np.array_equal(np.asarray(got["FLUX"]), np.asarray(expected))
+
+
+def test_emom_skips_small_workloads():
+    assert shard_emom.split_ranges(10, 4) == []
