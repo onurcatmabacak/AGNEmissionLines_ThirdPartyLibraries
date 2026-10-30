@@ -54,14 +54,29 @@ Measured on the NGC 1194 cube: the stellar-continuum stage reports
 `Running pPXF fit on spectrum: 2397/2397 (sharded over 4 processes)` and the
 container runs at ~400 % CPU (4 cores) instead of 100 %.
 
+Stages are selected with `MANGADAP_SHARD_STAGES` (default `ppxf`):
+
+| stage | status |
+|---|---|
+| `ppxf` | **validated** — sharded product matches the serial one bit-for-bit (worst relative line-flux difference `0.00e+00`, identical BPT census) |
+| `emom` | implemented + unit-tested, **known broken in the real pipeline**: enabling it makes the DAP stop right after the moments stage with "DAP completed without producing a MAPS file" and no exception |
+| `sasuke` | implemented + unit-tested; never reached while `emom` breaks the run, and its installer had to be fixed (`sasuke.py` binds the symbol with `from … import`, so patching `xjmc` alone is not enough) |
+
+Because of that, only `ppxf` is on by default.  **Enable `emom`/`sasuke` only
+while debugging**, and treat any product produced with them as unvalidated.
+
 ### Validation
 
 * `tests/test_manga_shard.py` (8 tests) pins the contract with a deterministic
   stand-in for the fit: range splitting is contiguous and complete, the
   assembled result equals the serial result for 2-4 workers, per-spectrum
   flags follow the slice, and `plot=True` stays serial.
-* Full-data check: the sharded run writes
-  `outputs/manga_dap/NGC1194_z_0.0136/full_shard4`, which is compared against
-  the serial `full/` product (EMLINE fluxes, BPT classes, `maps_stats.json`).
-  The sharded product is **not** promoted to `full/` until that comparison
-  passes; the serial run remains the production record meanwhile.
+* Full-data check (pPXF only): `outputs/manga_dap/NGC1194_z_0.0136/full_shard4`
+  was compared against the serial `full/` product with
+  `pipeline/compare_manga_shard.py` — **OK, worst relative line-flux difference
+  0.00e+00, identical BPT census (1945/231/83/9, 5476 spaxels)**.  Wall clock
+  13.17 h vs 13.51 h serial, i.e. only ~2.5 %: pPXF is ~7 % of the runtime, so
+  the win has to come from EMOM (~5 h) and SASUKE (~6 h), which are not usable
+  yet.
+* The serial product remains the production record; nothing sharded is
+  promoted while `emom`/`sasuke` are broken.

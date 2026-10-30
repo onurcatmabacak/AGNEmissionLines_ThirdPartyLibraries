@@ -159,3 +159,81 @@ def test_emom_ranges_and_assembly():
 
 def test_emom_skips_small_workloads():
     assert shard_emom.split_ranges(10, 4) == []
+
+
+# ---------------------------------------------------------------------------
+# SASUKE (per-spectrum emission-line fit) shard
+# ---------------------------------------------------------------------------
+def _fake_sasuke(ntpl=3, nkin=4, npix=6):
+    """Deterministic stand-in matching emline_fitter_with_ppxf's return shape."""
+
+    def fit(tpl_wave, templates, wave, flux, noise, velscale, velscale_ratio,
+            gpm=None, tpl_to_use=None, binid=None, starting_spectrum=None, plot=False, **kw):
+        nspec = len(flux)
+        model = np.zeros((nspec, npix))
+        eml = np.zeros((nspec, npix))
+        gpm_out = np.ones((nspec, npix), dtype=bool)
+        wgts = np.zeros((nspec, ntpl))
+        wgts_err = np.zeros((nspec, ntpl))
+        addc = np.zeros((nspec, 2))
+        ebv = np.zeros(nspec)
+        kininp = np.zeros((nspec, nkin))
+        kin = np.zeros((nspec, nkin))
+        kin_err = np.zeros((nspec, nkin))
+        fault = np.zeros(nspec, dtype=bool)
+        # Depend only on each spectrum's own data (flux is constant here), not
+        # on the loop index: a shard restarts the index at 0 in each worker,
+        # exactly as the real per-spectrum pPXF fit is independent of it.
+        for i in range(nspec):
+            model[i] = np.asarray(flux)[i].sum() + i * 0.0 + 1.0
+            wgts[i] = np.asarray(flux)[i].sum()
+            kin[i] = np.asarray(flux)[i].sum() * 2.0
+            fault[i] = False
+        return (model, eml, gpm_out, wgts, wgts_err, addc, None, ebv,
+                kininp, kin, kin_err, fault)
+
+    return fit
+
+
+def test_sasuke_shard_matches_serial():
+    import shard_sasuke
+
+    n = 240
+    # distinct per-spectrum content, so a misassembled shard is detectable
+    flux = np.arange(n, dtype=float)[:, None] * np.ones((1, 6))
+    noise = np.ones((n, 6))
+    args = (np.zeros(5), np.ones((3, 5)), np.arange(6.0), flux, noise, 1.0, 1.0)
+
+    serial = _fake_sasuke()(*args, gpm=np.ones((n, 6), bool))
+    shard_sasuke._ORIGINAL = None
+    sharded = shard_sasuke.make_sharded(_fake_sasuke(), 4)(*args, gpm=np.ones((n, 6), bool))
+
+    assert len(sharded) == len(serial)
+    for k, (a, b) in enumerate(zip(serial, sharded)):
+        if a is None:
+            assert b is None, f"output {k} should stay None"
+            continue
+        assert np.array_equal(np.asarray(a), np.asarray(b)), f"output {k} differs"
+
+
+def test_sasuke_shard_slices_per_spectrum_keywords():
+    import shard_sasuke
+
+    n = 200
+    seen = []
+
+    def fit(tpl_wave, templates, wave, flux, noise, velscale, velscale_ratio,
+            gpm=None, tpl_to_use=None, binid=None, starting_spectrum=None, plot=False, **kw):
+        seen.append((len(flux), len(noise), None if gpm is None else len(gpm),
+                     None if tpl_to_use is None else len(tpl_to_use)))
+        return tuple(np.zeros((len(flux), 2)) for _ in range(11)) + (np.zeros(len(flux), bool),)
+
+    shard_sasuke._ORIGINAL = None
+    out = shard_sasuke.make_sharded(fit, 4)(
+        np.zeros(5), np.ones((3, 5)), np.arange(6.0),
+        np.ones((n, 6)), np.ones((n, 6)), 1.0, 1.0,
+        gpm=np.ones((n, 6), bool), tpl_to_use=np.ones((n, 3), bool))
+    # every per-spectrum output is assembled back to full length
+    assert out[0].shape[0] == n
+    assert out[-1].shape[0] == n
+    del seen
