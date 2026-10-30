@@ -7,10 +7,10 @@
   "statistic": "cstat",
   "fit_iterations": 500,
   "xspec_chatter": 0,
-  "n_live_points": 500,
+  "n_live_points": 200,
   "evidence_tolerance": 0.5,
   "seed": 42,
-  "note": "Bayesian evidence comparison with nested sampling (UltraNest) over the same PN+MOS1+MOS2 0.5-10 keV data used by xmm_xspec. BXA builds the prior transform from the parameter list below; constants are fixed at the chi-square best fit so models are compared under one calibration. Priors are centred on the least-squares solution and are deliberately wide. Parameter names follow the PyXspec model definitions in this image (zpowerlw.Redshift, zgauss.Redshift, zxipcf.Nh/log_xi/CvrFract, pcfabs.CvrFract). TBabs/pcfabs/cabs/zxipcf column densities use XSPEC's 1e22 cm^-2 units.",
+  "note": "Bayesian evidence comparison with nested sampling (UltraNest) over the same PN+MOS1+MOS2 0.5-10 keV data used by xmm_xspec. BXA builds the prior transform from the parameter list below; constants are fixed at the chi-square best fit so models are compared under one calibration. Priors are centred on the least-squares solution and are deliberately wide. Parameter names follow the PyXspec model definitions in this image (zpowerlw.Redshift, zgauss.Redshift, zxipcf.Nh/log_xi/CvrFract, pcfabs.CvrFract). TBabs/pcfabs/cabs/zxipcf column densities use XSPEC's 1e22 cm^-2 units. The soft-excess family (plbb*) was trialled and withdrawn: with an 11-dex blackbody normalisation prior the sampler wandered into a region where the blackbody dominates and the log-likelihood falls to ~-4e5, so no evidence from that family is quoted.  sigma(Fe K-alpha) extends to 2 keV so a broad component cannot pin at the prior boundary; the broad-line Bayes factor must therefore be read as continuum-curvature-degenerate, not as a detection.",
   "models": [
     {
       "name": "pl",
@@ -53,7 +53,8 @@
           ],
           "init": 0.001
         }
-      ]
+      ],
+      "family": "pl"
     },
     {
       "name": "pl_line",
@@ -126,7 +127,8 @@
           "path": "zgauss.Redshift",
           "kind": "fixed"
         }
-      ]
+      ],
+      "family": "pl"
     },
     {
       "name": "pl_line_wide",
@@ -202,7 +204,8 @@
           "path": "zgauss.Redshift",
           "kind": "fixed"
         }
-      ]
+      ],
+      "family": "pl"
     },
     {
       "name": "warmabs",
@@ -279,7 +282,8 @@
           ],
           "init": 0.001
         }
-      ]
+      ],
+      "family": "absorbed"
     },
     {
       "name": "pcfabs",
@@ -301,8 +305,8 @@
           "index": 0,
           "kind": "log",
           "range": [
-            0.1,
-            1000.0
+            0.05,
+            100.0
           ],
           "init": 10.0
         },
@@ -341,7 +345,8 @@
           ],
           "init": 0.001
         }
-      ]
+      ],
+      "family": "absorbed"
     },
     {
       "name": "cutoffpl_cabs",
@@ -364,7 +369,7 @@
           "kind": "log",
           "range": [
             1.0,
-            10000.0
+            1000.0
           ],
           "init": 10.0
         },
@@ -398,7 +403,9 @@
           ],
           "init": 0.001
         }
-      ]
+      ],
+      "family": "absorbed"
     }
-  ]
+  ],
+  "speed": "auto"
 }

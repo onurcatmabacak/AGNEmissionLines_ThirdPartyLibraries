@@ -193,6 +193,10 @@ def run_model(product_dir: Path, products: dict, prepared: dict, cfg: dict,
         sampler_kwargs={"resume": "overwrite"},
         n_live_points=int(cfg["n_live_points"]),
         evidence_tolerance=float(cfg["evidence_tolerance"]),
+        # "auto" switches UltraNest to slice sampling after a 40k-call warm-up;
+        # "safe" (the default) is what stalled at ~2 % efficiency on the
+        # partial-covering model.
+        speed=str(cfg.get("speed", "safe")),
     )
     res = solver.results
     points = np.asarray(res["weighted_samples"]["points"], dtype=float)
@@ -216,6 +220,7 @@ def run_model(product_dir: Path, products: dict, prepared: dict, cfg: dict,
     _ = order
     return {
         "name": spec["name"],
+        "family": spec.get("family", "pl"),
         "description": spec.get("description", ""),
         "model": spec["expr"],
         "free_parameters": [t["name"] for t in transformations],
@@ -282,27 +287,42 @@ def main(argv=None) -> int:
 
     ok = [r for r in results if "log_z" in r]
     base = next((r for r in ok if r["name"] == "pl"), ok[0] if ok else None)
+    # Bayes factors are only meaningful inside one continuum family: a broad
+    # line in a power-law-only model can absorb continuum curvature.
+    family_base = {}
+    for name in ("pl", "plbb", "absorbed"):
+        fam = [r for r in ok if r.get("family") == name]
+        family_base[name] = min(fam, key=lambda r: len(r["free_parameters"]))["name"] if fam else None
+    base_by_name = {r["name"]: r for r in ok}
     for r in ok:
         r["delta_log_z_vs_pl"] = r["log_z"] - base["log_z"] if base else None
         r["bayes_factor_vs_pl"] = (
             float(np.exp(r["delta_log_z_vs_pl"])) if r["delta_log_z_vs_pl"] is not None else None
         )
+        fb = base_by_name.get(family_base.get(r.get("family")))
+        r["family_base"] = family_base.get(r.get("family"))
+        r["delta_log_z_vs_family"] = (r["log_z"] - fb["log_z"]) if fb else None
 
     # Evidence table + posterior table
     import csv
 
     with (outdir / "bxa_evidence.csv").open("w", newline="") as fh:
         w = csv.writer(fh, lineterminator="\n")
-        w.writerow(["model", "description", "log_z", "log_z_err", "delta_log_z_vs_pl",
-                    "bayes_factor_vs_pl", "n_free", "n_live", "n_calls", "runtime_sec", "status"])
+        w.writerow(["model", "family", "description", "log_z", "log_z_err", "delta_log_z_vs_pl",
+                    "delta_log_z_vs_family", "family_base", "bayes_factor_vs_pl", "n_free",
+                    "n_live", "n_calls", "runtime_sec", "status"])
         for r in results:
             if "log_z" in r:
-                w.writerow([r["name"], r["description"], f"{r['log_z']:.4f}", f"{r['log_z_err']:.4f}",
-                            f"{r['delta_log_z_vs_pl']:.4f}", f"{r['bayes_factor_vs_pl']:.4g}",
+                w.writerow([r["name"], r.get("family", ""), r["description"],
+                            f"{r['log_z']:.4f}", f"{r['log_z_err']:.4f}",
+                            f"{r['delta_log_z_vs_pl']:.4f}",
+                            "" if r.get("delta_log_z_vs_family") is None else f"{r['delta_log_z_vs_family']:.4f}",
+                            r.get("family_base") or "", f"{r['bayes_factor_vs_pl']:.4g}",
                             len(r["free_parameters"]), r["n_live"], r["n_calls"],
                             f"{r['runtime_sec']:.1f}", "ok"])
             else:
-                w.writerow([r["name"], r.get("model", ""), "", "", "", "", "", "", "", "", "failed"])
+                w.writerow([r["name"], r.get("family", ""), r.get("model", ""), "", "", "", "",
+                            "", "", "", "", "", "", "failed"])
 
     post_rows = []
     for r in ok:
