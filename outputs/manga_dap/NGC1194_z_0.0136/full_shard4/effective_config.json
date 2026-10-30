@@ -1,0 +1,1186 @@
+{
+  "configuration": {
+    "_comment": "Effective MaNGA DAP configuration for NGC 1194 (plateifu 9193-12701). The executable DAP run is Tools/manga_dap/run_manga_dap.py with this directory mounted at /app/config. plan.toml is passed verbatim to mangadap.config.analysisplan.MaNGAAnalysisPlan; config.json records the scientific choices and the reviewable metadata.",
+    "binning": {
+      "covar_mode": "matrix",
+      "key": "HYB10",
+      "note": "HYB10 hybrid binning at S/N=50 (175 bins) for the completed production validation. The official DAPTYPE string is HYB10-MILESHC-MASTARHC2; the target S/N is a config choice. The full all-spaxel target S/N=10 run (2397 bins) exceeded the time budget and was killed; see dap.full_attempt.",
+      "spatial_method": "voronoi",
+      "spectral_covar_mode": "channels",
+      "spectral_covar_par": 11,
+      "target_snr": 50.0
+    },
+    "bpt": {
+      "agn_boundary": "Kewley et al. (2001): log10([O III]/Hbeta) = 0.61/(log10([N II]/Halpha)-0.47)+1.19",
+      "classes": [
+        "star_forming",
+        "composite",
+        "seyfert",
+        "liner",
+        "agn_unclassified",
+        "unclassified"
+      ],
+      "diagnostics": [
+        "N2BPT: log10([N II] 6584 / Halpha) vs log10([O III] 5007 / Hbeta)",
+        "S2BPT: log10([S II] 6716+6731 / Halpha) vs log10([O III] 5007 / Hbeta)"
+      ],
+      "seyfert_liner_boundary": "Kewley et al. (2006): log10([O III]/Hbeta) = 1.05 + 0.45*log10([S II]/Halpha); above this line is LINER-like, below is Seyfert-like",
+      "star_forming_boundary": "Kauffmann et al. (2003): log10([O III]/Hbeta) = 0.61/(log10([N II]/Halpha)-0.05)+1.30"
+    },
+    "comparison": {
+      "metrics": [
+        "per-spaxel flux ratio and fractional difference",
+        "Pearson correlation",
+        "median offset and robust scatter",
+        "formal-error ratio",
+        "BPT class agreement",
+        "stellar and gas kinematics offsets"
+      ],
+      "reference": "published SDSS DAP MAPS v3_1_1/3.1.0 HYB10-MILESHC-MASTARHC2",
+      "reference_file": "inputs/NGC1194_z_0.0136/raw/manga-9193-12701-MAPS-HYB10-MILESHC-MASTARHC2.fits.gz",
+      "validity": "Only spaxels with finite, positive flux and zero DAP mask bits in both products are compared. Spaxels are correlated by the HYB10 binning, so the number of independent measurements is the number of bins, not the number of spaxels."
+    },
+    "continuum": {
+      "artifact_mask": "BADSKY",
+      "emission_line_mask": "ELPSCMSK",
+      "fit_method": "ppxf",
+      "key": "MILESHC",
+      "matched_resolution": true,
+      "minimum_snr": 1.0,
+      "moments": 2,
+      "note": "Stellar kinematics: pPXF with the MILES-HC library, 4x velocity-scale ratio, additive polynomial degree 8, no multiplicative polynomial.",
+      "template_file_search": "miles_cluster/*.fits",
+      "template_library": "MILESHC",
+      "velscale_ratio": 4
+    },
+    "dap": {
+      "analysis_stages": [
+        "rdxqa",
+        "binning",
+        "continuum",
+        "eline_moments",
+        "indices",
+        "sasuke_full_method_subset"
+      ],
+      "dap_code_version": "4.5.0",
+      "daptype": "HYB10-MILESHC-MASTARHC2",
+      "drp_version": "v3_1_1",
+      "full_attempt": {
+        "attempt": "full 65-template MaStar-HC2 EmissionLineModel on 2397 bins",
+        "blocker": "The all-spaxel survey emission-line stage is not viable on this 8-core host within the budget. The completed 175-bin S/N=50 fast/central-bin run plus the published official MAPS is the acceptance product.",
+        "cpu": "100% of one core",
+        "daptype": "HYB10-MILESHC-MASTARHC2",
+        "n_bins": 2397,
+        "progress": "reached Fitting spectrum 157/2397; killed by 3500 s cap",
+        "status": "did_not_complete",
+        "target_snr": 10,
+        "wall_time_minutes": 58
+      },
+      "input_product": "LOGCUBE",
+      "note": "The full manga_dap() workflow is executed. The published v3_1_1/3.1.0 MAPS is used only as an independent reference for comparison.",
+      "output_products": [
+        "MAPS",
+        "LOGCUBE model"
+      ],
+      "plan_file": "plan.toml",
+      "plan_file_moments": "plan_moments.toml",
+      "plan_file_subset": "plan_subset.toml",
+      "production_mode": "Official DAP Stage A (rdxqa + HYB10/S/N=50 binning + pPXF + EMOM + INDXEN) and official full-method SASUKE on the 9 central single-spaxel bins. The all-spaxel 2397-bin 65-template EmissionLineModel exceeded the 58 min budget and was killed; the published official MAPS is the all-spaxel reference. The fast fixed-continuum all-spaxel mode is auxiliary only.",
+      "reference_product_version": "3.1.0"
+    },
+    "emission_line_fit": {
+      "artifact_mask": "BADSKY",
+      "deconstruct_bins": "binid",
+      "etpl_line_sigma_min_kms": 10.0,
+      "etpl_line_sigma_mode": "offset",
+      "fit_method": "sasuke",
+      "key": "EFITHC2",
+      "line_database": "ELPMPL11",
+      "line_database_file": "mangadap/data/emission_lines/elpmpl11.par",
+      "mdegree": 14,
+      "note": "Single-Gaussian per line (with the DAP multiplet ties and fixed flux ratios from elpmpl11.par), fitted simultaneously over the full spectral window with the stellar continuum fixed from the pPXF model. No broad-line, Fe II or Balmer-continuum component is present in the DAP model; this is a narrow-line DAP, not a QSO broad-line fitter.",
+      "reject_boxcar": 101,
+      "template_file_search": "mastarhc_v2/*.fits.gz",
+      "template_library": "MASTARHC2",
+      "velscale_ratio": 1
+    },
+    "emission_line_moments": {
+      "artifact_mask": "BADSKY",
+      "key": "EMOM",
+      "note": "Non-parametric moments are measured for every line in the database as a model-independent cross-check on the Gaussian fits."
+    },
+    "fast_eline": {
+      "acceptance": false,
+      "continuum": "official DAP pPXF stellar-continuum model, supplied as a fixed per-spectrum template",
+      "enabled": false,
+      "ensemble": false,
+      "fitclass": "mangadap.proc.sasuke.Sasuke",
+      "line_database": "ELPMPL11",
+      "mdegree": 14,
+      "n_bins_fit": 175,
+      "note": "Fast fixed-continuum all-spaxel mode. Rejected as production: biased H-alpha/[N II]/[S II], BPT agreement 41%, gas velocity offset +175 km/s. Retained only in aux_fastmode/ with FITS headers QUALITY=FASTMODE_NOT_PRODUCTION, ACCEPT=0.",
+      "nproc": 8,
+      "plan_file": "plan_moments.toml",
+      "quality_flag": "FASTMODE_NOT_PRODUCTION",
+      "rejection_metrics": {
+        "bpt_agreement_fraction": 0.408,
+        "gas_velocity_ha_offset_kms": 175.5,
+        "ha_median_ratio": 2.37,
+        "hb_median_ratio": 0.89,
+        "nii_6584_median_ratio": 0.53,
+        "oiii_5007_median_ratio": 1.01
+      },
+      "role": "auxiliary only",
+      "target_snr": 50.0,
+      "template_library": "per-spectrum pPXF model (not the 65-template MaStar-HC2 library)"
+    },
+    "limitations": [
+      "Only the 9 central single-spaxel HYB10 bins are measured with the official full-method SASUKE. This is not a spatially complete IFU map; the published official MAPS is the all-spaxel reference.",
+      "The full all-spaxel 2397-bin 65-template EmissionLineModel did not complete within the 58 min wall-clock budget and was killed; no all-spaxel DAP MAPS was produced by this repository.",
+      "The fast fixed-continuum all-spaxel mode is auxiliary only and is rejected as production (H-alpha ratio 2.37, [N II] 0.53, BPT agreement 41%, gas velocity offset +175 km/s).",
+      "The DAP is a narrow-line single-Gaussian model. It does not fit broad Balmer lines, Fe II, Balmer continuum or AGN outflows.",
+      "Gaussian line fluxes are integrated over the DAP fit window and tied multiplets; they are not aperture-corrected.",
+      "No extinction correction is applied to the DAP line fluxes.",
+      "The published MAPS was produced with DAP 3.1.0; this run uses 4.5.0, so the comparison is a code-version cross-check, not a bit-for-bit reproduction.",
+      "BPT classes are discrete and boundary-sensitive; NGC 1194 sits near the Seyfert/LINER boundary."
+    ],
+    "line_database": {
+      "channel_file": "line_database.csv",
+      "key": "ELPMPL11",
+      "key_lines": {
+        "Halpha": "Ha-6564",
+        "Hbeta": "Hb-4862",
+        "NII_6584": "NII-6585",
+        "OIII_5007": "OIII-5008",
+        "SII_6716": "SII-6718",
+        "SII_6731": "SII-6732"
+      },
+      "n_channels": 35,
+      "note": "Some channels are tied: [O III] 4959 is tied to 5007 at 0.35, [N II] 6548 is tied to 6584 at 0.34, [S II] 6716/6731 are independent, and the [O I] 6300/6364 pair is tied at 0.32. The tied channels are still reported by the DAP.",
+      "wavelength_reference": "vacuum",
+      "wavelength_source": "NIST Ritz wavelengths as distributed in mangadap/data/emission_lines/elpmpl11.par"
+    },
+    "metadata": {
+      "ebv_galactic": 0.0764222,
+      "ell": 0.304294,
+      "metadata_are_initial_values": true,
+      "pa_deg": 143.959,
+      "reff_arcsec": 14.8759,
+      "source": "z from NSA; ell=1-NSA_ELPETRO_BA, pa=NSA_ELPETRO_PHI, reff=NSA_ELPETRO_TH50_R; vdisp not available in DRPall and left at the DAP default 100 km/s; E(B-V) from the LOGCUBE EBVGAL header keyword.",
+      "vdisp_kms_initial": 100.0,
+      "z": 0.0136253
+    },
+    "source": {
+      "catalog": "MaNGA AGN Catalog VAC (Comerford et al. 2020)",
+      "dec_deg": -1.10375,
+      "ifu_design": 12701,
+      "key": "NGC1194_z_0.0136",
+      "morphology": "SA(s)0/a? Sy2",
+      "name": "NGC 1194",
+      "plate": 9193,
+      "plateifu": "9193-12701",
+      "ra_deg": 45.954624,
+      "urls": {
+        "manga_cube": "https://data.sdss.org/sas/dr17/manga/spectro/redux/v3_1_1/9193/stack/manga-9193-12701-LOGCUBE.fits.gz",
+        "manga_maps_reference": "https://data.sdss.org/sas/dr17/manga/spectro/analysis/v3_1_1/3.1.0/HYB10-MILESHC-MASTARHC2/9193/12701/manga-9193-12701-MAPS-HYB10-MILESHC-MASTARHC2.fits.gz",
+        "manga_rss": "https://data.sdss.org/sas/dr17/manga/spectro/redux/v3_1_1/9193/stack/manga-9193-12701-LOGRSS.fits.gz"
+      },
+      "z": 0.0136253,
+      "z_reference": "NSA v1_0_1 via SDSS DR17 DRPall v3_1_1"
+    },
+    "subset": {
+      "acceptance": true,
+      "comparison": {
+        "bpt_agreement": "9/9",
+        "ha_median_ratio": 0.99985,
+        "hb_median_ratio": 0.9995,
+        "kinematics": {
+          "ha_sigma_offset_kms": -0.016,
+          "ha_vel_offset_kms": 0.001,
+          "n_bins": 9,
+          "stellar_sigma_offset_kms": -0.0004,
+          "stellar_vel_offset_kms": 0.0001
+        },
+        "nii_6584_median_ratio": 0.99986,
+        "oiii_5007_median_ratio": 0.99999,
+        "sii_6716_median_ratio": 0.99997,
+        "sii_6731_median_ratio": 0.99999
+      },
+      "enabled": true,
+      "fit_method": "official mangadap EmissionLineModel + Sasuke (65 MaStar-HC2 templates, ELPMPL11, mdegree=14, deconstruct_bins=ignore)",
+      "n_bins": 9,
+      "note": "Selected central 3x3 single-spaxel bins; not a spatially complete map.",
+      "plan_file": "plan_subset.toml",
+      "runtime_seconds": 393.4,
+      "selected_binids": [
+        97,
+        57,
+        0,
+        107,
+        110,
+        1,
+        94,
+        101,
+        120
+      ]
+    },
+    "templates": {
+      "MASTARHC2": {
+        "file_search": "mastarhc_v2/*.fits.gz",
+        "in_vacuum": true,
+        "log10": true,
+        "source": "bundled in the sdss-mangadap 4.5.0 wheel under mangadap/data/spectral_templates/mastarhc_v2",
+        "sres_ext": "SRES"
+      },
+      "MILESHC": {
+        "file_search": "miles_cluster/*.fits",
+        "fwhm_arcsec": 2.5,
+        "in_vacuum": false,
+        "log10": false,
+        "source": "bundled in the sdss-mangadap 4.5.0 wheel under mangadap/data/spectral_templates/miles_cluster",
+        "wave_limit_A": [
+          3575.0,
+          7400.0
+        ]
+      },
+      "hash_record": "effective_config.json records the SHA-256 of every template, line-database and artifact file actually read by the DAP."
+    },
+    "tool": "manga_dap",
+    "uncertainty": {
+      "bpt_error_note": "BPT positions use the DAP Gaussian fluxes. Classification boundaries are applied to the central value; no probabilistic class membership is claimed.",
+      "flux_error": "1/sqrt(EMLINE_GFLUX_IVAR)",
+      "mcmc": false,
+      "mcmc_note": "The MaNGA DAP is not an MCMC sampler. Errors are the formal covariance propagated by the DAP; they do not include model-systematic scatter.",
+      "minimum_error": "numpy.finfo(numpy.float32).eps (DAP default)",
+      "mode": "formal least-squares covariance from the DAP SASUKE fit",
+      "ratio_error": "analytic propagation from the two Gaussian flux errors, ignoring covariance between lines from the same fit",
+      "sigma_error": "1/sqrt(EMLINE_GSIGMA_IVAR)",
+      "velocity_error": "1/sqrt(EMLINE_GVEL_IVAR)"
+    },
+    "upstream": {
+      "citation": "Westfall et al. 2019 (AJ 158, 231); Belfiore et al. 2019 (AJ 158, 160)",
+      "license": "BSD-3-Clause",
+      "package": "sdss-mangadap",
+      "repo": "https://github.com/sdss/mangadap",
+      "version": "4.5.0"
+    },
+    "variant": "default"
+  },
+  "dap_data_manifest": {
+    "dap_data_root": "/usr/local/lib/python3.12/site-packages/mangadap/data",
+    "groups": {
+      "MASTARHC2_templates": {
+        "directory": "data/spectral_templates/mastarhc_v2",
+        "files": [
+          {
+            "md5": "a8a82f35e1a3bd8673804aa1a4050212",
+            "name": "MaStarHC_00.fits.gz",
+            "sha256": "8fac70fd69decd48e9471b68953d3bc4054550083615202ba72d7b72b18063f3",
+            "size_bytes": 102315
+          },
+          {
+            "md5": "434cf839fc482c460cc2b5569defa79f",
+            "name": "MaStarHC_02.fits.gz",
+            "sha256": "3fd9d8b7f4d569244d369938a24d1607b57ef13b612f2242bbf7f7ae8802a50a",
+            "size_bytes": 102413
+          },
+          {
+            "md5": "923322c8dd87a4ef836695af702a6310",
+            "name": "MaStarHC_03.fits.gz",
+            "sha256": "9a8db554c18d826c5eb94c4d45675d1bfcbfdc29cc7e4434ef347ab4f5e4286d",
+            "size_bytes": 101891
+          },
+          {
+            "md5": "5f370249ae7c426e1fa14c057603f68a",
+            "name": "MaStarHC_06.fits.gz",
+            "sha256": "ca7bc1c8a1fad59a24b7d5b25af84b83e93915143d4a8b3e3bf7aa481191eada",
+            "size_bytes": 102431
+          },
+          {
+            "md5": "db9330a980abc88bc50cb607236dfabb",
+            "name": "MaStarHC_08.fits.gz",
+            "sha256": "86073da8af070901cf0923568e4fc76cfbbf6d835b0b2fd696b7a7cae805f6b4",
+            "size_bytes": 102215
+          },
+          {
+            "md5": "133886849e801955023e38d58dce67f4",
+            "name": "MaStarHC_09.fits.gz",
+            "sha256": "f5a72a536904df5695966acee82d56ae964eb7c2ebdb786a7293d08419bc5b1f",
+            "size_bytes": 102028
+          },
+          {
+            "md5": "d281fa63e16e7cce5b32f01b93f6fcb7",
+            "name": "MaStarHC_11.fits.gz",
+            "sha256": "511e1e4505e00c45166204832cdeadd8101b2f1f8a5d3167f3160eb65fc6c9f2",
+            "size_bytes": 101435
+          },
+          {
+            "md5": "d9fd49293be3db6148bf80d238c29675",
+            "name": "MaStarHC_12.fits.gz",
+            "sha256": "a1eee2cce90d3fa71a0f5c6849c58a5c31d6596b45d393f1da0df12e2a3b4d01",
+            "size_bytes": 101687
+          },
+          {
+            "md5": "08ddf18c7fad397301b4db55b7b118cd",
+            "name": "MaStarHC_13.fits.gz",
+            "sha256": "3da90da6c84fd5e9aae15186aae0aa190b19f7d505d0c82e4e9b2bbe7764c1d6",
+            "size_bytes": 101578
+          },
+          {
+            "md5": "5051252daf4a25791b309eb0ce7c459f",
+            "name": "MaStarHC_14.fits.gz",
+            "sha256": "83fd4abd64406957fc0269f3c9aa28782d14262237cb081229375c7566951501",
+            "size_bytes": 101529
+          },
+          {
+            "md5": "2335a37fd85a669b3df6cceb10264def",
+            "name": "MaStarHC_15.fits.gz",
+            "sha256": "63eb549eee66451b9f68567e530cb38a1cfe6d3c6a10372d9f9c67ec786348cd",
+            "size_bytes": 101444
+          },
+          {
+            "md5": "782a0bf414bf44b27740ee8bc68f3db2",
+            "name": "MaStarHC_16.fits.gz",
+            "sha256": "0f857f557bde60c2333071fdde5f699917fde45dd58230f5f2a2e9be4f88f91f",
+            "size_bytes": 101389
+          },
+          {
+            "md5": "b29f004def685ba2549e203ca41751d6",
+            "name": "MaStarHC_17.fits.gz",
+            "sha256": "2ea010bc12cfff210213c244e2bc5d95839a77fd41b40f25ff37e2fd7125c7d3",
+            "size_bytes": 101584
+          },
+          {
+            "md5": "1c180bcb4880e1892dbb3a8e19e60541",
+            "name": "MaStarHC_19.fits.gz",
+            "sha256": "8815c772f97091a51399f34858f90018085a232ec9bf888dd5178c94f14c8f5b",
+            "size_bytes": 101484
+          },
+          {
+            "md5": "3d7cb214cd432c87a7ce22b40ea1fa7d",
+            "name": "MaStarHC_22.fits.gz",
+            "sha256": "1577267d7c5777457fe543f07e9ac315e73dc4086a1f11306b0be77931bae520",
+            "size_bytes": 101866
+          },
+          {
+            "md5": "a17e311ae7aaab499fe29f198602771b",
+            "name": "MaStarHC_23.fits.gz",
+            "sha256": "e6dc2272a4eafaeb1b2c4ca8c030803f579b73b7d1b5dd684d18c909feab09f3",
+            "size_bytes": 101706
+          },
+          {
+            "md5": "8460196b37f0caa223c6994955854cda",
+            "name": "MaStarHC_26.fits.gz",
+            "sha256": "55acacb1a8f079e39810eb10e1bc9b7a08c1cdc0316ba26ebadd12ba224451d9",
+            "size_bytes": 101799
+          },
+          {
+            "md5": "650686df7fac8b3e7c8051d73b2da95e",
+            "name": "MaStarHC_27.fits.gz",
+            "sha256": "f7093abdb1c4276ce7ea69d0d07811d1ba1e7326e03585ed51c5c411f4350b0e",
+            "size_bytes": 101907
+          },
+          {
+            "md5": "7bc64502388d145d8767de337b24a93b",
+            "name": "MaStarHC_29.fits.gz",
+            "sha256": "596b668fde392fa499449ed563baf5f8bba414815c3ace6f27f83f0d1d15cc1c",
+            "size_bytes": 101642
+          },
+          {
+            "md5": "1cacc096952c896896adcba637217ec6",
+            "name": "MaStarHC_30.fits.gz",
+            "sha256": "036d47ad2a381ab3022d8bfe9a5a0cf1173edab0f579744424a6befabb396810",
+            "size_bytes": 101834
+          },
+          {
+            "md5": "93f3602945ea00435ae51a6fb0c6edeb",
+            "name": "MaStarHC_33.fits.gz",
+            "sha256": "c0ae904ea47d53727187688ae6d660a9ac7dd00a0683b4e97120ec819c887eb2",
+            "size_bytes": 101739
+          },
+          {
+            "md5": "287f9cd6b0e29f12edc1402e31ea4648",
+            "name": "MaStarHC_35.fits.gz",
+            "sha256": "046379ef12fd6f4393c9d7ccc9e2600942458564ae1806624997e9c62f02cc71",
+            "size_bytes": 101845
+          },
+          {
+            "md5": "c3228e6240297fe23bc152b786fd7cb7",
+            "name": "MaStarHC_36.fits.gz",
+            "sha256": "a8a3de0cf1ca314f3235584eb160c198ad6e0e2c6d761084a9d3c860235a2855",
+            "size_bytes": 101860
+          },
+          {
+            "md5": "5c02e37cedfe220778d44a11885b2eee",
+            "name": "MaStarHC_37.fits.gz",
+            "sha256": "1c78b95b1b6408084e07b55f79b0e576c669bc3678f9146a63684fec880f4530",
+            "size_bytes": 101516
+          },
+          {
+            "md5": "949a5a6c24578d8be79b18a6cb91773b",
+            "name": "MaStarHC_38.fits.gz",
+            "sha256": "ef885d087f6e3071049d07d11f87f462f824ae1bf768bbf99ca0354ebac14aa2",
+            "size_bytes": 101487
+          },
+          {
+            "md5": "9577115bfbf4c8b39312b67c1600c1d7",
+            "name": "MaStarHC_39.fits.gz",
+            "sha256": "c4e637353f4d67ba66b15fa7b165f80f5d7ffa84ee8ce891ff50dca0aa50d7c7",
+            "size_bytes": 101610
+          },
+          {
+            "md5": "44eb62be98d357671c2a27d2e070cb9c",
+            "name": "MaStarHC_40.fits.gz",
+            "sha256": "f519afae75dffb1fa7a33f42286739373d8bd3584bdf41ff5d1eca05d7c9c2ef",
+            "size_bytes": 101712
+          },
+          {
+            "md5": "e3f7f63616c6def6a8246dabcd9f5b86",
+            "name": "MaStarHC_42.fits.gz",
+            "sha256": "b9de99eaf49585b3e1570d6152a3891115f7910a2cd01deeb87a94b9143e3e80",
+            "size_bytes": 101320
+          },
+          {
+            "md5": "cb62e6830bdb288e1c3b17ee49b44f9f",
+            "name": "MaStarHC_43.fits.gz",
+            "sha256": "3a74b67d81159d898d2cef00547f8be372771c681518517dccd99bce20173b6f",
+            "size_bytes": 101027
+          },
+          {
+            "md5": "a63f7130f1f8700af62daa697301b49f",
+            "name": "MaStarHC_44.fits.gz",
+            "sha256": "ac295de2264b1f7680ee0e429d4a5dd3fed0b0f2e252be3f0aa077e970da0842",
+            "size_bytes": 101145
+          },
+          {
+            "md5": "af91d2de57e5e22ee2e46f035da86e0f",
+            "name": "MaStarHC_45.fits.gz",
+            "sha256": "27996781c3dec2a8e7c5bff3f2804bd8bc598b00a2452f127d2cf4442899c8ac",
+            "size_bytes": 101074
+          },
+          {
+            "md5": "9918279f85219c6ad6c9c15a897270fe",
+            "name": "MaStarHC_46.fits.gz",
+            "sha256": "1c6ff8e894000b574c05c61fdea56a4837d33e425abfca0c17df11e38da4099e",
+            "size_bytes": 101473
+          },
+          {
+            "md5": "fabc577fc77c4bb66671ea8152e3952b",
+            "name": "MaStarHC_47.fits.gz",
+            "sha256": "44bd88bd9bb26ff88b4877f3d6a36956f5561bdc91c0a4a6f74b7e38b5ce6595",
+            "size_bytes": 101350
+          },
+          {
+            "md5": "49be5a467d55e58bc738427aa2b75001",
+            "name": "MaStarHC_48.fits.gz",
+            "sha256": "5901bff142eafd94a9b033f707a3f6f4d9f004a0cd44572d1296f3c8a36e6f8a",
+            "size_bytes": 101295
+          },
+          {
+            "md5": "2f1cefc95ffd5d30aab03a0ddaaeb455",
+            "name": "MaStarHC_49.fits.gz",
+            "sha256": "ad6142c5c68edc4bc6f6b91f83f2970ce78cdd6f1c34843b1e1557512a19c522",
+            "size_bytes": 101258
+          },
+          {
+            "md5": "e9c4d614dc85865daec268c8d7a1fb62",
+            "name": "MaStarHC_51.fits.gz",
+            "sha256": "9464b08dde0122a65e5a97a569acadf20802372bd8364a97d9d61f3861ad29b5",
+            "size_bytes": 101122
+          },
+          {
+            "md5": "5e8532637786ba0ec9177904e225c2d5",
+            "name": "MaStarHC_56.fits.gz",
+            "sha256": "aa98c5298447a783b3cdcd23ff1f15a76e7aa883914dba8e60be3390d2e895cd",
+            "size_bytes": 101227
+          },
+          {
+            "md5": "c38ddc598dfc1e28db88d59680823cd8",
+            "name": "MaStarHC_57.fits.gz",
+            "sha256": "90210eadf0d181460ec9974abca1d71f395016f593a20822055eb904143f1864",
+            "size_bytes": 101478
+          },
+          {
+            "md5": "b3379b020fa6a33569a2376c0a3e4a51",
+            "name": "MaStarHC_58.fits.gz",
+            "sha256": "48be3c3f77afb2c716569620286292c544095c315347d5bd66084c0e12d4601a",
+            "size_bytes": 101445
+          },
+          {
+            "md5": "2b47876240fcf81b30f3bb4074152a73",
+            "name": "MaStarHC_59.fits.gz",
+            "sha256": "12ffddbfb8342e2cf07ee2b28095d7cfdc448a478f5fa926968550af3a74a179",
+            "size_bytes": 101424
+          },
+          {
+            "md5": "248e1a3c5385e7cd074d3d334b9ae683",
+            "name": "MaStarHC_60.fits.gz",
+            "sha256": "83380c92d7fa8021e1163dc2795920138c7f8ba21b83a609c74af4bcfa41f2c2",
+            "size_bytes": 101345
+          },
+          {
+            "md5": "dfb4bd2e12fffc6f5bcf56b70b16dad1",
+            "name": "MaStarHC_66.fits.gz",
+            "sha256": "5d1f0408dcca7a6a98ae73818e1c4dbc8fc91226e0957d83f1fc698f9942f9dd",
+            "size_bytes": 102286
+          },
+          {
+            "md5": "a80ab9aaee3fdb09bc9bb937b5c4e023",
+            "name": "MaStarHC_67.fits.gz",
+            "sha256": "b9511041895964f826509217dfca5b90575e202071d56795eeb01b7029a3cb4d",
+            "size_bytes": 102093
+          },
+          {
+            "md5": "d56397231a60c151aecbd0ae6d1f3e04",
+            "name": "MaStarHC_68.fits.gz",
+            "sha256": "dbc9aec126f2d1fe0c613c105476007e14d3ed9a06098fa6c4e1580b2768f3fe",
+            "size_bytes": 102160
+          },
+          {
+            "md5": "26b4e1e0bee2cdb9eb36d4191e3962c2",
+            "name": "MaStarHC_70.fits.gz",
+            "sha256": "e8257f79ca51b6b212e115d774e663a289ae2a52df1f3ad03874808cc703bbeb",
+            "size_bytes": 101949
+          },
+          {
+            "md5": "5ab37a2b4a1d87037964c18345f26e39",
+            "name": "MaStarHC_71.fits.gz",
+            "sha256": "03c96d4e3a5c49a30289e4730cfa9edeba34ce6ef4232ada62b655a445322685",
+            "size_bytes": 101956
+          },
+          {
+            "md5": "7ca945d0e989f99c955f967ff5766912",
+            "name": "MaStarHC_74.fits.gz",
+            "sha256": "82db4a3b117814df6f019ce1fd4a8467764c962163f5ce8ec7c864bf2707d8ad",
+            "size_bytes": 101902
+          },
+          {
+            "md5": "307ad146c07dea92c49aefc7e664e8a1",
+            "name": "MaStarHC_75.fits.gz",
+            "sha256": "6f5023279693214dc414199cf7222de287cca8d906b366ca133dbf73a4c93fd6",
+            "size_bytes": 101930
+          },
+          {
+            "md5": "d2cfb68a351b9b1d79edbcc101a95654",
+            "name": "MaStarHC_76.fits.gz",
+            "sha256": "b79dd3e2fc084e895d61ae9e0a10bda96e3a7a62207077f5adf5b160a5f6ca94",
+            "size_bytes": 101727
+          },
+          {
+            "md5": "a11ad2791101e9645e93a3c914b5ba5c",
+            "name": "MaStarHC_77.fits.gz",
+            "sha256": "f142aa911d8b20ca2ec8297400e6cc524d05d1234fc0ee9e068cdc13eed3ead2",
+            "size_bytes": 101876
+          },
+          {
+            "md5": "24455d733ada0e5dda5a05a5b7294620",
+            "name": "MaStarHC_78.fits.gz",
+            "sha256": "7dd5133f29b20734821453e8f77100f3bcb18c15bbb0c09697de47c1a41f77e9",
+            "size_bytes": 102061
+          },
+          {
+            "md5": "9482c892ae830a80b8d17e3345a3ab7c",
+            "name": "MaStarHC_79.fits.gz",
+            "sha256": "2a81776b365874902b7bf23457da287ccfc0739860756670da9e114704fb4f70",
+            "size_bytes": 101979
+          },
+          {
+            "md5": "0b57d27f5233184fba21570424812671",
+            "name": "MaStarHC_80.fits.gz",
+            "sha256": "3b0c2b3518764816ad9f06fc6632f1a6d26ccabd216afb9467ba076391eb9a9b",
+            "size_bytes": 101880
+          },
+          {
+            "md5": "30e4cb2d3f6591c9b12ad24d4a30d381",
+            "name": "MaStarHC_81.fits.gz",
+            "sha256": "560418bd2b7f389c88a4fc352cdfcc55175a294f471a14377384f4a28d7eac95",
+            "size_bytes": 101932
+          },
+          {
+            "md5": "e807766c1b671dd5b9ad62a4606d83ba",
+            "name": "MaStarHC_82.fits.gz",
+            "sha256": "831d02160f431056e483ac83dda163674f391397896e5f6aa6c2c7edade0b79c",
+            "size_bytes": 101994
+          },
+          {
+            "md5": "5f9c0b1e6b9bb66138d18db6573cfad5",
+            "name": "MaStarHC_84.fits.gz",
+            "sha256": "40b7b949700f09289932202a9ee550281a9fd799bbfad38867faa225f588c2b6",
+            "size_bytes": 101871
+          },
+          {
+            "md5": "774e1e9fa7da85492c26ac5bb7f454eb",
+            "name": "MaStarHC_85.fits.gz",
+            "sha256": "e6d636978ed9e5d8d8b5a61f90e44a323d00133e755c34e83b9982c04bfc11ac",
+            "size_bytes": 101711
+          },
+          {
+            "md5": "9cd0eb1ca5a562fb5bd6dd99c912b2ec",
+            "name": "MaStarHC_86.fits.gz",
+            "sha256": "f4c9ac2b5800825eed264ce5165aad24c79ba38d79a3d1eab37f8647a3577018",
+            "size_bytes": 101816
+          },
+          {
+            "md5": "4e69d7178c3ea9645fbbfe6f54715b02",
+            "name": "MaStarHC_87.fits.gz",
+            "sha256": "ba00c2f586018261d21f0a7517c791d33e6a06277b44c0483527220b1376b515",
+            "size_bytes": 101852
+          },
+          {
+            "md5": "0d0df5af0892b8eb4dbcccc0a1a664b6",
+            "name": "MaStarHC_88.fits.gz",
+            "sha256": "7ecbe61e3c27f40299a27993114417281eb8880b4df0cac03449c54ed635f638",
+            "size_bytes": 101712
+          },
+          {
+            "md5": "3d3d17ee46d235044360b9f11c8c89d0",
+            "name": "MaStarHC_90.fits.gz",
+            "sha256": "0fa17c3da4bc8a611ce8c403c885cf8fc338b0ac09a6d5f9668c29caca592a7f",
+            "size_bytes": 101269
+          },
+          {
+            "md5": "e5d44b54771734fd1c2527a715742674",
+            "name": "MaStarHC_96.fits.gz",
+            "sha256": "511a936a8efe590e18f93ccd665ec2a04d048262be4238265e6b88396d6677b2",
+            "size_bytes": 102143
+          },
+          {
+            "md5": "7ebfab65378bde46946c91b35706453a",
+            "name": "MaStarHC_97.fits.gz",
+            "sha256": "bdd21e405c13d46086d9c2fcbb147319ac310eddfbed960a7a205676b26482c4",
+            "size_bytes": 101825
+          },
+          {
+            "md5": "4549cc0d8c7d597383af3b33122435b7",
+            "name": "MaStarHC_98.fits.gz",
+            "sha256": "697552ebd0c7231f37bec027e17a300540dd736063cd729a124d180342c2d917",
+            "size_bytes": 101948
+          },
+          {
+            "md5": "50eb5f3a0b5101d777fe40f4547c21c1",
+            "name": "MaStarHC_99.fits.gz",
+            "sha256": "8f143895f9d19472be970ee63f0978821db36769a4af51a3bee867f98faf5428",
+            "size_bytes": 101277
+          },
+          {
+            "md5": "28efcc141190c61213fa8a98e1597389",
+            "name": "README",
+            "sha256": "ea58e263fd7ccff8fdedef840b2c3e000e86b41b2fe14ef1e5781bd70364c3fb",
+            "size_bytes": 108268
+          },
+          {
+            "md5": "34e6266401ec6c2407d3f26e9d03741e",
+            "name": "mastarhc2_fluxes.db",
+            "sha256": "7520ed8d11bc4160d76d2e87a9dbefa3fc277791753f3e3bc139e8abfa432436",
+            "size_bytes": 5676
+          }
+        ],
+        "n_files": 67
+      },
+      "MILESHC_templates": {
+        "directory": "data/spectral_templates/miles_cluster",
+        "files": [
+          {
+            "md5": "d852f81f9d8f314e0041281b28e50fcb",
+            "name": "MILES_cluster_group_01.fits",
+            "sha256": "c912d9f58c74690ab50948e5cddb31535b7fb87b826965ffdc0089e82c4931b8",
+            "size_bytes": 37440
+          },
+          {
+            "md5": "f51a9de88095fb68fa1e136769544848",
+            "name": "MILES_cluster_group_02.fits",
+            "sha256": "4c5f749d6dce3ddbbbfe22af213bd46dc07df1a46dcb35842e34ca737d1b281c",
+            "size_bytes": 37440
+          },
+          {
+            "md5": "bec2b2d6467bd058f59fa57a1e89a464",
+            "name": "MILES_cluster_group_03.fits",
+            "sha256": "8988f8eb334fa51c7144d3607617097f6123dc0097c3845f362c10e12765a3ac",
+            "size_bytes": 37440
+          },
+          {
+            "md5": "d145feda5240b8b2814d83f977668a25",
+            "name": "MILES_cluster_group_04.fits",
+            "sha256": "efc139c2750f135c4b9666ac4d53e701a2b38688debe47492716e84ee54338e2",
+            "size_bytes": 37440
+          },
+          {
+            "md5": "fbea42e738eda8f2caf64a3acde7a37a",
+            "name": "MILES_cluster_group_05.fits",
+            "sha256": "2ac83a918fa6006ce59e2902efcf71cddee25419d9c03fc2891f77738e0a13ae",
+            "size_bytes": 37440
+          },
+          {
+            "md5": "f446a75c9010354e9c8b57fc72826095",
+            "name": "MILES_cluster_group_06.fits",
+            "sha256": "d746c9226d44a05c38f9edc24e17ec71f58be4ccf7c6e3e37b8172208a660a45",
+            "size_bytes": 37440
+          },
+          {
+            "md5": "2f280b1452d9dbbb92fd79be61c8cc28",
+            "name": "MILES_cluster_group_07.fits",
+            "sha256": "623c28dfdf4b4d8140cf078c8d46ff16f65d05b517bc01877d510a260c826f43",
+            "size_bytes": 37440
+          },
+          {
+            "md5": "6a3781f354ab1c03021065a3116586a4",
+            "name": "MILES_cluster_group_08.fits",
+            "sha256": "ee18cd4c9c019af0c216cad9b96078277e1d1d0e4342a0b5642ed89da4dfbc7a",
+            "size_bytes": 37440
+          },
+          {
+            "md5": "96503aacf189c583f778599d041f2bef",
+            "name": "MILES_cluster_group_09.fits",
+            "sha256": "7786e623a3286ded96ebac566a8f8c4d397cbf747edd00874d1280ee3d1658c7",
+            "size_bytes": 37440
+          },
+          {
+            "md5": "55d3cdf278173a900a9f14da4710cbd7",
+            "name": "MILES_cluster_group_10.fits",
+            "sha256": "a77714c7c80e9f6fa9be644c4a392fc3cdf8005c8e3991db0d09a792f176cc54",
+            "size_bytes": 37440
+          },
+          {
+            "md5": "9ca70b98ca318b6b6ab2905957f302d7",
+            "name": "MILES_cluster_group_11.fits",
+            "sha256": "74f1eced6840fedca13376797c163bf684678a9dcb421c01e3b74144a33636cc",
+            "size_bytes": 37440
+          },
+          {
+            "md5": "62d1d531700eba07dc11ba05f6d4c081",
+            "name": "MILES_cluster_group_12.fits",
+            "sha256": "ab28fa289c42094286b8d1fa7f8429ef8aafd8119ae712e418ac0d9a62c757ba",
+            "size_bytes": 37440
+          },
+          {
+            "md5": "6af298dbc529a9fee53127c7b13fd1e9",
+            "name": "MILES_cluster_group_13.fits",
+            "sha256": "c561cb3294c0eadb9f6253a4f1653a128a0cbd073f04d1d826353760e81daa72",
+            "size_bytes": 37440
+          },
+          {
+            "md5": "be364f1d5b857861577ef2002723997e",
+            "name": "MILES_cluster_group_14.fits",
+            "sha256": "44965cf6b50d5ee4e0f1177af00f2da92139560020b4f8ac25fde9f739dcf362",
+            "size_bytes": 37440
+          },
+          {
+            "md5": "da6e8dbd6217a2b994f65891638b8f00",
+            "name": "MILES_cluster_group_15.fits",
+            "sha256": "0b5ec081327ccc6d807dfee701ecebda805832725eb07619825f9a6315aca8bd",
+            "size_bytes": 37440
+          },
+          {
+            "md5": "5cd94a1a66b51a03db5fc58b8e4eb398",
+            "name": "MILES_cluster_group_19.fits",
+            "sha256": "b486dcdaf9126139b76458ba9c5658517daa02f51a397e16b021bfa9189b4ba5",
+            "size_bytes": 37440
+          },
+          {
+            "md5": "b2b68521d9e94946200ee8638bf1466a",
+            "name": "MILES_cluster_group_21.fits",
+            "sha256": "9c91e55d2b8cfc4493a04ce95a170e7a5d2e8a35b2cd4281569c3151d515dfd8",
+            "size_bytes": 37440
+          },
+          {
+            "md5": "036a9d8b194f70a7cae7524dd981f536",
+            "name": "MILES_cluster_group_22.fits",
+            "sha256": "3f9d274172155449aa9381ad4e9bad49e7ace9c75aff75119b07bc5b42424c40",
+            "size_bytes": 37440
+          },
+          {
+            "md5": "bce7627adfea038032436718dd6d9646",
+            "name": "MILES_cluster_group_23.fits",
+            "sha256": "9b2b8ced66c6f017c4914d2d0ca70fff8beea008169908c197bb827622997d4f",
+            "size_bytes": 37440
+          },
+          {
+            "md5": "0ad6a50a85935789f678a17c029117f4",
+            "name": "MILES_cluster_group_24.fits",
+            "sha256": "9d85a7b418d76aec92980bcce87c43690adf73ae8932f18b07038f53c9ab8894",
+            "size_bytes": 37440
+          },
+          {
+            "md5": "1c1874d4aac092486e1dd4cd96e36bc3",
+            "name": "MILES_cluster_group_25.fits",
+            "sha256": "dd52598f5d84962a74953e07e6a640d056d6ff9e5643691080dbdb21762ef235",
+            "size_bytes": 37440
+          },
+          {
+            "md5": "2cd259c2b0b78ded07aa118384f84d6f",
+            "name": "MILES_cluster_group_26.fits",
+            "sha256": "42f4efcb0ab0d4078080e5d629c63dfd454fbb5f64d0daa57667439c2d8464ec",
+            "size_bytes": 37440
+          },
+          {
+            "md5": "dd286bc6ab52980c92945dadc63f139b",
+            "name": "MILES_cluster_group_27.fits",
+            "sha256": "bb8a835ac5e8e3fd297a98bf52b6b4b56e0563c436bc7b8e51d807a2ee725507",
+            "size_bytes": 37440
+          },
+          {
+            "md5": "345fa651032ec5c15fbfa0ff3afd8e04",
+            "name": "MILES_cluster_group_28.fits",
+            "sha256": "99608f4a8886a6980efe185f36bd225701efc75e451585b6e23c24eae62f9510",
+            "size_bytes": 37440
+          },
+          {
+            "md5": "798b95159958aa9197355b93652d4f60",
+            "name": "MILES_cluster_group_29.fits",
+            "sha256": "943594012dc965f2f791218a413d7d4a8022ec5f4f5c3e90433fb3f380c31962",
+            "size_bytes": 37440
+          },
+          {
+            "md5": "e22e83a93be586394f351169cb3c525c",
+            "name": "MILES_cluster_group_30.fits",
+            "sha256": "f078cbc177dc133a82583c579b05effe33eece4b4c5d7f1c3632c29bac403798",
+            "size_bytes": 37440
+          },
+          {
+            "md5": "16fb20a0824ea910601c34b30e25c988",
+            "name": "MILES_cluster_group_31.fits",
+            "sha256": "ddf595d961a5ef94db4091d0cb44c6c8675b7207ff25da7e7d1361c46aa0366d",
+            "size_bytes": 37440
+          },
+          {
+            "md5": "5d0bebe15699cb291e898cd99c9ee2d8",
+            "name": "MILES_cluster_group_32.fits",
+            "sha256": "231f9d5d853644dbabf321cce0d81f785202b41889f606e1013afce2dbee7627",
+            "size_bytes": 37440
+          },
+          {
+            "md5": "30b76241b2404ddf4a6b88db1863ab93",
+            "name": "MILES_cluster_group_33.fits",
+            "sha256": "e8654b9135d4eb8b02d2cb8059d44d35f1267160a61cc074813e89a767ce656c",
+            "size_bytes": 37440
+          },
+          {
+            "md5": "2ad6d3cd77997ff41ec08fc63c46ff36",
+            "name": "MILES_cluster_group_34.fits",
+            "sha256": "fdd88a05864a37cf0ea5fdb86e6ce66c5845b3241af144d2dacdd6bd4e11522c",
+            "size_bytes": 37440
+          },
+          {
+            "md5": "b702290bdfa8c2468929a0d6640bffcc",
+            "name": "MILES_cluster_group_35.fits",
+            "sha256": "9b25213a47df55f4a5c8b85d0218b7626769ec3b42eb347d1befbc772ee66932",
+            "size_bytes": 37440
+          },
+          {
+            "md5": "0e73ed3b24e20cdebdfd74882d0a8686",
+            "name": "MILES_cluster_group_38.fits",
+            "sha256": "8f9ebac0e1fdc65f74f93ef815ad689f5b44d7554ecfbf05590acf5c52fe614b",
+            "size_bytes": 37440
+          },
+          {
+            "md5": "fadc909b9fdb3dc5ea1bc8229b270baa",
+            "name": "MILES_cluster_group_39.fits",
+            "sha256": "f9ced8f47a475ca6cf68aa65463c4a04d34eebcf38c26d026c523faca8a41941",
+            "size_bytes": 37440
+          },
+          {
+            "md5": "98e8e4c0a15cf886782ff7bd7580f806",
+            "name": "MILES_cluster_group_40.fits",
+            "sha256": "653857680c41cf0414070086f552b8133e4c607d4bab41da6ac2e2b0db3dc6e7",
+            "size_bytes": 37440
+          },
+          {
+            "md5": "f76e37ba0a22391a37c2fa8b504e1ce8",
+            "name": "MILES_cluster_group_41.fits",
+            "sha256": "2e139bfdf194d1a707a5e61756ef49d7063f62191bc0d166c7dd45d4bc800bfb",
+            "size_bytes": 37440
+          },
+          {
+            "md5": "c518fddb2a4201c4053dfc0c97a36e87",
+            "name": "MILES_cluster_group_42.fits",
+            "sha256": "2a8494acfbf010a1baa93ec05f09d9fda02c340dbd1accc1e962009160edb807",
+            "size_bytes": 37440
+          },
+          {
+            "md5": "73bd3d6d93adc8bb4e8e413daed0bc1b",
+            "name": "MILES_cluster_group_43.fits",
+            "sha256": "d927bfd4c105d4ebda154666770e685cd92879738c1e7716aa76915073bae4a2",
+            "size_bytes": 37440
+          },
+          {
+            "md5": "21b3d152f7a734b7e5d3b4f0f7affd28",
+            "name": "MILES_cluster_group_44.fits",
+            "sha256": "901f41160cc4e45f24a10e290934cfc936b09643042edbea928b34843b80929f",
+            "size_bytes": 37440
+          },
+          {
+            "md5": "763c0e09f7e0faf3b2dbbb21fde86b07",
+            "name": "MILES_cluster_group_45.fits",
+            "sha256": "abab2985a4cb77200e6c533f314cb704e1fe13d1dca2b4feab063ab6a5487ab3",
+            "size_bytes": 37440
+          },
+          {
+            "md5": "eef5548f2cedc9d7bfc86c5d923551a6",
+            "name": "MILES_cluster_group_47.fits",
+            "sha256": "db40e9fbf65e1792765877e57e1b0dd2185c14fad3701a7fab69feba96ec7fe0",
+            "size_bytes": 37440
+          },
+          {
+            "md5": "3288f9479028f7d84a0dd4ee9ebd3c7e",
+            "name": "MILES_cluster_group_48.fits",
+            "sha256": "dca791c2716755afa28aa9a0361ba7cb672377dad47e3c04cde92777fbe57d98",
+            "size_bytes": 37440
+          },
+          {
+            "md5": "c9c6092966dbf804f5d4c44a5f44e06e",
+            "name": "MILES_cluster_group_49.fits",
+            "sha256": "0340b548103269ae45f34a4ea40e3fe37d7e7e3eaa46ee7e5c508db957cf91e0",
+            "size_bytes": 37440
+          },
+          {
+            "md5": "242d3fad670888a958741f78bdc2136e",
+            "name": "README",
+            "sha256": "4037cde4185268633be72287e539106ef3e9a100e55e3cd719afa3eca27c5b75",
+            "size_bytes": 19978
+          },
+          {
+            "md5": "5ae429b9b88c46b21d5c57e6da867fa4",
+            "name": "mileshc_fluxes.db",
+            "sha256": "29dbd0447b76a0a2b9c56ddda4109368253b8c13bd46e8f3f58af8107f18916c",
+            "size_bytes": 3698
+          }
+        ],
+        "n_files": 44
+      },
+      "artifact_masks": {
+        "directory": "data/artifacts",
+        "files": [
+          {
+            "md5": "b8629ad4746c01f1edc9097b25e85f51",
+            "name": "badsky.par",
+            "sha256": "8985a8d9152e7eb464927c99a9f6524b6e85f8f49137df0027c6d5de2a6fbfa6",
+            "size_bytes": 370
+          }
+        ],
+        "n_files": 1
+      },
+      "line_database": {
+        "directory": "data/emission_lines",
+        "files": [
+          {
+            "md5": "970457a3c378f1e242fa0fef89a2bfbd",
+            "name": "elpmpl11.par",
+            "sha256": "45dc8cb1836cbf6b8be61eb6983d2c51b641add5979badc38b6937068dd06f8a",
+            "size_bytes": 7762
+          },
+          {
+            "md5": "9c9ab98e86a0747627f673056a8e8f39",
+            "name": "elpscmsk.par",
+            "sha256": "004e8723841ca51f466a6c24864396a4989f06f91875c29a41a0ff07ffef4048",
+            "size_bytes": 4161
+          }
+        ],
+        "n_files": 2
+      },
+      "maskbits": {
+        "directory": "data/sdss",
+        "files": [
+          {
+            "md5": "66ab9f7470ae269a78a03b4cd7b219f2",
+            "name": "sdssMaskbits.par",
+            "sha256": "eae6cb0cce9a638e1ea345e5cb5c4158fc7fa6f2f49c4c8058ba33c145ccd0fc",
+            "size_bytes": 92011
+          }
+        ],
+        "n_files": 1
+      }
+    }
+  },
+  "dap_metadata_used": {
+    "can_compute_covariance": true,
+    "drpcrit": false,
+    "drpver": "v3_1_1",
+    "ebv_galactic": 0.0764222,
+    "ell": 0.304294,
+    "ifudesign": 12701,
+    "name": "9193-12701",
+    "pa_deg": 143.959,
+    "plate": 9193,
+    "reff_arcsec": 14.8759,
+    "rss_loaded": true,
+    "rss_note": "",
+    "vdisp_initial_kms": 100.0,
+    "vel_kms": 4084.7621779874,
+    "z": 0.0136253
+  },
+  "effective_plan": {
+    "default": {
+      "binning": {
+        "key": "HYB10",
+        "spatial": {
+          "covar_mode": "matrix",
+          "target_snr": 10
+        },
+        "spatial_method": "voronoi",
+        "spectral": {
+          "covar_mode": "channels",
+          "covar_par": 11
+        }
+      },
+      "continuum": {
+        "fit": {
+          "artifact_mask": "BADSKY",
+          "emission_line_mask": "ELPSCMSK",
+          "templates": {
+            "key": "MILESHC"
+          },
+          "velscale_ratio": 4
+        },
+        "fit_method": "ppxf",
+        "key": "MILESHC",
+        "minimum_snr": 1.0
+      },
+      "eline_fits": {
+        "fit": {
+          "artifact_mask": "BADSKY",
+          "deconstruct_bins": "binid",
+          "emission_lines": "ELPMPL11",
+          "etpl_line_sigma_min": 10,
+          "etpl_line_sigma_mode": "offset",
+          "mdegree": 14,
+          "reject_boxcar": 101,
+          "templates": {
+            "key": "MASTARHC2"
+          },
+          "velscale_ratio": 1
+        },
+        "fit_method": "sasuke",
+        "key": "EFITHC2"
+      },
+      "eline_moments": {
+        "artifact_mask": "BADSKY",
+        "key": "EMOM"
+      },
+      "indices": {
+        "artifact_mask": "BADSKY",
+        "key": "INDXEN"
+      },
+      "key": "HYB10-MILESHC-MASTARHC2"
+    }
+  },
+  "fast_eline": {
+    "acceptance": false,
+    "continuum": "official DAP pPXF stellar-continuum model, supplied as a fixed per-spectrum template",
+    "enabled": false,
+    "ensemble": false,
+    "fitclass": "mangadap.proc.sasuke.Sasuke",
+    "line_database": "ELPMPL11",
+    "mdegree": 14,
+    "n_bins_fit": 175,
+    "note": "Fast fixed-continuum all-spaxel mode. Rejected as production: biased H-alpha/[N II]/[S II], BPT agreement 41%, gas velocity offset +175 km/s. Retained only in aux_fastmode/ with FITS headers QUALITY=FASTMODE_NOT_PRODUCTION, ACCEPT=0.",
+    "nproc": 8,
+    "plan_file": "plan_moments.toml",
+    "quality_flag": "FASTMODE_NOT_PRODUCTION",
+    "rejection_metrics": {
+      "bpt_agreement_fraction": 0.408,
+      "gas_velocity_ha_offset_kms": 175.5,
+      "ha_median_ratio": 2.37,
+      "hb_median_ratio": 0.89,
+      "nii_6584_median_ratio": 0.53,
+      "oiii_5007_median_ratio": 1.01
+    },
+    "role": "auxiliary only",
+    "target_snr": 50.0,
+    "template_library": "per-spectrum pPXF model (not the 65-template MaStar-HC2 library)"
+  },
+  "input_hashes": {
+    "manga_cube": {
+      "path": "manga-9193-12701-LOGCUBE.fits.gz",
+      "sha256": "7810f4c94db2fbb677e1bc92bc91a866e88d421c24c8c52273aa5277b9b5f764",
+      "size_bytes": 207992431,
+      "url": "https://data.sdss.org/sas/dr17/manga/spectro/redux/v3_1_1/9193/stack/manga-9193-12701-LOGCUBE.fits.gz"
+    },
+    "manga_rss": {
+      "path": "manga-9193-12701-LOGRSS.fits.gz",
+      "sha256": "812000fdc1946193f8aa0e2e96878555ec370fa30b3a41df20cd76b0bad497bd",
+      "size_bytes": 169194046,
+      "url": "https://data.sdss.org/sas/dr17/manga/spectro/redux/v3_1_1/9193/stack/manga-9193-12701-LOGRSS.fits.gz"
+    },
+    "reference_maps": {
+      "path": "manga-9193-12701-MAPS-HYB10-MILESHC-MASTARHC2.fits.gz",
+      "sha256": "f47f16b90c45fc668e0105e9b2a2241d6c28104924056bcfa493f84e1f200f49",
+      "size_bytes": 10775592,
+      "url": "https://data.sdss.org/sas/dr17/manga/spectro/analysis/v3_1_1/3.1.0/HYB10-MILESHC-MASTARHC2/9193/12701/manga-9193-12701-MAPS-HYB10-MILESHC-MASTARHC2.fits.gz"
+    }
+  },
+  "limitations": [
+    "Only the 9 central single-spaxel HYB10 bins are measured with the official full-method SASUKE. This is not a spatially complete IFU map; the published official MAPS is the all-spaxel reference.",
+    "The full all-spaxel 2397-bin 65-template EmissionLineModel did not complete within the 58 min wall-clock budget and was killed; no all-spaxel DAP MAPS was produced by this repository.",
+    "The fast fixed-continuum all-spaxel mode is auxiliary only and is rejected as production (H-alpha ratio 2.37, [N II] 0.53, BPT agreement 41%, gas velocity offset +175 km/s).",
+    "The DAP is a narrow-line single-Gaussian model. It does not fit broad Balmer lines, Fe II, Balmer continuum or AGN outflows.",
+    "Gaussian line fluxes are integrated over the DAP fit window and tied multiplets; they are not aperture-corrected.",
+    "No extinction correction is applied to the DAP line fluxes.",
+    "The published MAPS was produced with DAP 3.1.0; this run uses 4.5.0, so the comparison is a code-version cross-check, not a bit-for-bit reproduction.",
+    "BPT classes are discrete and boundary-sensitive; NGC 1194 sits near the Seyfert/LINER boundary."
+  ],
+  "plan_path": "/app/config/plan.toml",
+  "production_mode": "Official DAP Stage A (rdxqa + HYB10/S/N=50 binning + pPXF + EMOM + INDXEN) and official full-method SASUKE on the 9 central single-spaxel bins. The all-spaxel 2397-bin 65-template EmissionLineModel exceeded the 58 min budget and was killed; the published official MAPS is the all-spaxel reference. The fast fixed-continuum all-spaxel mode is auxiliary only.",
+  "products": {
+    "dap_log": "/app/output/logs/manga_dap.log",
+    "dap_method_dir": "/app/output/dap/HYB10-MILESHC-MASTARHC2/9193/12701",
+    "maps": "/app/output/fits/manga_dap_maps.fits.gz",
+    "model_cube": "/app/output/dap/HYB10-MILESHC-MASTARHC2/9193/12701/manga-9193-12701-LOGCUBE-HYB10-MILESHC-MASTARHC2.fits.gz"
+  },
+  "source": {
+    "catalog": "MaNGA AGN Catalog VAC (Comerford et al. 2020)",
+    "dec_deg": -1.10375,
+    "ifu_design": 12701,
+    "key": "NGC1194_z_0.0136",
+    "morphology": "SA(s)0/a? Sy2",
+    "name": "NGC 1194",
+    "plate": 9193,
+    "plateifu": "9193-12701",
+    "ra_deg": 45.954624,
+    "urls": {
+      "manga_cube": "https://data.sdss.org/sas/dr17/manga/spectro/redux/v3_1_1/9193/stack/manga-9193-12701-LOGCUBE.fits.gz",
+      "manga_maps_reference": "https://data.sdss.org/sas/dr17/manga/spectro/analysis/v3_1_1/3.1.0/HYB10-MILESHC-MASTARHC2/9193/12701/manga-9193-12701-MAPS-HYB10-MILESHC-MASTARHC2.fits.gz",
+      "manga_rss": "https://data.sdss.org/sas/dr17/manga/spectro/redux/v3_1_1/9193/stack/manga-9193-12701-LOGRSS.fits.gz"
+    },
+    "z": 0.0136253,
+    "z_reference": "NSA v1_0_1 via SDSS DR17 DRPall v3_1_1"
+  },
+  "tool": "manga_dap",
+  "uncertainty": {
+    "bpt_error_note": "BPT positions use the DAP Gaussian fluxes. Classification boundaries are applied to the central value; no probabilistic class membership is claimed.",
+    "flux_error": "1/sqrt(EMLINE_GFLUX_IVAR)",
+    "mcmc": false,
+    "mcmc_note": "The MaNGA DAP is not an MCMC sampler. Errors are the formal covariance propagated by the DAP; they do not include model-systematic scatter.",
+    "minimum_error": "numpy.finfo(numpy.float32).eps (DAP default)",
+    "mode": "formal least-squares covariance from the DAP SASUKE fit",
+    "ratio_error": "analytic propagation from the two Gaussian flux errors, ignoring covariance between lines from the same fit",
+    "sigma_error": "1/sqrt(EMLINE_GSIGMA_IVAR)",
+    "velocity_error": "1/sqrt(EMLINE_GVEL_IVAR)"
+  },
+  "variant": "default",
+  "versions": {
+    "astropy": "8.0.2",
+    "configobj": "5.0.9",
+    "cvxopt": "1.3.3",
+    "machine": "x86_64",
+    "mangadap_module_version": "4.5.0",
+    "matplotlib": "3.11.2",
+    "numpy": "2.4.1",
+    "platform": "Linux-7.0.0-38-generic-x86_64-with-glibc2.36",
+    "ppxf": "8.1.0",
+    "pydl": "1.0.1",
+    "python": "3.12.16",
+    "requests": "2.34.2",
+    "scipy": "1.18.1",
+    "sdss-mangadap": "4.5.0",
+    "shapely": "2.2.0",
+    "upstream_scm": {
+      "branch": "HEAD",
+      "dirty": false,
+      "distance": 0,
+      "node": "g996b46cb9739126fe0fbe69c1a50d8490d924853",
+      "node_date": "2026-06-24",
+      "tag": "4.5.0"
+    },
+    "vorbin": "3.1.5"
+  }
+}

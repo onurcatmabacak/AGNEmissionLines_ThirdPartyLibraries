@@ -210,11 +210,19 @@ Fluxes are **1e-17 erg/s/cm²/spaxel**, velocities/dispersions **km/s**, EWs
 
 ## Parallelism
 
-* **Many cubes:** `python pipeline/run_manga_parallel.py --jobs 4 <sources...>`
-  runs independent cubes concurrently; each stays serial and official.
-* **One cube:** set `MANGADAP_SHARD_WORKERS=4` (forwarded by the runner).  The
-  pPXF stage is sliced across forked workers — `shard_ppxf.py` calls the
-  unmodified upstream `_run_fit_iteration` on `[lo:hi]` slices and concatenates
-  the results, so the numerics are unchanged.  The same env var passes through
-  `sitecustomize.py`, so sdss-mangadap itself is untouched.  `plot=True` and
-  tiny workloads stay serial.  See `docs/MANGA_SHARDING.md`.
+* **Many cubes (supported, zero risk):**
+  `python pipeline/run_manga_parallel.py --jobs 4 <sources...>` runs independent
+  cubes concurrently with the unmodified pipeline.  Each cube peaks at ~5 GB, so
+  4 jobs is the realistic ceiling on this 31 GB host.
+* **One cube (validated, small win):** `MANGADAP_SHARD_WORKERS=4` shards the
+  pPXF stage across forked workers.  13.51 h → 13.17 h, and the sharded product
+  is bit-identical to the serial one (worst relative line-flux difference
+  `0.00e+00`, identical BPT census — see
+  `outputs/manga_dap/NGC1194_z_0.0136/full_shard4/`).
+* **Stage selection:** `MANGADAP_SHARD_STAGES` (default `ppxf`).  `emom` and
+  `sasuke` shards exist and are unit-tested, but EMOM silently aborts the real
+  run and SASUKE is never reached, so they must not be enabled for science.
+  See `docs/MANGA_SHARDING.md`.
+
+The serial `full/` tree stays the production record; nothing sharded is
+promoted.

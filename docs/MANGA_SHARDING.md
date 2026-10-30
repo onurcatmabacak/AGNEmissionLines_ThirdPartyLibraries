@@ -80,3 +80,24 @@ while debugging**, and treat any product produced with them as unvalidated.
   yet.
 * The serial product remains the production record; nothing sharded is
   promoted while `emom`/`sasuke` are broken.
+
+## Decision (settled)
+
+Intra-cube sharding stops at pPXF.  The measured payoff is 2.5 % (13.51 h →
+13.17 h) because pPXF is only ~7 % of the runtime, while the two stages that
+hold ~80 % of it (EMOM ~5 h, SASUKE ~6 h) either corrupt the run silently
+(EMOM) or were never exercised (SASUKE).  A silently wrong DAP product is far
+worse than a slow one, and every debugging iteration costs a 13.5 h run.
+
+Therefore:
+
+* `MANGADAP_SHARD_STAGES` defaults to `ppxf`; the production product is the
+  serial `full/` tree and nothing sharded is promoted.
+* `full_shard4` is kept **only** as validation evidence, with its own README and
+  `shard_validation.txt`.
+* Throughput for a sample comes from `pipeline/run_manga_parallel.py`
+  (independent cubes, unmodified pipeline).  Validate memory with a 4-job pilot
+  first: each cube peaked at ~5 GB of 31 GB.
+
+Revisit intra-cube sharding only if a single cube ever has a hard deadline, or
+if the sample grows past what parallel cubes can absorb on this host.
