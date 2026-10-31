@@ -131,10 +131,18 @@ def make_transformations(mdl, spec: dict, redshift: float, fitted: dict):
         kind = p["kind"]
         if kind == "log":
             lo, hi = (float(x) for x in p["range"])
-            if "norm" in p["path"] and p.get("centre_on_fit", True):
-                centre = float(getattr(par, "values")[0])
-                if centre > 0 and not (lo <= centre <= hi):
-                    lo, hi = centre / 100.0, centre * 100.0
+            # Scale parameters (normalisations, column densities) are compared
+            # against a wide decade prior, but the posterior is usually a few
+            # per cent wide.  That mismatch is what drove the sampler to
+            # ~0.02 % efficiency on a flat C-stat peak, so centre these priors
+            # on the least-squares solution and keep +/-1.5 dex.
+            scale = ("norm" in p["path"]) or p["path"].lower().endswith((".nh", ".nw"))
+            centre = fitted.get(p["path"]) if isinstance(fitted, dict) else None
+            if p.get("centre_on_fit", True) and scale and centre and centre > 0:
+                lo = max(lo, centre / 30.0)
+                hi = min(hi, centre * 30.0)
+                if lo >= hi:  # configured range narrower than the window
+                    lo, hi = (float(x) for x in p["range"])
             lo, hi = max(lo, 1e-30), max(hi, lo * 1.0001)
 
             def transform(x, lo=lo, hi=hi):
@@ -197,6 +205,11 @@ def run_model(product_dir: Path, products: dict, prepared: dict, cfg: dict,
         # "safe" (the default) is what stalled at ~2 % efficiency on the
         # partial-covering model.
         speed=str(cfg.get("speed", "safe")),
+        # A flat likelihood peak (typical of a C-stat optimum) drives the
+        # sampler to ~0.04 % efficiency in the last few per cent of the volume,
+        # which costs ~1e6 evaluations per model.  Stopping with 5 % of the
+        # remaining volume unintegrated changes ln Z by << 1.
+        frac_remain=float(cfg.get("frac_remain", 0.05)),
     )
     res = solver.results
     points = np.asarray(res["weighted_samples"]["points"], dtype=float)
