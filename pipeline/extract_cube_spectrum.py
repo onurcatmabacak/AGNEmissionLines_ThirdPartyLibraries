@@ -40,11 +40,15 @@ def main(argv=None) -> int:
 
     from astropy.io import fits
 
-    with fits.open(args.cube) as hdul:
+    # memmap + native dtype: ALMA science cubes are multi-GB and converting to
+    # float64 would double the memory for no benefit.
+    with fits.open(args.cube, memmap=True) as hdul:
         hdu = next(h for h in hdul if h.data is not None and np.asarray(h.data).ndim >= 3)
-        data = np.asarray(hdu.data, dtype=float)
+        data = hdu.data
         hdr = hdu.header
-    cube = np.squeeze(data)
+        if data.dtype.kind == "f" and data.dtype.itemsize < 4:
+            data = data.astype(np.float32)
+    cube = np.squeeze(np.asarray(data))
     if cube.ndim == 4:                       # drop a Stokes axis
         cube = cube[0]
     if cube.ndim != 3:

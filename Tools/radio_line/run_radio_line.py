@@ -199,7 +199,9 @@ def main(argv=None) -> int:
             continue
         # velocity relative to the line rest frequency (frequency axis only)
         if freq is not None:
-            vel = c_kms * (rest_ghz * (1.0 + args.z) - centre) / centre
+            # nu_obs = nu_rest / (1+z): multiplying instead divides out the
+            # wrong way and shifts every velocity by ~2 z c (10,500 km/s at z=0.0176).
+            vel = c_kms * (rest_ghz / (1.0 + args.z) - centre) / centre
         else:
             vel = np.nan
         fwhm_kms = abs(sigma) * (c_kms / centre) * 2.3548 if freq is not None else np.nan

@@ -73,7 +73,9 @@ def to_velocity(x: np.ndarray, ctype: str, freq_rest_ghz: float, z: float):
     in GHz) and anything else within +/-5e4 as km/s -- the earlier version
     tested the GHz range before the VELO ctype and misread every velocity axis.
     """
-    nu_rest = freq_rest_ghz * (1.0 + z)
+    # nu_obs = nu_rest / (1+z); the inverse relation used before shifted every
+    # velocity by ~2 z c (10,500 km/s at z=0.0176).
+    nu_rest = freq_rest_ghz / (1.0 + z)
     up = ctype.upper()
     if "VELO" in up:
         return x.astype(float), nu_rest, "velocity"
