@@ -186,6 +186,27 @@ Two adapter bugs the test caught: McFine's `strength_lines_dict` only holds the
 and its `line_width` is a Gaussian sigma, so `fwhm_kms` must not be multiplied
 by 2.3548 twice.
 
+## Open threads (pick up here)
+
+1. **CASA `casa_specfit` is blocked upstream.** The image
+   (`Tools/casa_specfit`, conda-forge `casatools`/`casatasks` 6.7.x) builds
+   except for the final import check: every CASA import needs the `casarundata`
+   measures tables, and NRAO's endpoint is down — `go.nrao.edu/casarundata`
+   returns HTTP 500, `casa.nrao.edu/download/devel/casavis/data/casarundata.tar.gz`
+   returns 404, and `casarundata` is on neither PyPI nor conda-forge.  The pip
+   wheels are not a workaround (they need `OPENSSL_3.0.1`/`3.2.0` symbols that
+   Debian libcrypto lacks).  *Retry:* rebuild when the endpoint answers; no code
+   change is needed.
+2. **No detected AGN line yet.** `radio_line` and `submm_line` are validated on
+   real data (observed HCN 1-0, and real ALMA HCN 3-2 in NGC 1275) but those
+   fits are marginal (S/N ~3, broad profile, McFine tau at its prior cap).
+   *Options:* wider extraction boxes, spw27 (3.5 GB), or a brighter CO line.
+3. **Cube extraction is not containerised.** `pipeline/extract_cube_spectrum.py`
+   runs in the host venv (astropy only, nothing installed).  *Fix:* ship it in
+   the `radio_line` image and add an `--extract` mode to that runner.
+4. **Disk:** ~3.3 GB of downloaded ALMA cubes sit in `/tmp/alma` and can be
+   deleted; the committed spectra are what the products use.
+
 ## Integration order (recommended)
 
 1. **RadioSED** — buildable, GPL-3.0, offline via `--custom_data_file`.  Needs a
