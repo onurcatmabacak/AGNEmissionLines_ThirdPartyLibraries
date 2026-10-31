@@ -1,7 +1,7 @@
 {
   "source_name": "auto",
   "band_keV": [
-    0.5,
+    2.0,
     10.0
   ],
   "statistic": "cstat",
@@ -10,12 +10,13 @@
   "n_live_points": 200,
   "evidence_tolerance": 0.5,
   "seed": 42,
-  "note": "Bayesian evidence comparison with nested sampling (UltraNest) over the same PN+MOS1+MOS2 0.5-10 keV data used by xmm_xspec. BXA builds the prior transform from the parameter list below; constants are fixed at the chi-square best fit so models are compared under one calibration. Priors are centred on the least-squares solution and are deliberately wide. Parameter names follow the PyXspec model definitions in this image (zpowerlw.Redshift, zgauss.Redshift, zxipcf.Nh/log_xi/CvrFract, pcfabs.CvrFract). TBabs/pcfabs/cabs/zxipcf column densities use XSPEC's 1e22 cm^-2 units. The soft-excess family (plbb*) was trialled and withdrawn: with an 11-dex blackbody normalisation prior the sampler wandered into a region where the blackbody dominates and the log-likelihood falls to ~-4e5, so no evidence from that family is quoted.  sigma(Fe K-alpha) extends to 2 keV so a broad component cannot pin at the prior boundary; the broad-line Bayes factor must therefore be read as continuum-curvature-degenerate, not as a detection. cutoffpl_cabs is unidentifiable on 0.5-10 keV PPS data (best chi2/dof 2.701 vs 2.696 for a plain power law, i.e. delta-chi2 = 2.6 for two extra parameters): its evidence is not quoted, and a Compton-thick comparison needs broadband data.",
+  "note": "Bayesian evidence comparison for PDS 456 with nested sampling (UltraNest, speed=auto). Band is 2-10 keV, the canonical Fe K-alpha band: extending to 0.5 keV leaves an unmodelled soft-excess/cross-calibration residual that holds chi2/dof at 2.70, whereas 2-10 keV gives 1.73 and makes the line-vs-absorption comparison interpretable.  Priors: 25-start chi-square scans show a narrow line (sigma 50 eV) improves chi2 by 27, an unconstrained-width line by 162, and pcfabs by 158 - so the free-width line and the partial covering are degenerate competitors and both are sampled.  cutoffpl_cabs is dropped: it improves chi2 by only 2.6 for two extra parameters on 0.5-10 keV data, i.e. unidentifiable; a Compton-thick comparison needs broadband (NuSTAR) data.  MYTorus/UXCLUMPY/RELXILL tables are not bundled (licence/download gated).",
   "models": [
     {
       "name": "pl",
+      "family": "pl",
       "expr": "constant*tbabs*(zpowerlw)",
-      "description": "absorbed power law (continuum null hypothesis)",
+      "description": "absorbed power law, 2-10 keV (continuum null hypothesis)",
       "params": [
         {
           "path": "TBabs.nH",
@@ -25,8 +26,7 @@
             0.0001,
             50.0
           ],
-          "init": 1.0,
-          "comment": "10^22 cm^-2"
+          "init": 0.2
         },
         {
           "path": "zpowerlw.PhoIndex",
@@ -36,7 +36,7 @@
             1.2,
             2.9
           ],
-          "init": 2.1
+          "init": 2.05
         },
         {
           "path": "zpowerlw.Redshift",
@@ -48,18 +48,18 @@
           "index": 2,
           "kind": "log",
           "range": [
-            1e-08,
+            1e-05,
             0.1
           ],
-          "init": 0.001
+          "init": 0.005
         }
-      ],
-      "family": "pl"
+      ]
     },
     {
-      "name": "pl_line",
+      "name": "pl_line_narrow",
+      "family": "pl",
       "expr": "constant*tbabs*(zpowerlw + zgauss)",
-      "description": "absorbed power law + narrow Fe K-alpha (6.4 keV rest, sigma 50 eV)",
+      "description": "narrow Fe K-alpha, sigma fixed at 50 eV (rest 6.4 keV)",
       "params": [
         {
           "path": "TBabs.nH",
@@ -69,7 +69,7 @@
             0.0001,
             50.0
           ],
-          "init": 1.0
+          "init": 0.2
         },
         {
           "path": "zpowerlw.PhoIndex",
@@ -79,7 +79,7 @@
             1.2,
             2.9
           ],
-          "init": 2.1
+          "init": 2.05
         },
         {
           "path": "zpowerlw.Redshift",
@@ -91,21 +91,20 @@
           "index": 2,
           "kind": "log",
           "range": [
-            1e-08,
+            1e-05,
             0.1
           ],
-          "init": 0.001
+          "init": 0.005
         },
         {
           "path": "zgauss.LineE",
           "index": 0,
           "kind": "uniform",
           "range_factor": [
-            0.95,
-            1.05
+            0.9,
+            1.1
           ],
-          "init": 6.4,
-          "comment": "observer-frame, tied to 6.4/(1+z)"
+          "init": 6.4
         },
         {
           "path": "zgauss.Sigma",
@@ -125,15 +124,16 @@
         },
         {
           "path": "zgauss.Redshift",
+          "index": 2,
           "kind": "fixed"
         }
-      ],
-      "family": "pl"
+      ]
     },
     {
-      "name": "pl_line_wide",
+      "name": "pl_line_free",
+      "family": "pl",
       "expr": "constant*tbabs*(zpowerlw + zgauss)",
-      "description": "absorbed power law + broad Fe K-alpha (sigma free 50-800 eV)",
+      "description": "Fe K-alpha with free width, sigma 20-1500 eV (no arbitrary narrow/broad split)",
       "params": [
         {
           "path": "TBabs.nH",
@@ -143,7 +143,7 @@
             0.0001,
             50.0
           ],
-          "init": 1.0
+          "init": 0.2
         },
         {
           "path": "zpowerlw.PhoIndex",
@@ -153,7 +153,7 @@
             1.2,
             2.9
           ],
-          "init": 2.1
+          "init": 2.05
         },
         {
           "path": "zpowerlw.Redshift",
@@ -165,10 +165,10 @@
           "index": 2,
           "kind": "log",
           "range": [
-            1e-08,
+            1e-05,
             0.1
           ],
-          "init": 0.001
+          "init": 0.005
         },
         {
           "path": "zgauss.LineE",
@@ -185,8 +185,8 @@
           "index": 1,
           "kind": "uniform",
           "range": [
-            0.05,
-            0.8
+            0.02,
+            1.5
           ],
           "init": 0.2
         },
@@ -202,15 +202,16 @@
         },
         {
           "path": "zgauss.Redshift",
+          "index": 2,
           "kind": "fixed"
         }
-      ],
-      "family": "pl"
+      ]
     },
     {
-      "name": "warmabs",
-      "expr": "constant*tbabs*zxipcf*(zpowerlw)",
-      "description": "ionized (warm) absorber on the power law (wind/torus proxy)",
+      "name": "pcfabs",
+      "family": "absorbed",
+      "expr": "constant*tbabs*pcfabs*(zpowerlw)",
+      "description": "partial covering absorber: the degenerate competitor of a broad line",
       "params": [
         {
           "path": "TBabs.nH",
@@ -220,7 +221,95 @@
             0.0001,
             50.0
           ],
-          "init": 1.0
+          "init": 0.2
+        },
+        {
+          "path": "zpowerlw.PhoIndex",
+          "index": 0,
+          "kind": "uniform",
+          "range": [
+            1.2,
+            2.9
+          ],
+          "init": 2.05
+        },
+        {
+          "path": "zpowerlw.Redshift",
+          "index": 1,
+          "kind": "fixed"
+        },
+        {
+          "path": "zpowerlw.norm",
+          "index": 2,
+          "kind": "log",
+          "range": [
+            1e-05,
+            0.1
+          ],
+          "init": 0.005
+        },
+        {
+          "path": "pcfabs.nH",
+          "index": 0,
+          "kind": "log",
+          "range": [
+            0.05,
+            100.0
+          ],
+          "init": 10.0
+        },
+        {
+          "path": "pcfabs.CvrFract",
+          "index": 1,
+          "kind": "uniform",
+          "range": [
+            0.05,
+            0.95
+          ],
+          "init": 0.5
+        }
+      ]
+    },
+    {
+      "name": "warmabs",
+      "family": "absorbed",
+      "expr": "constant*tbabs*zxipcf*(zpowerlw)",
+      "description": "ionized warm absorber (wind proxy)",
+      "params": [
+        {
+          "path": "TBabs.nH",
+          "index": 0,
+          "kind": "log",
+          "range": [
+            0.0001,
+            50.0
+          ],
+          "init": 0.2
+        },
+        {
+          "path": "zpowerlw.PhoIndex",
+          "index": 0,
+          "kind": "uniform",
+          "range": [
+            1.2,
+            2.9
+          ],
+          "init": 2.05
+        },
+        {
+          "path": "zpowerlw.Redshift",
+          "index": 1,
+          "kind": "fixed"
+        },
+        {
+          "path": "zpowerlw.norm",
+          "index": 2,
+          "kind": "log",
+          "range": [
+            1e-05,
+            0.1
+          ],
+          "init": 0.005
         },
         {
           "path": "zxipcf.Nh",
@@ -256,155 +345,8 @@
           "path": "zxipcf.Redshift",
           "index": 3,
           "kind": "fixed"
-        },
-        {
-          "path": "zpowerlw.PhoIndex",
-          "index": 0,
-          "kind": "uniform",
-          "range": [
-            1.2,
-            2.9
-          ],
-          "init": 2.1
-        },
-        {
-          "path": "zpowerlw.Redshift",
-          "index": 1,
-          "kind": "fixed"
-        },
-        {
-          "path": "zpowerlw.norm",
-          "index": 2,
-          "kind": "log",
-          "range": [
-            1e-08,
-            0.1
-          ],
-          "init": 0.001
         }
-      ],
-      "family": "absorbed"
-    },
-    {
-      "name": "pcfabs",
-      "expr": "constant*tbabs*pcfabs*(zpowerlw)",
-      "description": "partial covering absorber (clumpy torus proxy)",
-      "params": [
-        {
-          "path": "TBabs.nH",
-          "index": 0,
-          "kind": "log",
-          "range": [
-            0.0001,
-            50.0
-          ],
-          "init": 1.0
-        },
-        {
-          "path": "pcfabs.nH",
-          "index": 0,
-          "kind": "log",
-          "range": [
-            0.05,
-            100.0
-          ],
-          "init": 10.0
-        },
-        {
-          "path": "pcfabs.CvrFract",
-          "index": 1,
-          "kind": "uniform",
-          "range": [
-            0.05,
-            0.95
-          ],
-          "init": 0.5
-        },
-        {
-          "path": "zpowerlw.PhoIndex",
-          "index": 0,
-          "kind": "uniform",
-          "range": [
-            1.2,
-            2.9
-          ],
-          "init": 2.1
-        },
-        {
-          "path": "zpowerlw.Redshift",
-          "index": 1,
-          "kind": "fixed"
-        },
-        {
-          "path": "zpowerlw.norm",
-          "index": 2,
-          "kind": "log",
-          "range": [
-            1e-08,
-            0.1
-          ],
-          "init": 0.001
-        }
-      ],
-      "family": "absorbed"
-    },
-    {
-      "name": "cutoffpl_cabs",
-      "expr": "constant*tbabs*cabs*(cutoffpl)",
-      "description": "Compton-thick absorption on a cut-off power law",
-      "params": [
-        {
-          "path": "TBabs.nH",
-          "index": 0,
-          "kind": "log",
-          "range": [
-            0.0001,
-            50.0
-          ],
-          "init": 1.0
-        },
-        {
-          "path": "cabs.nH",
-          "index": 0,
-          "kind": "log",
-          "range": [
-            1.0,
-            1000.0
-          ],
-          "init": 10.0
-        },
-        {
-          "path": "cutoffpl.PhoIndex",
-          "index": 0,
-          "kind": "uniform",
-          "range": [
-            1.2,
-            2.9
-          ],
-          "init": 2.1
-        },
-        {
-          "path": "cutoffpl.HighECut",
-          "index": 1,
-          "kind": "log",
-          "range": [
-            20.0,
-            500.0
-          ],
-          "init": 100.0
-        },
-        {
-          "path": "cutoffpl.norm",
-          "index": 2,
-          "kind": "log",
-          "range": [
-            1e-08,
-            0.1
-          ],
-          "init": 0.001
-        }
-      ],
-      "family": "absorbed"
+      ]
     }
   ],
   "speed": "auto"
