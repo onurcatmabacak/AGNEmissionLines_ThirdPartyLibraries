@@ -1,0 +1,19 @@
+# Sub-mm spectral-line fitting with McFine (hyperfine structure, multi-component).
+#
+# McFine (GPL-3.0) is a pure-pip package: no CASA, no RADEX needed for the LTE
+# fit type used here.  Its dependency pins are strict, so they are installed
+# from the package itself rather than guessed.
+FROM python:3.12-slim
+ENV PYTHONUNBUFFERED=1 MPLBACKEND=Agg OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1
+RUN apt-get update && apt-get install -y --no-install-recommends gcc g++ libgomp1 \
+ && rm -rf /var/lib/apt/lists/*
+RUN pip install --no-cache-dir "mcfine==0.4" "numpy<2.5" \
+ && pip install --no-cache-dir "pandas>=2" "astroquery>=0.4.7"
+COPY Tools/submm_line/run_submm_line.py /app/run/run_submm_line.py
+COPY Tools/submm_line/README.md /app/run/README.md
+COPY configs/submm_line/default /app/config
+RUN mkdir -p /app/input /app/output /tmp/mpl && chmod 777 /app/output /tmp/mpl \
+ && python -c "import mcfine, astropy, lmfit, emcee, spectral_cube; from mcfine.line_info import freq_lines, strength_lines_dict, v_lines_dict; print('McFine imports OK')"
+WORKDIR /app/run
+CMD ["python", "/app/run/run_submm_line.py", "--input", "/app/input", \
+     "--output", "/app/output", "--config", "/app/config/config.json"]

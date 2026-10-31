@@ -97,6 +97,41 @@ on the synthetic doublet above and awaits a fetched spectrum; the ALMA route
 (`astroquery.alma` -> `get_data_info(member_ous_uid)` -> access_url) is
 verified to work up to the download size.
 
+## Implemented: `submm_line` (McFine)
+
+`Tools/submm_line/` + `pipeline/runners/run_submm_line_docker.sh` +
+`configs/submm_line/default`, registered in registry/capabilities/caveats/
+`ALL_TOOLS`.  Image builds (McFine 0.4, pure pip, no CASA/RADEX).
+
+Fits N components of McFine's optical-depth hyperfine model
+(`hyperfine_structure_lte`: T_ex, log tau, v_centre, width per component) plus
+one Jy-per-K scale, for `n2hp10` (7 merged hyperfine groups, 93.17 GHz), `co21`
+and `hi21cm`.
+
+### Validation (synthetic N2H+ 1-0, two components)
+
+Data generated from McFine's own model so the hyperfine strengths/offsets match
+exactly (circular in the radiative transfer, but it tests units, velocity
+convention, key handling and the fitter): components at -60 km/s (sigma 35, tau
+0.56) and +140 km/s (sigma 55, tau 0.32), plus noise.
+
+| | injected | recovered |
+|---|---|---|
+| v_centre c1 | -60.0 km/s | **-60.00** |
+| v_centre c2 | +140.0 km/s | **+139.96** |
+| sigma c1 / c2 | 35 / 55 km/s | **34.9 / 55.3** |
+| tau c1 / c2 | 0.56 / 0.32 | **0.59 / 0.28** |
+| chi2/dof | ~1 | **0.96** |
+
+T_ex comes out below the injected value (13.6 vs 22 K) because it is
+degenerate with the free Jy-per-K scale — recorded as the tool caveat, so T_ex
+is reported as indicative only.
+
+Two adapter bugs the test caught: McFine's `strength_lines_dict` only holds the
+*merged* hyperfine groups (7 for N2H+ 1-0, not the 15 individual transitions),
+and its `line_width` is a Gaussian sigma, so `fwhm_kms` must not be multiplied
+by 2.3548 twice.
+
 ## Integration order (recommended)
 
 1. **RadioSED** — buildable, GPL-3.0, offline via `--custom_data_file`.  Needs a

@@ -55,7 +55,7 @@ ALL_TOOLS = ("ir_linefit", "pyqsofit_uv", "qsofitmore_line", "pyqsofitspec_line"
              "gandalf_line", "nir_linefit", "pahfit_mir", "fir_linefit", "cafe_line",
              "crossband", "cigale_sed", "agnfitter_sed", "s3fit_line", "galspec_line",
              "qgfit", "sheap_line", "manga_dap", "xmm_xspec", "rxte_xspec",
-             "crossmission", "optical_linefit", "manga_dap_full", "xmm_sas_raw", "bxa_xspec", "radio_line")
+             "crossmission", "optical_linefit", "manga_dap_full", "xmm_sas_raw", "bxa_xspec", "radio_line", "submm_line")
 
 # Tools that can use more than one CPU thread.  They are run one at a time in
 # --phased mode so that they get the full machine; the remaining tools are then
