@@ -19,11 +19,15 @@ cannot produce a science product until we acquire real spectra/cubes.
 |---|---|---|---|---|---|
 | **RadioSED** | `github.com/ekerrison/RadioSED` | no (script collection) | **GPL-3.0** | `bilby`, `george`, `astroquery` | **buildable now** — verified below |
 | Qubespec | `github.com/honzascholtz/Qubespec` (395 MB, Jupyter) | no | **none (all rights reserved)** | python | licence blocker: cannot be vendored or shipped; build-time clone only, and only with the author's permission |
-| XCLASS | not on GitHub/PyPI; tarball from Uni. Cologne | no | academic, per-download | **CASA** | blocked: CASA runtime (multi-GB) + licence |
-| McFine | GitHub | no | — | **CASA** | blocked: CASA runtime |
+| XCLASS | not on GitHub/PyPI; tarball from Uni. Cologne | no | academic, per-download | CASA python API | **feasible now** that casatools is a pip wheel, but the source is still a per-download tarball with its own licence |
+| **McFine** | **PyPI `mcfine` 0.4** | **yes** | GPL | `spectral_cube`, `emcee`, `lmfit` — **no CASA** | **buildable now** — verified: `pip download mcfine` succeeds, deps are astropy/corner/emcee/lmfit/numdifftools/numpy/scipy/spectral_cube |
 | MoD_AbS | no public repository found | no | — | — | blocked: not publicly distributed |
 | Lightning (SED) | not found under that name | **name collision**: PyPI `lightning` is PyTorch Lightning | — | — | blocked: must identify the real project first |
-| CASA | NRAO tarball / conda | no | — | — | heavy: multi-GB, needed by XCLASS/McFine |
+| **pyspeckit** | **PyPI 1.0.4** | **yes** | BSD-3 | astropy, radio_beam, casa-formats-io | **buildable now**: multi-Gaussian, hyperfine, H I/RRL fitting on spectra and cubes |
+| spectral-cube / radio-beam | PyPI 0.7.0 / 0.3.10 | yes | BSD-3 | — | cube I/O and beam handling |
+| RADEX (`pyradex`) | sdist, needs a Fortran build | partly | GPL | gfortran | non-LTE excitation; build in-image with gfortran |
+| Splatalogue | `astroquery.splatalogue` | yes | BSD-3 | astroquery | mandatory line identification before any sub-mm fit |
+| CASA 6 | **PyPI `casatools` (82 MB) + `casatasks` (2 MB)** | **yes** | — | — | **much lighter than expected**: the multi-GB NRAO tarball is not needed, so `specfit` and the CASA data path are ~85 MB |
 
 Also note AGNfitter already exists in this repo as `agnfitter_sed`; the
 "AGNfitter-RX radio extension" would be a *variant config* of that tool, not a
