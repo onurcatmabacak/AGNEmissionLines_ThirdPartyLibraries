@@ -1,0 +1,28 @@
+# Radio / sub-mm spectral-line fitting with pyspeckit.
+#
+# pyspeckit (BSD-3) provides Gaussian, hyperfine and known-line models
+# (H I 21-cm, NH3, radio recombination lines); astroquery.splatalogue gives
+# line identification, spectral-cube/radio-beam handle cubes and beams.
+FROM python:3.12-slim
+
+ENV PYTHONUNBUFFERED=1 MPLBACKEND=Agg OMP_NUM_THREADS=1 \
+    OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+      gcc g++ libgomp1 && rm -rf /var/lib/apt/lists/*
+
+RUN pip install --no-cache-dir \
+      "pyspeckit==1.0.4" "astropy>=6" "spectral-cube>=0.6" "radio-beam>=0.3" \
+      "astroquery>=0.4.7" "lmfit>=1.3" "emcee>=3" "matplotlib>=3.8" "pandas>=2" \
+      "numpy<2.2" "scipy>=1.11"
+
+COPY Tools/radio_line/run_radio_line.py /app/run/run_radio_line.py
+COPY Tools/radio_line/README.md /app/run/README.md
+COPY configs/radio_line/default /app/config
+
+RUN mkdir -p /app/input /app/output /tmp/mpl && chmod 777 /app/output /tmp/mpl \
+ && python -c "import pyspeckit, astropy, spectral_cube, astroquery; print('imports OK')"
+
+WORKDIR /app/run
+CMD ["python", "/app/run/run_radio_line.py", "--input", "/app/input", \
+     "--output", "/app/output", "--config", "/app/config/config.json"]

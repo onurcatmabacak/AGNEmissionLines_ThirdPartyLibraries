@@ -59,6 +59,44 @@ flags for an offline pipeline:
 Bilby emits two `FutureWarning`s about `log_likelihood(parameters)`; harmless
 for bilby 2.x, to be revisited if bilby 3 lands.
 
+## Implemented: `radio_line` (pyspeckit)
+
+`Tools/radio_line/` + `pipeline/runners/run_radio_line_docker.sh` +
+`configs/radio_line/default` — registered in the tool registry, capabilities,
+caveats and `ALL_TOOLS`.  Image builds (1.33 GB, pyspeckit 1.0.4 + spectral-cube
++ radio-beam + astroquery + lmfit).
+
+```bash
+bash pipeline/runners/run_radio_line_docker.sh <spectrum.fits> <outdir> \
+     --z <z> --ncomp 2 --absorption
+```
+
+Writes `radio_lines.csv` (component, centre, velocity, FWHM, integrated flux,
+S/N), `radio_model.csv`, `radio_fit.png/pdf` and `run.json`.
+
+### Validation
+
+* **Single component, synthetic H I 21-cm absorption** at 45 km/s: recovered
+  centre 1.426359 GHz vs 1.426360 injected, sigma 2.148e-4 GHz = 45.1 km/s,
+  amplitude -3.493e-3 vs -3.500e-3 injected — exact.
+* **Two blended components** (+240 and -120 km/s, 80 and 45 km/s wide): both
+  velocities recovered to 0.2 km/s (240.2 and -119.9), chi2/nu = 0.50, but the
+  widths come out biased high (188 and 106 km/s) because two Gaussians on a
+  smooth spectrum are partly degenerate.  That bias is recorded in the tool
+  caveat; it is not a units problem (the single-component case proves the
+  conversion is right).
+
+### Real-data status
+
+No real radio/sub-mm AGN spectrum is committed, and that is a hard blocker
+rather than an oversight: the ALMA archive line cubes for NGC 1068 are
+**200-700 MB each** (measured via the datalink products; the sub-MB products
+are continuum images), and NRAO H I absorption spectra require a CASA
+reduction before they are a spectrum at all.  The tool is therefore validated
+on the synthetic doublet above and awaits a fetched spectrum; the ALMA route
+(`astroquery.alma` -> `get_data_info(member_ous_uid)` -> access_url) is
+verified to work up to the download size.
+
 ## Integration order (recommended)
 
 1. **RadioSED** — buildable, GPL-3.0, offline via `--custom_data_file`.  Needs a

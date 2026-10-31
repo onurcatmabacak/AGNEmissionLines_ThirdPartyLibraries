@@ -147,6 +147,14 @@ tools:
     caveat: "Uses official XMM PPS products, not a raw SAS epproc/especget reduction. Fe K-alpha is 4.05 sigma; PN/MOS Gamma differ by 2.9 sigma; the broad Fe width is degenerate with continuum curvature and is not a resolved velocity."
     evidence: "outputs/xmm_xspec/PDS456_z_0.1840/, Tools/xmm_xspec/SAS_RAW_PATH.md"
     mitigation: "Quote the narrow-core flux/EW; treat SAS raw reduction as future work; do not claim spin/relativistic profile."
+  - tool: radio_line
+    kind: line
+    wave: radio
+    status: production
+    severity: medium
+    caveat: "Single-spectrum Gaussian decomposition; hyperfine structure is not modelled. Velocities follow the configured rest frequency and redshift, so a redshift error shifts all components coherently. Validated on a synthetic H I 21-cm absorption doublet: component centres recover to 0.2 km/s and a single component recovers its width exactly, but two blended components can be biased broad."
+    evidence: "Tools/radio_line/, docs/RADIO_SUBMM_INTEGRATION.md"
+    mitigation: "Quote velocities relative to the fitted components, not absolute; use submm_line/McFine when hyperfine structure matters."
   - tool: bxa_xspec
     kind: line
     wave: X-ray
