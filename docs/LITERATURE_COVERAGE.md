@@ -23,6 +23,7 @@ not silently claimed as implemented.
 
 | candidate | why it matters | licence/runtime | status |
 |---|---|---|---|
+| **Radio / sub-mm** | jets, H I absorption and molecular gas — the repository has no radio data and no radio tool | RadioSED (GPL-3.0, buildable); XCLASS/McFine need CASA; Qubespec has no licence; MoD_AbS and the SED 'Lightning' have no public distribution | **none implemented** — feasibility verified in `docs/RADIO_SUBMM_INTEGRATION.md` |
 | **BXA** | Bayesian X-ray parameter estimation and evidence/model comparison; the chi-square covariance remains the reference fit | GPL-3.0, Python + XSPEC/Sherpa + UltraNest | **implemented** as `bxa_xspec` (absorbed PL, Fe K-alpha, warm/partial/Compton-thick absorbers) |
 | **MYTorus** | Smooth torus absorption/scattering and Compton-thick Fe Kα; current model has no torus | public FITS table model, XSPEC | **not implemented** |
 | **UXCLUMPY/XARS** | Clumpy/eclipsing torus geometry | AGPL-3.0, XSPEC table model | **not implemented** |
