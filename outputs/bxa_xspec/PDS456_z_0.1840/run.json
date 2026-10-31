@@ -1,0 +1,118 @@
+{
+  "tool": "bxa_xspec",
+  "status": "partial",
+  "source_key": "PDS456_z_0.1840",
+  "input": "inputs/PDS456_z_0.1840/xray/xmm_0721010201 (official XMM-Newton EPIC PPS spectra, PN+MOS1+MOS2)",
+  "band_keV": [
+    2.0,
+    10.0
+  ],
+  "statistic": "cstat",
+  "sampler": {
+    "nested_sampling": "ultranest",
+    "bxa": "5.1.1",
+    "speed": "auto",
+    "n_live_points": 300,
+    "frac_remain": 0.05,
+    "evidence_tolerance": 2.0
+  },
+  "chi2_baseline": {
+    "pl": {
+      "chi2": 661.5,
+      "dof": 383,
+      "chi2nu": 1.727
+    },
+    "pl_line_narrow": {
+      "chi2": 634.2,
+      "dof": 381,
+      "chi2nu": 1.665
+    }
+  },
+  "models": [
+    {
+      "name": "pl",
+      "description": "absorbed power law, 2-10 keV (continuum null hypothesis)",
+      "model": null,
+      "log_z": -342.0550392598132,
+      "log_z_err": 0.2682537686151166,
+      "n_calls": 13235,
+      "posterior": {
+        "TBabs.nH": {
+          "median": 0.3526759117461091,
+          "p16": 0.29830699342566985,
+          "p84": 0.4006574695679148
+        },
+        "zpowerlw.PhoIndex": {
+          "median": 2.075940798355057,
+          "p16": 2.0564350745367532,
+          "p84": 2.092544254859464
+        },
+        "zpowerlw.norm": {
+          "median": 0.004163569755805073,
+          "p16": 0.0040208745692136005,
+          "p84": 0.004293956427196054
+        }
+      },
+      "status": "ok",
+      "delta_log_z_vs_pl": 0.0
+    },
+    {
+      "name": "pl_line_narrow",
+      "description": "narrow Fe K-alpha, sigma fixed at 50 eV (rest 6.4 keV)",
+      "model": null,
+      "log_z": -342.91600515423687,
+      "log_z_err": 0.45729539571273775,
+      "n_calls": 40005,
+      "posterior": {
+        "TBabs.nH": {
+          "median": 0.35291188384177025,
+          "p16": 0.29916987894590047,
+          "p84": 0.4029821886527736
+        },
+        "zpowerlw.PhoIndex": {
+          "median": 2.076955792575103,
+          "p16": 2.0587760766566356,
+          "p84": 2.094512694551332
+        },
+        "zpowerlw.norm": {
+          "median": 0.004118766612996671,
+          "p16": 0.003986439681551651,
+          "p84": 0.004259199673371921
+        },
+        "zgauss.LineE": {
+          "median": 5.797457504585337,
+          "p16": 5.0832123674552765,
+          "p84": 5.933963099923671
+        },
+        "zgauss.norm": {
+          "median": 4.639315805724695e-07,
+          "p16": 1.6720866674522322e-07,
+          "p84": 1.1662697377994305e-06
+        }
+      },
+      "status": "ok",
+      "delta_log_z_vs_pl": -0.8609658944236571
+    },
+    {
+      "name": "pl_line_broad",
+      "description": "broad Fe K-alpha, sigma fixed at 300 eV (the degenerate competitor of pcfabs); a free width is a flat likelihood direction and did not converge",
+      "status": "not_converged"
+    },
+    {
+      "name": "pcfabs",
+      "description": "partial covering absorber: the degenerate competitor of a broad line",
+      "status": "not_converged"
+    },
+    {
+      "name": "warmabs",
+      "description": "ionized warm absorber (wind proxy)",
+      "status": "not_converged"
+    }
+  ],
+  "notes": [
+    "REAL DATA: the XMM-Newton EPIC PPS spectra of PDS 456 that already back the xmm_xspec product.",
+    "pl and pl_line_narrow converged.  pl_line_broad, pcfabs and warmabs were stopped: the C-stat peak is flat along the line normalisation, driving the sampler to ~0.02 % efficiency at 75-95 % of the volume, so their evidences are not quoted rather than being given a non-converged value.",
+    "Band is 2-10 keV: with 0.5 keV included an unmodelled soft excess holds chi2/dof at 2.70 and no Bayes factor is interpretable.",
+    "Result on real data: d ln Z(pl_line_narrow - pl) < 0, i.e. no Bayesian evidence for a 50 eV Fe K-alpha line, even though it improves chi2 by 27.3."
+  ]
+}

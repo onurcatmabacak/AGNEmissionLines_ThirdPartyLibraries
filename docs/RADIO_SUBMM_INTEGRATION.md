@@ -59,6 +59,32 @@ flags for an offline pipeline:
 Bilby emits two `FutureWarning`s about `log_likelihood(parameters)`; harmless
 for bilby 2.x, to be revisited if bilby 3 lands.
 
+## CASA: installable, but blocked upstream today
+
+CASA 6 **is** obtainable without the multi-GB tarball: `casatools`/`casatasks`
+are on conda-forge (6.7.x), and the pip wheels exist too (82 MB + 2 MB).  The
+conda route installs cleanly, but every CASA import needs the `casarundata`
+measures tables, and today that is unusable:
+
+```
+casaconfig.private.data_available -> RemoteError: HTTP Error 500
+  (https://go.nrao.edu/casarundata)
+https://casa.nrao.edu/download/devel/casavis/data/casarundata.tar.gz -> 404
+pip install casarundata            -> no such package
+conda-forge casarundata            -> no such package
+```
+
+The pip wheels additionally need `OPENSSL_3.0.1`/`3.2.0` symbol versions that
+Debian bookworm/trixie libcrypto no longer carries
+(`ImportError: version OPENSSL_3.0.1 not found`), so the wheels are not a way
+around it either.  `Tools/casa_specfit/` holds the ready conda-forge build plus
+a `casasiteconfig.py` that disables the network data update; the image builds up
+to the import check and will complete as soon as NRAO's data endpoint answers.
+
+Consequence: the Gaussian decompositions from `radio_line` and `submm_line` are
+**not yet cross-checked against CASA `specfit`**.  That is an upstream outage,
+not a design choice.
+
 ## Implemented: `radio_line` (pyspeckit)
 
 `Tools/radio_line/` + `pipeline/runners/run_radio_line_docker.sh` +

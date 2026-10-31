@@ -1,0 +1,350 @@
+{
+  "source_name": "auto",
+  "band_keV": [
+    2.0,
+    10.0
+  ],
+  "statistic": "cstat",
+  "fit_iterations": 500,
+  "xspec_chatter": 0,
+  "n_live_points": 300,
+  "evidence_tolerance": 2.0,
+  "seed": 42,
+  "note": "Bayesian evidence comparison for PDS 456 with nested sampling (UltraNest, speed=auto). Band is 2-10 keV, the canonical Fe K-alpha band: extending to 0.5 keV leaves an unmodelled soft-excess/cross-calibration residual that holds chi2/dof at 2.70, whereas 2-10 keV gives 1.73 and makes the line-vs-absorption comparison interpretable.  Priors: 25-start chi-square scans show a narrow line (sigma 50 eV) improves chi2 by 27, an unconstrained-width line by 162, and pcfabs by 158 - so the free-width line and the partial covering are degenerate competitors and both are sampled.  cutoffpl_cabs is dropped: it improves chi2 by only 2.6 for two extra parameters on 0.5-10 keV data, i.e. unidentifiable; a Compton-thick comparison needs broadband (NuSTAR) data.  MYTorus/UXCLUMPY/RELXILL tables are not bundled (licence/download gated). Fe K-alpha width is treated as two fixed hypotheses (50 eV narrow, 300 eV broad) instead of a free parameter: a free sigma is a flat likelihood direction, which drove the sampler to 0.04 % efficiency at 94 % of the evidence volume.",
+  "models": [
+    {
+      "name": "pl",
+      "family": "pl",
+      "expr": "constant*tbabs*(zpowerlw)",
+      "description": "absorbed power law, 2-10 keV (continuum null hypothesis)",
+      "params": [
+        {
+          "path": "TBabs.nH",
+          "index": 0,
+          "kind": "log",
+          "range": [
+            0.0001,
+            50.0
+          ],
+          "init": 0.2
+        },
+        {
+          "path": "zpowerlw.PhoIndex",
+          "index": 0,
+          "kind": "uniform",
+          "range": [
+            1.2,
+            2.9
+          ],
+          "init": 2.05
+        },
+        {
+          "path": "zpowerlw.Redshift",
+          "index": 1,
+          "kind": "fixed"
+        },
+        {
+          "path": "zpowerlw.norm",
+          "index": 2,
+          "kind": "log",
+          "range": [
+            1e-05,
+            0.1
+          ],
+          "init": 0.005
+        }
+      ]
+    },
+    {
+      "name": "pl_line_narrow",
+      "family": "pl",
+      "expr": "constant*tbabs*(zpowerlw + zgauss)",
+      "description": "narrow Fe K-alpha, sigma fixed at 50 eV (rest 6.4 keV)",
+      "params": [
+        {
+          "path": "TBabs.nH",
+          "index": 0,
+          "kind": "log",
+          "range": [
+            0.0001,
+            50.0
+          ],
+          "init": 0.2
+        },
+        {
+          "path": "zpowerlw.PhoIndex",
+          "index": 0,
+          "kind": "uniform",
+          "range": [
+            1.2,
+            2.9
+          ],
+          "init": 2.05
+        },
+        {
+          "path": "zpowerlw.Redshift",
+          "index": 1,
+          "kind": "fixed"
+        },
+        {
+          "path": "zpowerlw.norm",
+          "index": 2,
+          "kind": "log",
+          "range": [
+            1e-05,
+            0.1
+          ],
+          "init": 0.005
+        },
+        {
+          "path": "zgauss.LineE",
+          "index": 0,
+          "kind": "uniform",
+          "range_factor": [
+            0.9,
+            1.1
+          ],
+          "init": 6.4
+        },
+        {
+          "path": "zgauss.Sigma",
+          "index": 1,
+          "kind": "fixed",
+          "init": 0.05
+        },
+        {
+          "path": "zgauss.norm",
+          "index": 2,
+          "kind": "log",
+          "range": [
+            1e-07,
+            0.001
+          ],
+          "init": 3e-05
+        },
+        {
+          "path": "zgauss.Redshift",
+          "index": 2,
+          "kind": "fixed"
+        }
+      ]
+    },
+    {
+      "name": "pl_line_broad",
+      "family": "pl",
+      "expr": "constant*tbabs*(zpowerlw + zgauss)",
+      "description": "broad Fe K-alpha, sigma fixed at 300 eV (the degenerate competitor of pcfabs); a free width is a flat likelihood direction and did not converge",
+      "params": [
+        {
+          "path": "TBabs.nH",
+          "index": 0,
+          "kind": "log",
+          "range": [
+            0.0001,
+            50.0
+          ],
+          "init": 0.2
+        },
+        {
+          "path": "zpowerlw.PhoIndex",
+          "index": 0,
+          "kind": "uniform",
+          "range": [
+            1.2,
+            2.9
+          ],
+          "init": 2.05
+        },
+        {
+          "path": "zpowerlw.Redshift",
+          "index": 1,
+          "kind": "fixed"
+        },
+        {
+          "path": "zpowerlw.norm",
+          "index": 2,
+          "kind": "log",
+          "range": [
+            1e-05,
+            0.1
+          ],
+          "init": 0.005
+        },
+        {
+          "path": "zgauss.LineE",
+          "index": 0,
+          "kind": "uniform",
+          "range_factor": [
+            0.9,
+            1.1
+          ],
+          "init": 6.4
+        },
+        {
+          "path": "zgauss.Sigma",
+          "index": 1,
+          "kind": "fixed",
+          "init": 0.3
+        },
+        {
+          "path": "zgauss.norm",
+          "index": 2,
+          "kind": "log",
+          "range": [
+            1e-07,
+            0.001
+          ],
+          "init": 3e-05
+        },
+        {
+          "path": "zgauss.Redshift",
+          "index": 2,
+          "kind": "fixed"
+        }
+      ]
+    },
+    {
+      "name": "pcfabs",
+      "family": "absorbed",
+      "expr": "constant*tbabs*pcfabs*(zpowerlw)",
+      "description": "partial covering absorber: the degenerate competitor of a broad line",
+      "params": [
+        {
+          "path": "TBabs.nH",
+          "index": 0,
+          "kind": "log",
+          "range": [
+            0.0001,
+            50.0
+          ],
+          "init": 0.2
+        },
+        {
+          "path": "zpowerlw.PhoIndex",
+          "index": 0,
+          "kind": "uniform",
+          "range": [
+            1.2,
+            2.9
+          ],
+          "init": 2.05
+        },
+        {
+          "path": "zpowerlw.Redshift",
+          "index": 1,
+          "kind": "fixed"
+        },
+        {
+          "path": "zpowerlw.norm",
+          "index": 2,
+          "kind": "log",
+          "range": [
+            1e-05,
+            0.1
+          ],
+          "init": 0.005
+        },
+        {
+          "path": "pcfabs.nH",
+          "index": 0,
+          "kind": "log",
+          "range": [
+            0.05,
+            100.0
+          ],
+          "init": 10.0
+        },
+        {
+          "path": "pcfabs.CvrFract",
+          "index": 1,
+          "kind": "uniform",
+          "range": [
+            0.05,
+            0.95
+          ],
+          "init": 0.5
+        }
+      ]
+    },
+    {
+      "name": "warmabs",
+      "family": "absorbed",
+      "expr": "constant*tbabs*zxipcf*(zpowerlw)",
+      "description": "ionized warm absorber (wind proxy)",
+      "params": [
+        {
+          "path": "TBabs.nH",
+          "index": 0,
+          "kind": "log",
+          "range": [
+            0.0001,
+            50.0
+          ],
+          "init": 0.2
+        },
+        {
+          "path": "zpowerlw.PhoIndex",
+          "index": 0,
+          "kind": "uniform",
+          "range": [
+            1.2,
+            2.9
+          ],
+          "init": 2.05
+        },
+        {
+          "path": "zpowerlw.Redshift",
+          "index": 1,
+          "kind": "fixed"
+        },
+        {
+          "path": "zpowerlw.norm",
+          "index": 2,
+          "kind": "log",
+          "range": [
+            1e-05,
+            0.1
+          ],
+          "init": 0.005
+        },
+        {
+          "path": "zxipcf.Nh",
+          "index": 0,
+          "kind": "log",
+          "range": [
+            0.01,
+            100.0
+          ],
+          "init": 1.0
+        },
+        {
+          "path": "zxipcf.log_xi",
+          "index": 1,
+          "kind": "uniform",
+          "range": [
+            0.0,
+            4.0
+          ],
+          "init": 2.0
+        },
+        {
+          "path": "zxipcf.CvrFract",
+          "index": 2,
+          "kind": "uniform",
+          "range": [
+            0.05,
+            1.0
+          ],
+          "init": 0.5
+        },
+        {
+          "path": "zxipcf.Redshift",
+          "index": 3,
+          "kind": "fixed"
+        }
+      ]
+    }
+  ],
+  "speed": "auto",
+  "frac_remain": 0.05
+}
