@@ -112,7 +112,35 @@ S/N), `radio_model.csv`, `radio_fit.png/pdf` and `run.json`.
   caveat; it is not a units problem (the single-component case proves the
   conversion is right).
 
-### Real-data status
+### Real-data test (committed)
+
+`inputs/REGION5_HCN_z_0.0000/` holds an **observed** HCN J=1-0 cube (88.6318473
+GHz rest, BUNIT K) distributed with the pyspeckit test data, plus a 1-D
+spectrum extracted with the new `pipeline/extract_cube_spectrum.py --box 5`.
+Both tools were run on it and the products are committed:
+
+| tool | result | chi2/nu |
+|---|---|---|
+| `radio_line` | v = +8.3 km/s, FWHM 8.0 km/s (prior cap), S/N 3.0 — not detected | 0.67 |
+| `submm_line` | v = +11.8 km/s, FWHM 9.2 km/s, tau = 0.01, S/N 2.9 — not detected | 1.30 |
+
+Both are marginal because the crop is: the peak channel pair is 6.9 sigma but
+the integrated profile only reaches ~3 sigma.  The consistent velocities from
+two independent engines (pyspeckit Gaussians, McFine optical depth) are the
+useful part; neither is a detection.  This dataset is a Galactic molecular
+region, not an AGN, so it validates the tools without extending the AGN sample.
+
+### Real ALMA/AGN data: what was tried
+
+The ALMA archive route was exercised end to end and is blocked at the data
+stage, not the tooling: `Alma.query_object("NGC 1068")` returns 358 cubes, and
+the datalink products served at small size are **primary-beam responses**
+(peak exactly 1.0, noise ~1e-9) and **masks**, while the science intensity
+cubes are 2.4-4.6 GB.  NGC 1275's smallest intensity cube is 390 MB and is
+also a `.pb` response.  Downloading a multi-GB QA2 cube is therefore required
+for an AGN test, which is a deliberate decision rather than a missing feature.
+
+### Original synthetic validation
 
 No real radio/sub-mm AGN spectrum is committed, and that is a hard blocker
 rather than an oversight: the ALMA archive line cubes for NGC 1068 are

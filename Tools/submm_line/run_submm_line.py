@@ -106,23 +106,37 @@ def main(argv=None) -> int:
     z = float(args.z if args.z is not None else cfg.get("redshift", 0.0))
 
     from mcfine.fitting import multiple_components
-    from mcfine.line_info import freq_lines, strength_lines_dict, v_lines_dict
 
-    # McFine groups the individual hyperfine transitions: freq_lines holds all
-    # of them but strength_lines_dict / v_lines_dict only the merged groups.
-    keys = [k for k in freq_lines if k.startswith(line)
-            and k in strength_lines_dict and k in v_lines_dict]
-    if not keys:
-        raise SystemExit(f"unknown McFine line {line!r}; available: "
-                         f"{sorted({k.split('_')[0] for k in freq_lines})}")
-    # strongest (main) hyperfine component sets the rest frequency
-    main = max(keys, key=lambda k: strength_lines_dict.get(k, 0.0))
-    freq_rest = float(freq_lines[main])
-    strengths = np.array([strength_lines_dict[k] for k in keys], dtype=float)
-    v_lines = np.array([v_lines_dict.get(k, 0.0) for k in keys], dtype=float)
-    strengths /= strengths.sum()
-    log(f"line {line}: {len(keys)} hyperfine components, rest {freq_rest:.6f} GHz, "
-        f"strongest v-offset {v_lines[np.argmax(strengths)]:+.3f} km/s")
+    if line in ("custom", "user"):
+        # A transition McFine does not bundle (e.g. HCN 1-0).  Strengths and
+        # velocity offsets come from the config; a single entry is a plain
+        # one-component LTE profile.
+        custom = cfg.get("custom_line") or {}
+        freq_rest = float(custom["rest_frequency_ghz"])
+        strengths = np.array(custom.get("strengths", [1.0]), dtype=float)
+        v_lines = np.array(custom.get("v_offsets_kms", [0.0] * len(strengths)), dtype=float)
+        if strengths.size != v_lines.size:
+            raise SystemExit("custom_line: strengths and v_offsets_kms must have equal length")
+        strengths = strengths / strengths.sum()
+        log(f"custom line {custom.get('name', 'custom')}: {strengths.size} component(s), "
+            f"rest {freq_rest:.6f} GHz")
+    else:
+        from mcfine.line_info import freq_lines, strength_lines_dict, v_lines_dict
+
+        # McFine groups the individual hyperfine transitions: freq_lines holds
+        # all of them but strength_lines_dict / v_lines_dict only merged groups.
+        keys = [k for k in freq_lines if k.startswith(line)
+                and k in strength_lines_dict and k in v_lines_dict]
+        if not keys:
+            raise SystemExit(f"unknown McFine line {line!r}; available: "
+                             f"{sorted({k.split('_')[0] for k in freq_lines})} or 'custom'")
+        main = max(keys, key=lambda k: strength_lines_dict.get(k, 0.0))
+        freq_rest = float(freq_lines[main])
+        strengths = np.array([strength_lines_dict[k] for k in keys], dtype=float)
+        v_lines = np.array([v_lines_dict.get(k, 0.0) for k in keys], dtype=float)
+        strengths /= strengths.sum()
+        log(f"line {line}: {len(keys)} hyperfine components, rest {freq_rest:.6f} GHz, "
+            f"strongest v-offset {v_lines[np.argmax(strengths)]:+.3f} km/s")
 
     src = args.input
     if src.is_dir():
@@ -252,7 +266,7 @@ def main(argv=None) -> int:
         "axis": axis_kind, "ctype": ctype, "n_channels": int(flux.size),
         "redshift": z, "line": line, "rest_frequency_ghz": freq_rest,
         "rest_frequency_observed_ghz": nu_rest,
-        "hyperfine_components": len(keys), "fit_type": fit_type,
+        "hyperfine_components": int(strengths.size), "fit_type": fit_type,
         "fit": {"n_components": ncomp, "chi2": chi2, "dof": dof,
                 "chi2nu": chi2 / dof if dof > 0 else None, "rms": rms,
                 "scale": float(best["scale"].value), "success": bool(fit.success)},

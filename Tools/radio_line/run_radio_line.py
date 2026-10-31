@@ -164,14 +164,23 @@ def main(argv=None) -> int:
                             xarrkwargs={"unit": "GHz"} if freq is not None else {},
                             header=src.name)
 
+    # Optional physical width bounds, given in km/s and converted to the x unit.
+    wb = cfg.get("width_kms_bounds")
+    if wb and freq is not None:
+        c_kms = 299792.458
+        sigma_lo = float(wb[0]) / c_kms * float(np.median(freq)) / 2.3548
+        sigma_hi = float(wb[1]) / c_kms * float(np.median(freq)) / 2.3548
+    else:
+        sigma_lo, sigma_hi = span / 1000.0, span
+
     peaks = guess_peaks(flux_sub, ncomp, absorption, float(np.median(err)))
     guesses, limits_min, limits_max = [], [], []
     span = float(xv.max() - xv.min())
     for i in peaks:
         amp = abs(flux_sub[i]) * (-1.0 if absorption else 1.0)
         guesses += [amp, float(xv[i]), span / (40.0 * ncomp)]
-        limits_min += [-np.inf, float(xv.min()), span / 1000.0]
-        limits_max += [np.inf, float(xv.max()), span]
+        limits_min += [-np.inf, float(xv.min()), sigma_lo]
+        limits_max += [np.inf, float(xv.max()), sigma_hi]
     sp.specfit(fittype="gaussian", guesses=guesses, limitedmin=[True] * len(guesses),
                limitedmax=[True] * len(guesses), minpars=limits_min, maxpars=limits_max,
                negamp=absorption, verbose=False)
