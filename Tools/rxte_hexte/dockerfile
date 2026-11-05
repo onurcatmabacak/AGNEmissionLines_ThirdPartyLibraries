@@ -1,0 +1,7 @@
+FROM xmm_xspec:latest
+COPY Tools/rxte_hexte/run_rxte_hexte.py /app/run/run_rxte_hexte.py
+COPY Tools/rxte_hexte/README.md /app/run/README.md
+RUN mkdir -p /app/input /app/output && chmod 777 /app/output
+WORKDIR /app/run
+ENTRYPOINT []
+CMD ["/bin/bash", "-lc", "source $HEADAS/headas-init.sh && exec /opt/conda/bin/python /app/run/run_rxte_hexte.py --input /app/input --output /app/output"]

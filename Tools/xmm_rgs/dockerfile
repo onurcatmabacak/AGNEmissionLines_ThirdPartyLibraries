@@ -1,0 +1,12 @@
+# XMM-Newton RGS grating spectroscopy, fitted with the XSPEC/PyXspec branch.
+#
+# No SAS reduction: the XMM SOC pipeline products (SRSPEC counts spectrum +
+# RSPMAT response matrix) are enough, which avoids the ODF/attitude files that
+# rgsproc would need and that XSA's AIO endpoint does not serve.
+FROM xmm_xspec:latest
+COPY Tools/xmm_rgs/run_xmm_rgs.py /app/run/run_xmm_rgs.py
+COPY Tools/xmm_rgs/README.md /app/run/README.md
+RUN mkdir -p /app/input /app/output && chmod 777 /app/output
+WORKDIR /app/run
+ENTRYPOINT []
+CMD ["python", "/app/run/run_xmm_rgs.py", "--input", "/app/input", "--output", "/app/output"]

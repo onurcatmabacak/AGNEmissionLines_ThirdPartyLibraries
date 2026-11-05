@@ -1,0 +1,47 @@
+{
+  "_comment": "Dedicated FIR PACS/HIFI Gaussian fitter.",
+  "tool": "fir_linefit",
+  "engine": "local Gaussian + local linear continuum",
+  "image": "fir_linefit",
+  "lines": [
+    [
+      "OI63",
+      63.184
+    ],
+    [
+      "OIII88",
+      88.356
+    ],
+    [
+      "NII122",
+      121.898
+    ],
+    [
+      "OI145",
+      145.525
+    ],
+    [
+      "CII158",
+      157.741
+    ]
+  ],
+  "fit": {
+    "window_half_resolution_elements": 8.0,
+    "width_tie": {
+      "enabled": true,
+      "snr_threshold": 5.0,
+      "passes": 2
+    },
+    "continuum": "local linear",
+    "max_nfev": 20000
+  },
+  "uncertainty": {
+    "mode": "curve_fit covariance",
+    "mcmc": false
+  },
+  "outputs": [
+    "fir_lines.csv",
+    "fir_fit.png",
+    "fir_summary.json"
+  ]
+}

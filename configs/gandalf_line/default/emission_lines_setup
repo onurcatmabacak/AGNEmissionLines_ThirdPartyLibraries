@@ -1,0 +1,41 @@
+# i_line name	lambda	action	l-kind	A_i	V_g/i	sig_g/i	fit-kind
+#		 \AA	f/i/m	l/d#	1/rel2#	km/s	km/s	f/h/t
+#
+# GANDALF v1.5 emission-line setup for the gandalf_line tool.
+# Wavelengths are rest-frame.  All lines start with action='m' so that
+# GANDALF's mask_emission_lines routine can test whether each line is inside
+# the prepared rest-frame window; run_gandalf.pro switches in-window lines to
+# action='f' before the simultaneous fit.
+#
+# Narrow H-beta is tied to [O III] 5007 (fit-kind t11); the broad H-beta
+# component is independent.  [N II] 6584 is tied to H-alpha, [S II] to
+# H-alpha, [O I] and [O II]/[Ne III] to [O III].  Multiplet satellites use
+# the l-kind d# mechanism with the published flux ratios.
+#
+  0	 OII3729  3729.88 m l 1.000 0 10 t11
+  1	 OII3726  3726.03 m d0 0.77 0 10 f
+  2	 NeIII3869 3868.69 m l 1.000 0 10 t11
+  3	 NeIII3967 3967.40 m l 1.000 0 10 t11
+  4	 Hd       4101.73 m d8 0.26 0 10 f
+  5	 Hg       4340.46 m d8 0.47 0 10 f
+  6	 HeII4686 4685.74 m l 1.000 0 10 t11
+  7	 ArIV4711 4711.30 m l 1.000 0 10 t11
+  8	 Hb       4861.32 m l 1.000 0 10 t11
+  9	 Hb_br    4861.32 m l 1.000 0 1000 f
+ 10	 OIII4959 4958.83 m d11 0.35 0 10 f
+ 11	 OIII5007 5006.77 m l 1.000 0 10 f
+ 12	 NI5198   5197.90 m l 1.000 0 10 f
+ 13	 NI5200   5200.39 m d12 0.66 0 10 f
+ 14	 OI6300   6300.20 m l 1.000 0 10 t11
+ 15	 OI6363   6363.67 m d14 0.33 0 10 f
+ 16	 Ha       6562.80 m l 1.000 0 10 f
+ 17	 NII6548  6547.96 m d18 0.34 0 10 f
+ 18	 NII6584  6583.34 m l 1.000 0 10 t16
+ 19	 SII6716  6716.31 m l 1.000 0 10 t16
+ 20	 SII6730  6730.68 m d19 0.75 0 10 f
+ 21	 Ha_br    6562.80 m l 1.000 0 1000 f
+ 90	 sky      5577.00 m l 1.000 0 10 f
+ 91	 sky      6300.00 m l 1.000 0 10 f
+ 92	 sky      6363.00 m l 1.000 0 10 f
+100	 NaI      5890.00 m l -1.000 0 10 f
+101	 NaI      5896.00 m d100 -1.000 0 10 f

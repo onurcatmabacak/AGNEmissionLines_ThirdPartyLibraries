@@ -1,0 +1,50 @@
+# CAFE 1.0.1 spectral decomposition for JWST/MIRI MRS spectra.
+#
+# Build context is the repository root:
+#   docker build -f Tools/cafe_line/dockerfile -t cafe_line .
+#
+# CAFE is installed from the public repository at the pinned v1.0.1 commit
+# 39e298bef517030f7828057bb9eeff2927fba77a.  The source tree is not vendored.
+# The tables used at run time come from the mounted/configs/cafe_line/tables
+# directory (baked in as /app/config/tables for a self-contained image).
+FROM python:3.11-slim
+
+ENV PYTHONUNBUFFERED=1 \
+    MPLBACKEND=Agg \
+    MPLCONFIGDIR=/tmp/mpl \
+    CAFE_COMMIT=39e298bef517030f7828057bb9eeff2927fba77a
+
+# git is needed only to fetch the pinned CAFE commit.  No compiler is needed:
+# all scientific dependencies are wheels.
+RUN apt-get update && apt-get install -y --no-install-recommends git \
+    && rm -rf /var/lib/apt/lists/*
+
+# specutils 1.13.0 is the last release providing Spectrum1D, which CAFE uses;
+# numpy >= 2 is required by CAFE's np.trapezoid calls.  These versions were
+# tested together (see Tools/cafe_line/README.md).
+RUN pip install --no-cache-dir \
+      numpy==2.2.6 \
+      scipy==1.15.3 \
+      astropy==7.0.1 \
+      matplotlib==3.10.1 \
+      pandas==2.2.3 \
+      lmfit==1.3.4 \
+      specutils==1.13.0 \
+      asdf==4.2.0 \
+      setuptools \
+      wheel
+
+# --no-deps avoids CAFE's jupyter/ipykernel/photutils dependencies, which the
+# CAFE fitter does not import.  The package data (tables/) is installed by
+# setup.py's include_package_data + MANIFEST.in.
+RUN pip install --no-cache-dir --no-deps \
+      "CAFE @ git+https://github.com/GOALS-survey/CAFE.git@${CAFE_COMMIT}"
+
+WORKDIR /app
+COPY Tools/cafe_line/run_cafe.py Tools/cafe_line/read_jwst_x1d.py /app/
+COPY configs/cafe_line /app/config
+
+RUN mkdir -p /app/input /app/output /app/work \
+    && chmod 777 /app/output /app/work
+
+ENTRYPOINT ["python", "/app/run_cafe.py"]

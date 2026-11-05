@@ -1,0 +1,37 @@
+# Use official Python 3.8.12 image as the base
+FROM python:3.8.12
+
+# Debian bullseye is EOL: point apt at the archive (bullseye-security is not
+# archived, so it is dropped -- only build-time tooling comes from here).
+RUN printf 'deb http://archive.debian.org/debian bullseye main contrib non-free\ndeb http://archive.debian.org/debian bullseye-updates main contrib non-free\n' > /etc/apt/sources.list \
+    && rm -f /etc/apt/sources.list.d/*.list /etc/apt/sources.list.d/*.sources \
+    && echo 'Acquire::Check-Valid-Until "false";' > /etc/apt/apt.conf.d/99disable-check-valid-until
+
+# Install system dependencies for building Python packages
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    gcc g++ make flex bison git gfortran git texlive dvipng ghostscript cm-super texlive-latex-extra texlive-fonts-recommended\
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+# Set working directory inside the container
+WORKDIR /app
+
+RUN git clone https://github.com/remingtonsexton/BADASS3.git
+# Install dependencies
+COPY requirements.txt .
+RUN pip install -r requirements.txt
+RUN pip install --upgrade pip && pip install jupyter
+COPY main.py /app/BADASS3/example_notebooks/
+# Synthetic placeholder spectrum only. The pipeline mounts the real per-object
+# spectrum over this path at run time, so no proprietary data is shipped.
+RUN mkdir -p BADASS3/example_spectra/2-onur && python -c "import numpy as np; from astropy.io import fits; w=np.logspace(np.log10(3600.0), np.log10(10400.0), 1000); c=[fits.Column(name='flux', format='E', array=np.ones(1000, dtype='f4')), fits.Column(name='loglam', format='E', array=np.log10(w).astype('f4')), fits.Column(name='ivar', format='E', array=np.ones(1000, dtype='f4')), fits.Column(name='wdisp', format='E', array=np.full(1000, 1e-4, dtype='f4'))]; fits.HDUList([fits.PrimaryHDU(), fits.BinTableHDU.from_columns(c), fits.BinTableHDU.from_columns([fits.Column(name='z', format='E', array=np.array([0.0], dtype='f4'))])]).writeto('BADASS3/example_spectra/2-onur/my_sdss.fits', overwrite=True)"
+WORKDIR /app/BADASS3/example_notebooks/
+# WORKDIR /
+
+# Expose port 8888 for Jupyter Notebook
+EXPOSE 8888
+
+# Define the command to run your application
+# Command to run Jupyter Notebook when the container starts
+# CMD ["jupyter", "notebook", "--ip=0.0.0.0", "--allow-root", "--no-browser", "--NotebookApp.token=''"]
+CMD ["sh", "-c", "ls -hl && python main.py > /app/output/fit.log && cp -r /app/BADASS3/example_notebooks/main.py /app/BADASS3/example_spectra/2-onur /app/output" ]

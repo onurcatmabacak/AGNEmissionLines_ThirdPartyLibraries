@@ -1,0 +1,51 @@
+# PyQSOFitSpec: bootstrapped quasar emission-line fitting (skew-normal /
+# Gaussian line models), vendored at upstream commit aa326ed.
+# Build context is the repository root:
+#   docker build -f Tools/pyqsofitspec_line/dockerfile -t pyqsofitspec_line .
+FROM python:3.11-slim
+
+ENV PYTHONUNBUFFERED=1 \
+    MPLBACKEND=Agg \
+    PYTHONPATH=/app/pyqsofitspec:/app/sfdmap_shim \
+    OMP_NUM_THREADS=1 \
+    OPENBLAS_NUM_THREADS=1
+
+# gcc/gfortran: kapteyn 3.4 builds its kmpfit C extension from source.
+RUN apt-get update && apt-get install -y --no-install-recommends \
+      gcc g++ gfortran curl libgomp1 && \
+    rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+COPY Tools/pyqsofitspec_line/requirements.txt /app/requirements.txt
+RUN pip install --no-cache-dir -r /app/requirements.txt
+
+# kapteyn 3.4 (exact tarball named in the upstream README), kmpfit-only build.
+# * setup.py imports numpy and cythonizes .pyx sources -> --no-build-isolation
+#   with the numpy just installed, plus Cython 3.0.x (Cython 0.29 emits
+#   import_array() code that does not compile against numpy 1.25).
+# * the wcs/ascarray/profiles extensions use their own copy of the NumPy C API
+#   (`src/c_numpy.pxd`: `void import_array()`), which no longer compiles; the
+#   patch keeps only `kmpfit`, the only submodule PyQSOFitSpec imports.
+COPY Tools/pyqsofitspec_line/patches/patch_kapteyn.py /tmp/patch_kapteyn.py
+RUN set -eux; \
+    cd /tmp; \
+    curl -fsSLO https://www.astro.rug.nl/software/kapteyn/kapteyn-3.4.tar.gz; \
+    echo "0452efcee8142df391858ad0b7c6d469b67d29e70b371f5c30fc593b6147a87d  kapteyn-3.4.tar.gz" | sha256sum -c -; \
+    tar xzf kapteyn-3.4.tar.gz; \
+    python /tmp/patch_kapteyn.py /tmp/kapteyn-3.4; \
+    pip install --no-cache-dir 'Cython==3.0.11'; \
+    pip install --no-cache-dir --no-build-isolation /tmp/kapteyn-3.4; \
+    rm -rf /tmp/kapteyn-3.4 /tmp/kapteyn-3.4.tar.gz; \
+    python -c "from kapteyn import kmpfit; print('kmpfit:', kmpfit.__file__)"
+
+# Vendored upstream package (verbatim sources + Fe II templates + qsopar2.fits).
+COPY Tools/pyqsofitspec_line/third_party/PyQSOFitSpec /app/pyqsofitspec
+# PyQSOFitSpec does `import sfdmap`; upstream sfdmap 0.1.1 does not install on
+# modern Python, sfdmap2 provides the same API under the legacy module name.
+COPY Tools/pyqsofitspec_line/sfdmap_shim /app/sfdmap_shim
+COPY Tools/pyqsofitspec_line/run_pyqsofitspec.py /app/run_pyqsofitspec.py
+
+RUN mkdir -p /app/input /app/output && chmod 777 /app/output
+
+WORKDIR /app
+ENTRYPOINT ["python", "/app/run_pyqsofitspec.py"]

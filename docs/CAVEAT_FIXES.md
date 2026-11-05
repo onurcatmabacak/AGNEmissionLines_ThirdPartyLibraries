@@ -1,0 +1,85 @@
+# Caveat fixes and residual limitations
+
+## Solved or materially improved
+
+| limitation | fix | current validation |
+|---|---|---|
+| PDS 456 PAHFIT long/both unstable | Fixed the `(1+z)` residual normalization; added `--init-from`; seeded long from a 15.4–18 µm fit and both from short; corrected the instrument metadata | short/long/both rms = 0.0088/0.017/0.038; all numerically stable but **flagged/systematics-limited**; the short fit uses the internal median normalization and its formal χ²_ν=754 is dominated by model mismatch; full 6.5–28.6 µm data still has missing sub-bands |
+| FIR low-S/N bias | Use local pixel spacing near each line, not the global 30–300 µm spacing; two-pass S/N-weighted velocity-width tie for S/N<5 lines | synthetic OI63 498/500, OIII88 911/1000, NII122 347±67/300, CII158 1942±153/2000; median recovered/truth 0.983 (p=0.88) |
+| C III] broad excess | Added satellites; C III] maxsig 0.015→0.008; Hβ 0.05→0.02; extra Fe II-free continuum windows; reject out-of-coverage and absorption outliers | C III] total/ZLINE = 1.33, 1.76, 1.29; narrow is separately reported and is not a reliable independent flux |
+| QSOFITMORE plotting crash / prepared-input Hα / broad-area column | Pinned NumPy 1.26 for the package QA plot; drive the tool from the raw COADD and trim to 6510.4 Å; recompute line totals from all Gaussian components | Hβ 3076.6±100.1, [O III] 1505.3±57.3, Hβ/[O III] 2.044±0.102, Mg II 2540.8±209.4; 200 MC draws/complex, all valid |
+| NGC 4151 PAHFIT unstable | The IRS table is point-source calibrated; divide all orders by **one common aperture solid angle**, not different SL/LL slit areas | rms 0.031; stable; [Ne III]/[Ne II]=2.32 (replaces the spurious 0.059); [C II]/[N II]=12.17; S IV/Ne II=0.99; the PAHFIT feature table gives a related 3.39 Ne III/Ne II ratio |
+| NIR single/decentred extraction | Use cube WCS/PC matrix, auto centroid, PSF-weighted r=3 aperture, annulus background, propagated errors | PSF extraction: broad Hα S/N≈34, FWHM≈10,100 km/s; broad Hβ S/N≈4; 3×3 and pipeline retained for regression |
+| Cross-band synthetic only | Real NGC 253 and real AGN NGC 4151 MIR+FIR; S IV/Ne II same-slit ratio | 15/15 ratios within broad priors in the current matrix |
+| CIGALE nominal errors | Real SDSS `SPECTROFLUX_IVAR` and matched AllWISE errors | CIGALE rerun with real errors; no invented errors |
+| No AGNfitter-RX | Public AGNfitter 2.0/AGNfitter-rx image, 8 bands, ultranest | 5/5 QSOs; compact medians/posteriors |
+| Mrk 231 PACS no standard FIR line | Removed the non-informative PACS/FIR entry | Mrk 231 remains a real MIR-only AGN test |
+| NGC 253 starburst cross-band | Added real Seyfert 1 NGC 4151 | NGC 4151 now the AGN cross-band validation |
+
+## Residual limitations
+
+* **PDS 456** x1d files contain only four MRS sub-bands; 56 % of 6.5–28.6 µm is
+  absent.  The fit is stable but gap-limited; full short/medium data are needed
+  for a complete MIR census.
+* **NGC 253 PAHFIT** is still flagged (rms≈0.25 after the full PAHFIT production fixes);
+  it is a starburst stress test, not the AGN pass gate.
+* **C III] broad** remains blend-limited; the broad component is real, but the
+  narrow/C III] comparison is not a clean one-number test.
+* **CAFE PDS 456** has only four contiguous MIRI sub-bands; the fit is stable
+  (rms 0.038) but only [Ne V] 14.3 µm is formally detected, so CAFE is a
+  continuum/PAH decomposition here, not a full MIR line census.
+* **S3Fit 04592649654** fits the SDSS spectrum with χ²_ν=4.76 and a 3-mock MC;
+  the Mg II/Balmer/AGN continuum is good, but the default MC is small and the
+  Hα/[N II] region is outside the SDSS coverage.  A longer `--n-mocks` run is
+  provided for production.
+* **GANDALF 04592649654** uses native GANDALF v1.5 under GDL, but pPXF rejected
+  the stellar kinematics (σ at its 1000 km/s bound) and the gas fit used a fixed
+  300 km/s stellar LOSVD.  The gas lines are native GANDALF/MPFIT measurements;
+  the stellar σ is not a measurement for this AGN-dominated spectrum.
+* **PyQSOFit MCMC** initialization was repaired with bounds-aware positive
+  walkers; a short 10-step MCMC (800 draws, not converged) is saved with
+  corner/trace, and a 300-step diagnostic reached acceptance ≈0.37.  Full
+  chains were lost at the container timeout, so the 100-realization MC remains
+  the quantitative uncertainty.
+* **QSOFITMORE 04592649654** uses the V09 Fe II + broken power law + Balmer-continuum model and 200 lmfit MC realizations.  The Hβ complex χ²_r is 17.9 and the Fe II template is the dominant systematic: the alternate BG92-VW01 fit gives Hβ/[O III]=2.34 versus 2.044 for V09.  qsofitmore 1.2.2 has no MCMC sampler, so no posterior is claimed.  Hα, C III] and C IV are outside the SDSS coverage.  The broad Hβ is a multi-Gaussian empirical template; use its total, not the component split.  The 200-draw Mg II distribution is bimodal (best-fit mode ≈2560, local-minimum mode ≈2130 at the broad-component width bound); the 16–84% interval 2133–2603 is the appropriate uncertainty, not the Gaussian std.
+* **GalSpec** now uses the full 2280–6460 A rest-frame model (global
+  polynomial continuum + Fe II + Balmer/[O II]/[Ne III]/[O III] lines), not
+  the reduced 4720–5150 A window.  The full MCMC run gives Hβ total 3718 and
+  [O III] 5007 total 1681 (ratio 2.21); the narrow/broad split remains
+  model-dependent.  The chain is 80 walkers × 4000 steps with
+  `tau_max=342.6`, `retained nsteps/tau_max=8.2`, saved posterior 37,334 samples; it
+  is a real full-model posterior but not a 50-tau publication chain.
+* **PyQSOFitSpec** uses a 55-realisation bootstrap (53 valid); its Hβ total is
+  3525, about 19% above GANDALF/S3Fit.  The bootstrap errors are statistical only.
+* **QGfit** uses a short continuum MCMC and least-squares line errors; its
+  Hβ/[O III] = 2.50, at the upper edge of the optical-tool spread.
+* **SHEAP** originally gave Hβ/[O III] = 4.00 because its 4600-5150 Å /
+  single-narrow / 600 km/s-cap / no-Fe-II model could not describe this object
+  (χ²_ν = 46).  The 2026-08 audit replaced that model; the production fit now
+  gives 2.02 with χ²_ν = 2.9 (see `docs/SHEAP_ASSESSMENT.md`).  A hard quality
+  gate prevents a failing SHEAP fit from entering the cross-tool comparison.
+* **Official SDSS DAPs** require IFU cubes.  The MaNGA DAP is now implemented
+  as a separate IFU branch (`manga_dap`, real NGC 1194); LVM-DAP remains
+  excluded.  The MaNGA accepted product is the **official full-method SASUKE
+  fit on 9 central single-spaxel bins**; the all-spaxel 2397-bin fit exceeded
+  the 58 min budget and the published MAPS is the all-spaxel reference.  The
+  fast fixed-continuum all-spaxel mode is rejected (`FASTMODE_NOT_PRODUCTION`).
+  **AMARU**, **ELFO**, **AGNdecompose**, **pyspeckit** and **HEASOFT** are
+  excluded for the reasons in `docs/OFFICIAL_PIPELINES_AND_XRAY.md`.
+* **Production matrix (2026-10-24):** CAFE VV114 rms 0.143/χ²ν 2.68;
+  S3Fit spec+sed 10 mocks χ²ν 1.035; GANDALF low-z pPXF accepted
+  (V=72.5, σ=79.9 km/s); PAHFIT PDS short/long/both **0.0088/0.017/0.038**,
+  NGC 4151 0.031, VV114 0.195, NGC 253 0.25 (all PAHFIT production runs flagged/systematics-limited); GalSpec full 39-parameter MCMC (37,334 saved
+  samples, Hβ/[O III]=2.21); PyQSOFitSpec 53/55 bootstrap (2.15); QGfit long
+  continuum MCMC (2.50); SHEAP repaired (2.02); SDSS ZLINE 1.57.
+* **PAHFIT** formal covariance/χ² errors are much smaller than the residuals
+  (χ²_ν 557 PDS short, 304 NGC 4151); they are statistical only and do not
+  include the dominant model mismatch.
+
+* **PROSPECTOR-AGN** is assessed but not integrated: public `main` needs FSPS
+  (~2.3 GB) and the eight-band host is unconstrained.  See
+  `docs/PROSPECTOR_ASSESSMENT.md`; CIGALE + AGNfitter-RX supply the model-family
+  spread.
+* **NIR** extraction is PSF-weighted r=3, not a full wavelength-dependent PSF
+  fit or a joint background model.
+* CIGALE/AGNfitter remain photometry-only; no X-ray/radio constraints.

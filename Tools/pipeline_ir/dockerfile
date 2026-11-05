@@ -1,0 +1,17 @@
+# IR emission-line fitter (local_gaussian + coverage router)
+# Build context is the repo root (so pipeline_ir/ can be copied in):
+#   docker build -f pipeline_ir/dockerfile -t ir_linefit .
+FROM python:3.12-slim
+
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    MPLBACKEND=Agg \
+    PYTHONUNBUFFERED=1
+
+WORKDIR /app
+COPY Tools/pipeline_ir/requirements.txt /app/requirements.txt
+RUN pip install --no-cache-dir -r /app/requirements.txt
+COPY Tools/pipeline_ir /app/pipeline_ir
+COPY Pipelines/run_ir.sh /app/run_ir.sh
+RUN mkdir -p /app/input /app/output
+
+ENTRYPOINT ["python", "-m", "pipeline_ir.run"]

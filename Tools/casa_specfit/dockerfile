@@ -1,0 +1,58 @@
+# CASA 6 spectral-line fitting (specfit) as an independent cross-check.
+#
+# CASA 6 is on conda-forge (casatools + casatasks), which resolves the OpenSSL
+# and ABI dependencies that the bare pip wheels get wrong (they need
+# OPENSSL_3.0.1/3.2.0 symbol versions that Debian's libcrypto does not carry).
+#
+# The conda packages still need the "measures" tables (IERS/solar-system
+# ephemerides) before `import casatools` succeeds.  Those are NOT in the conda
+# package; they come from NRAO's casarundata tarball (353 MB).  During the
+# outage `go.nrao.edu/casarundata` returned HTTP 500 and the versioned tarball
+# 404'd, so the build could not get past the import check.  The URL is pinned
+# and the md5 asserted, so an upstream change fails loudly instead of silently
+# shipping a broken image.
+FROM mambaorg/micromamba:1.5.10
+
+USER root
+ENV PATH=/opt/conda/bin:$PATH \
+    PYTHONUNBUFFERED=1 MPLBACKEND=Agg OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 \
+    CASASITECONFIG=/app/casasiteconfig.py
+
+RUN micromamba install -y -n base -c conda-forge \
+      "python=3.12" "casatools>=6.7" "casatasks>=6.7" \
+      "numpy<2.1" "astropy>=6" "matplotlib>=3.8" "pandas>=2" "curl" \
+ && micromamba clean --all --yes
+
+# Measures/IERS tables, pinned with an md5 assertion.
+ARG CASARUNDATA_URL=https://casa.nrao.edu/download/casaconfig/data/casarundata-2026.10.27-1.tar.gz
+ARG CASARUNDATA_MD5=9095d076fe11af3a4da72225fd8afe36
+
+COPY Tools/casa_specfit/casasiteconfig.py /app/casasiteconfig.py
+COPY Tools/casa_specfit/run_casa_specfit.py /app/run/run_casa_specfit.py
+COPY pipeline/line_snr.py /app/run/line_snr.py
+COPY Tools/casa_specfit/README.md /app/run/README.md
+COPY configs/casa_specfit/default /app/config
+
+# The tarball unpacks to casarundata-<date>/{geodetic,ephemerides,...}; CASA looks
+# for those directly under ~/.casa/data, hence --strip-components=1.  They go to
+# /opt/casa/data rather than /root/.casa/data because the runner drops to the
+# calling uid and /root is not traversable for it; the adapter symlinks
+# ~/.casa/data -> /opt/casa/data when HOME is writable scratch.
+RUN set -eux; \
+    mkdir -p /opt/casa/data; \
+    /opt/conda/bin/curl -fsSL "$CASARUNDATA_URL" -o /tmp/casarundata.tar.gz; \
+    echo "$CASARUNDATA_MD5  /tmp/casarundata.tar.gz" | md5sum -c -; \
+    tar xzf /tmp/casarundata.tar.gz -C /opt/casa/data --strip-components=1; \
+    rm -f /tmp/casarundata.tar.gz; \
+    chmod -R a+rX /opt/casa/data; \
+    mkdir -p /root/.casa; \
+    ln -sfn /opt/casa/data /root/.casa/data; \
+    ls /opt/casa/data/geodetic >/dev/null
+
+RUN mkdir -p /app/input /app/output /tmp/mpl && chmod 777 /app/output /tmp/mpl \
+ && HOME=/root /opt/conda/bin/python -c "import casatools, casatasks; print('CASA ok', casatools.version_string())"
+
+WORKDIR /app/run
+ENTRYPOINT []
+CMD ["/opt/conda/bin/python", "/app/run/run_casa_specfit.py", "--input", "/app/input", \
+     "--output", "/app/output", "--config", "/app/config/config.json"]

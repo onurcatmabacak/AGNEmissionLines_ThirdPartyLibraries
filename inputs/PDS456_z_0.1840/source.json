@@ -1,0 +1,182 @@
+{
+  "catalog": "JWST/MIRI MRS",
+  "files": {
+    "optical_spectrum": "raw/hst_8264_stis_pds456_sg140l-sg230l_o58s_cspec.fits",
+    "spectra": [
+      "raw/jw02547001001_02101_00001_mirifulong_x1d.fits",
+      "raw/jw02547001001_02101_00001_mirifushort_x1d.fits"
+    ],
+    "xray_arf": [
+      "xray/xmm_0721010201/pps/PN/P0721010201PNS003SRCARF0001.fits",
+      "xray/xmm_0721010201/pps/MOS1/P0721010201M1S001SRCARF0001.fits",
+      "xray/xmm_0721010201/pps/MOS2/P0721010201M2S002SRCARF0001.fits"
+    ],
+    "xray_background": [
+      "xray/xmm_0721010201/pps/PN/P0721010201PNS003BGSPEC0001.fits",
+      "xray/xmm_0721010201/pps/MOS1/P0721010201M1S001BGSPEC0001.fits",
+      "xray/xmm_0721010201/pps/MOS2/P0721010201M2S002BGSPEC0001.fits"
+    ],
+    "xray_rmf": [
+      "xray/xmm_0721010201/responses/epn_e2_lw20_sdY9_v22.0.rmf",
+      "xray/xmm_0721010201/responses/m1_e15_im_pall_c.rmf",
+      "xray/xmm_0721010201/responses/m2_e15_im_pall_c.rmf"
+    ],
+    "xray_spectrum": [
+      "xray/xmm_0721010201/pps/PN/P0721010201PNS003SRSPEC0001.fits",
+      "xray/xmm_0721010201/pps/MOS1/P0721010201M1S001SRSPEC0001.fits",
+      "xray/xmm_0721010201/pps/MOS2/P0721010201M2S002SRSPEC0001.fits"
+    ],
+    "xshooter_spectrum": "raw/ADP.2023-04-20T08:25:01.842_XSHOOTER_VIS.fits"
+  },
+  "key": "PDS456_z_0.1840",
+  "kind": "jwst_miri",
+  "name": "PDS456",
+  "notes": "PDS 456 real MIRI MRS short+long x1d; PAHFIT needs segment/smoothing checks",
+  "optical": {
+    "instrument": "HST/STIS G140L+G230L",
+    "license": "CC BY 4.0",
+    "lines_covered": [
+      "Ly-alpha",
+      "N V 1240",
+      "C IV 1549",
+      "C III] 1909"
+    ],
+    "lines_not_covered": [
+      "Mg II 2800",
+      "H-beta",
+      "[O III] 5007"
+    ],
+    "pi": "P. O'Brien",
+    "product": "HASP cspec",
+    "proposal": "8264",
+    "sha256": "d6567d80cef6b515c006aec17ee20c6f18363fb88bde273f67cfde43f12c83c8",
+    "wavelength_range_angstrom": [
+      1139.0,
+      3137.2
+    ]
+  },
+  "pahfit_args": [
+    "--segment",
+    "short"
+  ],
+  "pahfit_variants": [
+    {
+      "args": [
+        "--segment",
+        "short",
+        "--smooth-um",
+        "0.05"
+      ],
+      "name": "short"
+    },
+    {
+      "args": [
+        "--segment",
+        "long",
+        "--smooth-um",
+        "0.05",
+        "--max-wave",
+        "28.0"
+      ],
+      "init_from": "seed/pahfit_output.ecsv",
+      "name": "long",
+      "seed_args": [
+        "--segment",
+        "long",
+        "--smooth-um",
+        "0.05",
+        "--max-wave",
+        "18.0",
+        "--normalize-fit",
+        "--maxiter",
+        "5000",
+        "--fit-passes",
+        "2"
+      ]
+    },
+    {
+      "args": [
+        "--segment",
+        "both",
+        "--smooth-um",
+        "0.10",
+        "--max-wave",
+        "28.0"
+      ],
+      "init_from": "seed/pahfit_output.ecsv",
+      "name": "both",
+      "seed_from": "short"
+    }
+  ],
+  "tools": [
+    "cafe_line",
+    "crossmission",
+    "ir_linefit",
+    "optical_linefit",
+    "pahfit_mir",
+    "pyqsofit_uv",
+    "xmm_sas_raw",
+    "xmm_xspec"
+  ],
+  "xray": {
+    "counts_total": {
+      "MOS1": 123867,
+      "MOS2": 127738,
+      "PN": 341004
+    },
+    "dir": "xray/xmm_0721010201",
+    "exposure_s": {
+      "MOS1": 108125.799398839,
+      "MOS2": 108269.784590781,
+      "PN": 100408.969698906
+    },
+    "mission": "XMM-Newton",
+    "notes": "PN Large Window Thin1, 100.4 ks, 341,004 PN counts. PPS SRSPEC/BGSPEC/SRCARF are official SAS pipeline products. MOS PPS spectra are 2400 channels at 5 eV; the 15 eV canned RMFs named in the PPS headers require a 3:1 rebin to 800 channels. PN RMF is CCF v22.0.",
+    "obsid": "0721010201",
+    "pps_sas_version": "xmmsas_20241108_1150-21.0.0",
+    "products": {
+      "MOS1": {
+        "arf": "xray/xmm_0721010201/pps/MOS1/P0721010201M1S001SRCARF0001.fits",
+        "background": "xray/xmm_0721010201/pps/MOS1/P0721010201M1S001BGSPEC0001.fits",
+        "rmf": "xray/xmm_0721010201/responses/m1_e15_im_pall_c.rmf",
+        "spectrum": "xray/xmm_0721010201/pps/MOS1/P0721010201M1S001SRSPEC0001.fits"
+      },
+      "MOS2": {
+        "arf": "xray/xmm_0721010201/pps/MOS2/P0721010201M2S002SRCARF0001.fits",
+        "background": "xray/xmm_0721010201/pps/MOS2/P0721010201M2S002BGSPEC0001.fits",
+        "rmf": "xray/xmm_0721010201/responses/m2_e15_im_pall_c.rmf",
+        "spectrum": "xray/xmm_0721010201/pps/MOS2/P0721010201M2S002SRSPEC0001.fits"
+      },
+      "PN": {
+        "arf": "xray/xmm_0721010201/pps/PN/P0721010201PNS003SRCARF0001.fits",
+        "background": "xray/xmm_0721010201/pps/PN/P0721010201PNS003BGSPEC0001.fits",
+        "rmf": "xray/xmm_0721010201/responses/epn_e2_lw20_sdY9_v22.0.rmf",
+        "spectrum": "xray/xmm_0721010201/pps/PN/P0721010201PNS003SRSPEC0001.fits"
+      }
+    },
+    "reduction": "PPS official products; SAS epproc/especget/specgroup NOT run"
+  },
+  "xshooter": {
+    "data_portal": "https://dataportal.eso.org/dataPortal/file/ADP.2023-04-20T08:25:01.842",
+    "exptime_s": 2416,
+    "instrument": "ESO VLT/X-SHOOTER VIS",
+    "lines_covered": [
+      "H-beta",
+      "[O III] 4959/5007",
+      "H-alpha",
+      "[N II] 6548/6584",
+      "[S II] 6716/6731"
+    ],
+    "mjd_obs": 60049.329682935,
+    "note": "VIS arm of the public reduced X-SHOOTER spectrum; used for the H-beta measurement that the HST/STIS UV spectrum cannot cover.",
+    "product": "SFLX reduced spectrum",
+    "program": "111.24T0.001",
+    "sha256": "872a8aad22aaef495f69ee2ce347587da0bc1bb4c6d084a5d519b78922bea3e9",
+    "target": "QSO B1725-142 (PDS 456)",
+    "wavelength_range_angstrom": [
+      5336.6,
+      10200.0
+    ]
+  },
+  "z": 0.184
+}

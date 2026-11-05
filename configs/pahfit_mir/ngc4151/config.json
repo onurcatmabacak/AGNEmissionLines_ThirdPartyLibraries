@@ -1,0 +1,41 @@
+{
+  "schema_version": 1,
+  "name": "ngc4151",
+  "description": "NGC 4151 full Spitzer IRS SL/LL production fit: 0.1 um bin, common 1 arcsec^2 aperture, 5-38 um, 200 MC.",
+  "input": {
+    "instrument": [
+      "spitzer.irs.sl.2",
+      "spitzer.irs.sl.1",
+      "spitzer.irs.ll.2",
+      "spitzer.irs.ll.1"
+    ],
+    "segment": "both",
+    "s1d": false,
+    "tbl": true,
+    "smooth_um": 0.1,
+    "min_wave": 5.0,
+    "max_wave": 38.0,
+    "aperture_arcsec2": 0.04,
+    "tbl_aperture_arcsec2": 1.0
+  },
+  "fit": {
+    "maxiter": 2000,
+    "passes": 2,
+    "no_guess": false,
+    "init_from": null,
+    "normalize": true,
+    "clip_nmad": 0.0,
+    "clip_iterations": 1
+  },
+  "monte_carlo": {
+    "enabled": false,
+    "samples": 200,
+    "method": "auto",
+    "seed": 12350,
+    "rcond": 1e-10,
+    "maxiter": 500,
+    "bootstrap_mode": "parametric",
+    "scale": "none",
+    "save_samples": true
+  }
+}

@@ -1,0 +1,37 @@
+# BXA (Bayesian X-ray Analysis) on the XMM-Newton EPIC PPS spectra.
+#
+# Builds on the validated xmm_xspec image (HEASoft/XSPEC 13 + PyXspec, same
+# condensation of the official PPS products), and adds the BXA + UltraNest
+# stack so model comparison is done with Bayesian evidences instead of
+# Delta chi-square.
+FROM xmm_xspec:latest
+
+USER root
+
+# UltraNest ships only an sdist (no wheels), so a compiler is needed for the
+# build and is removed again afterwards.
+RUN apt-get update \
+ && apt-get install -y --no-install-recommends gcc g++ make \
+ && /opt/conda/bin/python -m pip install --no-cache-dir "bxa>=5.1,<6" "ultranest>=4,<5" \
+ && apt-get purge -y gcc g++ make \
+ && apt-get autoremove -y \
+ && rm -rf /var/lib/apt/lists/* /root/.cache/pip
+
+COPY Tools/bxa_xspec/run_bxa_xspec.py /app/run/run_bxa_xspec.py
+COPY Tools/bxa_xspec/README.md /app/run/README_BXA.md
+COPY configs/bxa_xspec/default /app/config_bxa
+RUN chmod 755 /app/run/run_bxa_xspec.py
+
+# Fail the build if BXA/UltraNest cannot start next to PyXspec.
+RUN /app/run/entrypoint.sh python -c "\
+import xspec, bxa, ultranest, h5py; \
+from bxa.xspec.solver import BXASolver; \
+print('BXA import OK', getattr(bxa, '__version__', '?'), getattr(ultranest, '__version__', '?'))" && \
+    rm -rf /tmp/.xspec /tmp/xmm_xspec_home /tmp/pfiles /tmp/mpl
+
+WORKDIR /app/run
+ENTRYPOINT ["/app/run/entrypoint.sh"]
+CMD ["python", "/app/run/run_bxa_xspec.py", \
+     "--input", "/app/input", \
+     "--output", "/app/output", \
+     "--config", "/app/config/config.json"]

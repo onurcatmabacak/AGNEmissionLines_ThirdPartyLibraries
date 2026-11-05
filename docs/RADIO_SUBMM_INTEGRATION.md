@@ -1,0 +1,304 @@
+# Radio and sub-mm integration — verified feasibility
+
+> **Status (2026-11): this document is the historical feasibility study, kept for
+> provenance.  Four tools were built from it and all four have real-data
+> products: `radio_line` (ATCA H I 21-cm, 1.42 GHz), `submm_line` and
+> `casa_specfit` (Herschel HIFI, ALMA HCN 3-2, Galactic HCN 1-0) and
+> `cube_lines` (resolved ALMA moment maps).  Two claims below turned out to be
+> wrong: the CASA path does need the NRAO `casarundata` tables (353 MB, pinned by
+> md5 in the image), and "there is no radio or sub-mm data in the tree" stopped
+> being true once the CSIRO VOTable route was found.**
+
+Written after checking each candidate against PyPI, GitHub and its dependency
+chain (2026-10-30).  The point of this note is to stop us building images that
+cannot be built or shipped, and to record the one that can.
+
+## What the repository has today
+
+Bands covered: SDSS optical spectra (`inputs/*/raw/spec-*.fits`), JWST/MIRI
+`x1d` and Spitzer IRS `tbl`, MaNGA LOGCUBE, XMM PPS and RXTE `stdprod`.
+
+*Historical statement, no longer true:* there was no radio or sub-mm data in the
+tree, so the tools were planned against synthetic data.  Real data now exists for
+all four tools (see the status note above).
+
+## Verified status of the proposed tools
+
+| tool | distribution | PyPI? | licence | hard dependency | verdict |
+|---|---|---|---|---|---|
+| **RadioSED** | `github.com/ekerrison/RadioSED` | no (script collection) | **GPL-3.0** | `bilby`, `george`, `astroquery` | **buildable now** — verified below |
+| Qubespec | `github.com/honzascholtz/Qubespec` (395 MB, Jupyter) | no | **none (all rights reserved)** | python | licence blocker: cannot be vendored or shipped; build-time clone only, and only with the author's permission |
+| XCLASS | not on GitHub/PyPI; tarball from Uni. Cologne | no | academic, per-download | CASA python API | **feasible now** that casatools is a pip wheel, but the source is still a per-download tarball with its own licence |
+| **McFine** | **PyPI `mcfine` 0.4** | **yes** | GPL | `spectral_cube`, `emcee`, `lmfit` — **no CASA** | **buildable now** — verified: `pip download mcfine` succeeds, deps are astropy/corner/emcee/lmfit/numdifftools/numpy/scipy/spectral_cube |
+| MoD_AbS | no public repository found | no | — | — | blocked: not publicly distributed |
+| Lightning (SED) | not found under that name | **name collision**: PyPI `lightning` is PyTorch Lightning | — | — | blocked: must identify the real project first |
+| **pyspeckit** | **PyPI 1.0.4** | **yes** | BSD-3 | astropy, radio_beam, casa-formats-io | **buildable now**: multi-Gaussian, hyperfine, H I/RRL fitting on spectra and cubes |
+| spectral-cube / radio-beam | PyPI 0.7.0 / 0.3.10 | yes | BSD-3 | — | cube I/O and beam handling |
+| RADEX (`pyradex`) | sdist, needs a Fortran build | partly | GPL | gfortran | non-LTE excitation; build in-image with gfortran |
+| Splatalogue | `astroquery.splatalogue` | yes | BSD-3 | astroquery | mandatory line identification before any sub-mm fit |
+| CASA 6 | **PyPI `casatools` (82 MB) + `casatasks` (2 MB)** | **yes** | — | — | **much lighter than expected**: the multi-GB NRAO tarball is not needed, so `specfit` and the CASA data path are ~85 MB |
+
+Also note AGNfitter already exists in this repo as `agnfitter_sed`; the
+"AGNfitter-RX radio extension" would be a *variant config* of that tool, not a
+new image.
+
+## RadioSED: verified build recipe
+
+RadioSED ships no `setup.py`/`pyproject.toml` (the repo is a script collection
+plus 200 MB of data), so it is used in place with the repo on `PYTHONPATH`.
+Verified end to end in `python:3.12-slim`:
+
+```dockerfile
+RUN apt-get install -y git gcc g++
+RUN git clone --depth 1 https://github.com/ekerrison/RadioSED /app/radiosed
+RUN pip install astropy bilby corner pandas matplotlib scipy emcee dynesty george astroquery
+WORKDIR /app/radiosed
+CMD ["python", "radiosed.py", "--custom_data_file", "/app/input/radio.csv", \
+     "--name", "PDS456", "--write_output"]
+```
+
+`python radiosed.py --help` succeeds with that dependency set.  The relevant
+flags for an offline pipeline:
+
+* `-c/--custom_data_file` — supply radio flux measurements directly instead of
+  querying Vizier/NED, which is what we need inside a container;
+* `-f/--file` — list of sources;
+* `-o/--overwrite`, `-p/--plot`, `-w/--write_output`.
+
+Bilby emits two `FutureWarning`s about `log_likelihood(parameters)`; harmless
+for bilby 2.x, to be revisited if bilby 3 lands.
+
+## CASA: installable, but blocked upstream today
+
+CASA 6 **is** obtainable without the multi-GB tarball: `casatools`/`casatasks`
+are on conda-forge (6.7.x), and the pip wheels exist too (82 MB + 2 MB).  The
+conda route installs cleanly, but every CASA import needs the `casarundata`
+measures tables, and today that is unusable:
+
+```
+casaconfig.private.data_available -> RemoteError: HTTP Error 500
+  (https://go.nrao.edu/casarundata)
+https://casa.nrao.edu/download/devel/casavis/data/casarundata.tar.gz -> 404
+pip install casarundata            -> no such package
+conda-forge casarundata            -> no such package
+```
+
+The pip wheels additionally need `OPENSSL_3.0.1`/`3.2.0` symbol versions that
+Debian bookworm/trixie libcrypto no longer carries
+(`ImportError: version OPENSSL_3.0.1 not found`), so the wheels are not a way
+around it either.  `Tools/casa_specfit/` holds the ready conda-forge build plus
+a `casasiteconfig.py` that disables the network data update; the image builds up
+to the import check and will complete as soon as NRAO's data endpoint answers.
+
+Consequence: the Gaussian decompositions from `radio_line` and `submm_line` are
+**not yet cross-checked against CASA `specfit`**.  That is an upstream outage,
+not a design choice.
+
+## Implemented: `radio_line` (pyspeckit)
+
+`Tools/radio_line/` + `pipeline/runners/run_radio_line_docker.sh` +
+`configs/radio_line/default` — registered in the tool registry, capabilities,
+caveats and `ALL_TOOLS`.  Image builds (1.33 GB, pyspeckit 1.0.4 + spectral-cube
++ radio-beam + astroquery + lmfit).
+
+```bash
+bash pipeline/runners/run_radio_line_docker.sh <spectrum.fits> <outdir> \
+     --z <z> --ncomp 2 --absorption
+```
+
+Writes `radio_lines.csv` (component, centre, velocity, FWHM, integrated flux,
+S/N), `radio_model.csv`, `radio_fit.png/pdf` and `run.json`.
+
+### Validation
+
+* **Single component, synthetic H I 21-cm absorption** at 45 km/s: recovered
+  centre 1.426359 GHz vs 1.426360 injected, sigma 2.148e-4 GHz = 45.1 km/s,
+  amplitude -3.493e-3 vs -3.500e-3 injected — exact.
+* **Two blended components** (+240 and -120 km/s, 80 and 45 km/s wide): both
+  velocities recovered to 0.2 km/s (240.2 and -119.9), chi2/nu = 0.50, but the
+  widths come out biased high (188 and 106 km/s) because two Gaussians on a
+  smooth spectrum are partly degenerate.  That bias is recorded in the tool
+  caveat; it is not a units problem (the single-component case proves the
+  conversion is right).
+
+### Real-data test (committed)
+
+`inputs/REGION5_HCN_z_0.0000/` holds an **observed** HCN J=1-0 cube (88.6318473
+GHz rest, BUNIT K) distributed with the pyspeckit test data, plus a 1-D
+spectrum extracted with the new `pipeline/extract_cube_spectrum.py --box 5`.
+Both tools were run on it and the products are committed:
+
+| tool | result | chi2/nu |
+|---|---|---|
+| `radio_line` | v = +8.3 km/s, FWHM 8.0 km/s (prior cap), S/N 3.0 — not detected | 0.67 |
+| `submm_line` | v = +11.8 km/s, FWHM 9.2 km/s, tau = 0.01, S/N 2.9 — not detected | 1.30 |
+
+Both are marginal because the crop is: the peak channel pair is 6.9 sigma but
+the integrated profile only reaches ~3 sigma.  The consistent velocities from
+two independent engines (pyspeckit Gaussians, McFine optical depth) are the
+useful part; neither is a detection.  This dataset is a Galactic molecular
+region, not an AGN, so it validates the tools without extending the AGN sample.
+
+### Real ALMA/AGN data: what was tried
+
+The ALMA archive route was exercised end to end and is blocked at the data
+stage, not the tooling: `Alma.query_object("NGC 1068")` returns 358 cubes, and
+the datalink products served at small size are **primary-beam responses**
+(peak exactly 1.0, noise ~1e-9) and **masks**, while the science intensity
+cubes are 2.4-4.6 GB.  NGC 1275's smallest intensity cube is 390 MB and is
+also a `.pb` response.  Downloading a multi-GB QA2 cube is therefore required
+for an AGN test, which is a deliberate decision rather than a missing feature.
+
+### Original synthetic validation
+
+No real radio/sub-mm AGN spectrum is committed, and that is a hard blocker
+rather than an oversight: the ALMA archive line cubes for NGC 1068 are
+**200-700 MB each** (measured via the datalink products; the sub-MB products
+are continuum images), and NRAO H I absorption spectra require a CASA
+reduction before they are a spectrum at all.  The tool is therefore validated
+on the synthetic doublet above and awaits a fetched spectrum; the ALMA route
+(`astroquery.alma` -> `get_data_info(member_ous_uid)` -> access_url) is
+verified to work up to the download size.
+
+## Implemented: `submm_line` (McFine)
+
+`Tools/submm_line/` + `pipeline/runners/run_submm_line_docker.sh` +
+`configs/submm_line/default`, registered in registry/capabilities/caveats/
+`ALL_TOOLS`.  Image builds (McFine 0.4, pure pip, no CASA/RADEX).
+
+Fits N components of McFine's optical-depth hyperfine model
+(`hyperfine_structure_lte`: T_ex, log tau, v_centre, width per component) plus
+one Jy-per-K scale, for `n2hp10` (7 merged hyperfine groups, 93.17 GHz), `co21`
+and `hi21cm`.
+
+### Validation (synthetic N2H+ 1-0, two components)
+
+Data generated from McFine's own model so the hyperfine strengths/offsets match
+exactly (circular in the radiative transfer, but it tests units, velocity
+convention, key handling and the fitter): components at -60 km/s (sigma 35, tau
+0.56) and +140 km/s (sigma 55, tau 0.32), plus noise.
+
+| | injected | recovered |
+|---|---|---|
+| v_centre c1 | -60.0 km/s | **-60.00** |
+| v_centre c2 | +140.0 km/s | **+139.96** |
+| sigma c1 / c2 | 35 / 55 km/s | **34.9 / 55.3** |
+| tau c1 / c2 | 0.56 / 0.32 | **0.59 / 0.28** |
+| chi2/dof | ~1 | **0.96** |
+
+T_ex comes out below the injected value (13.6 vs 22 K) because it is
+degenerate with the free Jy-per-K scale — recorded as the tool caveat, so T_ex
+is reported as indicative only.
+
+Two adapter bugs the test caught: McFine's `strength_lines_dict` only holds the
+*merged* hyperfine groups (7 for N2H+ 1-0, not the 15 individual transitions),
+and its `line_width` is a Gaussian sigma, so `fwhm_kms` must not be multiplied
+by 2.3548 twice.
+
+
+## Signal-to-noise, defined once (pipeline/line_snr.py)
+
+Every adapter used to invent its own detection statistic, and on the same NGC 1275
+HCN 3-2 spectrum they returned 2.9 (pyspeckit: `peak/rms`), 2.0 (McFine:
+`max|model|/rms`) and 6.0 (CASA: `amp/amp_err`) for one and the same fit.  The
+columns are now defined in `pipeline/line_snr.py` and copied into all three images:
+
+| column | definition | why |
+|---|---|---|
+| `snr_integrated` | `|integral| / (rms * dv * sqrt(N_eff * k))`, `k` from the residual autocorrelation | primary detection statistic; does not penalise a resolved line for spreading its flux |
+| `snr` | `peak / sigma_peak` from the fit covariance | peak significance, free of correlation assumptions, unavailable for McFine |
+| `snr_rms` | `peak / rms` per channel | traceability only; for a broad line it is intrinsically small and must not gate a detection |
+| `width_at_bound` | width within 0.1 % of a prior limit | a fit pinned at a bound is not a measurement |
+
+`detected = snr_integrated >= snr_min` (falling back to `snr`), always False when
+`width_at_bound`.
+
+Two traps this fixed, both measured rather than assumed:
+
+* **Oversampled channels.** `k` = 4.2 for the Galactic HCN 1-0 spectrum and 2.1
+  for the ALMA NGC 1275 cube, so the naive `sqrt(N)` overstates significance by
+  about a factor of two.
+* **Per-channel gating.** A 360 km/s line spreads its flux over ~22 channels; its
+  `snr_rms` is 1.6 even though the integrated significance is 5.1.  Requiring
+  `snr_rms >= 3` would have rejected every broad, real detection.
+
+### Result after the multi-start + S/N fixes
+
+| tool | Galactic HCN 1-0 | NGC 1275 HCN 3-2 |
+|---|---|---|
+| `radio_line` | v +8.3, FWHM 8.0, snr_int 13.0, width at bound -> not detected | v +194, FWHM 331, snr_int 5.1 -> **detected** |
+| `submm_line` | v +11.8, FWHM 9.3, snr_int 13.6 -> detected (marginal) | v +173, FWHM 263, snr_int 5.2 -> **detected** |
+| `casa_specfit` | v -11.9, FWHM 1.2, snr_int 1.3 -> not detected | v +93, FWHM 360, snr_int 3.8 -> **detected** |
+
+On the AGN cube the three independent implementations now agree, which is what the
+cross-check was for.  On the Galactic crop they still disagree, and the products
+say so instead of picking a winner.
+
+## Open threads (pick up here)
+
+1. ~~**CASA `casa_specfit` is blocked upstream.**~~ **RESOLVED (2026-10).** NRAO's
+   endpoint came back; the image now bakes `casarundata-2026.10.27-1.tar.gz`
+   (353 MB, md5 asserted) into `/opt/casa/data` and imports CASA 6.7.2.  Real-data
+   products: `outputs/casa_specfit/REGION5_HCN_z_0.0000/` (Galactic HCN 1-0) and
+   `outputs/casa_specfit/NGC1275_z_0.0176/` (ALMA HCN 3-2).  Original outage notes
+   kept below for reference.
+
+   *Historical:* CASA `casa_specfit` was blocked upstream. The image
+   (`Tools/casa_specfit`, conda-forge `casatools`/`casatasks` 6.7.x) builds
+   except for the final import check: every CASA import needs the `casarundata`
+   measures tables, and NRAO's endpoint is down — `go.nrao.edu/casarundata`
+   returns HTTP 500, `casa.nrao.edu/download/devel/casavis/data/casarundata.tar.gz`
+   returns 404, and `casarundata` is on neither PyPI nor conda-forge.  The pip
+   wheels are not a workaround (they need `OPENSSL_3.0.1`/`3.2.0` symbols that
+   Debian libcrypto lacks).  *Retry:* rebuild when the endpoint answers; no code
+   change is needed.
+2. ~~**Broad-line fits needed a multi-start.**~~ **RESOLVED.** `radio_line` and
+   `submm_line` both try a ladder of widths (and, for McFine, centre offsets)
+   inside their priors and keep the lowest chi2.  On NGC 1275 that moved
+   pyspeckit from a 68 km/s spike at +312 km/s to a 331 km/s component at
+   +194 km/s, and McFine from a tau-capped 125 km/s solution to a 263 km/s one at
+   +173 km/s - both now matching CASA's 360 km/s systemic line.
+   ~~CASA reports 6.0 while pyspeckit reports 1.6~~ **RESOLVED** by the unified
+   S/N definition above: the 1.6 was the per-channel statistic, which is the
+   wrong gate for a resolved line.
+
+3. **No detected AGN line yet.** `radio_line` and `submm_line` are validated on
+   real data (observed HCN 1-0, and real ALMA HCN 3-2 in NGC 1275) but those
+   fits are marginal (S/N ~3, broad profile, McFine tau at its prior cap).
+   *Options:* wider extraction boxes, spw27 (3.5 GB), or a brighter CO line.
+4. **Cube extraction is not containerised.** `pipeline/extract_cube_spectrum.py`
+   runs in the host venv (astropy only, nothing installed).  *Fix:* ship it in
+   the `radio_line` image and add an `--extract` mode to that runner.
+5. **Disk:** ~3.3 GB of downloaded ALMA cubes sit in `/tmp/alma` and can be
+   deleted; the committed spectra are what the products use.
+
+## Integration order (recommended)
+
+1. **RadioSED** — buildable, GPL-3.0, offline via `--custom_data_file`.  Needs a
+   small radio photometry table per source (`inputs/<key>/photometry/radio.csv`).
+2. **Fetch real radio photometry** for the existing sources (NED/Vizier at the
+   `prepare_inputs` stage, committed as a table) so RadioSED has data.
+3. **Qubespec** — only with the author's permission (no licence).  Otherwise
+   skip; its function overlaps the nine optical fitters already present.
+4. **XCLASS / McFine** — require CASA; a separate multi-GB image, and only
+   worth it once ALMA data exist.
+5. **MoD_AbS / Lightning** — re-check when a public distribution is identified.
+
+## Wiring these in, once a tool is buildable
+
+The existing pattern applies unchanged:
+
+* `Tools/<tool>/dockerfile` + `run_<tool>.py` adapter;
+* `pipeline/runners/run_<tool>_docker.sh`;
+* an entry in `pipeline/tool_registry.py` with `wave=("radio",)` or
+  `("submm",)`, `kind`, `uncertainty` and the runner path;
+* `pipeline/tool_capabilities.py` (threads + description), `configs/caveats.yaml`
+  (a scientific caveat), `pipeline/run_new_tools.py::ALL_TOOLS`;
+* output standardisation: `run.json`, `*_lines.csv` with
+  `line,component,flux,flux_err,fwhm_kms,velocity_kms,snr` so the radio results
+  drop into `docs/line_tool_comparison.csv` next to the optical ones;
+* `docs/LITERATURE_COVERAGE.md` row, and a `pipeline/build_output_manifest.py`
+  regeneration.
+
+`decide_tools.py` already routes by the source's declared `tools` list; adding a
+band-aware default only needs the band recorded in `inputs/<key>/source.json`.

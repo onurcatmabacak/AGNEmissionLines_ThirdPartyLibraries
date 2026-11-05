@@ -1,0 +1,10 @@
+# Local H-beta/[O III] fit; build context is the repository root.
+FROM python:3.12-slim
+ENV PYTHONDONTWRITEBYTECODE=1 MPLBACKEND=Agg PYTHONUNBUFFERED=1 PYTHONPATH=/app
+WORKDIR /app
+COPY Tools/optical_linefit/requirements.txt /app/requirements.txt
+RUN pip install --no-cache-dir -r /app/requirements.txt
+COPY Tools/pipeline_ir /app/pipeline_ir
+COPY Tools/optical_linefit/main.py /app/run/main.py
+RUN mkdir -p /app/input /app/output
+ENTRYPOINT ["python", "/app/run/main.py"]

@@ -1,0 +1,62 @@
+{
+  "_comment": "PRODUCTION spec+sed QSO fit: full AGN+Fe II+Balmer+SKIRTOR torus+NLR/BLR model, 8 SDSS/WISE bands, 10 Monte-Carlo mocks. Runtime compromise: dual-annealing initialisation disabled, nlfit_ntry_max=1, accept_chi_sq=10 to avoid repeated recycle fits. The model grid and mock count are NOT reduced.",
+  "mode": "spec+sed",
+  "n_mocks": 10,
+  "seed": 42,
+  "threads": 8,
+  "spec_wave_medium": "vacuum",
+  "spec_flux_unit": "erg s-1 cm-2 angstrom-1",
+  "phot_flux_unit": "mJy",
+  "phot_trans_dir": "filters",
+  "sed_wave_num": 3000,
+  "spec_valid_range": [
+    [
+      3650.0,
+      10300.0,
+      "angstrom",
+      "obs"
+    ]
+  ],
+  "spec_invalid_range": null,
+  "phot_calib_b": [
+    "SDSS_gp",
+    "SDSS_rp",
+    "SDSS_ip",
+    "SDSS_zp"
+  ],
+  "fit_space": "log",
+  "examine_result": true,
+  "accept_chi_sq": 10.0,
+  "nlfit_ntry_max": 1,
+  "nllsq_max_nfev": 10000,
+  "conv_nbin_max": 5,
+  "if_run_init_annealing": false,
+  "da_niter_max": 10,
+  "perturb_scale": 0.02,
+  "use_pyneb": false,
+  "save_native_pickle": false,
+  "native_pickle_max_mb": 25,
+  "mc_plot_lines": [
+    "H-beta",
+    "[O III]:5008",
+    "Mg II]:2796"
+  ],
+  "comparison_lines": {
+    "H-beta": [
+      "Hb_br",
+      "Hb_na"
+    ],
+    "OIII5007": [
+      "OIII5007w",
+      "OIII5007c"
+    ],
+    "MgII": [
+      "MgII_br",
+      "MgII_na"
+    ],
+    "CIII": [
+      "CIII_br",
+      "CIII_na"
+    ]
+  }
+}

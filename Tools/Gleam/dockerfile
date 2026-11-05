@@ -1,0 +1,45 @@
+FROM python:3.8-slim
+
+# System dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    tk-dev tcl-dev libagg-dev python3-tk \
+    build-essential gcc g++ make flex bison git gfortran \
+    texlive texlive-latex-base texlive-latex-extra texlive-science \
+    cm-super dvipng ghostscript \
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
+
+# Create app directory
+WORKDIR /app
+
+# Install gleam
+
+RUN pip install --no-cache-dir astro-gleam
+RUN pip install --no-cache-dir --upgrade astropy>=5.2
+# RUN pip install numpy>=1.19.5,<1.27
+RUN pip install --upgrade --force-reinstall matplotlib
+
+# Create a working directory for inputs/outputs
+RUN mkdir -p /app/input
+
+WORKDIR /app/input
+
+# Command to replace the hardcoded 'TkAgg' backend with 'Agg' in the gleam configuration file
+RUN sed -i 's/matplotlib.use("TkAgg")/matplotlib.use("Agg")/' \
+    /usr/local/lib/python3.8/site-packages/gleam/matplotlibparams.py
+
+# # Assuming the plot_gaussian.py file is still the one from the previous fix
+# RUN sed -i '/^\s*with overview as plot_line:$/a \ \ \ \ plt.savefig("/tmp/test_plot.png")' \
+#     /usr/local/lib/python3.8/site-packages/gleam/plot_gaussian.py
+
+# Set environment variable
+ENV MPLBACKEND=Agg
+
+COPY meta.dat line_table.fits Sky_bands.fits gleam.sh gleamconfig.yaml /app/input
+# Synthetic placeholder spectrum only (the pipeline mounts the real per-object
+# spectrum, meta.dat and tables over these paths at run time).
+RUN python -c "import numpy as np; from astropy.io import fits; w=np.linspace(3600.0, 10400.0, 1000); c=[fits.Column(name='flux', format='E', unit='erg / (s cm2 Angstrom)', array=np.ones(1000, dtype='f4')), fits.Column(name='wl', format='E', unit='Angstrom', array=w.astype('f4')), fits.Column(name='stdev', format='E', array=np.ones(1000, dtype='f4')), fits.Column(name='wdisp', format='E', array=np.full(1000, 1e-4, dtype='f4'))]; fits.HDUList([fits.PrimaryHDU(), fits.BinTableHDU.from_columns(c), fits.BinTableHDU.from_columns([fits.Column(name='redshift', format='E', array=np.array([0.0], dtype='f4'))])]).writeto('/app/input/spec1d.sdss.sdss.fiber1.1.fits', overwrite=True)"
+RUN mkdir -p /app/output/
+RUN chmod 777 /app/output
+RUN mkdir -p /app/output/plots
+# Default command shows help
+CMD ["sh", "-c", "bash gleam.sh && ls -hl /app && ls -hl /app/*"]

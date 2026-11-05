@@ -1,0 +1,26 @@
+# rxte_xspec is a thin layer on the existing HEASoft/PyXspec 13.0.0 image.
+# It does not install a second 4.3 GB XSPEC environment: the XMM stage image
+# already contains XSPEC 13.0.0, HEASoft 6.37, CALDB and PyXspec.
+FROM xmm_xspec:latest
+
+LABEL org.opencontainers.image.title="rxte_xspec" \
+      org.opencontainers.image.description="Official RXTE/PCA stdprod spectra fitted with HEASoft/PyXspec (tbabs*zpowerlw + Fe K-alpha)" \
+      org.opencontainers.image.version="1.0.0" \
+      org.opencontainers.image.source="https://heasarc.gsfc.nasa.gov/xanadu/xspec/" \
+      int.agne.fitting.stage="RXTE PCA spectral fit" \
+      int.agne.reduction="HEASARC stdprod official products; pcabackest/saextrct not run" \
+      int.agne.base="xmm_xspec:latest"
+
+ENV RXTE_XSPEC_VERSION=1.0.0
+
+WORKDIR /app/run
+COPY run_rxte_xspec.py /app/run/run_rxte_xspec.py
+COPY entrypoint.sh /app/run/entrypoint_rxte.sh
+COPY README.md /app/run/README_rxte.md
+RUN chmod +x /app/run/run_rxte_xspec.py /app/run/entrypoint_rxte.sh
+
+ENTRYPOINT ["/app/run/entrypoint_rxte.sh"]
+CMD ["python", "/app/run/run_rxte_xspec.py", \
+     "--input-dir", "/app/input", \
+     "--out", "/app/output", \
+     "--config", "/app/config"]

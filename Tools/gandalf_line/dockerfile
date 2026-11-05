@@ -1,0 +1,20 @@
+# Native GANDALF v1.5 (IDL) under GNU Data Language.
+# Build context is the repo root:
+#   docker build -f Tools/gandalf_line/dockerfile -t gandalf_line .
+FROM ubuntu:24.04
+ENV DEBIAN_FRONTEND=noninteractive \
+    PYTHONUNBUFFERED=1 \
+    MPLBACKEND=Agg
+RUN apt-get update && apt-get install -y --no-install-recommends \
+      gnudatalanguage gdl-astrolib gdl-mpfit \
+      python3 python3-numpy python3-astropy python3-matplotlib \
+      ca-certificates \
+ && rm -rf /var/lib/apt/lists/*
+WORKDIR /app
+COPY Tools/gandalf_line/third_party /app/third_party
+COPY Tools/gandalf_line/gdl /app/gdl
+COPY Tools/gandalf_line/run_gandalf.py /app/run_gandalf.py
+COPY configs/gandalf_line/default /app/config
+RUN chmod -R a+rX /app/third_party /app/gdl /app/config /app/run_gandalf.py \
+ && mkdir -p /app/input /app/output && chmod 777 /app/output
+ENTRYPOINT ["python3", "/app/run_gandalf.py"]

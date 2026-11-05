@@ -1,0 +1,53 @@
+# Use a specific, stable miniconda tag based on Python 3.8.5
+FROM continuumio/miniconda3:4.9.2
+
+# Fix Buster apt repositories
+RUN sed -i 's|http://deb.debian.org/debian|http://archive.debian.org/debian|g' /etc/apt/sources.list \
+    && sed -i 's|http://security.debian.org/debian-security|http://archive.debian.org/debian-security|g' /etc/apt/sources.list \
+    && echo 'Acquire::Check-Valid-Until "false";' > /etc/apt/apt.conf.d/99disable-check-valid-until
+
+# 1. Install system dependencies including LaTeX
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential gcc g++ make flex bison git gfortran \
+    texlive texlive-latex-extra cm-super dvipng ghostscript \
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
+
+# 1. Install git (Conda package)
+RUN conda install -y git
+
+# Set a base working directory
+WORKDIR /app
+
+# Clone the GELATO repository from GitHub
+RUN git clone https://github.com/TheSkyentist/GELATO.git
+
+# Set the working directory to the cloned repo
+WORKDIR /app/GELATO
+
+# Pin numpy to 1.26.4 to avoid the np.float_ error
+RUN sed -i 's/- numpy/- numpy=1.26.4/' environment.yml
+
+# Create the Conda environment from the .yml file
+RUN conda env create -f environment.yml
+
+# Install the GELATO package itself (pip install .)
+RUN conda run -n gelato pip install .
+
+# Set the environment path to use the 'gelato' env by default
+ENV PATH=/opt/conda/envs/gelato/bin:$PATH
+
+# Ensure Matplotlib uses a non-interactive backend for plots in the container
+ENV MPLBACKEND=Agg
+
+# Set the final working directory to the Example folder
+RUN mkdir -p /app/input
+COPY my_sdss.json /app/input/
+COPY gelato.sh /app/gelato.sh
+# Synthetic placeholder spectrum only. The pipeline mounts the real per-object
+# spectrum over this path at run time, so no proprietary data is shipped.
+RUN python -c "import numpy as np; from astropy.io import fits; w=np.logspace(np.log10(3600.0), np.log10(10400.0), 1000); c=[fits.Column(name='flux', format='E', array=np.ones(1000, dtype='f4')), fits.Column(name='loglam', format='E', array=np.log10(w).astype('f4')), fits.Column(name='ivar', format='E', array=np.ones(1000, dtype='f4')), fits.Column(name='wdisp', format='E', array=np.full(1000, 1e-4, dtype='f4'))]; fits.HDUList([fits.PrimaryHDU(), fits.BinTableHDU.from_columns(c), fits.BinTableHDU.from_columns([fits.Column(name='z', format='E', array=np.array([0.0], dtype='f4'))])]).writeto('/app/input/my_sdss.fits', overwrite=True)"
+# Working directory only for output
+WORKDIR /app
+
+# Run the example script as the default command
+CMD ["sh", "-c", "pwd && ls -hl && bash gelato.sh"]

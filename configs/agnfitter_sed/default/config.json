@@ -1,0 +1,41 @@
+{
+  "_comment": "AGNfitter-RX 2.0 settings.",
+  "tool": "agnfitter_sed",
+  "engine": "AGNfitter-rx / ultranest nested sampling",
+  "bands": [
+    "g",
+    "r",
+    "i",
+    "z",
+    "WISE1",
+    "WISE2",
+    "WISE3",
+    "WISE4"
+  ],
+  "models": {
+    "GALAXY": "BC03_metal",
+    "STARBURST": "S17",
+    "BBB": "THB21",
+    "TORUS": "SKIRTOR_1P",
+    "XRAYS": false,
+    "RADIO": false
+  },
+  "sampler": {
+    "algorithm": "ultranest",
+    "live_points": 80,
+    "min_ess": 80,
+    "Nwalkers": 100,
+    "Nburn": 100,
+    "Nmcmc": 200
+  },
+  "uncertainty": {
+    "mode": "nested-sampling posterior",
+    "mcmc": true,
+    "note": "ultranest, not emcee"
+  },
+  "outputs": [
+    "agnfitter_summary.csv",
+    "sed_summary.json",
+    "OUTPUT/"
+  ]
+}

@@ -1,0 +1,59 @@
+# Official DAP plan used for the selected-bin (central 9 bins) production fit.
+# This is the upstream default emission-line model (65 MaStar-HC2 templates,
+# ELPMPL11, deconstruct_bins='ignore', mdegree=14) with the completed Stage-A
+# HYB10/S/N=50 binned spectra and stellar continuum.  The only change is that
+# the official Sasuke fit is restricted to the 9 central bins by the runner,
+# because the all-spaxel 2397-bin run exceeded the time budget.
+
+[default]
+ key = 'HYB10-MILESHC-MASTARHC2'
+
+[default.binning]
+ key                    = 'HYB10'
+ spatial_method         = 'voronoi'
+
+[default.binning.spatial]
+ target_snr             = 50
+ covar_mode         = 'matrix'
+
+[default.binning.spectral]
+ covar_mode         = 'channels'
+ covar_par          = 11
+
+[default.continuum]
+ key                    = 'MILESHC'
+ minimum_snr            = 1.0
+ fit_method             = 'ppxf'
+
+[default.continuum.fit]
+ artifact_mask          = 'BADSKY'
+ emission_line_mask     = 'ELPSCMSK'
+ velscale_ratio         = 4
+
+[default.continuum.fit.templates]
+ key              = 'MILESHC'
+
+[default.eline_moments]
+ key                = 'EMOM'
+ artifact_mask      = 'BADSKY'
+
+[default.eline_fits]
+ key                  = 'EFITHC2'
+ fit_method           = 'sasuke'
+
+[default.eline_fits.fit]
+ emission_lines       = 'ELPMPL11'
+ etpl_line_sigma_mode = 'offset'
+ etpl_line_sigma_min  = 10
+ artifact_mask        = 'BADSKY'
+ deconstruct_bins     = 'ignore'
+ reject_boxcar        = 101
+ velscale_ratio       = 1
+ mdegree              = 14
+
+[default.eline_fits.fit.templates]
+ key              = 'MASTARHC2'
+
+[default.indices]
+ key                      = 'INDXEN'
+ artifact_mask            = 'BADSKY'

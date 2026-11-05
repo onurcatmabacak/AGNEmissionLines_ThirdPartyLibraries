@@ -1,0 +1,32 @@
+# SHEAP 0.0.11 (https://github.com/felavila/sheap, PyPI `sheap`)
+# Build context is the repository root:
+#   docker build --network=host -t sheap_line -f Tools/sheap_line/dockerfile .
+#
+# SHEAP advertises GPU acceleration, but the PyPI wheel also runs on CPU JAX.
+# This image deliberately installs the CPU jaxlib and sets JAX_PLATFORMS=cpu so
+# the run is reproducible without a GPU.  The wheel includes SHEAP's Fe II,
+# Balmer and E-MILES templates; the SFD dust maps are excluded upstream and are
+# not needed because the adapter disables Galactic extinction.
+FROM python:3.12-slim
+
+ENV PYTHONUNBUFFERED=1 \
+    MPLBACKEND=Agg \
+    JAX_PLATFORMS=cpu \
+    XLA_FLAGS=--xla_cpu_multi_thread_eigen=false
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+      libgomp1 ca-certificates && \
+    rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+
+# sheap==0.0.11 pins jax==0.4.38 / jaxlib==0.4.38 (CPU wheels on x86_64) and
+# ships the template data inside the wheel.
+RUN pip install --no-cache-dir sheap==0.0.11
+
+COPY Tools/sheap_line/run_sheap.py /app/run_sheap.py
+COPY configs/sheap_line/default /app/config
+
+RUN mkdir -p /app/input /app/output && chmod 777 /app/output
+
+ENTRYPOINT ["python", "/app/run_sheap.py"]

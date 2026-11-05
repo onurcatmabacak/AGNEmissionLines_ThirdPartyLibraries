@@ -1,0 +1,75 @@
+# MaNGA Data Analysis Pipeline analysis plan for NGC 1194 (9193-12701).
+# This is the upstream default plan (target S/N=10, 2397 bins). The full
+# emission-line stage at this binning exceeded the time budget; the completed
+# production validation uses plan_moments.toml at target S/N=50 (175 bins).
+#
+# This is the unmodified sdss-mangadap 4.5.0 default plan
+# (mangadap/config/default_plan.toml), reproduced here so the exact
+# science configuration is reviewable and versioned with the repository.
+# The DAP reads this file through MaNGAAnalysisPlan.from_toml(); the
+# key becomes the DAPTYPE string in the output file names.
+#
+# Provenance:
+#   package: sdss-mangadap 4.5.0
+#   source : https://github.com/sdss/mangadap
+#   license: BSD-3-Clause
+#
+# What each block does:
+#   binning        - HYB10 hybrid Voronoi bins at S/N~10
+#   continuum      - pPXF stellar kinematics with MILES-HC templates
+#   eline_moments  - non-parametric emission-line moments (model independent)
+#   eline_fits     - SASUKE Gaussian emission-line fit with MASTAR-HC2 templates
+#   indices        - spectral indices measured after subtracting the line model
+
+[default]
+ key = 'HYB10-MILESHC-MASTARHC2'
+
+[default.binning]
+ key                    = 'HYB10'
+ spatial_method         = 'voronoi'
+
+[default.binning.spatial]
+ target_snr             = 10
+ covar_mode         = 'matrix'
+
+[default.binning.spectral]
+ covar_mode         = 'channels'
+ covar_par          = 11
+
+[default.continuum]
+ key                    = 'MILESHC'
+ minimum_snr            = 1.0
+ fit_method             = 'ppxf'
+
+[default.continuum.fit]
+ artifact_mask          = 'BADSKY'
+ emission_line_mask     = 'ELPSCMSK'
+ velscale_ratio         = 4
+
+[default.continuum.fit.templates]
+ key              = 'MILESHC'
+
+[default.eline_moments]
+ key                = 'EMOM'
+ artifact_mask      = 'BADSKY'
+
+[default.eline_fits]
+ key                  = 'EFITHC2'
+ fit_method           = 'sasuke'
+
+[default.eline_fits.fit]
+ emission_lines       = 'ELPMPL11'
+ etpl_line_sigma_mode = 'offset'
+ etpl_line_sigma_min  = 10
+ artifact_mask        = 'BADSKY'
+ deconstruct_bins     = 'binid'
+ reject_boxcar        = 101
+ velscale_ratio       = 1
+ mdegree              = 14
+
+[default.eline_fits.fit.templates]
+ key              = 'MASTARHC2'
+
+[default.indices]
+ key                      = 'INDXEN'
+ artifact_mask            = 'BADSKY'

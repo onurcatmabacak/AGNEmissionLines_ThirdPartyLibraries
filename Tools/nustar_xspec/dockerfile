@@ -1,0 +1,50 @@
+# NuSTAR hard X-ray (3-79 keV): NuSTARDAS + XSPEC, built from the bioconda HEASoft.
+#
+# Why not conda-forge: the conda-forge `heasoft`/`xspec` packages used by the
+# xmm_xspec image ship no NuSTAR tasks at all (23 `nu*` executables are missing),
+# and there is no conda-forge `nustardas` or NuSTAR CALDB package (both 404).
+# Bioconda's `heasoft` bundles NuSTARDAS (nupipeline, nuproducts, ...) together
+# with XSPEC, so one package covers the whole chain.
+#
+# NuSTAR Level-2 cleaned event files are public, so `nupipeline` can be skipped
+# and only `nuproducts` is needed (ARF/RMF/spectrum extraction).
+FROM mambaorg/micromamba:1.5.10
+USER root
+ENV PATH=/opt/conda/bin:$PATH PYTHONUNBUFFERED=1 MPLBACKEND=Agg MPLCONFIGDIR=/tmp/mpl
+
+RUN micromamba install -y -n base -c conda-forge -c bioconda \
+      "heasoft=6.35.2" "perl=5.32" "numpy" "astropy" "scipy" "matplotlib" \
+# NOTE: no python pin.  heasoft 6.35.2 is built against CPython 3.13; pinning
+# python=3.12 makes the solver fail outright ("does not exist"/conflict).
+#
+# perl is pinned to 5.32 on purpose: HEASoft ships prebuilt Perl modules
+# (Astro::FITS::CFITSIO) and they only load against the ABI they were built for.
+# With conda's perl 5.44, nuproducts dies with "undefined symbol:
+# Perl_newRV_noinc"; with 5.32 the module loads and the reduction runs.
+ && micromamba clean --all --yes
+
+# HEASoft's conda build lives in a versioned prefix, not in $CONDA_PREFIX/heasoft.
+ENV HEADAS=/opt/conda/x86_64-pc-linux-gnu-libc2.17 \
+    LHEAPERL=/opt/conda/bin/perl \
+    PFILES=/tmp/pfiles \
+    HOME=/tmp
+
+# Local NuSTAR CALDB.  The remote-CALDB route does not work any more: HEASARC no
+# longer serves caldb.config at /FTP/caldb (404), and without the index file every
+# task dies with "Problem getting CALDB index file".  The goodfiles tarball ships
+# its own index (data/nustar/fpm/caldb.indx) and is therefore self-contained.
+# CALDB is MOUNTED, not baked: the remote-CALDB route no longer works (HEASARC
+# serves no caldb.config at /FTP/caldb -> 404, and without an index every task
+# dies with "Problem getting CALDB index file"), while the self-contained
+# goodfiles tarball is 2.34 GB - a pure external reference that would triple the
+# image size.  The runner mounts $NUSTAR_CALDB at /opt/caldb; the tarball ships
+# its own index (data/nustar/fpm/caldb.indx).  Fetch recipe in README.md.
+RUN mkdir -p /opt/caldb
+ENV CALDB=/opt/caldb
+
+COPY Tools/nustar_xspec/run_nustar_xspec.py /app/run/run_nustar_xspec.py
+COPY Tools/nustar_xspec/README.md /app/run/README.md
+RUN mkdir -p /app/input /app/output /tmp/pfiles && chmod 777 /app/output /tmp/pfiles
+WORKDIR /app/run
+ENTRYPOINT []
+CMD ["/bin/bash", "-lc", "source $HEADAS/headas-init.sh && exec /opt/conda/bin/python /app/run/run_nustar_xspec.py --input /app/input --output /app/output"]

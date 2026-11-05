@@ -1,0 +1,21 @@
+# Joint multi-instrument fit with 3ML (BSD-3-Clause).
+#
+# The repository compares bands post-hoc (flux ratios); 3ML fits them with a
+# single likelihood and shared parameters, which is the difference between a
+# catalogue entry and a physical constraint.
+FROM mambaorg/micromamba:1.5.10
+USER root
+ENV PATH=/opt/conda/bin:$PATH PYTHONUNBUFFERED=1 MPLBACKEND=Agg
+RUN micromamba install -y -n base -c conda-forge \
+      "python=3.11" "numpy<2" "scipy" "astropy" "matplotlib" "pandas" \
+ && micromamba clean --all --yes
+# 3ML pulls astromodels; pin the numpy<2 line above because astromodels' C
+# extensions are built against the 1.x ABI.
+RUN pip install --no-cache-dir threeML astromodels 2>&1 | tail -5 \
+ && python -c "import threeML, astromodels; print('3ML', threeML.__version__, 'astromodels', astromodels.__version__)"
+COPY Tools/ml_joint/run_ml_joint.py /app/run/run_ml_joint.py
+COPY Tools/ml_joint/README.md /app/run/README.md
+RUN mkdir -p /app/input /app/output && chmod 777 /app/output
+WORKDIR /app/run
+ENTRYPOINT []
+CMD ["python", "/app/run/run_ml_joint.py", "--input", "/app/input", "--output", "/app/output"]

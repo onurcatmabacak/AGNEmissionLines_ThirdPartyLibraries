@@ -1,0 +1,286 @@
+# Machine-readable caveat matrix.  Every registered tool must have an entry;
+# pipeline/build_caveat_matrix.py enforces this and renders docs/CAVEAT_MATRIX.md.
+# status: production | conditional | reference | postprocess | excluded
+# severity: high | medium | low | info
+tools:
+  - tool: pyqsofit_uv
+    kind: line
+    wave: UV/optical
+    status: production
+    severity: medium
+    caveat: "Global continuum+Fe II fit; broad-line totals are stable but component splits are degenerate. The PDS 456 HST/STIS C IV fit is tentative (S/N < 3). The short MCMC chain is not converged; the committed uncertainty for the SDSS QSO is the 100-realization MC."
+    evidence: "outputs/pyqsofit_uv/PDS456_z_0.1840/, outputs/pyqsofit_uv/3C120_z_0.0330/, docs/MCMC_AND_STATISTICS.md"
+    mitigation: "Use line totals; treat PDS 456 C IV as tentative; do not quote the short MCMC as an error bar."
+  - tool: optical_linefit
+    kind: line
+    wave: optical
+    status: conditional
+    severity: medium
+    caveat: "Local H-beta/[O III] fit, independent of global QSO models. PDS 456 uses the public X-SHOOTER VIS spectrum and detects H-beta, but the formal chi-square is high (absorption/continuum residuals) and the ratio is provisional."
+    evidence: "outputs/optical_linefit/PDS456_z_0.1840/, docs/SCIENCE_RESULTS.md"
+    mitigation: "Use it as a local cross-check; inspect optical_fit.png and the quality flag before quoting a ratio."
+  - tool: qsofitmore_line
+    kind: line
+    wave: UV/optical
+    status: production
+    severity: low
+    caveat: "No native MCMC; 200 lmfit MC draws. H-beta total includes broad+narrow; Mg II is bimodal and component-level H-beta is degenerate."
+    evidence: "outputs/qsofitmore_line/04592649654_z_0.5874/, docs/MCMC_AND_STATISTICS.md"
+    mitigation: "Quote total line fluxes and the MC interval; use the 16-84% range for Mg II."
+  - tool: ir_linefit
+    kind: line
+    wave: UV/optical/NIR/MIR/FIR
+    status: production
+    severity: low
+    caveat: "Local Gaussian fits with a generic continuum; not a full AGN/host decomposition and not a substitute for PyQSOFit/CAFE."
+    evidence: "docs/LINE_FITTING_TOOLS.md"
+    mitigation: "Use for individual line checks and ratios, not global continuum physics."
+  - tool: nir_linefit
+    kind: line
+    wave: NIR
+    status: production
+    severity: medium
+    caveat: "Depends on the x1d extraction and optional PSF aperture; line fluxes are aperture-sensitive."
+    evidence: "outputs/nir_linefit/J0100p2802_z_6.3270/"
+    mitigation: "Report the extraction/PSF variant used; compare pipeline and PSF apertures."
+  - tool: pahfit_mir
+    kind: line
+    wave: MIR
+    status: conditional
+    severity: high
+    caveat: "All production fits are flagged/systematics-limited: VV114 hot-dust mismatch, PDS 456 wavelength gaps, NGC 4151 residuals and NGC 253 gaps. Historical NGC 253 tails are unstable; PAHFIT does not prove a unique dust decomposition."
+    evidence: "docs/CAVEAT_FIXES.md, outputs/*/pahfit_mir/run.json"
+    mitigation: "Quote robust line fluxes with flags; do not interpret PAH/dust components as unique."
+  - tool: fir_linefit
+    kind: line
+    wave: FIR
+    status: production
+    severity: medium
+    caveat: "PACS/HIFI calibration and aperture mismatch; local Gaussian fit is not a full FIR SED."
+    evidence: "outputs/fir_linefit/NGC1068_z_0.0038/, outputs/fir_linefit/NGC253_z_0.0008/"
+    mitigation: "Use common apertures and report calibration systematics."
+  - tool: cafe_line
+    kind: line
+    wave: NIR/MIR
+    status: conditional
+    severity: high
+    caveat: "Full all-line VV114 fit exceeds the practical time budget; production is a documented line/PAH subset. PDS 456 has only sparse MIRI coverage and gaps."
+    evidence: "outputs/cafe_line/VV114_z_0.0200/, outputs/cafe_line/PDS456_z_0.1840/"
+    mitigation: "State the subset and masked windows; do not claim all-line simultaneity."
+  - tool: s3fit_line
+    kind: line
+    wave: UV/optical/NIR
+    status: production
+    severity: medium
+    caveat: "58-minute production run; spec+sed mode; MC chi-square 1.605 +/- 0.112. Simultaneous SED/line models can absorb line flux into continuum components."
+    evidence: "outputs/s3fit_line/04592649654_z_0.5874/"
+    mitigation: "Compare to pure-spectrum fitters; report the mock-spectrum scatter."
+  - tool: gandalf_line
+    kind: line
+    wave: optical/NIR
+    status: production
+    severity: medium
+    caveat: "pPXF was accepted on the low-z galaxy, but rejected on the QSO; the QSO regression uses a fixed 300 km/s LOSVD. GANDALF is stellar+gas, not a broad-line AGN model."
+    evidence: "outputs/gandalf_line/spSpec-51908-0277-120_z_0.0859/, docs/GANDALF_ASSESSMENT.md"
+    mitigation: "Only quote pPXF-accepted kinematics; label fixed-LOSVD QSO lines."
+  - tool: galspec_line
+    kind: line
+    wave: optical/NIR
+    status: production
+    severity: medium
+    caveat: "Full-continuum emcee chain reached only ~8.2 retained tau (11.7 total), below the 50-tau convergence target."
+    evidence: "outputs/galspec_line/04592649654_z_0.5874/"
+    mitigation: "Report the tau/ESS diagnostic; do not claim full convergence."
+  - tool: pyqsofitspec_line
+    kind: line
+    wave: UV/optical
+    status: production
+    severity: medium
+    caveat: "H-beta is ~19% above GANDALF/S3Fit because of the continuum/model definition; 53/55 bootstrap draws valid."
+    evidence: "outputs/pyqsofitspec_line/04592649654_z_0.5874/"
+    mitigation: "Use the cross-tool median, not a single fitter, for line ratios."
+  - tool: qgfit
+    kind: line
+    wave: UV/optical
+    status: production
+    severity: medium
+    caveat: "Long continuum MCMC, but the line errors remain least-squares; line MCMC was not adopted."
+    evidence: "outputs/qgfit/04592649654_z_0.5874/"
+    mitigation: "Do not quote MCMC line errors; use LSQ covariance."
+  - tool: sheap_line
+    kind: line
+    wave: UV/optical
+    status: conditional
+    severity: high
+    caveat: "Restricted to the H-beta/[O III] window; repaired from the original 4.00 ratio but still a narrow-window decomposition."
+    evidence: "outputs/sheap_line/04592649654_z_0.5874/, docs/SHEAP_ASSESSMENT.md"
+    mitigation: "Quote only the validated H-beta/[O III] ratio and its bootstrap interval."
+  - tool: manga_dap
+    kind: line
+    wave: optical
+    status: conditional
+    severity: high
+    caveat: "Production validation is the official full-method SASUKE fit on 9 central single-spaxel bins, not all 2397 spaxels. The fast all-spaxel mode was rejected (H-alpha ratio 2.37, BPT agreement 41%)."
+    evidence: "outputs/manga_dap/NGC1194_z_0.0136/, inputs/NGC1194_z_0.0136/"
+    mitigation: "Use the published MAPS for all-spaxel science; use this subset only as a same-spaxel DAP validation."
+  - tool: manga_dap_full
+    kind: line
+    wave: optical
+    status: conditional
+    severity: high
+    caveat: "Full all-spaxel official DAP is exposed as a long run (S/N=10, 2397 bins, full 65-template SASUKE). It is a single-core upstream workflow and may take many hours; the validated fast/9-bin result must not be substituted for it."
+    evidence: "pipeline/runners/run_manga_dap_docker.sh, configs/manga_dap/default/plan.toml, docs/LONG_RUNS.md"
+    mitigation: "Run with --full and wait for completion; compare the all-spaxel MAPS to the published reference before claiming the full DAP."
+  - tool: xmm_sas_raw
+    kind: line
+    wave: X-ray
+    status: conditional
+    severity: medium
+    caveat: "PN-only raw SAS 22.1 reduction. It used a custom 20 arcsec region, a CCF v22.0 RMF with SAS 22.1, and has no final pile-up/pattern optimization; it is not a joint PN+MOS or publication-grade replacement for xmm_xspec."
+    evidence: "outputs/xmm_sas_raw/PDS456_z_0.1840/, Tools/xmm_sas_raw/README.md"
+    mitigation: "Use as a reduction cross-check; run epatplot and a PPS-like region before quoting final numbers."
+  - tool: xmm_xspec
+    kind: line
+    wave: X-ray
+    status: production
+    severity: medium
+    caveat: "Uses official XMM PPS products, not a raw SAS epproc/especget reduction. Fe K-alpha is 4.05 sigma; PN/MOS Gamma differ by 2.9 sigma; the broad Fe width is degenerate with continuum curvature and is not a resolved velocity."
+    evidence: "outputs/xmm_xspec/PDS456_z_0.1840/, Tools/xmm_xspec/SAS_RAW_PATH.md"
+    mitigation: "Quote the narrow-core flux/EW; treat SAS raw reduction as future work; do not claim spin/relativistic profile."
+  - tool: ml_joint
+    kind: ratio
+    wave: UV/optical/MIR/X-ray
+    status: conditional
+    severity: high
+    caveat: "The joint likelihood itself is sound, but the model is not: a single power law through the HST STIS, X-SHOOTER and JWST MIRI flux points fails badly because PDS 456 is a broad-absorption-line quasar and its UV point sits a factor ~40 below the optical extrapolation. The quoted alpha_ox is therefore model-dependent and should not be used as a physical measurement; the flux points and the propagated-error machinery are the defensible products. A broken power law cannot be fitted to four points (four parameters, zero dof) and was rejected."
+    evidence: "outputs/ml_joint/PDS456_z_0.1840/, Tools/ml_joint/"
+  - tool: rxte_hexte
+    kind: line
+    wave: X-ray
+    status: conditional
+    severity: medium
+    caveat: "HEXTE stdprod spectra are short (~3.3 ks here) and the two clusters are fitted with the official ARF/RMF but no cross-calibration constant, so the 15-100 keV normalisation is tied to the calibration of the 2000-era response files. The cutoff is not detected (Delta C-stat +0.4) and the constraint on E_cut is therefore not a measurement; Gamma is. Uses the standard 1% systematic-free C-statistic, which will over-report significance on high-count spectra."
+    evidence: "outputs/rxte_hexte/3C120_z_0.0330/, Tools/rxte_hexte/, docs/LITERATURE_COVERAGE.md"
+  - tool: xmm_rgs
+    kind: line
+    wave: X-ray
+    status: conditional
+    severity: medium
+    caveat: "Fits the XMM PPS pipeline products (SRSPEC counts + RSPMAT response) rather than a SAS rgsproc reduction, because XSA's AIO endpoint does not serve the ODF attitude/housekeeping files rgsproc needs. RSPMAT carries the response matrix without a separate ARF, so line energies, widths, significances and equivalent widths are calibrated but absolute fluxes are not. Line energies and widths are frozen at the laboratory values and at the RGS resolution: five blended Gaussians with free positions and widths is degenerate (the first attempt drove C-stat to 5594/2716 with the energies at their bounds). The continuum is a simple absorbed power law, so C-stat/dof ~2.0 reflects unmodelled instrumental and absorption structure rather than a bad line model."
+    evidence: "outputs/xmm_rgs/NGC4051_z_0.0013/, Tools/xmm_rgs/, docs/XRAY_GRATINGS.md"
+  - tool: cube_lines
+    kind: cube
+    wave: submm/radio/MIR
+    status: conditional
+    severity: medium
+    caveat: "Moment maps assume a linear per-spaxel continuum fitted inside the extraction band; on the NGC 1275 HCN cube the broad line fills much of the +/-1200 km/s window, so the aperture-integrated moment-0 flux and the fitted Gaussian amplitude can even disagree in sign. The velocity and dispersion maps are reliable where the line is detected; the absolute flux scale needs a wider band or a simultaneous continuum fit. The aperture is chosen by signal-to-noise (3x3 smoothed) rather than by peak flux, and MIRI s3d cubes carry a BZERO on the DQ extension, which forbids memmap."
+    evidence: "outputs/cube_lines/NGC1275_z_0.0176/, Tools/cube_lines/, docs/CUBE_ANALYSIS.md"
+  - tool: casa_specfit
+    kind: line
+    wave: radio/submm
+    status: conditional
+    severity: medium
+    caveat: "specfit fits a polynomial plus Gaussians inside a cube box and returns amplitudes, centres and FWHMs, but no reduced chi-square and no residual spectrum, so neither chi2/nu nor the rms-based integrated S/N can be computed: this tool reports snr = amp/ampErr and snr_integrated = integral/integralErr from the CASA covariance instead, which are comparable in meaning but not in arithmetic to the other two tools. On the marginal Galactic HCN 1-0 spectrum the three tools still disagree on velocity (24 km/s) and FWHM (factor seven) because the line is not constrained there; on the NGC 1275 ALMA cube all three detect the broad line at 3.8-5.2 sigma integrated. CASA measures tables are baked into the image (casarundata pinned by md5), which makes the image 2.6 GB."
+    evidence: "outputs/casa_specfit/REGION5_HCN_z_0.0000/, outputs/casa_specfit/NGC1275_z_0.0176/, Tools/casa_specfit/, pipeline/line_snr.py, docs/RADIO_SUBMM_INTEGRATION.md"
+  - tool: submm_line
+    kind: line
+    wave: submm
+    status: production
+    severity: medium
+    caveat: "LTE optical-depth model with one velocity width shared by all hyperfine members; RADEX non-LTE is available in McFine but not wired here. The Jy-per-K scale is a free nuisance parameter, and T_ex is degenerate with it, so T_ex should not be quoted as a physical temperature. Hyperfine tables cover n2hp10, co21 and hi21cm only."
+    evidence: "Tools/submm_line/, docs/RADIO_SUBMM_INTEGRATION.md"
+    mitigation: "Quote velocity, optical depth and width; treat T_ex as indicative. Use the radio_line tool when hyperfine structure is negligible."
+  - tool: radio_line
+    kind: line
+    wave: radio
+    status: production
+    severity: medium
+    caveat: "Single-spectrum Gaussian decomposition; hyperfine structure is not modelled. Velocities follow the configured rest frequency and redshift, so a redshift error shifts all components coherently. Validated on a synthetic H I 21-cm absorption doublet: component centres recover to 0.2 km/s and a single component recovers its width exactly, but two blended components can be biased broad."
+    evidence: "Tools/radio_line/, docs/RADIO_SUBMM_INTEGRATION.md"
+    mitigation: "Quote velocities relative to the fitted components, not absolute; use submm_line/McFine when hyperfine structure matters."
+  - tool: bxa_xspec
+    kind: line
+    wave: X-ray
+    status: production
+    severity: medium
+    caveat: "Bayesian evidence comparison of the same XMM PPS spectra as xmm_xspec, so it inherits the PPS (not raw SAS) provenance and the 4 sigma Fe K-alpha. Bayes factors depend on the stated prior volumes: wide log-uniform line priors penalise the line model, so Delta ln Z and the prior-independent Delta chi-square must be quoted together. Only the built-in XSPEC absorption family is used; MYTorus/UXCLUMPY/RELXILL table models are not bundled."
+    evidence: "outputs/bxa_xspec/PDS456_z_0.1840/, configs/bxa_xspec/default/config.json"
+    mitigation: "Quote Delta ln Z with its priors and the matching Delta chi-square; do not claim torus or spin constraints."
+  - tool: rxte_xspec
+    kind: line
+    wave: X-ray
+    status: production
+    severity: medium
+    caveat: "Uses official HEASARC stdprod PCA products, not a raw pcabackest/saextrct reduction. PCA background systematics are severe; the Galactic-N_H diagnostic is not adopted."
+    evidence: "outputs/rxte_xspec/3C120_z_0.0330/, outputs/rxte_xspec/MCG6-30-15_z_0.0077/"
+    mitigation: "Quote the production and conservative fixed-N_H fits together; do not use the Galactic-N_H Delta chi2."
+  - tool: crossmission
+    kind: ratio
+    wave: X-ray/UV/optical
+    status: postprocess
+    severity: medium
+    caveat: "Two objects only; no correlation fit. 3C 120 uses PyQSOFit H-beta but is provisional because QSOFITMORE gives a different ratio; PDS 456 uses the local X-SHOOTER H-beta/[O III] fit, also provisional because of absorption/continuum residuals. The older PDS HST C IV result is retained only as UV context."
+    evidence: "outputs/crossmission/3C120_z_0.0330/, outputs/crossmission/PDS456_z_0.1840/"
+    mitigation: "Treat as same-object consistency checks; inspect the PDS quality flag and add more objects before fitting any slope."
+  - tool: crossband
+    kind: ratio
+    wave: NIR/MIR/FIR
+    status: postprocess
+    severity: low
+    caveat: "Analytic propagation of already-fitted line fluxes; inherits every parent fit's systematics."
+    evidence: "outputs/crossband/Mrk231_z_0.0422/, outputs/crossband/NGC253_z_0.0008/"
+    mitigation: "Propagate parent errors/systematics explicitly."
+  - tool: cigale_sed
+    kind: sed
+    wave: UV-FIR
+    status: production
+    severity: low
+    caveat: "SED/torus code; it does not measure individual emission lines. Model-family spread is real."
+    evidence: "outputs/cigale_sed/04592649654_z_0.5874/"
+    mitigation: "Never use CIGALE outputs as line fluxes."
+  - tool: agnfitter_sed
+    kind: sed
+    wave: UV-MIR
+    status: production
+    severity: low
+    caveat: "SED/torus nested sampling; it does not measure individual emission lines."
+    evidence: "outputs/agnfitter_sed/04592649654_z_0.5874/"
+    mitigation: "Use only for SED/torus parameters."
+  - tool: ppxf_host
+    kind: host
+    wave: optical/NIR
+    status: production
+    severity: low
+    caveat: "Stellar kinematics/host fraction; not an emission-line fit."
+    evidence: "outputs/ppxf_host/04592649654_z_0.5874/"
+    mitigation: "Use with GANDALF/S3Fit for host/AGN separation."
+  - tool: sdss_zline
+    kind: reference
+    wave: optical
+    status: reference
+    severity: info
+    caveat: "Official SDSS ZLINE narrow-line product; not a broad-line fit and not available for every source."
+    evidence: "outputs/sdss_zline/04592649654_z_0.5874/, docs/OFFICIAL_PIPELINES_AND_XRAY.md"
+    mitigation: "Use as a narrow-line anchor, not as a universal truth for broad lines."
+excluded:
+  - name: manga_all_spaxel
+    reason: "Full 2397-spectrum DAP exceeded the practical time budget; fast SASUKE mode rejected (H-alpha ratio 2.37, BPT 41%)."
+    evidence: "outputs/manga_dap/NGC1194_z_0.0136/aux_fastmode/"
+  - name: lvm_dap
+    reason: "Requires LVM IFU data products, not single-fiber AGN spectra."
+    evidence: "docs/OFFICIAL_PIPELINES_AND_XRAY.md"
+  - name: amaru
+    reason: "Old public version; external EMILES/Fe II/Balmer templates; restrictive/contradictory licence."
+    evidence: "docs/OFFICIAL_PIPELINES_AND_XRAY.md"
+  - name: elfo_agndecompose
+    reason: "IFS/2-D image decomposition, not 1-D single-fiber line fitting."
+    evidence: "docs/OFFICIAL_PIPELINES_AND_XRAY.md"
+  - name: pyspeckit
+    reason: "Redundant with the existing Gaussian/line stack; no independent model."
+    evidence: "docs/OFFICIAL_PIPELINES_AND_XRAY.md"
+  - name: sas_raw_reduction
+    reason: "The 16.5 GB SAS/CCF image and ODF reduction were not run; official PPS products were used instead."
+    evidence: "Tools/xmm_xspec/SAS_RAW_PATH.md"
+  - name: rxte_raw_reduction
+    reason: "Raw pcabackest/saextrct were not rerun; official stdprod products were used."
+    evidence: "outputs/rxte_xspec/3C120_z_0.0330/provenance.md"

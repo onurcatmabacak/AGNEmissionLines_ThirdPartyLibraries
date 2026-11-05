@@ -1,0 +1,17 @@
+# Spatially resolved line fitting on spectral cubes (JWST MIRI MRS s3d, ALMA).
+#
+# Deliberately small: numpy/scipy/astropy/matplotlib only.  The cube is mounted
+# read-only and the maps are written to /app/output.
+FROM mambaorg/micromamba:1.5.10
+USER root
+ENV PATH=/opt/conda/bin:$PATH PYTHONUNBUFFERED=1 MPLBACKEND=Agg OMP_NUM_THREADS=1
+RUN micromamba install -y -n base -c conda-forge \
+      "python=3.12" "numpy<2.1" "scipy>=1.11" "astropy>=6" "matplotlib>=3.8" \
+ && micromamba clean --all --yes
+COPY Tools/cube_lines/run_cube_lines.py /app/run/run_cube_lines.py
+COPY pipeline/line_snr.py /app/run/line_snr.py
+COPY Tools/cube_lines/README.md /app/run/README.md
+RUN mkdir -p /app/input /app/output /tmp/mpl && chmod 777 /app/output /tmp/mpl
+WORKDIR /app/run
+ENTRYPOINT []
+CMD ["python", "/app/run/run_cube_lines.py", "--input", "/app/input", "--output", "/app/output"]
