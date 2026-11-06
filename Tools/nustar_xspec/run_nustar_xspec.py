@@ -59,6 +59,14 @@ def headas_env() -> dict:
     perl = next((c for c in candidates if c and Path(c).exists()), None)
     if perl:
         env["LHEAPERL"] = perl
+    # HEASoft wants a CALDBCONFIG file even for a local CALDB tree; without it the
+    # tasks abort with "Problem getting CALDB index file" / "CALDBCONFIG not set".
+    caldb = env.get("CALDB", "")
+    if caldb:
+        cfg = Path("/tmp/caldb.config")
+        cfg.write_text(f"CALDB = {caldb}\n")
+        env["CALDBCONFIG"] = str(cfg)
+        log(f"CALDBCONFIG={cfg} -> CALDB = {caldb}")
     return env
 
 
@@ -109,7 +117,18 @@ def reduce_events(indir: Path, outdir: Path, env: dict, cfg_region=None) -> list
         cmd = ["nuproducts", f"indir={indir}/", f"outdir={outdir}/",
                f"instrument={'FPMA' if fp == 'A' else 'FPMB'}",
                f"steminputs={base}", "clobber=YES",
-               "extended=NO", "bkgextract=NO"]
+               "extended=NO", "bkgextract=NO",
+               # The exposure-map stage is what stalls (nuexpomap cannot resolve
+               # its CALDB inputs and then hangs); BACKSCAL correction is a
+               # few-percent effect and not needed for a spectral shape.
+               "runbackscale=no", "correctlc=no", "runmkarf=no"]
+        # BLOCKED, recorded for the next attempt: with the local CALDB mounted and
+        # runbackscale/correctlc/runmkarf disabled, the spectrum is produced but
+        # numkrmf cannot build the RMF.  The bundled index resolves no TELDEF/RMF
+        # query here ("no files satisfied the selection criteria"), explicit
+        # rmfdir/grprmffile still die with EPERM, and the remote-CALDB route is
+        # gone (HEASARC serves no caldb.config any more).  The >20 keV band is
+        # covered instead by rxte_hexte, which ships its own ARF/RMF.
         if att is not None:
             cmd.append(f"attfile={att}")
         # The SOC mast-aspect file is not in this observation's auxil/ or

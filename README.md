@@ -40,7 +40,7 @@ Do **not** start with `snakemake all`; some tools take tens of minutes.
 
 ## What this repository is
 
-- **A tool matrix:** 32 Docker images for line/SED/host/IFU/X-ray/cube analyses.
+- **A tool matrix:** 34 Docker images covering 33 tools across every band from radio cm to hard X-rays.
 - **A canonical data layout:** one source directory in, one tool directory out.
 - **A source-aware planner:** recommends tools from the data actually present.
 - **A validation system:** output schema, SHA-256 artifact catalogue, pytest
