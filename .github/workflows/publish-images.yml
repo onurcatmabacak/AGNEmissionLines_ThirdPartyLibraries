@@ -81,6 +81,27 @@ jobs:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Retag local base images from GHCR
+        env:
+          TOOL: ${{ matrix.tool }}
+          OWNER: ${{ github.repository_owner }}
+        run: |
+          set -euo pipefail
+          # Some images are built FROM a sibling image (xmm_rgs, rxte_hexte,
+          # nustar_xspec and xmm_sas_raw are FROM xmm_xspec).  In CI that name
+          # resolves to Docker Hub and fails ("pull access denied"), so any bare
+          # `FROM <name>` is fetched from this repository's own GHCR namespace and
+          # retagged under the local name the dockerfile expects.
+          for base in $(grep -hoE '^FROM[[:space:]]+[A-Za-z0-9_.-]+' "Tools/$TOOL/dockerfile" \
+                        | awk '{print $2}' | sort -u); do
+            ref="ghcr.io/$OWNER/agn-$base:latest"
+            if docker pull "$ref"; then
+              docker tag "$ref" "$base:latest"
+              echo "retagged $ref -> $base:latest"
+            else
+              echo "no published base $ref (self-contained image, nothing to do)"
+            fi
+          done
       - name: Build (linux/amd64)
         env:
           TOOL: ${{ matrix.tool }}
