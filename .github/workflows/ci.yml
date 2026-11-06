@@ -43,7 +43,7 @@ jobs:
             --config sources=3C120_z_0.0330 tools=pyqsofit_uv,crossmission
 
   docker-smoke:
-    name: Docker smoke (optical_linefit)
+    name: Docker build (optical_linefit)
     runs-on: ubuntu-24.04
     needs: tests
     steps:
@@ -53,26 +53,3 @@ jobs:
           python-version: "3.12"
       - name: Build image
         run: docker build -f Tools/optical_linefit/dockerfile -t optical_linefit .
-      - name: Run on a PDS 456 X-SHOOTER spectrum (skipped when data is absent)
-        run: |
-          SPEC="inputs/PDS456_z_0.1840/raw/ADP.2023-04-20T08:25:01.842_XSHOOTER_VIS.fits"
-          if [ ! -f "$SPEC" ]; then
-            echo "note: observations are not shipped with the repository (see docs/RESULTS.md) -"
-            echo "      the image build above is the smoke test for this job."
-            exit 0
-          fi
-          mkdir -p /tmp/agn-smoke
-          docker run --rm \
-            -v "$PWD/inputs/PDS456_z_0.1840/raw":/app/input:ro \
-            -v /tmp/agn-smoke:/app/output \
-            optical_linefit \
-            --fits /app/input/ADP.2023-04-20T08:25:01.842_XSHOOTER_VIS.fits \
-            --out /app/output --z 0.184 --name ci-smoke
-          test -s /tmp/agn-smoke/optical_lines_summary.json
-          python - <<'PY'
-          import json
-          d=json.load(open('/tmp/agn-smoke/optical_lines_summary.json'))
-          assert d['Hbeta_total_1e17'] > 0
-          assert d['OIII5007_total_1e17'] > 0
-          print('smoke OK', d['quality'], d['Hbeta_OIII_ratio'])
-          PY

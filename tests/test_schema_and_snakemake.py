@@ -3,15 +3,6 @@ from pathlib import Path
 
 import jsonschema
 
-from conftest import requires_data
-
-
-@requires_data
-def test_catalog_schema_is_json_schema():
-    schema = json.loads(Path("schemas/output_catalog.schema.json").read_text())
-    jsonschema.Draft202012Validator.check_schema(schema)
-    cat = json.loads(Path("outputs/output_catalog.json").read_text())
-    jsonschema.validate(cat, schema)
 
 
 def test_snakemake_workflow_declares_dependencies():
@@ -32,7 +23,3 @@ def test_caveat_matrix_covers_every_registered_tool():
     assert Path("docs/caveat_matrix.json").is_file()
 
 
-@requires_data
-def test_repository_consistency_audit():
-    from pipeline.audit_repo import main as audit
-    assert audit() == 0

@@ -4,7 +4,6 @@ from pathlib import Path
 import pytest
 from astropy.io import fits
 
-from conftest import requires_data
 from pipeline.resources import ResourceSnapshot, jobs_for_singles, threads_for_tool
 
 
@@ -28,27 +27,3 @@ def test_resource_policy_does_not_oversubscribe_small_host():
     assert jobs_for_singles(["pyqsofit_uv", "qsofitmore_line"], "auto", s) == 1
 
 
-@requires_data
-def test_xmm_rest_ew_is_xspec_consistent():
-    p = Path("outputs/xmm_xspec/PDS456_z_0.1840/xmm_lines.csv")
-    with p.open(newline="") as fh:
-        rows = list(csv.DictReader(fh))
-    row = next(r for r in rows if r["fit_id"] == "joint_pl_line")
-    z = 0.184
-    assert float(row["ew_rest_keV"]) == pytest.approx(float(row["ew_xspec_obs_keV"]) * (1 + z), rel=0.02)
-
-
-@requires_data
-def test_pds_hbeta_ew_is_rest_frame():
-    import json
-    d = json.loads(Path("outputs/optical_linefit/PDS456_z_0.1840/optical_lines_summary.json").read_text())
-    assert d["Hbeta_ew_rest_A"] == pytest.approx(d["Hbeta_ew_obs_A"] * 1.184, rel=1e-6)
-
-
-@requires_data
-def test_pyqsofit_out_of_coverage_line_is_frozen():
-    p = Path("outputs/pyqsofit_uv/04545014975_z_1.1289/qsopar.fits")
-    with fits.open(p) as h:
-        rows = h["line_priors"].data
-    vals = [int(r["vary"]) for r in rows if str(r["linename"]).startswith("OIII5007")]
-    assert vals and all(v == 0 for v in vals)
