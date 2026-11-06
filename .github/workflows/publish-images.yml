@@ -85,6 +85,7 @@ jobs:
         env:
           TOOL: ${{ matrix.tool }}
           OWNER: ${{ github.repository_owner }}
+          TAG: ${{ needs.plan.outputs.tag }}
         run: |
           set -euo pipefail
           # Some images are built FROM a sibling image (xmm_rgs, rxte_hexte,
@@ -94,13 +95,18 @@ jobs:
           # retagged under the local name the dockerfile expects.
           for base in $(grep -hoE '^FROM[[:space:]]+[A-Za-z0-9_.-]+' "Tools/$TOOL/dockerfile" \
                         | awk '{print $2}' | sort -u); do
-            ref="ghcr.io/$OWNER/agn-$base:latest"
-            if docker pull "$ref"; then
-              docker tag "$ref" "$base:latest"
-              echo "retagged $ref -> $base:latest"
-            else
-              echo "no published base $ref (self-contained image, nothing to do)"
-            fi
+            # the base is published under the run's tag, so try that before latest
+            found=""
+            for t in "${TAG:-latest}" latest; do
+              ref="ghcr.io/$OWNER/agn-$base:$t"
+              if docker pull "$ref"; then
+                docker tag "$ref" "$base:latest"
+                echo "retagged $ref -> $base:latest"
+                found=1
+                break
+              fi
+            done
+            [ -n "$found" ] || echo "no published base for '$base' (self-contained image, nothing to do)"
           done
       - name: Build (linux/amd64)
         env:
