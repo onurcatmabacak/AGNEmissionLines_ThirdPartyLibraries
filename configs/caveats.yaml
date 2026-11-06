@@ -152,7 +152,7 @@ tools:
     wave: UV/optical/MIR/X-ray
     status: conditional
     severity: high
-    caveat: "The joint likelihood itself is sound, but the model is not: a single power law through the HST STIS, X-SHOOTER and JWST MIRI flux points fails badly because PDS 456 is a broad-absorption-line quasar and its UV point sits a factor ~40 below the optical extrapolation. The quoted alpha_ox is therefore model-dependent and should not be used as a physical measurement; the flux points and the propagated-error machinery are the defensible products. A broken power law cannot be fitted to four points (four parameters, zero dof) and was rejected."
+    caveat: "alpha_ox is defined at 2500 A and 2 keV, but the 2500 A flux is taken from the *fitted* power law (the STIS coverage starts blueward of it), so it inherits that model assumption; the 2 keV point is the raw count-rate/area value and is not corrected for intrinsic absorption, making alpha_ox a lower bound on the intrinsic ratio if N_H is significant. The data are not simultaneous, so no variability correction is applied. An earlier version of this product had a unit bug (flux divided by photon energy instead of f_E = f_nu*keV/h, plus a double Jy->F_lambda->F_nu conversion in the MIR branch) that made the power law look like it failed and returned alpha_ox = +3.04; the corrected value is -1.37 with 15% residuals."
     evidence: "outputs/ml_joint/PDS456_z_0.1840/, Tools/ml_joint/"
   - tool: rxte_hexte
     kind: line

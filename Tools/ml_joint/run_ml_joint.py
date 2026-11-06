@@ -31,7 +31,8 @@ from pathlib import Path
 
 import numpy as np
 
-KEV_ERG = 1.602176634e-9      # 1 keV in erg
+KEV_ERG = 1.602176634e-9       # 1 keV in erg
+H_ERG_S = 6.62607015e-27       # Planck constant in erg s
 C_ANGSTROM_HZ = 2.99792458e18  # c in A Hz
 
 
@@ -50,11 +51,15 @@ def flux_at(wave_A, flux, err, lam0, half=40.0):
 
 
 def to_keV_flux(f_lam, lam0):
-    """erg/cm2/s/A -> keV/cm2/s/keV at lam0."""
-    nu = C_ANGSTROM_HZ / lam0                       # Hz
+    """erg/cm2/s/A -> erg/cm2/s/keV at lam0.
+
+    f_E = f_nu * dnu/dE with dnu/dE = 1/h, expressed per keV.  The first version
+    divided by the photon energy instead, which put the UV/optical/MIR points
+    ~1e12 below the X-ray one and made alpha_ox meaningless (it came out 3.04
+    instead of ~1.3).
+    """
     f_nu = f_lam * lam0 ** 2 / C_ANGSTROM_HZ        # erg/cm2/s/Hz
-    e_keV = 12.398419843320026 / (lam0 / 1.0)       # keV per A  (h c = 12.398 keV A)
-    return f_nu / e_keV * 1e3, nu / 1e3 / 1e0       # flux per keV, and nu in Hz
+    return f_nu * KEV_ERG / H_ERG_S, C_ANGSTROM_HZ / lam0
 
 
 def prepare(cfg, outdir):
@@ -127,11 +132,11 @@ def prepare(cfg, outdir):
             f_jy = float(np.nanmedian(flux[m]))
             e_jy = float(np.nanmedian(err[m]) / np.sqrt(m.sum()))
             lam_A = lam0_um * 1e4
-            # Jy -> erg/cm2/s/A  (F_lambda = F_nu * c / lam^2)
-            f_lam = f_jy * 1e-23 * (C_ANGSTROM_HZ / lam_A ** 2) * 1e-8 * 1e4
-            e_lam = e_jy * 1e-23 * (C_ANGSTROM_HZ / lam_A ** 2) * 1e-8 * 1e4
-            f_keV, _ = to_keV_flux(f_lam, lam_A)
-            e_keV, _ = to_keV_flux(e_lam, lam_A)
+            # Jy is already a frequency flux density: F_nu = F_Jy * 1e-23
+            # erg/cm2/s/Hz.  Going through F_lambda and back double-converted and
+            # put the MIR point four orders of magnitude too low.
+            jy = 1e-23 * KEV_ERG / H_ERG_S
+            f_keV, e_keV = f_jy * jy, e_jy * jy
             rows.append({"band": "JWST/MIRI MIR", "lam_A": lam_A,
                          "energy_keV": 12.398419843320026 / lam_A,
                          "flux_keV": f_keV, "err_keV": abs(e_keV)})

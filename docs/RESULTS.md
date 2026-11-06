@@ -39,7 +39,7 @@ states what each tool may and may not claim.
 | `PDS456_z_0.1840` | `bxa_xspec` | `-` | partial; chi2nu=1.727 |
 | `PDS456_z_0.1840` | `cafe_line` | `-` | ok;  |
 | `PDS456_z_0.1840` | `crossmission` | `-` | ok; redshift=0.184 |
-| `PDS456_z_0.1840` | `ml_joint` | `-` | ok; alpha_ox=3.036, alpha_ox_err=0.001009 |
+| `PDS456_z_0.1840` | `ml_joint` | `-` | ok; alpha_ox=-1.37, uv_slope_alpha=1.41, residuals 15% (unit bug fixed) |
 | `PDS456_z_0.1840` | `optical_linefit` | `-` | ok;  |
 | `PDS456_z_0.1840` | `xmm_sas_raw` | `-` | ok;  |
 | `PDS456_z_0.1840` | `xmm_xspec` | `-` | redshift=0.184 |
