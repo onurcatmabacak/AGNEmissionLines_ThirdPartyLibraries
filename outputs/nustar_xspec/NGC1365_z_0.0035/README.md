@@ -50,6 +50,16 @@ without background, but the reflection parameters run to their bounds
 (`foldE` ~ 1e6 keV, `rel_refl` 2.8), so that is not a physical reflection
 detection.  The absorbed cutoff power law is the number to quote.
 
+## Joint fit (fixed cross-cal)
+
+A joint fit of the two background-subtracted spectra with the
+cross-calibration constants fixed at 1 gives **C-stat/dof 3756.9/3794 =
+0.990**, nH 2.30 x 10^23 cm^-2, Gamma 1.15, E_cut 76 keV and normalization
+8.6 x 10^-4.  This is close to the independent fits but is more constrained
+(perfect cross-cal).  A free FPMB/FPMA constant is not available in the
+current PyXspec single-model setup: it needs two sources/models with linked
+physical parameters, which is the remaining joint-fit work.
+
 ## What was actually blocking the tool
 
 Five issues, none of them the archive:
