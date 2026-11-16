@@ -61,12 +61,22 @@ following items are new or need correcting.
 
 ### Confirmed, with a lifted blocker
 
-- **NuSTAR (3-79 keV)** - still the one missing band, but the archive outage that
-  blocked it is over: `https://heasarc.gsfc.nasa.gov/FTP/caldb/data/nustar/fpm/caldb.indx`
+- **NuSTAR (3-79 keV)** - the response blocker is resolved, but the product is
+  not yet science-grade.  `https://heasarc.gsfc.nasa.gov/FTP/caldb/data/nustar/fpm/caldb.indx`
   returns HTTP 200 (2026-11-17), and the `nustar_xspec` image is present (5.96 GB).
-  `caldb.config` is still 404, so a local CALDB tree must be assembled from the
-  `goodfiles_nustar_fpm_*.tar.gz` tarball; this is now a download-and-retry, not an
-  external blocker.
+  The undocumented failure was the **CALDB config format**, not the archive:
+  `CALDBCONFIG` is a mission/instrument table
+  (`NUSTAR FPMA CALDB data/nustar/fpm caldb.indx CALDB data/nustar/fpm`), not
+  `CALDB = /path`.  With that table and the `cut` detector RMFs, `numkrmf`
+  builds a 66 MB response from the CALDB on a read-only mount
+  (`nuAcutdet0..3`, `nuAcutgrprmf`, `nuA20100101v001.arf`).  The full-frame
+  observation `60002046002` (the configured `60002046001` is subframe with
+  `X/Y = -1`, which `numkrmf` cannot use) yields a 12,603-count FPMA spectrum;
+  `tbabs*cutoffpl` fits at C-stat/dof 0.982 (nH ~4e23, Gamma 1.49, E_cut 22 keV)
+  and `+pexrav` at 0.976.  **Remaining:** the ARF is the canned whole-FPM
+  `nuA20100101v001.arf`, not the source-region `numkarf` product, so the flux
+  and normalization are not quotable; FPMA+FPMB joint fitting and a background
+  are also still missing.
 - **Raw RXTE PCA** - unchanged; still needs a HEASoft image with
   `pcabackest`/`saextrct`/`xtefilt`.
 - **Table models**, **PAHFIT systematics**, **thin coverage**, **MIRI cube** -
@@ -124,7 +134,11 @@ following items are new or need correcting.
 
 - `git status --short` clean at `f41c39f`.
 - `find outputs -name run.json` = 0; `git ls-files outputs` = 29.
-- NuSTAR CALDB index HTTP 200; `caldb.config` HTTP 404.
+- NuSTAR CALDB index HTTP 200; `caldb.config` HTTP 404 (the task writes its
+  own table).
+- NuSTAR response built with `numkrmf` on `60002046002A01_cl.evt` and the
+  `nuAcutdet*`/`nuAcutgrprmf` CALDB files; fit in
+  `~/nustar_work/fit_nustar.py`.
 - XMM PN fits: `fit_pn.py` and `fit_pn_v21.py` in `~/xmm_response_work`, using
   `P0721010201PNS003SRSPEC0001`/`SRCARF0001`/`BGSPEC0001` and
   `epn_e2_lw20_sdY9_v21.0.rmf`/`_v22.0.rmf`.

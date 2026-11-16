@@ -64,7 +64,14 @@ def headas_env() -> dict:
     caldb = env.get("CALDB", "")
     if caldb:
         cfg = Path("/tmp/caldb.config")
-        cfg.write_text(f"CALDB = {caldb}\n")
+        # CALDBCONFIG is a mission/instrument table, not "CALDB = /path".
+        # numkrmf queries this table by mission and instrument; the old
+        # one-line form made every query fail with "Problem reading CALDB
+        # config file" and "Operation not permitted".
+        cfg.write_text(
+            "NUSTAR FPMA CALDB data/nustar/fpm caldb.indx CALDB data/nustar/fpm\n"
+            "NUSTAR FPMB CALDB data/nustar/fpm caldb.indx CALDB data/nustar/fpm\n"
+        )
         env["CALDBCONFIG"] = str(cfg)
         log(f"CALDBCONFIG={cfg} -> CALDB = {caldb}")
     return env
@@ -122,13 +129,12 @@ def reduce_events(indir: Path, outdir: Path, env: dict, cfg_region=None) -> list
                # its CALDB inputs and then hangs); BACKSCAL correction is a
                # few-percent effect and not needed for a spectral shape.
                "runbackscale=no", "correctlc=no", "runmkarf=no"]
-        # BLOCKED, recorded for the next attempt: with the local CALDB mounted and
-        # runbackscale/correctlc/runmkarf disabled, the spectrum is produced but
-        # numkrmf cannot build the RMF.  The bundled index resolves no TELDEF/RMF
-        # query here ("no files satisfied the selection criteria"), explicit
-        # rmfdir/grprmffile still die with EPERM, and the remote-CALDB route is
-        # gone (HEASARC serves no caldb.config any more).  The >20 keV band is
-        # covered instead by rxte_hexte, which ships its own ARF/RMF.
+        # The CALDB config is a mission/instrument table (see headas_env).
+        # With a complete local NUSTAR CALDB tree numkrmf resolves the
+        # cut/detector RMFs and builds the response; a read-only mount is fine.
+        # runmkarf is still disabled, so an ARF must be supplied separately
+        # (the canned CALDB nuA/nuB ARF is a whole-FPM approximation until
+        # numkarf's SPECRESP/PSF products are staged).
         if att is not None:
             cmd.append(f"attfile={att}")
         # The SOC mast-aspect file is not in this observation's auxil/ or
