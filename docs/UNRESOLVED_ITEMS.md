@@ -47,8 +47,85 @@ subagent that investigated it), the verified blocker, and what would count as a 
 | item | why it is still open | what would close it |
 |---|---|---|
 | **BXA evidence for line models** | the evidence integral does not close: `pl` finishes at ~38 % efficiency, any model with a Fe K-alpha term stalls at ~0.03 % near 75-95 % of the volume because the C-stat peak is flat in the line normalisation | a different estimator (profile likelihood / BIC) or a much tighter line-norm prior; the completed pair already says `d ln Z = -0.66` despite `d chi2 = -27.3` |
-| **X-ray continuum residuals** | **partly solved: the sub-0.7 keV band was the dominant term.** Measured on the re-fetched PDS 456 PPS PN spectrum (obs 0721010201, 100 ks, Thin1 filter), `tbabs*zpowerlw`: chi2/dof **3.37** over 0.5-10 keV, **2.39** from 0.6 keV, **2.05** from 0.7 keV, 1.95 from 0.8 keV, 1.99 from 1.0 keV — i.e. essentially all of the excess above ~2 is 0.5-0.7 keV, which is PN calibration, not astrophysics. `configs/xmm_xspec/default` now uses **0.7-10 keV**. Background subtraction is worth 0.33 (2.835 -> 2.502 at 0.5-10) and the production adapter already attaches `BGSPEC`. Above 0.7 keV nothing tested fixes the remaining ~2.0: blackbody soft excess 1.91, `zbknpower` 1.95, partial covering (`zpcfabs`) 1.87-1.81, warm absorber (`zxipcf`) 2.09, C-statistic 1.97, and the three PPS pattern RMFs (SP0/SP4/SPD) give 2.05/2.01/2.10. | the residual at a fixed 0.7-10 keV band is unlikely to be missing physics alone (five model families tested); the next step is the SAS-generated RMF named in the spectrum header (`epn_e2_lw20_sdY9.rmf`), which needs a CCF index for `rmfgen`, or pile-up modelling. For Fe K-alpha work the canonical 2-10 keV band (1.73 in the production config) stays the production answer. |
+| **X-ray continuum residuals** | **partly solved: the sub-0.7 keV band was the dominant term.** Measured on the re-fetched PDS 456 PPS PN spectrum (obs 0721010201, 100 ks, Thin1 filter), `tbabs*zpowerlw`: chi2/dof **3.37** over 0.5-10 keV, **2.39** from 0.6 keV, **2.05** from 0.7 keV, 1.95 from 0.8 keV, 1.99 from 1.0 keV — i.e. essentially all of the excess above ~2 is 0.5-0.7 keV, which is PN calibration, not astrophysics. `configs/xmm_xspec/default` now uses **0.7-10 keV**. Background subtraction is worth 0.33 (2.835 -> 2.502 at 0.5-10) and the production adapter already attaches `BGSPEC`. Above 0.7 keV nothing tested fixes the remaining ~2.0: blackbody soft excess 1.91, `zbknpower` 1.95, partial covering (`zpcfabs`) 1.87-1.81, warm absorber (`zxipcf`) 2.09, C-statistic 1.97, and the three PPS pattern RMFs (SP0/SP4/SPD) give 2.05/2.01/2.10. | the residual at a fixed 0.7-10 keV band is unlikely to be missing physics alone (five model families tested); **tested 2026-11-17: the response is not the missing piece** - the CCF v21.0 and v22.0 PN matrices both give 2.05 at 0.7-10 keV, and v22.0 is already what production uses, so rebuilding the RMF cannot close it; the next test is pile-up/`epatplot` or a 20" extraction. For Fe K-alpha work the canonical 2-10 keV band (1.73 in the production config) stays the production answer. |
 | **Table models** | MYTorus, UXCLUMPY/XARS and RELXILL need external FITS tables; UXCLUMPY/XARS also need a licence review | download the tables, vendor them under `Tools/*/third_party/`, register the model |
 | **PAHFIT systematics** | PDS 456 / NGC 4151 error-scale mismatch, NGC 253 edge pixels, VV 114 tau/PAH degeneracy | error floors, gap trimming, a block bootstrap and a separate tau_9.7/tau_18 model |
 | **Thin band coverage** | UV 1 object (C IV S/N 1.8, not a detection), NIR 1 object, FIR 2, radio cm 1 | more sources per band; the manifests already carry the archive pointers to fetch them |
 | **MIRI cube for PDS 456** | the `mirifulong` product has zero-filled channels exactly where [Ne III]/[S III] sit, and [Ne V] is not detected at 2264 s | a deeper MRS observation or the MRS `s3d` cube of a brighter AGN |
+
+## Verification sweep - 2026-11-17
+
+Re-checked every row against the live tree at `f41c39f` (clean working tree) and
+against the current archive endpoints.  The audit is otherwise confirmed; the
+following items are new or need correcting.
+
+### Confirmed, with a lifted blocker
+
+- **NuSTAR (3-79 keV)** - still the one missing band, but the archive outage that
+  blocked it is over: `https://heasarc.gsfc.nasa.gov/FTP/caldb/data/nustar/fpm/caldb.indx`
+  returns HTTP 200 (2026-11-17), and the `nustar_xspec` image is present (5.96 GB).
+  `caldb.config` is still 404, so a local CALDB tree must be assembled from the
+  `goodfiles_nustar_fpm_*.tar.gz` tarball; this is now a download-and-retry, not an
+  external blocker.
+- **Raw RXTE PCA** - unchanged; still needs a HEASoft image with
+  `pcabackest`/`saextrct`/`xtefilt`.
+- **Table models**, **PAHFIT systematics**, **thin coverage**, **MIRI cube** -
+  unchanged; no new data or tables are present in the tree.
+
+### Corrected / closed
+
+- **The X-ray response is not the missing piece (closes the `#2` next step).**
+  We downloaded the exact CCF PN matrices named in the PPS header and refitted
+  the official PPS PN spectrum (`SRSPEC0001` + `SRCARF0001` + `BGSPEC0001`,
+  `tbabs*zpowerlw`, XSPEC 13.0 in the `xmm_xspec` image):
+  v22.0 gives chi2/dof 2.35 (0.5-10), 2.05 (0.7-10), 1.98 (2-10);
+  v21.0 gives 2.05 at 0.7-10.  The production path already uses v22.0, so
+  "rebuild `epn_e2_lw20_sdY9.rmf`" cannot close the residual.  The repo's raw
+  20" cross-check reports 1.58 at 0.5-10 with the same v22.0 matrix, so the
+  remaining difference is aperture/background/pile-up, not response.  Keep
+  2-10 keV as the production band; the next test is `epatplot`/pile-up or a
+  20" PPS extraction, not `rmfgen`.
+- **MaNGA all-spaxel product is complete, but `docs/RESULTS.md` is stale.**  The
+  committed `outputs/manga_dap/NGC1194_z_0.0136/full/README.md` records
+  `dap_status_code = 0`, 48,731 s and 93,102 line measurements, while the
+  results table still says `did_not_complete`.  The table was generated when
+  the old `run.json` still existed; it can no longer be regenerated because no
+  `outputs/**/run.json` is shipped (`find outputs -name run.json` = 0).
+- **BXA evidence numbers disagree between the doc and the product README.**
+  This row quotes `ln Z(pl) = -342.12 +/- 0.31` and
+  `ln Z(pl_line_narrow) = -342.78 +/- 0.35` (Delta ln Z = -0.66).  The committed
+  `outputs/bxa_xspec/PDS456_z_0.1840/README.md` quotes -342.06 +/- 0.27 and
+  -342.92 +/- 0.46 (Delta ln Z = -0.86).  The two are consistent within errors
+  and both disfavour the 50 eV line; quote one pair explicitly and say which run
+  it is from.
+
+### New gaps found
+
+- **`outputs/xmm_xspec/PDS456_z_0.1840/` does not exist.**  It is cited by
+  `docs/CAVEAT_MATRIX.md`, `docs/MCMC_AND_STATISTICS.md`, `configs/caveats.yaml`
+  and the tool README as the evidence for the 4.05 sigma Fe K-alpha result, but no
+  per-product README was committed.  This is the one production product with no
+  narrative in `outputs/`; the result currently lives only in the tool README
+  and `docs/RESULTS.md`.
+- **The "one README per product" invariant is not met.**  `outputs/` has 29
+  tracked README files, while `docs/RESULTS.md` lists 40 products.  Tools with
+  result rows but no `outputs/<tool>/` README include `cafe_line`,
+  `gandalf_line`, `nustar_xspec` and `pahfit_mir`; the PAHFIT MC subdirectories
+  described as "regenerated" have no committed product tree.
+- **`configs/xmm_xspec/default/README.md` is stale**: it still says the default
+  band is `[0.5, 10.0]`; `config.json` is `[0.7, 10.0]`.
+- **`docs/RESULTS.md` is now a frozen artifact.**  `pipeline/build_results_summary.py`
+  walks `outputs/**/run.json`, but the data-free tree contains none, so a
+  regeneration would emit an empty table.  Either keep the table as a historical
+  record with a note, or add a small committed results index.  Do not run the
+  generator against the current tree without this.
+
+### Verification method
+
+- `git status --short` clean at `f41c39f`.
+- `find outputs -name run.json` = 0; `git ls-files outputs` = 29.
+- NuSTAR CALDB index HTTP 200; `caldb.config` HTTP 404.
+- XMM PN fits: `fit_pn.py` and `fit_pn_v21.py` in `~/xmm_response_work`, using
+  `P0721010201PNS003SRSPEC0001`/`SRCARF0001`/`BGSPEC0001` and
+  `epn_e2_lw20_sdY9_v21.0.rmf`/`_v22.0.rmf`.
+

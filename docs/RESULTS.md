@@ -7,6 +7,11 @@ repository used to mean downloading several gigabytes of third-party
 observations - so this table is the durable record.  `docs/CAVEAT_MATRIX.md`
 states what each tool may and may not claim.
 
+> **Historical record (2026-11-17):** the shipped tree no longer contains any
+> `outputs/**/run.json`, so `pipeline/build_results_summary.py` cannot
+> regenerate this table.  It records the pre-data-removal products; the two
+> MaNGA rows were corrected by hand from their committed product READMEs.
+
 | source | tool | product | key numbers |
 |---|---|---|---|
 | `04592649654_z_0.5874` | `galspec_line` | `-` | ok; snr=45.1, velocity_kms=2.425, fwhm_kms=1622, acceptance_fraction=0.2666 |
@@ -28,8 +33,8 @@ states what each tool may and may not claim.
 | `3C120_z_0.0330` | `rxte_hexte` | `-` | ok; cstat_dof=1.138, E_cut_keV=43.02, phoindex=0.9595, delta_cstat_cutoff=0.379 |
 | `3C120_z_0.0330` | `rxte_xspec` | `-` | redshift=0.033 |
 | `MCG6-30-15_z_0.0077` | `rxte_xspec` | `-` | redshift=0.007749 |
-| `NGC1194_z_0.0136` | `manga_dap` | `full` | did_not_complete;  |
-| `NGC1194_z_0.0136` | `manga_dap` | `full_shard4` | did_not_complete;  |
+| `NGC1194_z_0.0136` | `manga_dap` | `full` | ok; dap_status_code=0, runtime_s=48731, line_measurements=93102, bpt_agreement=0.9885 |
+| `NGC1194_z_0.0136` | `manga_dap` | `full_shard4` | ok; stage=ppxf, shard_workers=4, wall_s=47412, equivalence=bit-exact |
 | `NGC1194_z_0.0136` | `manga_dap` | `-` | ok_subset;  |
 | `NGC1275_z_0.0176` | `casa_specfit` | `-` | ok; n_components=1, redshift=0.01756 |
 | `NGC1275_z_0.0176` | `cube_lines` | `-` | ok; redshift=0.01756 |

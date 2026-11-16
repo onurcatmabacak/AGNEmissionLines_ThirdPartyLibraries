@@ -7,7 +7,7 @@ is mounted at `/app/config` in the `xmm_xspec` image and copied to
 | key | meaning |
 |---|---|
 | `redshift` | source redshift; `zpowerlw` and `zgauss` use it.  Overridable with `--redshift`. |
-| `band_keV` | observed-frame fit band, default `[0.5, 10.0]`. |
+| `band_keV` | observed-frame fit band, default `[0.7, 10.0]`. |
 | `statistic` | XSPEC statistic; `chi` (grouped PPS spectra). |
 | `fit_iterations` | maximum Levenberg–Marquardt iterations. |
 | `xspec_chatter` | XSPEC log verbosity (10 = full fit tables in `xspec.log`). |
@@ -27,7 +27,7 @@ is mounted at `/app/config` in the `xmm_xspec` image and copied to
 The effective fit is:
 
 ```text
-constant * tbabs * (zpowerlw + zgauss)           # joint PN+MOS1+MOS2, 0.5-10 keV
+constant * tbabs * (zpowerlw + zgauss)           # joint PN+MOS1+MOS2, 0.7-10 keV
 constant_PN = 1 (fixed), constant_MOS1/MOS2 free
 zgauss.LineE = 6.4 keV (rest), zgauss.Sigma = 0.05 keV (rest)
 ```
