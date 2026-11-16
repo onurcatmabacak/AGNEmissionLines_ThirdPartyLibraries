@@ -41,7 +41,7 @@ states what each tool may and may not claim.
 | `NGC1275_z_0.0176` | `radio_line` | `-` | ok; chi2nu=0.6324, snr=3.943, snr_integrated=5.083, snr_rms=1.628, velocity_kms=194, fwhm_kms=331.1, amplitude=0.0007715, n_components=1, rms=0.0004739, redshift=0.01756 |
 | `NGC1275_z_0.0176` | `submm_line` | `-` | ok; chi2nu=1.402, snr=nan, snr_integrated=5.157, snr_rms=1.566, velocity_kms=172.6, fwhm_kms=262.8, tau=10, tex_K=9.052, n_components=1, rms=0.0004656, redshift=0.01756 |
 | `NGC4051_z_0.0013` | `xmm_rgs` | `-` | ok;  |
-| `PDS456_z_0.1840` | `bxa_xspec` | `-` | partial; chi2nu=1.727 |
+| `PDS456_z_0.1840` | `bxa_xspec` | `-` | partial; chi2nu=1.727; BIC prefers pcfabs (dBIC -145.6) over the narrow line (-15.4) |
 | `PDS456_z_0.1840` | `cafe_line` | `-` | ok;  |
 | `PDS456_z_0.1840` | `crossmission` | `-` | ok; redshift=0.184 |
 | `PDS456_z_0.1840` | `ml_joint` | `-` | ok; alpha_ox=-1.37, uv_slope_alpha=1.41, residuals 15% (unit bug fixed) |

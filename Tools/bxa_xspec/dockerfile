@@ -18,9 +18,10 @@ RUN apt-get update \
  && rm -rf /var/lib/apt/lists/* /root/.cache/pip
 
 COPY Tools/bxa_xspec/run_bxa_xspec.py /app/run/run_bxa_xspec.py
+COPY Tools/bxa_xspec/bic_scan.py /app/run/bic_scan.py
 COPY Tools/bxa_xspec/README.md /app/run/README_BXA.md
 COPY configs/bxa_xspec/default /app/config_bxa
-RUN chmod 755 /app/run/run_bxa_xspec.py
+RUN chmod 755 /app/run/run_bxa_xspec.py /app/run/bic_scan.py
 
 # Fail the build if BXA/UltraNest cannot start next to PyXspec.
 RUN /app/run/entrypoint.sh python -c "\
