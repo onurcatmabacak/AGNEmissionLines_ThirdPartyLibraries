@@ -37,7 +37,7 @@ disabled; enabling them needs the 2D-PSF grouping/files.
 
 ## Product
 
-`outputs/nustar_xspec/NGC1365_z_0.0035/README.md`: 12,603-count FPMA spectrum,
+`outputs/nustar_xspec/NGC1365_z_0.0035/README.md`: 12,603 FPMA + 12,145 FPMB counts,
 C-stat/dof 0.985, nH 1.9e23, Gamma 1.06, E_cut 88 keV.  FPMB, background and
 registration are still open.
 

@@ -23,7 +23,7 @@ subagent that investigated it), the verified blocker, and what would count as a 
 
 | item | status | evidence / next action |
 |---|---|---|
-| **NuSTAR (3-79 keV)** | **partly solved (2026-11-17): RMF + source-region ARF build; FPMB/background pending** | `Tools/nustar_xspec` builds (bioconda HEASoft 6.35.2), and the real response blocker was the CALDB **config format**, not the archive: `CALDBCONFIG` must be a mission/instrument table, not `CALDB = /path`. With that table and the `cut` detector RMFs, `numkrmf` builds a 66 MB RMF on a read-only mount; `nuskypos` + `numkarf` then build a source-region ARF (PSF/vignetting/aperture/ghost/detabs corrections disabled in this pass). The configured ObsID `60002046001` is subframe (`X/Y=-1`) and cannot be used; full-frame `60002046002` yields a 12,603-count FPMA spectrum, and `tbabs*cutoffpl` fits at C-stat/dof 0.985 (nH 1.9e23, Gamma 1.06, E_cut 88 keV; see `outputs/nustar_xspec/NGC1365_z_0.0035/`).  Remaining: FPMB joint fit, background, full ARF corrections, registration. |
+| **NuSTAR (3-79 keV)** | **partly solved (2026-11-17): RMFs + source-region ARFs for FPMA/FPMB; background/joint pending** | `Tools/nustar_xspec` builds (bioconda HEASoft 6.35.2), and the real response blocker was the CALDB **config format**, not the archive: `CALDBCONFIG` must be a mission/instrument table, not `CALDB = /path`. With that table and the `cut` detector RMFs, `numkrmf` builds 66 MB RMFs on a read-only mount; `nuskypos` + `numkarf` then build source-region ARFs for both focal planes (PSF/vignetting/aperture/ghost/detabs corrections disabled in this pass). The configured ObsID `60002046001` is subframe (`X/Y=-1`) and cannot be used; full-frame `60002046002` yields 12,603 FPMA counts and 12,145 FPMB counts.  Independent `tbabs*cutoffpl` fits: FPMA C-stat/dof 0.985 (nH 1.9e23, Gamma 1.06, E_cut 88 keV), FPMB 0.967 (nH 2.4e23, Gamma 1.30, no cutoff required); see `outputs/nustar_xspec/NGC1365_z_0.0035/`.  Remaining: proper joint cross-calibration fit, background, full ARF corrections, registration. |
 | **Raw XMM SAS** | **solved for PN** | Full `epproc instexpids=PNS003` exit 0; final `*_ImagingEvts.ds`; `especget` 20″/40–60″; PN-only Δχ² 14.03 (3.74σ), flux 2.15e-14. See `docs/XMM_RAW_SAS_RESULT.md`. |
 | **Raw RXTE PCA** | **blocked** | The `pca/FS4a_*` Standard-2 arrays are public in the `pca/` sibling of `stdprod/` (not inside `stdprod`), but HEASARC is not serving the archive from this network and the image lacks `pcabackest`/`saextrct`/`xtefilt`. A full HEASoft image and a working archive endpoint are required; `stdprod` remains production. |
 | **Full all-spaxel MaNGA** | **completed (serial production); sample throughput by parallel cubes** | The official Stage-A DAP ran serially over all 5,476 spaxels: `outputs/manga_dap/NGC1194_z_0.0136/full` finished with `dap_status_code = 0` in 48,731 s (13.51 h), 93,102 line measurements, BPT agreement 0.9885 against the published MAPS. Sharding is *settled*: the pPXF stage shard is validated bit-for-bit (`full_shard4`, worst relative line-flux difference 0.00e+00, identical BPT census) but only worth 2.5 % because pPXF is ~7 % of the runtime; the EMOM and SASUKE shards are implemented and unit-tested yet silently abort / are never reached, so they stay gated off (`MANGADAP_SHARD_STAGES=ppxf`). For a sample of galaxies the supported lever is `pipeline/run_manga_parallel.py` (independent cubes concurrently, unmodified pipeline, ~5 GB per run). The auxiliary 2,397-bin 65-template `EmissionLineModel` that was killed at the 58-minute budget is recorded as `config.dap.full_attempt.status = did_not_complete` and is not the production result. |
@@ -71,14 +71,16 @@ following items are new or need correcting.
   builds a 66 MB response from the CALDB on a read-only mount
   (`nuAcutdet0..3`, `nuAcutgrprmf`, `nuA20100101v001.arf`).  The full-frame
   observation `60002046002` (the configured `60002046001` is subframe with
-  `X/Y = -1`, which `numkrmf` cannot use) yields a 12,603-count FPMA spectrum.
-  `nuskypos` and `numkarf` then build a **source-region ARF** from the CALDB
-  alignment/pixel-position/vignetting/teldef products and the SOC mast-aspect
-  and attitude files.  With that ARF, `tbabs*cutoffpl` fits at C-stat/dof 0.985
-  (nH 1.9e23, Gamma 1.06, E_cut 88 keV); `+pexrav` reaches 0.966 but its
-  reflection parameters run to the bounds, so it is not a physical detection.
-  **Remaining:** FPMB joint fit, a background spectrum, the full
-  PSF/vignetting/aperture/ghost corrections, and registration.  The ARF is
+  `X/Y = -1`, which `numkrmf` cannot use) yields 12,603 FPMA counts and 12,145
+  FPMB counts.  `nuskypos` and `numkarf` then build **source-region ARFs for
+  both focal planes** from the CALDB alignment/pixel-position/vignetting/teldef
+  products and the SOC mast-aspect and attitude files.  Independent
+  `tbabs*cutoffpl` fits: FPMA C-stat/dof 0.985 (nH 1.9e23, Gamma 1.06, E_cut
+  88 keV); FPMB 0.967 (nH 2.4e23, Gamma 1.30, no cutoff required).  FPMA
+  `+pexrav` reaches 0.966 but its reflection parameters run to the bounds, so it
+  is not a physical detection.  **Remaining:** a proper joint fit with a
+  cross-calibration constant, a background spectrum, the full
+  PSF/vignetting/aperture/ghost corrections, and registration.  The ARFs are
   source-region weighted but not yet the final corrected response.
 - **Raw RXTE PCA** - unchanged; still needs a HEASoft image with
   `pcabackest`/`saextrct`/`xtefilt`.
