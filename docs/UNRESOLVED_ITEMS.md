@@ -23,7 +23,7 @@ subagent that investigated it), the verified blocker, and what would count as a 
 
 | item | status | evidence / next action |
 |---|---|---|
-| **NuSTAR (3-79 keV)** | **blocked** | `Tools/nustar_xspec` builds (bioconda HEASoft 6.35.2 is the only distribution with the 23 `nu*` tasks; conda-forge ships none) and `nuproducts` extracts the spectrum, but cannot build the response: with the local 8 GB CALDB mounted the index resolves no TELDEF/RMF query, explicit `rmfdir`/`grprmffile` still die with EPERM, and the remote-CALDB route is gone (HEASARC serves no `caldb.config`). Workarounds already applied and kept: `runbackscale=no`, `correctlc=no`, `runmkarf=no`, `perl=5.32` (its prebuilt `Astro::FITS::CFITSIO` only loads against that ABI), `LHEAPERL` overridden after `headas-init.sh`. What would count as a fix: a CALDB whose index resolves (`caldb.config` from the SDC, or a rebuilt index), then `nuproducts` with ARF+RMF. The >20 keV band is covered meanwhile by `rxte_hexte`. |
+| **NuSTAR (3-79 keV)** | **partly solved (2026-11-17): response builds; source-region ARF pending** | `Tools/nustar_xspec` builds (bioconda HEASoft 6.35.2), and the real response blocker was the CALDB **config format**, not the archive: `CALDBCONFIG` must be a mission/instrument table, not `CALDB = /path`. With that table and the `cut` detector RMFs, `numkrmf` builds a 66 MB RMF on a read-only mount. The configured ObsID `60002046001` is subframe (`X/Y=-1`) and cannot be used; full-frame `60002046002` yields a 12,603-count FPMA spectrum, and `tbabs*cutoffpl` fits at C-stat/dof 0.982 (see `outputs/nustar_xspec/NGC1365_z_0.0035/`).  Remaining: `numkarf` source-region ARF (needs optical-axis/mast-aspect products), FPMB joint fit, background, and registration. |
 | **Raw XMM SAS** | **solved for PN** | Full `epproc instexpids=PNS003` exit 0; final `*_ImagingEvts.ds`; `especget` 20″/40–60″; PN-only Δχ² 14.03 (3.74σ), flux 2.15e-14. See `docs/XMM_RAW_SAS_RESULT.md`. |
 | **Raw RXTE PCA** | **blocked** | The `pca/FS4a_*` Standard-2 arrays are public in the `pca/` sibling of `stdprod/` (not inside `stdprod`), but HEASARC is not serving the archive from this network and the image lacks `pcabackest`/`saextrct`/`xtefilt`. A full HEASoft image and a working archive endpoint are required; `stdprod` remains production. |
 | **Full all-spaxel MaNGA** | **completed (serial production); sample throughput by parallel cubes** | The official Stage-A DAP ran serially over all 5,476 spaxels: `outputs/manga_dap/NGC1194_z_0.0136/full` finished with `dap_status_code = 0` in 48,731 s (13.51 h), 93,102 line measurements, BPT agreement 0.9885 against the published MAPS. Sharding is *settled*: the pPXF stage shard is validated bit-for-bit (`full_shard4`, worst relative line-flux difference 0.00e+00, identical BPT census) but only worth 2.5 % because pPXF is ~7 % of the runtime; the EMOM and SASUKE shards are implemented and unit-tested yet silently abort / are never reached, so they stay gated off (`MANGADAP_SHARD_STAGES=ppxf`). For a sample of galaxies the supported lever is `pipeline/run_manga_parallel.py` (independent cubes concurrently, unmodified pipeline, ~5 GB per run). The auxiliary 2,397-bin 65-template `EmissionLineModel` that was killed at the 58-minute budget is recorded as `config.dap.full_attempt.status = did_not_complete` and is not the production result. |
@@ -118,19 +118,20 @@ following items are new or need correcting.
 
 ### New gaps found
 
-- **`outputs/xmm_xspec/PDS456_z_0.1840/` does not exist.**  It is cited by
-  `docs/CAVEAT_MATRIX.md`, `docs/MCMC_AND_STATISTICS.md`, `configs/caveats.yaml`
-  and the tool README as the evidence for the 4.05 sigma Fe K-alpha result, but no
-  per-product README was committed.  This is the one production product with no
-  narrative in `outputs/`; the result currently lives only in the tool README
-  and `docs/RESULTS.md`.
-- **The "one README per product" invariant is not met.**  `outputs/` has 29
-  tracked README files, while `docs/RESULTS.md` lists 40 products.  Tools with
-  result rows but no `outputs/<tool>/` README include `cafe_line`,
-  `gandalf_line`, `nustar_xspec` and `pahfit_mir`; the PAHFIT MC subdirectories
-  described as "regenerated" have no committed product tree.
-- **`configs/xmm_xspec/default/README.md` is stale**: it still says the default
-  band is `[0.5, 10.0]`; `config.json` is `[0.7, 10.0]`.
+- **`outputs/xmm_xspec/PDS456_z_0.1840/` was missing and is now filled.**  It
+  is cited by `docs/CAVEAT_MATRIX.md`, `docs/MCMC_AND_STATISTICS.md`,
+  `configs/caveats.yaml` and the tool README as the evidence for the 4.05 sigma
+  Fe K-alpha result.  The product README now records the archived production
+  numbers, the 2026-11-17 response cross-check, and the fact that no data
+  products are shipped.
+- **The "one README per product" invariant is still not met.**  `outputs/` now
+  has 31 tracked README files (`xmm_xspec` and `nustar_xspec` were added on
+  2026-11-17), while `docs/RESULTS.md` lists 40 products.  Tools with result
+  rows but no `outputs/<tool>/` README include `cafe_line`, `gandalf_line` and
+  `pahfit_mir`; the PAHFIT MC subdirectories described as "regenerated" have
+  no committed product tree.
+- **`configs/xmm_xspec/default/README.md` was stale and is now fixed**: it
+  said the default band was `[0.5, 10.0]`; `config.json` is `[0.7, 10.0]`.
 - **`docs/RESULTS.md` is now a frozen artifact.**  `pipeline/build_results_summary.py`
   walks `outputs/**/run.json`, but the data-free tree contains none, so a
   regeneration would emit an empty table.  Either keep the table as a historical
@@ -139,8 +140,9 @@ following items are new or need correcting.
 
 ### Verification method
 
-- `git status --short` clean at `f41c39f`.
-- `find outputs -name run.json` = 0; `git ls-files outputs` = 29.
+- `git status --short` was clean at `f41c39f`; the fixes above are in
+  `eb586f6`, `4b0a83c` and `6f12955`.
+- `find outputs -name run.json` = 0; `git ls-files outputs` = 31.
 - NuSTAR CALDB index HTTP 200; `caldb.config` HTTP 404 (the task writes its
   own table).
 - NuSTAR response built with `numkrmf` on `60002046002A01_cl.evt` and the
