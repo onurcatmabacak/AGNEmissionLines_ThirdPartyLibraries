@@ -36,3 +36,15 @@ fluxes from STIS can be quoted.
 
 What is quotable from this product: the narrow Ly-alpha detection, and the
 per-pixel S/N that any future UV fitter can be validated against.
+
+## Rebinning was tried, and what it did not fix
+
+`pipeline/rebin_spectrum.py` (added with this product) rebins inverse-variance
+weighted, 46,065 -> 1,360 bins at 1 A, which makes the SDSS-era fitters practical
+(`qsofitmore_line` had not finished after 45 minutes on the native grid).  On the
+rebinned spectrum PyQSOFit gives C IV broad S/N 1.46 and Mg II 1.93 (versus 0.97
+and 1.07 native) but loses the narrow Ly-alpha entirely (norm -> 0), so rebinning
+changes which lines the fit finds without making the broad-line fluxes reliable.
+The native-resolution run remains this product; the rebin tool is kept because it
+is the difference between "does not finish" and "finishes" for these fitters, and
+it is unit-tested (`tests/test_rebin_spectrum.py`).
