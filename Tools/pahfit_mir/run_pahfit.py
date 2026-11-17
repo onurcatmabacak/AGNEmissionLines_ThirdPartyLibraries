@@ -25,7 +25,7 @@ import time
 import traceback
 from pathlib import Path
 
-from spectrum_ops import apply_error_floor
+from spectrum_ops import apply_error_floor, trim_near_gaps
 
 import numpy as np
 import matplotlib
@@ -1528,6 +1528,9 @@ def build_parser(cfg: dict):
     p.add_argument("--error-floor", type=float,
                    default=float(fit.get("error_floor", 0.0)),
                    help="relative error floor added in quadrature (0 disables)")
+    p.add_argument("--gap-trim-um", type=float,
+                   default=float(inp.get("gap_trim_um", 0.0)),
+                   help="drop samples within this many microns of a coverage-gap edge")
     p.add_argument("--normalize-fit", action=argparse.BooleanOptionalAction,
                    default=fit.get("normalize", None),
                    help="divide the input by its median before fitting; "
@@ -1593,6 +1596,8 @@ def main(argv=None):
         raise SystemExit("--mc-rcond must be between 0 and 1")
     if not (0 <= args.error_floor < 1):
         raise SystemExit("--error-floor must be in [0, 1)")
+    if not (args.gap_trim_um >= 0):
+        raise SystemExit("--gap-trim-um must be >= 0")
 
     flux_unit = "MJy/sr"
     input_stats = []
@@ -1619,6 +1624,18 @@ def main(argv=None):
             parts = [x.strip() for x in args.instrument.split(",") if x.strip()]
             spec.meta["instrument"] = parts[0] if len(parts) == 1 else parts
         w = spec.spectral_axis.to_value(u.micron)
+        coverage = _coverage_info(w)
+        if args.gap_trim_um > 0 and coverage["gaps"]:
+            keep = trim_near_gaps(w, coverage["gaps"], args.gap_trim_um)
+            w = w[keep]
+            spec = Spectrum1D(
+                spectral_axis=w * u.micron,
+                flux=np.asarray(spec.flux.value)[keep] * spec.flux.unit,
+                uncertainty=StdDevUncertainty(
+                    np.asarray(spec.uncertainty.array)[keep] * spec.flux.unit
+                ),
+            )
+            coverage = _coverage_info(w)
         flux_unit = str(spec.flux.unit)
         n_input = int(len(w))
         print(f"[pahfit] packaged spectrum {args.spectrum}: {len(w)} pixels, "
@@ -1687,6 +1704,10 @@ def main(argv=None):
         w, fl, er = w[keep], fl[keep], er[keep]
         w, fl, er = bin_spectrum(w, fl, er, args.smooth_um)
         coverage = _coverage_info(w)
+        if args.gap_trim_um > 0 and coverage["gaps"]:
+            keep = trim_near_gaps(w, coverage["gaps"], args.gap_trim_um)
+            w, fl, er = w[keep], fl[keep], er[keep]
+            coverage = _coverage_info(w)
         flux_unit = "MJy/sr"
         spec = Spectrum1D(spectral_axis=w * u.micron,
                           flux=fl * u.Unit(flux_unit),
@@ -2187,6 +2208,7 @@ def main(argv=None):
         "rms_rel_all_input": rms_rel_all,
         "normalize_fit": bool(args.normalize_fit),
         "error_floor": float(args.error_floor),
+        "gap_trim_um": float(args.gap_trim_um),
         "clip_nmad": float(args.clip_nmad),
         "clip_iterations": int(args.clip_iterations),
         "clip_refits": int(clip_refits),
@@ -2235,6 +2257,7 @@ def main(argv=None):
             "tbl_aperture_arcsec2": float(args.tbl_aperture_arcsec2),
             "min_wave_um": float(args.min_wave),
             "error_floor": float(args.error_floor),
+            "gap_trim_um": float(args.gap_trim_um),
             "max_wave_um": float(args.max_wave),
             "files": input_stats,
             "coverage": coverage,

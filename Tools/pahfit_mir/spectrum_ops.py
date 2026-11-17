@@ -25,3 +25,23 @@ def apply_error_floor(flux, error, fraction: float):
     if fraction == 0.0:
         return e.copy()
     return np.sqrt(e * e + (fraction * np.abs(f)) ** 2)
+
+
+def trim_near_gaps(wavelength, gaps, trim_um: float):
+    """Boolean mask that drops samples within ``trim_um`` of a coverage gap.
+
+    ``gaps`` is the list produced by ``_coverage_info`` (``start_um`` /
+    ``end_um``).  The mask is True for samples that should be kept.
+    """
+    trim_um = float(trim_um)
+    if not np.isfinite(trim_um) or trim_um < 0:
+        raise ValueError("gap trim must be finite and >= 0")
+    w = np.asarray(wavelength, dtype=float)
+    keep = np.ones(w.shape, dtype=bool)
+    if trim_um == 0.0:
+        return keep
+    for gap in gaps or ():
+        start = float(gap["start_um"])
+        end = float(gap["end_um"])
+        keep &= ~((np.abs(w - start) <= trim_um) | (np.abs(w - end) <= trim_um))
+    return keep

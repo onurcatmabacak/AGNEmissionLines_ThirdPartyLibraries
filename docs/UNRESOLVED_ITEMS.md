@@ -49,7 +49,7 @@ subagent that investigated it), the verified blocker, and what would count as a 
 | **BXA evidence for line models** | **partly closed 2026-11-17: the prior-free check does not support “no line”.**  On the same 2-10 keV spectra and frozen constants (n = 387 bins), BIC/AIC rank `pcfabs` first (chi2/dof 504.0/381, Delta BIC -145.6), then the 300 eV broad line (-44.4), then the 50 eV narrow line (-15.4), then `pl` (0), then `warmabs` (+17.9).  The narrow-line nested-sampling result (`d ln Z = -0.66` in the older run, -0.86 in the product README) is therefore a prior-volume statement, not a prior-free detection or rejection.  The pcfabs nested run never converged, but that is a sampler/prior problem: its chi2 is 157.5 lower for two extra parameters. | a pcfabs nested run with a tighter prior (or a profile-likelihood scan) to put an evidence number on the BIC-preferred model; a 2026-11-17 attempt with pcfabs nH 15-40, CvrFract 0.35-0.65, shared continuum priors and 300 live points still had not found the BIC peak after 3.5k evaluations (Z ~ -456, likelihood max -329 against a BIC C-stat of 504), so it needs a better proposal/likelihood peak rather than just a narrower prior; the BIC/AIC scan is reproducible with `Tools/bxa_xspec/bic_scan.py` |
 | **X-ray continuum residuals** | **partly solved: the sub-0.7 keV band was the dominant term.** Measured on the re-fetched PDS 456 PPS PN spectrum (obs 0721010201, 100 ks, Thin1 filter), `tbabs*zpowerlw`: chi2/dof **3.37** over 0.5-10 keV, **2.39** from 0.6 keV, **2.05** from 0.7 keV, 1.95 from 0.8 keV, 1.99 from 1.0 keV — i.e. essentially all of the excess above ~2 is 0.5-0.7 keV, which is PN calibration, not astrophysics. `configs/xmm_xspec/default` now uses **0.7-10 keV**. Background subtraction is worth 0.33 (2.835 -> 2.502 at 0.5-10) and the production adapter already attaches `BGSPEC`. Above 0.7 keV nothing tested fixes the remaining ~2.0: blackbody soft excess 1.91, `zbknpower` 1.95, partial covering (`zpcfabs`) 1.87-1.81, warm absorber (`zxipcf`) 2.09, C-statistic 1.97, and the three PPS pattern RMFs (SP0/SP4/SPD) give 2.05/2.01/2.10. | the residual at a fixed 0.7-10 keV band is unlikely to be missing physics alone (five model families tested); **tested 2026-11-17: the response is not the missing piece** - the CCF v21.0 and v22.0 PN matrices both give 2.05 at 0.7-10 keV, and v22.0 is already what production uses, so rebuilding the RMF cannot close it; the next test is pile-up/`epatplot` or a 20" extraction. For Fe K-alpha work the canonical 2-10 keV band (1.73 in the production config) stays the production answer. |
 | **Table models** | MYTorus, UXCLUMPY/XARS and RELXILL need external FITS tables; UXCLUMPY/XARS also need a licence review | download the tables, vendor them under `Tools/*/third_party/`, register the model |
-| **PAHFIT systematics** | PDS 456 / NGC 4151 error-scale mismatch, NGC 253 edge pixels, VV 114 tau/PAH degeneracy | **error floor implemented 2026-11-17** (`--error-floor F`, added in quadrature; unit-tested; production products not rerun yet); gap trimming, a block bootstrap and a separate tau_9.7/tau_18 model remain |
+| **PAHFIT systematics** | PDS 456 / NGC 4151 error-scale mismatch, NGC 253 edge pixels, VV 114 tau/PAH degeneracy | **error floor and gap-edge trimming implemented 2026-11-17** (`--error-floor F`, `--gap-trim-um U`; unit-tested; production products not rerun yet); a block bootstrap and a separate tau_9.7/tau_18 model remain |
 | **Thin band coverage** | UV 1 object (C IV S/N 1.8, not a detection), NIR 1 object, FIR 2, radio cm 1 | more sources per band; the manifests already carry the archive pointers to fetch them |
 | **MIRI cube for PDS 456** | the `mirifulong` product has zero-filled channels exactly where [Ne III]/[S III] sit, and [Ne V] is not detected at 2264 s | a deeper MRS observation or the MRS `s3d` cube of a brighter AGN |
 
@@ -125,10 +125,11 @@ following items are new or need correcting.
   narrow line” statement is true only under the configured flat/log-uniform
   prior; it is not a prior-free rejection.  The pcfabs model is the new lead.
 
-- **PAHFIT error floor is now available.**  `--error-floor F` applies
-  `sigma_new = sqrt(sigma^2 + (F*|flux|)^2)` and is covered by
-  `tests/test_pahfit_spectrum_ops.py`; the four systematics-limited
-  products still need a rerun with a non-zero floor.
+- **PAHFIT error floor and gap-edge trimming are now available.**
+  `--error-floor F` applies `sigma_new = sqrt(sigma^2 + (F*|flux|)^2)`;
+  `--gap-trim-um U` drops samples within `U` microns of a coverage-gap edge.
+  Both are covered by `tests/test_pahfit_spectrum_ops.py`; the four
+  systematics-limited products still need a rerun with non-zero values.
 
 ### New gaps found
 

@@ -164,6 +164,9 @@ Notes on the table:
     `sigma_new = sqrt(sigma^2 + (F*|flux|)^2)`.  This is the tool for the
     PDS 456 / NGC 4151 error-scale mismatch; `0` disables it and the
     production products have not yet been rerun with a non-zero floor.
+14. **Gap-edge trimming.**  `--gap-trim-um U` drops samples within `U`
+    microns of a coverage-gap edge (NGC 253 edge pixels); `0` disables it.
+    The production products have not yet been rerun with a non-zero trim.
 
 ## Outputs
 
