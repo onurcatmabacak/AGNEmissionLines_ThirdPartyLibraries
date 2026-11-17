@@ -135,7 +135,9 @@ following items are new or need correcting.
 - **The caveat-matrix builder was broken.**  `pipeline/build_caveat_matrix.py`
   raised `KeyError: mitigation` because `rxte_hexte`, `xmm_rgs`, `cube_lines`
   and `casa_specfit` had no `mitigation` field.  All four were added and
-  `docs/CAVEAT_MATRIX.md`/`.json`/`.csv` regenerated (33 tools, 7 exclusions).
+  `docs/CAVEAT_MATRIX.md`/`.json`/`.csv` regenerated (34 tools, 7 exclusions);
+  `tests/test_caveat_coverage.py` now enforces registry/caveat coverage and
+  the required fields.
 
 ### New gaps found
 
