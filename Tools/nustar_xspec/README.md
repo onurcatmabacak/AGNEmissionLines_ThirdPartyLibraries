@@ -27,20 +27,24 @@ mount:
    (`nuAcutdet0..3`, `nuAcutgrprmf`).
 2. `nuskypos` with the CALDB alignment/pixel-position/teldef products and the
    SOC mast-aspect/attitude files -> optical-axis and DET1-reference files.
-3. `numkarf` on the `nuproducts` PHA + those files -> source-region ARF.
+3. `numkarf` on the `nuproducts` PHA + those files -> source-region ARF with
+   vignetting, aperture-stop and detector-absorption corrections enabled.
+   The PSF/ghost corrections remain off: `nuexpomap` invokes an interactive
+   `ximage`, and the wrapper that bypasses it produces an all-NaN ARF.
 4. PyXspec `tbabs*cutoffpl` (C-stat), 3-79 keV.
 
 The full CALDB tarball is not required; the targeted `caldb.indx` + `cut`
-detector RMFs + ARF/teldef/align/pixpos/vign products are enough.  The ARF in
-the committed product has the PSF/vignetting/aperture/ghost/detabs corrections
-disabled; enabling them needs the 2D-PSF grouping/files.
+detector RMFs + ARF/teldef/align/pixpos/vign/aperture/detabs products are
+enough.
 
 ## Product
 
-`outputs/nustar_xspec/NGC1365_z_0.0035/README.md`: 12,603 FPMA + 12,145 FPMB counts,
-C-stat/dof 0.985, nH 1.9e23, Gamma 1.06, E_cut 88 keV.  FPMB, background and
-registration are still open.
+`outputs/nustar_xspec/NGC1365_z_0.0035/README.md`: 12,603 FPMA + 12,145 FPMB
+counts with local backgrounds.  Background-subtracted `tbabs*cutoffpl`:
+FPMA C-stat/dof 1.024, FPMB 1.038; free-cross-cal profile joint c = 1.07,
+C-stat/dof 1.004 (nH 1.40e23, Gamma 0.900, E_cut 35.5 keV).  Only the PSF/ghost
+correction remains.
 
 Model: `tbabs*cutoffpl` plus an optional `zgauss` Fe K-alpha line; the
 `+pexrav` reflection variant is tried but is unconstrained on this
-single-epoch, background-free spectrum.
+single-epoch spectrum.
