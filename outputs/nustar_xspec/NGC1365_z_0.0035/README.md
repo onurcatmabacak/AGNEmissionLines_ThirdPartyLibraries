@@ -120,6 +120,8 @@ The working scripts are in `~/nustar_work/` on the `acer` host:
   `ximage` still hangs at `[XIMAGE>`; its generated command file is only
   crop/write/quit with no `read` of the instrument map, so it reports
   `Image for inmap not loaded`.  A batch-mode `ximage` or a precomputed
-  exposure map is needed.
+  exposure map is needed; an Xvfb wrapper that prepends `read/file` of the
+  det1 instrument map lets `numkarf` finish, but it reports
+  `PSF fraction=-nan` and writes an all-NaN ARF.
 - Register `nustar_xspec` in `pipeline/tool_registry.py` and add the product to
   `docs/RESULTS.md` once the joint fit is in.
