@@ -48,3 +48,20 @@ correction remains.
 Model: `tbabs*cutoffpl` plus an optional `zgauss` Fe K-alpha line; the
 `+pexrav` reflection variant is tried but is unconstrained on this
 single-epoch spectrum.
+
+## Free cross-cal profile scan
+
+`Tools/nustar_xspec/fit_crosscal_scan.py` reproduces the c = 1.07 result.  It
+takes the two background-subtracted PHAs, their RMF/ARF pairs and scans the
+FPMB/FPMA factor, refitting the shared absorbed cutoff power law at every step:
+
+```bash
+python Tools/nustar_xspec/fit_crosscal_scan.py \
+  --joint-dir /work/test_out/joint \
+  --a-rmf /work/test_out/test24.rmf  --a-arf /work/test_out/arf_corr_test.arf \
+  --b-rmf /work/test_out/test24b.rmf --b-arf /work/test_out/arf_b_corr.arf \
+  --c-min 1.04 --c-max 1.08 --c-step 0.005 \
+  --output crosscal.json
+```
+
+The run inside `nustar_xspec` gives c = 1.07, C-stat/dof 3807.9/3794 = 1.004.
