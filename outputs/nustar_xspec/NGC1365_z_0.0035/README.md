@@ -116,7 +116,8 @@ The working scripts are in `~/nustar_work/` on the `acer` host:
 - Proper joint FPMA+FPMB fit with a free (or linked) cross-calibration constant.
 - Re-run `numkarf` with the PSF/vignetting/aperture/ghost/detabs corrections
   enabled.  The PSF files and instrument map are staged, but `nuexpomap`
-  invokes Tk `ximage` and fails headless (`Tk startup failed: /xtk device
-  unavailable`); this needs Xvfb or a precomputed exposure map.
+  invokes the interactive Tk `ximage`; Xvfb fixes the display error, but
+  `ximage` still hangs at `[XIMAGE>`, so a batch-mode `ximage` or a
+  precomputed exposure map is needed.
 - Register `nustar_xspec` in `pipeline/tool_registry.py` and add the product to
   `docs/RESULTS.md` once the joint fit is in.
