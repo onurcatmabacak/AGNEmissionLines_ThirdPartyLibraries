@@ -178,3 +178,24 @@ following items are new or need correcting.
   `P0721010201PNS003SRSPEC0001`/`SRCARF0001`/`BGSPEC0001` and
   `epn_e2_lw20_sdY9_v21.0.rmf`/`_v22.0.rmf`.
 
+## End-of-sweep status - 2026-11-17
+
+This is the consolidated state after the 2026-11-17 verification and fix
+sweep.  It supersedes the dated rows above where they disagree.
+
+| item | state | evidence |
+|---|---|---|
+| X-ray continuum residual (#2) | **closed as a response question** | CCF v21.0 and v22.0 PN matrices both give chi2/dof 2.05 at 0.7-10 keV; production already uses v22.0.  The residual is aperture/background/pile-up, not the RMF. |
+| NuSTAR | **partly solved** | RMFs for both focal planes, source-region `numkarf` ARFs, local backgrounds, independent FPMA/FPMB fits, fixed-cross-cal joint fit, and registration in `run_new_tools` are done.  Free cross-calibration and full PSF-corrected ARFs remain; the latter is blocked by `nuexpomap` needing Tk/`ximage` (no Xvfb in the image). |
+| Raw RXTE PCA | **partly run** | `pcabackest` and `saextrct` work; a 537,007-count source and a 129-channel background PHA exist.  The raw fit (chi2/dof 9000/49; 3519/49 with scaled stdprod background) does not yet reproduce stdprod (89.85/49); response/energy-scale or grouping remains. |
+| BXA evidence | **prior-free answer obtained** | BIC/AIC on the same 2-10 keV spectra rank `pcfabs` first (Delta BIC -145.6), then the 300 eV broad line (-44.4) and the 50 eV narrow line (-15.4).  The narrow-line Bayes factor is prior-volume limited; a pcfabs nested run still needs a better proposal. |
+| PAHFIT systematics | **partly implemented** | `--error-floor`, `--gap-trim-um` and `--mc-bootstrap-mode block` are implemented, unit-tested and in the image.  A separate tau_9.7/tau_18 model and a rerun of the four products remain. |
+| Table models | **open** | MYTorus/UXCLUMPY/XARS/RELXILL tables and licence review still needed. |
+| Thin band coverage | **open** | UV/NIR/FIR/radio-cm source counts unchanged; archive pointers are in the manifests. |
+| MIRI cube for PDS 456 | **open** | The `mirifulong` zero-filled channels still need deeper/brighter MRS data. |
+| Housekeeping | **solved** | `.git` 1.2 GB -> 102 MB after reflog expiry + `git gc`. |
+| Repository integrity | **green** | 34 registered tools / 35 images / 22 sources; `pipeline/audit_repo.py` passes; 87 tests pass.  `pipeline/build_caveat_matrix.py` is fixed and guarded by `tests/test_caveat_coverage.py`. |
+
+The remaining items are data- or specialist-analysis-gated, not blocked on
+missing repository infrastructure.
+
