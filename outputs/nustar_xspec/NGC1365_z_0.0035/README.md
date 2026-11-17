@@ -117,7 +117,9 @@ The working scripts are in `~/nustar_work/` on the `acer` host:
 - Re-run `numkarf` with the PSF/vignetting/aperture/ghost/detabs corrections
   enabled.  The PSF files and instrument map are staged, but `nuexpomap`
   invokes the interactive Tk `ximage`; Xvfb fixes the display error, but
-  `ximage` still hangs at `[XIMAGE>`, so a batch-mode `ximage` or a
-  precomputed exposure map is needed.
+  `ximage` still hangs at `[XIMAGE>`; its generated command file is only
+  crop/write/quit with no `read` of the instrument map, so it reports
+  `Image for inmap not loaded`.  A batch-mode `ximage` or a precomputed
+  exposure map is needed.
 - Register `nustar_xspec` in `pipeline/tool_registry.py` and add the product to
   `docs/RESULTS.md` once the joint fit is in.
