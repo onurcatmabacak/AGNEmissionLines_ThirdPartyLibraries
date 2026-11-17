@@ -154,6 +154,7 @@ tools:
     severity: high
     caveat: "alpha_ox is defined at 2500 A and 2 keV, but the 2500 A flux is taken from the *fitted* power law (the STIS coverage starts blueward of it), so it inherits that model assumption; the 2 keV point is the raw count-rate/area value and is not corrected for intrinsic absorption, making alpha_ox a lower bound on the intrinsic ratio if N_H is significant. The data are not simultaneous, so no variability correction is applied. An earlier version of this product had a unit bug (flux divided by photon energy instead of f_E = f_nu*keV/h, plus a double Jy->F_lambda->F_nu conversion in the MIR branch) that made the power law look like it failed and returned alpha_ox = +3.04; the corrected value is -1.37 with 15% residuals."
     evidence: "outputs/ml_joint/PDS456_z_0.1840/, Tools/ml_joint/"
+    mitigation: "Treat alpha_ox as a model-dependent lower bound; state the 2500 A extrapolation and the absorption correction before comparing it with simultaneous measurements."
   - tool: rxte_hexte
     kind: line
     wave: X-ray
@@ -161,6 +162,7 @@ tools:
     severity: medium
     caveat: "HEXTE stdprod spectra are short (~3.3 ks here) and the two clusters are fitted with the official ARF/RMF but no cross-calibration constant, so the 15-100 keV normalisation is tied to the calibration of the 2000-era response files. The cutoff is not detected (Delta C-stat +0.4) and the constraint on E_cut is therefore not a measurement; Gamma is. Uses the standard 1% systematic-free C-statistic, which will over-report significance on high-count spectra."
     evidence: "outputs/rxte_hexte/3C120_z_0.0330/, Tools/rxte_hexte/, docs/LITERATURE_COVERAGE.md"
+    mitigation: "Quote Gamma and the non-detection of a cutoff; treat the 15-100 keV normalization as response-era dependent and do not quote E_cut as a measurement."
   - tool: xmm_rgs
     kind: line
     wave: X-ray
@@ -168,6 +170,7 @@ tools:
     severity: medium
     caveat: "Fits the XMM PPS pipeline products (SRSPEC counts + RSPMAT response) rather than a SAS rgsproc reduction, because XSA's AIO endpoint does not serve the ODF attitude/housekeeping files rgsproc needs. RSPMAT carries the response matrix without a separate ARF, so line energies, widths, significances and equivalent widths are calibrated but absolute fluxes are not. Line energies and widths are frozen at the laboratory values and at the RGS resolution: five blended Gaussians with free positions and widths is degenerate (the first attempt drove C-stat to 5594/2716 with the energies at their bounds). The continuum is a simple absorbed power law, so C-stat/dof ~2.0 reflects unmodelled instrumental and absorption structure rather than a bad line model."
     evidence: "outputs/xmm_rgs/NGC4051_z_0.0013/, Tools/xmm_rgs/, docs/XRAY_GRATINGS.md"
+    mitigation: "Quote line energies, widths, significances and EWs, not absolute fluxes; do not claim blended components beyond the frozen-line model."
   - tool: cube_lines
     kind: cube
     wave: submm/radio/MIR
@@ -175,6 +178,7 @@ tools:
     severity: medium
     caveat: "Moment maps assume a linear per-spaxel continuum fitted inside the extraction band; on the NGC 1275 HCN cube the broad line fills much of the +/-1200 km/s window, so the aperture-integrated moment-0 flux and the fitted Gaussian amplitude can even disagree in sign. The velocity and dispersion maps are reliable where the line is detected; the absolute flux scale needs a wider band or a simultaneous continuum fit. The aperture is chosen by signal-to-noise (3x3 smoothed) rather than by peak flux, and MIRI s3d cubes carry a BZERO on the DQ extension, which forbids memmap."
     evidence: "outputs/cube_lines/NGC1275_z_0.0176/, Tools/cube_lines/, docs/CUBE_ANALYSIS.md"
+    mitigation: "Quote per-spaxel moment maps and aperture integrals; do not over-interpret individual low-S/N spaxels."
   - tool: casa_specfit
     kind: line
     wave: radio/submm
@@ -182,6 +186,7 @@ tools:
     severity: medium
     caveat: "specfit fits a polynomial plus Gaussians inside a cube box and returns amplitudes, centres and FWHMs, but no reduced chi-square and no residual spectrum, so neither chi2/nu nor the rms-based integrated S/N can be computed: this tool reports snr = amp/ampErr and snr_integrated = integral/integralErr from the CASA covariance instead, which are comparable in meaning but not in arithmetic to the other two tools. On the marginal Galactic HCN 1-0 spectrum the three tools still disagree on velocity (24 km/s) and FWHM (factor seven) because the line is not constrained there; on the NGC 1275 ALMA cube all three detect the broad line at 3.8-5.2 sigma integrated. CASA measures tables are baked into the image (casarundata pinned by md5), which makes the image 2.6 GB."
     evidence: "outputs/casa_specfit/REGION5_HCN_z_0.0000/, outputs/casa_specfit/NGC1275_z_0.0176/, Tools/casa_specfit/, pipeline/line_snr.py, docs/RADIO_SUBMM_INTEGRATION.md"
+    mitigation: "Use it as a cross-check of the radio/sub-mm Gaussian fit; quote the shared line parameters and consistency, not a new independent detection."
   - tool: submm_line
     kind: line
     wave: submm

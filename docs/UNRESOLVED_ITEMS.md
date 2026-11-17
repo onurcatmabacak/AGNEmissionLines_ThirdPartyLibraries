@@ -132,6 +132,11 @@ following items are new or need correcting.
   residual blocks.  All are covered by `tests/test_pahfit_spectrum_ops.py`;
   the four systematics-limited products still need a rerun with non-zero values.
 
+- **The caveat-matrix builder was broken.**  `pipeline/build_caveat_matrix.py`
+  raised `KeyError: mitigation` because `rxte_hexte`, `xmm_rgs`, `cube_lines`
+  and `casa_specfit` had no `mitigation` field.  All four were added and
+  `docs/CAVEAT_MATRIX.md`/`.json`/`.csv` regenerated (33 tools, 7 exclusions).
+
 ### New gaps found
 
 - **`outputs/xmm_xspec/PDS456_z_0.1840/` was missing and is now filled.**  It
