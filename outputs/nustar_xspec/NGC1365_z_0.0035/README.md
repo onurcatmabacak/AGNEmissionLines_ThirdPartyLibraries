@@ -2,9 +2,10 @@
 
 First real NuSTAR product in the repository: real Level-2 event files, CALDB
 RMFs, source-region `numkarf` ARFs, local background spectra, and independent
-FPMA/FPMB PyXspec fits.  A proper joint cross-calibration fit is still open, so
-the numbers are a reduction/response/background proof, not a publication flux
-measurement.
+FPMA/FPMB PyXspec fits, including a profile joint fit with a free
+FPMB/FPMA cross-calibration factor.  The PSF/ghost correction is still open,
+so the numbers are a reduction/response/background proof, not a publication
+flux measurement.
 
 ## Observation
 
@@ -52,13 +53,17 @@ detection.  The absorbed cutoff power law is the number to quote.
 
 ## Joint fit (fixed cross-cal)
 
-A joint fit of the two background-subtracted spectra with the
-cross-calibration constants fixed at 1 gives **C-stat/dof 3861.7/3794 =
-1.018**, nH 1.58 x 10^23 cm^-2, Gamma 1.14, E_cut 162 keV and normalization
-5.0 x 10^-3.  This is close to the independent fits but is more constrained
-(perfect cross-cal).  A free FPMB/FPMA constant is not available in the
-current PyXspec single-model setup: it needs two sources/models with linked
-physical parameters, which is the remaining joint-fit work.
+A profile joint fit with a free FPMB/FPMA cross-calibration factor gives
+**c = 1.07** (FPMB/FPMA normalization) and **C-stat/dof 3807.9/3794 = 1.004**,
+nH 1.40 x 10^23 cm^-2, Gamma 0.900, E_cut 35.5 keV and normalization
+3.47 x 10^-3.  The factor was scanned from 1.04 to 1.08 in 0.005 steps; at each
+c the FPMB source and background counts were divided by c and all physical
+parameters were refit jointly.  This supersedes the fixed-cross-cal fit
+(C-stat/dof 1.018).
+
+The free factor is implemented as a profile likelihood rather than a
+simultaneous PyXspec parameter because the single-model setup ties the
+per-group `constant`; the profile is exact for each fixed c.
 
 ## What was actually blocking the tool
 
@@ -115,7 +120,6 @@ The working scripts are in `~/nustar_work/` on the `acer` host:
 
 ## Remaining work
 
-- Proper joint FPMA+FPMB fit with a free (or linked) cross-calibration constant.
 - Re-run `numkarf` with the PSF correction enabled (vignetting, aperture and
   detabs are already on).  The PSF files and instrument map are staged, but `nuexpomap`
   invokes the interactive Tk `ximage`; Xvfb fixes the display error, but
