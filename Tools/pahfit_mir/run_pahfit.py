@@ -25,6 +25,8 @@ import time
 import traceback
 from pathlib import Path
 
+from spectrum_ops import apply_error_floor
+
 import numpy as np
 import matplotlib
 matplotlib.use("Agg")
@@ -1523,6 +1525,9 @@ def build_parser(cfg: dict):
                    help="common aperture (arcsec^2) for Spitzer IRS .tbl Jy data")
     p.add_argument("--min-wave", type=float, default=float(inp.get("min_wave", 5.0)))
     p.add_argument("--max-wave", type=float, default=float(inp.get("max_wave", 38.0)))
+    p.add_argument("--error-floor", type=float,
+                   default=float(fit.get("error_floor", 0.0)),
+                   help="relative error floor added in quadrature (0 disables)")
     p.add_argument("--normalize-fit", action=argparse.BooleanOptionalAction,
                    default=fit.get("normalize", None),
                    help="divide the input by its median before fitting; "
@@ -1586,6 +1591,8 @@ def main(argv=None):
               "reference model", flush=True)
     if not (0 < args.mc_rcond < 1):
         raise SystemExit("--mc-rcond must be between 0 and 1")
+    if not (0 <= args.error_floor < 1):
+        raise SystemExit("--error-floor must be in [0, 1)")
 
     flux_unit = "MJy/sr"
     input_stats = []
@@ -1602,6 +1609,12 @@ def main(argv=None):
             spec = Spectrum1D(spectral_axis=spec.spectral_axis,
                               flux=fl * u.MJy / u.sr,
                               uncertainty=StdDevUncertainty(er * u.MJy / u.sr))
+        if args.error_floor > 0:
+            fl = np.asarray(spec.flux.value, dtype=float)
+            er = apply_error_floor(fl, spec.uncertainty.array, args.error_floor)
+            spec = Spectrum1D(spectral_axis=spec.spectral_axis,
+                              flux=spec.flux,
+                              uncertainty=StdDevUncertainty(er * spec.flux.unit))
         if args.instrument:
             parts = [x.strip() for x in args.instrument.split(",") if x.strip()]
             spec.meta["instrument"] = parts[0] if len(parts) == 1 else parts
@@ -1636,6 +1649,8 @@ def main(argv=None):
                 aperture = args.aperture_arcsec2
             unit_in = str(uu)
             fl, er, uu, conv = _to_mjy_sr(fl, er, uu, aperture, f.name)
+            if args.error_floor > 0:
+                er = apply_error_floor(fl, er, args.error_floor)
             good = (np.isfinite(w) & np.isfinite(fl) & np.isfinite(er) & (er > 0)
                     & (dq == 0) & (w >= args.min_wave) & (w <= args.max_wave))
             n_total = int(len(w))
@@ -2171,6 +2186,7 @@ def main(argv=None):
         "rms_rel": rms_rel,
         "rms_rel_all_input": rms_rel_all,
         "normalize_fit": bool(args.normalize_fit),
+        "error_floor": float(args.error_floor),
         "clip_nmad": float(args.clip_nmad),
         "clip_iterations": int(args.clip_iterations),
         "clip_refits": int(clip_refits),
@@ -2218,6 +2234,7 @@ def main(argv=None):
             "aperture_arcsec2": float(args.aperture_arcsec2),
             "tbl_aperture_arcsec2": float(args.tbl_aperture_arcsec2),
             "min_wave_um": float(args.min_wave),
+            "error_floor": float(args.error_floor),
             "max_wave_um": float(args.max_wave),
             "files": input_stats,
             "coverage": coverage,

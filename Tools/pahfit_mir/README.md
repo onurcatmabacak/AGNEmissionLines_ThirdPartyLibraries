@@ -160,6 +160,10 @@ Notes on the table:
 12. **Robust clipping.**  `--clip-nmad` adds an iterative relative-residual
     clip for unflagged cosmic rays (used for VV114 only).  It is relative,
     not formal-sigma, so a globally mismatched model is not deleted.
+13. **Error floor.**  `--error-floor F` adds a relative floor in quadrature,
+    `sigma_new = sqrt(sigma^2 + (F*|flux|)^2)`.  This is the tool for the
+    PDS 456 / NGC 4151 error-scale mismatch; `0` disables it and the
+    production products have not yet been rerun with a non-zero floor.
 
 ## Outputs
 
