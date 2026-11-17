@@ -84,8 +84,14 @@ following items are new or need correcting.
   gives c = 1.07 and C-stat/dof 3807.9/3794 = 1.004 (nH 1.40e23,
   Gamma 0.900, E_cut 35.5 keV).  **Remaining:** the PSF correction
   (vignetting, aperture and detabs are enabled; ghost is off); it is
-  blocked by `nuexpomap` invoking the
-  interactive Tk `ximage`.  Xvfb fixes the display but `ximage` still
+  blocked by `nuexpomap` invoking the interactive `ximage`.  Verified
+  2026-11-17: `numkarf` now completes and writes the ARF, but the PSF fraction is
+  `-nan` and all 4096 SPECRESP rows are NaN because the exposure map is empty.
+  `ximage` must be driven through **stdin with an explicit `exit`** (an `@file`
+  argument is treated as a startup command and fails), which is why the old
+  wrapper never advanced; the map is still NaN afterwards, so the next step is to
+  capture `nuexpomap`'s generated `<pid>tmp_ximage.xco` and compare it with a
+  working interactive session.  See `Tools/nustar_xspec/README.md`.  Xvfb fixes the display but `ximage` still
   hangs at its `[XIMAGE>` prompt; the generated command file has only
   crop/write/quit and no `read`, so it reports `Image for inmap not
   loaded`.  A batch-mode `ximage` or a precomputed exposure map is

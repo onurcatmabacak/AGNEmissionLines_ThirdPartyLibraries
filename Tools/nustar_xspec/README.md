@@ -65,3 +65,40 @@ python Tools/nustar_xspec/fit_crosscal_scan.py \
 ```
 
 The run inside `nustar_xspec` gives c = 1.07, C-stat/dof 3807.9/3794 = 1.004.
+
+## PSF correction: where it stands (2026-11-17)
+
+`numkarf` now runs to completion with the local CALDB mounted
+(`psfflag=yes`, source-region ARF, `optaxis`/`det1` taken from the observation),
+but the PSF correction is unusable:
+
+```text
+PSF fraction=-nan off-axis=8.5 duration=38913.975
+energy band 20.0-79.0 keV: total PSF correction factor=-nan
+'arfs/arf_psf.arf' file successfully written
+```
+
+and the SPECRESP column of that ARF is **NaN in all 4096 rows**, i.e. the ARF is
+written but empty.  The NaN comes from the exposure map that `nuexpomap` builds
+through the interactive `ximage`, not from `numkarf`.
+
+What was verified about that step:
+
+* `ximage` **cannot** be driven with `@file`: it treats the argument as a startup
+  command and fails with "Failed to execute startup command: @...cmd.xco".  The
+  existing wrapper in `~/nustar_work/bin/ximage` used exactly that form, which is
+  why it never got past the prompt.
+* `ximage` *can* be driven in batch through **stdin**, with an explicit `exit`:
+  `printf 'read "in.fits"\nwrite "out.fits"\nexit\n' | ximage` reads, writes a
+  valid FITS image and returns to the shell.
+* With that form the map is still NaN, so the command sequence `nuexpomap`
+  generates is doing something else wrong (the wrapper's `WRAP` log line was never
+  written, i.e. the task did not go through the wrapper at all).
+
+Next step: run `nuexpomap` standalone with `chatter=5`, keep its
+`<pid>tmp_ximage.xco` (do not let it clean up), and compare that command file
+with the interactive session that does work; or bypass it by rendering the
+exposure map with `xproj`/`nuexpomap inmap=<precomputed>` and feeding
+`inexpomapfile`.  Until then the product uses the ARF **without** PSF correction
+(vignetting, aperture and detabs are applied), which affects the normalisation by
+a few per cent and not the spectral shape.
