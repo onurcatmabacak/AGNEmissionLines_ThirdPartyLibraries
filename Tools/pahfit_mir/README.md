@@ -167,6 +167,10 @@ Notes on the table:
 14. **Gap-edge trimming.**  `--gap-trim-um U` drops samples within `U`
     microns of a coverage-gap edge (NGC 253 edge pixels); `0` disables it.
     The production products have not yet been rerun with a non-zero trim.
+15. **Block bootstrap.**  `--mc-bootstrap-mode block` with
+    `--mc-bootstrap-block L` resamples contiguous residual blocks of length
+    `L` instead of i.i.d. residuals, preserving the correlated PAHFIT
+    residuals.  The block length is recorded in the bootstrap summary.
 
 ## Outputs
 

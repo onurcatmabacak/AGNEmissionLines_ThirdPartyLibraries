@@ -45,3 +45,24 @@ def trim_near_gaps(wavelength, gaps, trim_um: float):
         end = float(gap["end_um"])
         keep &= ~((np.abs(w - start) <= trim_um) | (np.abs(w - end) <= trim_um))
     return keep
+
+
+def block_bootstrap_indices(n: int, block_length: int, rng):
+    """Indices for a block bootstrap of length ``n``.
+
+    Contiguous blocks of ``block_length`` samples are drawn with replacement
+    from ``0..n-1`` and concatenated/truncated to length ``n``.  A block
+    length >= n degenerates to one block, which is *not* a bootstrap; callers
+    should keep the block shorter than the series.
+    """
+    n = int(n)
+    block_length = int(block_length)
+    if n < 1:
+        raise ValueError("n must be >= 1")
+    if block_length < 1:
+        raise ValueError("block_length must be >= 1")
+    block_length = min(block_length, n)
+    n_blocks = int(np.ceil(n / block_length))
+    starts = rng.integers(0, max(1, n - block_length + 1), size=n_blocks)
+    out = np.concatenate([np.arange(s, s + block_length) for s in starts])
+    return out[:n]

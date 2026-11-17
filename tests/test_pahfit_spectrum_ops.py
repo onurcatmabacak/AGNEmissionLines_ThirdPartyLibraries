@@ -7,7 +7,11 @@ import pytest
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "Tools" / "pahfit_mir"))
 
-from spectrum_ops import apply_error_floor, trim_near_gaps  # noqa: E402
+from spectrum_ops import (  # noqa: E402
+    apply_error_floor,
+    block_bootstrap_indices,
+    trim_near_gaps,
+)
 
 
 def test_error_floor_zero_is_noop():
@@ -45,3 +49,21 @@ def test_trim_near_gaps_zero_is_noop_and_negative_rejected():
     assert trim_near_gaps(w, [{"start_um": 10.0, "end_um": 12.0}], 0.0).all()
     with pytest.raises(ValueError):
         trim_near_gaps(w, [], -0.1)
+
+
+def test_block_bootstrap_indices_length_range_and_contiguous_blocks():
+    rng = np.random.default_rng(7)
+    idx = block_bootstrap_indices(10, 3, rng)
+    assert len(idx) == 10
+    assert idx.min() >= 0 and idx.max() < 10
+    # Each non-final block is a contiguous run of +1 steps.
+    assert np.all(np.diff(idx[:9]) != 0)
+
+
+def test_block_bootstrap_indices_clamps_and_rejects_bad_block():
+    rng = np.random.default_rng(7)
+    assert len(block_bootstrap_indices(5, 10, rng)) == 5
+    with pytest.raises(ValueError):
+        block_bootstrap_indices(5, 0, rng)
+    with pytest.raises(ValueError):
+        block_bootstrap_indices(0, 3, rng)

@@ -25,7 +25,7 @@ import time
 import traceback
 from pathlib import Path
 
-from spectrum_ops import apply_error_floor, trim_near_gaps
+from spectrum_ops import apply_error_floor, block_bootstrap_indices, trim_near_gaps
 
 import numpy as np
 import matplotlib
@@ -948,7 +948,7 @@ def run_covariance_mc(model, spec, z, records, specs, n_samples, rcond, rng,
 
 
 def run_bootstrap_mc(model, spec, z, specs, n_samples, seed, maxiter, mode,
-                     flux_scale=1.0):
+                     flux_scale=1.0, block_length=10):
     rng = np.random.default_rng(seed)
     y = np.asarray(spec.flux.value, float)
     sigma = np.asarray(spec.uncertainty.array, float)
@@ -972,10 +972,16 @@ def run_bootstrap_mc(model, spec, z, specs, n_samples, seed, maxiter, mode,
         t0 = time.time()
         mb = copy.deepcopy(base)
         mb.features.meta["instrument"] = spec.meta.get("instrument", "")
-        if mode == "residual":
+        if mode in ("residual", "block"):
             good = np.isfinite(resid) & np.isfinite(sigma) & (sigma > 0)
             if good.sum() > 2:
-                yb = pred_obs + rng.choice(resid[good], size=len(resid), replace=True)
+                if mode == "block":
+                    idx = block_bootstrap_indices(int(good.sum()), block_length, rng)
+                    boot = np.zeros_like(resid)
+                    boot[good] = resid[good][idx]
+                    yb = pred_obs + boot
+                else:
+                    yb = pred_obs + rng.choice(resid[good], size=len(resid), replace=True)
             else:
                 yb = y + rng.normal(0.0, sigma)
         else:
@@ -1075,6 +1081,7 @@ def run_bootstrap_mc(model, spec, z, specs, n_samples, seed, maxiter, mode,
         "n_ok": n_ok,
         "n_failed": int(n_samples - n_ok),
         "bootstrap_mode": mode,
+        "block_length": int(block_length),
     }
 
 # ---------------------------------------------------------------------------
@@ -1555,8 +1562,11 @@ def build_parser(cfg: dict):
                    help="maxiter for each bootstrap refit")
     p.add_argument("--mc-rcond", type=float, default=float(mc.get("rcond", 1e-10)),
                    help="relative singular-value cutoff for covariance truncation")
-    p.add_argument("--mc-bootstrap-mode", choices=["parametric", "residual"],
+    p.add_argument("--mc-bootstrap-mode", choices=["parametric", "residual", "block"],
                    default=mc.get("bootstrap_mode", "parametric"))
+    p.add_argument("--mc-bootstrap-block", type=int,
+                   default=int(mc.get("bootstrap_block", 10)),
+                   help="block length for --mc-bootstrap-mode block")
     p.add_argument("--mc-scale", choices=["none", "chi2"],
                    default=mc.get("scale", "none"),
                    help="optionally rescale covariance errors by sqrt(chi2_red)")
@@ -2025,7 +2035,7 @@ def main(argv=None):
             mc = run_bootstrap_mc(
                 model, fit_spec, args.z, specs, args.mc_samples, args.mc_seed,
                 args.mc_maxiter, args.mc_bootstrap_mode,
-                flux_scale=fit_scale,
+                flux_scale=fit_scale, block_length=args.mc_bootstrap_block,
             )
             if probe is not None and "err_o" in probe:
                 mc["err_delta_o"] = np.asarray(probe["err_o"], float)
@@ -2085,6 +2095,7 @@ def main(argv=None):
         else:
             mc_summary["bootstrap"] = {
                 "mode": str(mc.get("bootstrap_mode", args.mc_bootstrap_mode)),
+                "block_length": int(mc.get("block_length", 0)),
                 "n_ok": int(mc.get("n_ok", 0)),
                 "n_failed": int(mc.get("n_failed", 0)),
                 "n_not_converged": int(sum(
