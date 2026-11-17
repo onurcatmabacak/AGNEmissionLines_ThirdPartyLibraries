@@ -195,7 +195,7 @@ sweep.  It supersedes the dated rows above where they disagree.
 | Thin band coverage | **open** | UV/NIR/FIR/radio-cm source counts unchanged; archive pointers are in the manifests. |
 | MIRI cube for PDS 456 | **open** | The `mirifulong` zero-filled channels still need deeper/brighter MRS data. |
 | Housekeeping | **solved** | `.git` 1.2 GB -> 102 MB after reflog expiry + `git gc`. |
-| Repository integrity | **green** | 34 registered tools / 35 images / 22 sources; `pipeline/audit_repo.py` passes; 87 tests pass.  `pipeline/build_caveat_matrix.py` is fixed and guarded by `tests/test_caveat_coverage.py`. |
+| Repository integrity | **green** | 34 registered tools / 35 images / 22 sources; `pipeline/audit_repo.py` passes; 88 tests pass.  `pipeline/build_caveat_matrix.py` is fixed and guarded by `tests/test_caveat_coverage.py`. |
 
 The remaining items are data- or specialist-analysis-gated, not blocked on
 missing repository infrastructure.
