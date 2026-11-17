@@ -95,10 +95,26 @@ What was verified about that step:
   generates is doing something else wrong (the wrapper's `WRAP` log line was never
   written, i.e. the task did not go through the wrapper at all).
 
-Next step: run `nuexpomap` standalone with `chatter=5`, keep its
-`<pid>tmp_ximage.xco` (do not let it clean up), and compare that command file
-with the interactive session that does work; or bypass it by rendering the
-exposure map with `xproj`/`nuexpomap inmap=<precomputed>` and feeding
-`inexpomapfile`.  Until then the product uses the ARF **without** PSF correction
-(vignetting, aperture and detabs are applied), which affects the normalisation by
-a few per cent and not the spectral shape.
+Diagnostics run (2026-11-17), in order:
+
+1. `numkarf` failed with "No such device or address" until run with a tty.
+2. It then asked for `optaxisfile` / `det1reffile`; the cached `optaxis.fits` had
+   one row with NaN apstop columns because it was built **before** the mast-aspect
+   file existed.  Downloaded `nu60002046002_mast.fits` (15 MB) and re-ran
+   `nuskypos`: it now writes a 17 MB optaxis and a 7 MB det1ref.
+3. With those, `numkarf` completes but still reports `PSF fraction=-nan
+   off-axis=8.500000` — the off-axis value is a stuck default, so the **source
+   position is never resolved**.  Tried a detector region at the optical axis
+   (1929.7, 200.0), a DS9 `fk5` circle at the target, and numkarf's own
+   `_src.reg`; all three give the same 8.5′ default and a NaN SPECRESP column.
+   Note `withsourcepos/sourcex/sourcey` are **not** numkarf parameters (that
+   raises `PIL_BAD_NAME`); the position must come from `srcregionfile`.
+4. `ximage` reasoning above still holds and is worth keeping for the next attempt:
+   `@file` fails, stdin with `exit` works.
+
+**Status: accepted limitation.** The product uses the ARF with vignetting,
+aperture and detabs applied but **no PSF correction**.  For a point source in a
+60″ region that is a normalisation effect of a few per cent, not a spectral-shape
+one, and the joint fit already reaches C-stat/dof 1.004.  Next attempt should
+start from the region parsing (why numkarf ignores every region file tried) rather
+than from ximage.
