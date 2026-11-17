@@ -33,6 +33,14 @@ def log(msg: str) -> None:
     print(f"[nustar_xspec] {msg}", flush=True)
 
 
+def caldb_config_text() -> str:
+    """The CALDB mission/instrument table used by numkrmf/numkarf."""
+    return (
+        "NUSTAR FPMA CALDB data/nustar/fpm caldb.indx CALDB data/nustar/fpm\n"
+        "NUSTAR FPMB CALDB data/nustar/fpm caldb.indx CALDB data/nustar/fpm\n"
+    )
+
+
 def headas_env() -> dict:
     """Environment for the HEASoft tasks, with a usable LHEAPERL.
 
@@ -68,10 +76,7 @@ def headas_env() -> dict:
         # numkrmf queries this table by mission and instrument; the old
         # one-line form made every query fail with "Problem reading CALDB
         # config file" and "Operation not permitted".
-        cfg.write_text(
-            "NUSTAR FPMA CALDB data/nustar/fpm caldb.indx CALDB data/nustar/fpm\n"
-            "NUSTAR FPMB CALDB data/nustar/fpm caldb.indx CALDB data/nustar/fpm\n"
-        )
+        cfg.write_text(caldb_config_text())
         env["CALDBCONFIG"] = str(cfg)
         log(f"CALDBCONFIG={cfg} -> CALDB = {caldb}")
     return env
