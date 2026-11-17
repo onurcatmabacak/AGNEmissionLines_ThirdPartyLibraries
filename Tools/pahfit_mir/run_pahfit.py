@@ -1608,6 +1608,8 @@ def main(argv=None):
         raise SystemExit("--error-floor must be in [0, 1)")
     if not (args.gap_trim_um >= 0):
         raise SystemExit("--gap-trim-um must be >= 0")
+    if args.mc_bootstrap_mode == "block" and args.mc_bootstrap_block < 1:
+        raise SystemExit("--mc-bootstrap-block must be >= 1 in block mode")
 
     flux_unit = "MJy/sr"
     input_stats = []
