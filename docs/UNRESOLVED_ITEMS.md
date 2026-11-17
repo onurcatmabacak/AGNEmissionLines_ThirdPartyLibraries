@@ -101,6 +101,17 @@ following items are new or need correcting.
 
 ### Corrected / closed
 
+- **The Fe K-alpha depends on the extraction, not only on the model.** With every
+  line parameter genuinely free on the PPS PN spectrum at 2-10 keV (`Fit.nIterations=2000`):
+  narrow 50 eV at the redshifted 6.4 keV gives Delta chi2 = **-0.61** (no line), a
+  free-width line gives **+3.4** but at sigma 1.8 keV and 5.3 keV rest (not Fe K-alpha),
+  and a 300 eV broad line is **worse** by 9.3. The raw 20" SAS extraction of the same
+  observation gives **Delta chi2 14.03 (3.7 sigma)** for the same narrow line. So the
+  PPS PN extraction loses a line the raw extraction recovers - the same
+  aperture/background effect that explains the continuum residual - and the
+  production 4.05 sigma remains the PN+MOS joint fit, which a PN-only check does not
+  reproduce. (An earlier note in the git log quoted "Delta chi2 = 0.0"; that fit had
+  the line width frozen, and the numbers above supersede it.)
 - **The X-ray response is not the missing piece (closes the `#2` next step).**
   We downloaded the exact CCF PN matrices named in the PPS header and refitted
   the official PPS PN spectrum (`SRSPEC0001` + `SRCARF0001` + `BGSPEC0001`,
