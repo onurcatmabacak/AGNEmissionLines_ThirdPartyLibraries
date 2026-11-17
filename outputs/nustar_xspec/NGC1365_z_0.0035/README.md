@@ -19,7 +19,7 @@ measurement.
 | spectra | FPMA `nu60002046002A01_sr.pha`, **12,603 counts** + `*_bk.pha`, 5,910; FPMB `nu60002046002B01_sr.pha`, **12,145 counts** + `*_bk.pha`, 6,447 |
 | BACKSCAL | source 0.001868, background 0.015587 (both planes) |
 | RMFs | `numkrmf` from CALDB (`nuAcutdet0..3`/`nuBcutdet0..3` + grouping), 66 MB each |
-| ARFs | `numkarf` source-region ARFs (62 KB each), PSF/vignetting/aperture/ghost/detabs corrections disabled in this pass |
+| ARFs | `numkarf` source-region ARFs (62 KB each), vignetting/aperture-stop/detector-absorption corrections enabled; PSF/ghost corrections still off |
 
 The ARFs were generated from `nuskypos` optical-axis and DET1-reference files
 (`nuCalign20200901v001`, `nuA/Bpixpos20100101v007`, `nuA/Bvign20100101v008`,
@@ -33,17 +33,17 @@ PyXspec 13 / C-statistic, 3–79 keV, `tbabs*cutoffpl`:
 
 | quantity | FPMA | FPMB |
 |---|---:|---:|
-| C-stat/dof | **1880.1 / 1895 = 0.992** | **1854.2 / 1895 = 0.978** |
-| nH (cm^-2) | 1.9 x 10^23 | 2.8 x 10^23 |
-| Gamma | 0.97 | 1.35 |
-| E_cut | 49 keV | 182 keV |
-| normalization | 6.0 x 10^-4 | 1.3 x 10^-3 |
+| C-stat/dof | **1941.1 / 1895 = 1.024** | **1967.2 / 1895 = 1.038** |
+| nH (cm^-2) | 1.2 x 10^23 | 2.1 x 10^23 |
+| Gamma | 0.96 | 1.38 |
+| E_cut | 79 keV | 500 keV (fit bound) |
+| normalization | 3.4 x 10^-3 | 8.2 x 10^-3 |
 
-The background subtraction matters mostly for the slope: without it the same
-model gave FPMA C-stat/dof 0.985 (Gamma 1.06, E_cut 88 keV) and FPMB 0.967
-(Gamma 1.30).  The two detectors still differ by ΔΓ ≈ 0.38, which is the
-cross-calibration/systematic that a proper joint fit must address.  Neither
-detector requires a strong cutoff in this band.
+Without the vignetting/aperture/detabs corrections the same model gave FPMA
+C-stat/dof 0.992 (Gamma 0.97, E_cut 49 keV) and FPMB 0.978 (Gamma 1.35).  The
+corrections change the effective area and the fitted normalization; the two
+detectors still differ by ΔΓ ≈ 0.42, which is the cross-calibration/systematic
+that a proper joint fit must address.
 
 `tbabs*(cutoffpl+pexrav)` reaches C-stat/dof 1827.5/1891 = 0.966 on FPMA
 without background, but the reflection parameters run to their bounds
@@ -53,9 +53,9 @@ detection.  The absorbed cutoff power law is the number to quote.
 ## Joint fit (fixed cross-cal)
 
 A joint fit of the two background-subtracted spectra with the
-cross-calibration constants fixed at 1 gives **C-stat/dof 3756.9/3794 =
-0.990**, nH 2.30 x 10^23 cm^-2, Gamma 1.15, E_cut 76 keV and normalization
-8.6 x 10^-4.  This is close to the independent fits but is more constrained
+cross-calibration constants fixed at 1 gives **C-stat/dof 3861.7/3794 =
+1.018**, nH 1.58 x 10^23 cm^-2, Gamma 1.14, E_cut 162 keV and normalization
+5.0 x 10^-3.  This is close to the independent fits but is more constrained
 (perfect cross-cal).  A free FPMB/FPMA constant is not available in the
 current PyXspec single-model setup: it needs two sources/models with linked
 physical parameters, which is the remaining joint-fit work.
@@ -76,8 +76,9 @@ Five issues, none of them the archive:
 3. **ARF generation.**  `numkarf` needs the optical-axis and DET1-reference
    files, which in turn need `nuskypos` with the CALDB alignment, pixel-position,
    vignetting and teldef products plus the SOC mast-aspect/attitude files.
-   With those staged, the ARF is written; the flags were disabled to isolate the
-   response from PSF/vignetting corrections.
+   With those staged, the ARF is written; vignetting, aperture-stop and
+   detector-absorption corrections are enabled, while the PSF correction
+   remains disabled (its exposure-map stage is the blocker).
 4. **FPMB temperature ARF.**  The FPMB `numkarf` query selects
    `nuB20100101v006.arf` (not the v001 file); it has to be staged as well.
 5. **Background.**  `nuproducts` needs `bkgextract=yes` and a background region
@@ -103,7 +104,8 @@ numkrmf infile=nu60002046002A01_cl.evt \
 numkarf phafile=nu60002046002A01_sr.pha outfile=nu60002046002A01_sr.arf \
   optaxisfile=optaxis.fits det1reffile=det1ref.fits \
   infile=nu60002046002A01_cl.evt srcregionfile=nu60002046002A01_src.reg \
-  ... psfflag=no vignflag=no apstopflag=no grflag=no detabsflag=no
+  ... psfflag=no vignflag=yes apstopflag=yes grflag=no detabsflag=yes \
+  apstopcorrfile=nuAapstop20100101v001.fits detabscorrfile=nuAdetabs20100101v001.fits
 # repeat with instrument=FPMB, B cut RMFs, B pixpos/vign/teldef and FPMB event
 ```
 
@@ -114,8 +116,8 @@ The working scripts are in `~/nustar_work/` on the `acer` host:
 ## Remaining work
 
 - Proper joint FPMA+FPMB fit with a free (or linked) cross-calibration constant.
-- Re-run `numkarf` with the PSF/vignetting/aperture/ghost/detabs corrections
-  enabled.  The PSF files and instrument map are staged, but `nuexpomap`
+- Re-run `numkarf` with the PSF correction enabled (vignetting, aperture and
+  detabs are already on).  The PSF files and instrument map are staged, but `nuexpomap`
   invokes the interactive Tk `ximage`; Xvfb fixes the display error, but
   `ximage` still hangs at `[XIMAGE>`; its generated command file is only
   crop/write/quit with no `read` of the instrument map, so it reports
