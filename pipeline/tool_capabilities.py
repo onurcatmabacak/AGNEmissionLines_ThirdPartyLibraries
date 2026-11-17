@@ -16,7 +16,7 @@ THREADS = {
     # Mostly single-core upstream codes; env vars are still set so BLAS/NumPy
     # can use them where available.
     "pyqsofit_uv": 1, "qsofitmore_line": 1, "pyqsofitspec_line": 1,
-    "xmm_xspec": 1, "bxa_xspec": 1, "radio_line": 1, "submm_line": 1, "casa_specfit": 1, "cube_lines": 2, "xmm_rgs": 1, "rxte_hexte": 1, "ml_joint": 2, "rxte_xspec": 1, "crossmission": 1, "crossband": 1,
+    "xmm_xspec": 1, "nustar_xspec": 1, "bxa_xspec": 1, "radio_line": 1, "submm_line": 1, "casa_specfit": 1, "cube_lines": 2, "xmm_rgs": 1, "rxte_hexte": 1, "ml_joint": 2, "rxte_xspec": 1, "crossmission": 1, "crossband": 1,
     "fir_linefit": 1, "nir_linefit": 1, "cigale_sed": 4, "xmm_sas_raw": 1, "sdss_zline": 0,
 }
 LONG = {
@@ -41,6 +41,7 @@ FULL_CAPABILITY = {
     "fir_linefit": "FIR Gaussian line fit",
     "ppxf_host": "pPXF stellar host/kinematics",
     "xmm_xspec": "official PPS + XSPEC Fe K-alpha fit",
+    "nustar_xspec": "NuSTAR 3-79 keV FPMA/FPMB fit; CALDB RMF + source-region numkarf ARF; background-subtracted",
     "bxa_xspec": "Bayesian evidence comparison (BXA/UltraNest) on the same PPS spectra",
     "radio_line": "radio/sub-mm line fit (pyspeckit Gaussians)",
     "submm_line": "sub-mm hyperfine line fit (McFine optical depth)",

@@ -54,7 +54,7 @@ SPITZER_IRS = ",".join([
 ALL_TOOLS = ("ir_linefit", "pyqsofit_uv", "qsofitmore_line", "pyqsofitspec_line", "ppxf_host",
              "gandalf_line", "nir_linefit", "pahfit_mir", "fir_linefit", "cafe_line",
              "crossband", "cigale_sed", "agnfitter_sed", "s3fit_line", "galspec_line",
-             "qgfit", "sheap_line", "manga_dap", "xmm_xspec", "rxte_xspec",
+             "qgfit", "sheap_line", "manga_dap", "xmm_xspec", "nustar_xspec", "rxte_xspec",
              "crossmission", "optical_linefit", "manga_dap_full", "xmm_sas_raw", "bxa_xspec", "radio_line",
              "submm_line", "casa_specfit", "cube_lines", "xmm_rgs", "rxte_hexte", "ml_joint")
 
@@ -202,6 +202,19 @@ def tool_xmm(src: dict, out: Path, logp: Path) -> int:
         return _skip("no XMM xray directory")
     inp = Path(src["_path"]) / xray
     cmd = [str(ROOT / "pipeline" / "runners" / "run_xmm_xspec_docker.sh"),
+           str(inp), str(out), "--source-key", str(src["key"])]
+    if src.get("z") is not None:
+        cmd += ["--redshift", str(src["z"])]
+    return run(cmd, logp)
+
+
+def tool_nustar(src: dict, out: Path, logp: Path) -> int:
+    """NuSTAR 3-79 keV FPMA/FPMB fit (CALDB response path)."""
+    nustar = src.get("nustar", {}).get("dir")
+    if not nustar:
+        return _skip("no NuSTAR event directory")
+    inp = Path(src["_path"]) / nustar
+    cmd = [str(ROOT / "pipeline" / "runners" / "run_nustar_xspec_docker.sh"),
            str(inp), str(out), "--source-key", str(src["key"])]
     if src.get("z") is not None:
         cmd += ["--redshift", str(src["z"])]
@@ -782,6 +795,7 @@ def main(argv=None):
                 "manga_dap": lambda: tool_manga_dap(src, out, logp),
                 "manga_dap_full": lambda: tool_manga_dap(src, out, logp, full=True),
                 "xmm_xspec": lambda: tool_xmm(src, out, logp),
+                "nustar_xspec": lambda: tool_nustar(src, out, logp),
                 "xmm_sas_raw": lambda: tool_xmm_sas_raw(src, out, logp),
                 "rxte_xspec": lambda: tool_rxte(src, out, logp),
                 "crossmission": lambda: tool_crossmission(src, out, logp),
